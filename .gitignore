@@ -1,0 +1,73 @@
+# ====================
+# Godot 4.x
+# ====================
+# 引擎缓存与导入
+.godot/
+.import/
+
+# 导出配置（每人本地不同，统一忽略；如需共享模板，单独 commit）
+export.cfg
+export_presets.cfg
+
+# 翻译表自动生成
+*.translation
+
+# 构建产物
+/build/
+/dist/
+*.exe
+*.dmg
+*.apk
+*.aab
+*.app
+*.x86_64
+*.x86
+
+# ====================
+# Aseprite 工程源文件
+# ====================
+# 注：当美术资产开始进入仓库时，启用 LFS：
+#   git lfs install
+#   git lfs track "*.aseprite" "*.png" "*.wav" "*.ogg" "*.ttf" "*.otf"
+#   git add .gitattributes
+*.aseprite-bak
+
+# ====================
+# 编辑器与 IDE
+# ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ====================
+# 操作系统
+# ====================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ====================
+# 本地工具配置（每人不同，不入仓）
+# ====================
+.claude/
+.obsidian/
+
+# ====================
+# 临时与日志
+# ====================
+*.tmp
+*.log
+*.bak
+*.cache
+
+# ====================
+# 密钥（永远不入仓）
+# ====================
+.env
+.env.local
+*.pem
+*.key
+secrets.json
