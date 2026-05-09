@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://ehxs0sd87fcp"]
+
+[node name="Main" type="Node"]
+
+[node name="Label" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 600.0
+offset_bottom = 80.0
+text = "山河策 — 阶段 0：地基搭建（详见控制台输出）"
