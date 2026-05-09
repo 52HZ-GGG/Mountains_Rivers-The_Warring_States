@@ -100,6 +100,19 @@
 - PC（Steam）/ 后续可移植至移动端
 - 单局时长约 2-4 小时，支持多存档
 
+## 开发环境
+
+| 工具 | 版本 / 说明 | 下载 |
+|---|---|---|
+| **Godot Engine** | **4.3.stable**（标准版，非 .NET 版） | [archive](https://godotengine.org/download/archive/4.3-stable/) |
+| Git | 任意版本 | — |
+| 代码编辑器 | Godot 内置编辑器 / VS Code / Cursor（+ godot-tools 扩展，可选） | — |
+| GUT | Godot 单元测试框架，通过 AssetLib 安装 | 在 Godot 内 AssetLib 搜 "GUT" |
+
+> **版本纪律**：三人必须使用完全一致的 Godot 版本（4.3.stable），项目中途不升级引擎。新成员加入或换机器请下载相同版本。
+
+> **首次配置**：克隆仓库后需要复制 `.claude/mcp.json.template` 为 `.claude/mcp.json` 才能启用 MCP 工具（仅影响 Claude Code 协作，不影响 Godot 运行）。
+
 ---
 
 > 先跑起来，再谈艺术。地理即命运，合纵连横皆在棋盘之上。
