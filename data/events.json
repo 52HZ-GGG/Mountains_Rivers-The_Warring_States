@@ -1,0 +1,557 @@
+{
+  "schema_version": "1.0",
+  "events": [
+    {
+      "id": "evt_harvest_bumper",
+      "title": "五谷丰登",
+      "description": "岁稔年丰，仓廪充盈。百姓箪食壶浆，以迎王师。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "season": ["autumn"]
+        }
+      },
+      "effects": {
+        "food_delta": 200,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 10,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_merchant_gather",
+      "title": "商旅云集",
+      "description": "四方商贾辐辏，市井繁荣，国库日丰。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_min": 50
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 100,
+        "iron_delta": 0,
+        "morale_delta": 0,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_drought",
+      "title": "旱魃为虐",
+      "description": "赤地千里，禾苗枯槁。或开仓赈济，或强征于民？",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "season": ["summer"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "开仓赈济",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -150,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "强征于民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 50,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_mine_discovery",
+      "title": "矿脉发现",
+      "description": "探子来报，山中有铁矿脉露。开采需费金帛，然利在长远。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款开采",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 80,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "暂且封存",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_bandit_uprising",
+      "title": "匪寇蜂起",
+      "description": "山贼聚众劫掠，商旅断绝。或剿或抚，刻不容缓。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "morale_max": 40,
+          "turn_min": 5
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "发兵剿匪",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": -10
+          }
+        },
+        {
+          "id": "B",
+          "text": "招安收编",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_desertion",
+      "title": "逃兵四起",
+      "description": "士卒思乡心切，夜遁者众。军心动摇，不可不察。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_max": 35
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "严刑峻法",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "安抚军心",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -60,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_enemy_spy",
+      "title": "敌军细作",
+      "description": "斥候擒获敌国间谍，搜出密信。或加固城防，或行反间之计。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "加强巡防",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "反间之计",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_drill_success",
+      "title": "练兵有方",
+      "description": "将士日夜操演，阵法精熟。三军锐气正盛，可堪一战。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_min": 60
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 8,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_grand_sacrifice",
+      "title": "祭祀大典",
+      "description": "社稷之祭，国之大事。大祭耗费甚巨，小祭聊表诚心。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "season": ["spring"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "大祭天地",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 20,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "小祭社稷",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 8,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_plague",
+      "title": "瘟疫流行",
+      "description": "疫气蔓延，百姓染疾者众。延医问药耗费不赀，听之任之恐失民心。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "season": ["summer", "autumn"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "延医问药",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "听之任之",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": -500,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_scholar_visit",
+      "title": "贤士来投",
+      "description": "远方贤士慕名来投，愿效力麾下。拜为客卿则费金帛，婉拒则失人才。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_min": 60,
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拜为客卿",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 100,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "婉言谢绝",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_public_anger",
+      "title": "民怨沸腾",
+      "description": "百姓怨声载道，聚众请愿。减税安民则国库受损，强力弹压则民心尽失。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "morale_max": 30
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "减税安民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 20,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "强力弹压",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -25,
+            "population_delta": -200,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_spring_farming",
+      "title": "春耕农忙",
+      "description": "春风化雨，正是播种时节。农事繁忙，征兵暂缓。",
+      "category": "season",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "season": ["spring"]
+        }
+      },
+      "effects": {
+        "food_delta": 100,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_harsh_winter",
+      "title": "寒冬苦厄",
+      "description": "朔风凛冽，大雪封路。或开仓放粮以济百姓，或紧缩度日以蓄国力？",
+      "category": "season",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "season": ["winter"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "开仓放粮",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -200,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "紧缩度日",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_bumper_year",
+      "title": "丰年有余",
+      "description": "秋收在望，五谷丰登。余粮可充实国库，亦可犒赏三军。",
+      "category": "season",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "season": ["autumn"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "充实国库",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 150,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "犒赏三军",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 10
+          }
+        }
+      ]
+    }
+  ]
+}

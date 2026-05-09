@@ -19,3 +19,11 @@ signal phase_changed(old_phase: int, new_phase: int)
 
 ## 胜利条件触发时发出。winner_faction_id 为获胜方 ID
 signal game_over(winner_faction_id: String)
+
+# ============= 事件系统 =============
+
+## 有选项事件触发时发出，等待 UI 处理玩家选择
+signal event_triggered(event_data: Dictionary)
+
+## 事件结算后发出（效果已应用）。choice_id 为空串表示无选项事件
+signal event_resolved(event_id: String, choice_id: String)
