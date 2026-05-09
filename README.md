@@ -93,7 +93,7 @@
 
 ## 开发团队
 
-三人合作开发（程序@flamingo15490，策划@52HZ-GGG，美术@hrw4549-hub）
+三人合作开发（程序[flamingo15490](https://github.com/flamingo15490)，策划[52HZ-GGG](https://github.com/52HZ-GGG)，美术[hrw4549-hub](https://github.com/hrw4549-hub)）
 
 ## 平台
 
