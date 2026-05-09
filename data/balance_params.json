@@ -19,13 +19,14 @@
     "general_intelligence_ambush_rate": 0.002
   },
   "counter_matrix": {
-    "infantry":  {"infantry": 1.0, "archer": 1.2, "crossbow": 1.2, "cavalry": 0.8, "chariot": 0.8, "siege": 0.7, "navy": 1.0},
-    "archer":    {"infantry": 0.8, "archer": 1.0, "crossbow": 1.0, "cavalry": 1.3, "chariot": 1.2, "siege": 0.9, "navy": 1.0},
-    "crossbow":  {"infantry": 0.8, "archer": 1.0, "crossbow": 1.0, "cavalry": 1.4, "chariot": 1.3, "siege": 0.9, "navy": 1.0},
-    "cavalry":   {"infantry": 1.3, "archer": 0.7, "crossbow": 0.7, "cavalry": 1.0, "chariot": 1.25, "siege": 0.6, "navy": 1.0},
-    "chariot":   {"infantry": 1.15, "archer": 0.8, "crossbow": 0.8, "cavalry": 0.8, "chariot": 1.0, "siege": 1.0, "navy": 1.0},
-    "siege":     {"infantry": 0.5, "archer": 0.8, "crossbow": 0.8, "cavalry": 0.5, "chariot": 0.7, "siege": 1.0, "navy": 0.5},
-    "navy":      {"infantry": 1.0, "archer": 1.0, "crossbow": 1.0, "cavalry": 1.0, "chariot": 1.0, "siege": 0.5, "navy": 1.0}
+    "infantry":  {"infantry": 1.0, "archer": 1.2, "crossbow": 1.2, "cavalry": 0.8, "chariot": 0.8, "siege": 0.7, "navy": 1.0, "spear": 1.15},
+    "archer":    {"infantry": 0.8, "archer": 1.0, "crossbow": 1.0, "cavalry": 1.3, "chariot": 1.2, "siege": 0.9, "navy": 1.0, "spear": 1.25},
+    "crossbow":  {"infantry": 0.8, "archer": 1.0, "crossbow": 1.0, "cavalry": 1.4, "chariot": 1.3, "siege": 0.9, "navy": 1.0, "spear": 1.2},
+    "cavalry":   {"infantry": 1.3, "archer": 0.7, "crossbow": 0.7, "cavalry": 1.0, "chariot": 1.25, "siege": 0.6, "navy": 1.0, "spear": 0.75},
+    "chariot":   {"infantry": 1.15, "archer": 0.8, "crossbow": 0.8, "cavalry": 0.8, "chariot": 1.0, "siege": 1.0, "navy": 1.0, "spear": 0.8},
+    "siege":     {"infantry": 0.5, "archer": 0.8, "crossbow": 0.8, "cavalry": 0.5, "chariot": 0.7, "siege": 1.0, "navy": 0.5, "spear": 0.7},
+    "navy":      {"infantry": 1.0, "archer": 1.0, "crossbow": 1.0, "cavalry": 1.0, "chariot": 1.0, "siege": 0.5, "navy": 1.0, "spear": 1.0},
+    "spear":     {"infantry": 1.15, "archer": 0.85, "crossbow": 0.85, "cavalry": 1.35, "chariot": 1.30, "siege": 0.7, "navy": 1.0, "spear": 1.0}
   },
   "resources": {
     "city_base_food": 100,
@@ -87,5 +88,19 @@
     "capture_chance": 0.3,
     "escape_chance": 0.2
   },
-  "event_cooldown_turns": 3
+  "event_cooldown_turns": 3,
+  "naval_combat": {
+    "navy_vs_land_attack_mod": 0.5,
+    "land_vs_navy_attack_mod": 0.5,
+    "land_on_water_vs_navy_attack_mod": 0.5,
+    "land_on_water_defense_mod": 0.5,
+    "navy_on_water_defense_mod": 1.0
+  },
+  "naval_freeze": {
+    "river_frozen_season": "winter",
+    "stranded_attack_mod": 0.0,
+    "stranded_can_move": false,
+    "stranded_can_initiate_attack": false,
+    "stranded_can_be_attacked": true
+  }
 }

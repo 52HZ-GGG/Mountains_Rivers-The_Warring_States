@@ -64,7 +64,7 @@
       "defense": 5,
       "hp": 75,
       "speed": 3,
-      "range": 3,
+      "range": 2,
       "cost_gold": 80,
       "cost_food": 15,
       "cost_iron": 25,
@@ -83,7 +83,7 @@
       "cost_food": 20,
       "cost_iron": 15,
       "upkeep_food": 6,
-      "special": "amphibious"
+      "special": "naval"
     },
     {
       "id": "siege",
@@ -98,6 +98,20 @@
       "cost_iron": 60,
       "upkeep_food": 6,
       "special": "siege_bonus"
+    },
+    {
+      "id": "spear",
+      "name": "枪刺兵",
+      "attack": 11,
+      "defense": 7,
+      "hp": 90,
+      "speed": 3,
+      "range": 1,
+      "cost_gold": 60,
+      "cost_food": 20,
+      "cost_iron": 15,
+      "upkeep_food": 5,
+      "special": "anti_cavalry"
     }
   ],
   "faction_variants": [
