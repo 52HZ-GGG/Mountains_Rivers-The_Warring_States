@@ -52,11 +52,13 @@ Desktop.ini
 # ====================
 # 本地工具配置（每人不同，不入仓）
 # ====================
-# Claude Code：忽略用户本地配置，保留项目共享文件（skills/commands/mcp.json）
+# Claude Code：忽略用户本地配置，保留项目共享文件（skills/commands）
+# mcp.json 因含本机绝对路径，每人不同，不入仓；模板见 .claude/mcp.json.template
 .claude/settings.json
 .claude/settings.local.json
 .claude/scheduled_tasks.json
 .claude/plans/
+.claude/mcp.json
 .obsidian/
 
 # ====================

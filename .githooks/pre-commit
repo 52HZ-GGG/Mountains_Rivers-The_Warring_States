@@ -1,5 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os, sys, re, json
+
+# 硬编码扫描白名单：只扫高敏感目录（系统逻辑与 AI 决策），避免误伤
+# 测试 fixture、autoload 初始化代码或 GUT 用例。如果未来需要扩大覆盖范围，
+# 修改下方 HARDCODE_SCAN_DIRS 即可。
+HARDCODE_SCAN_DIRS = ['scripts/systems', 'scripts/ai']
 
 # 注意：这些正则模式可能产生误报（如测试代码、数据加载初始化）。可根据项目实际情况调整。
 HARDCODE_PATTERNS = [
@@ -37,17 +42,24 @@ def validate_json(file_path):
 
 if __name__ == "__main__":
     all_issues = []
-    for root, dirs, files in os.walk('.'):
-        for file in files:
-            path = os.path.join(root, file)
-            if file.endswith('.gd'):
-                all_issues.extend(check_hardcode(path))
-            elif file.endswith('.json') and 'data' in path:
-                all_issues.extend(validate_json(path))
+    # 硬编码扫描：仅 HARDCODE_SCAN_DIRS 内的 .gd 文件
+    for scan_dir in HARDCODE_SCAN_DIRS:
+        if not os.path.isdir(scan_dir):
+            continue
+        for root, dirs, files in os.walk(scan_dir):
+            for file in files:
+                if file.endswith('.gd'):
+                    all_issues.extend(check_hardcode(os.path.join(root, file)))
+    # JSON 校验：data/ 下所有 .json 文件
+    if os.path.isdir('data'):
+        for root, dirs, files in os.walk('data'):
+            for file in files:
+                if file.endswith('.json'):
+                    all_issues.extend(validate_json(os.path.join(root, file)))
 
     if all_issues:
         print("=== 提交拦截：发现以下问题 ===")
         for issue in all_issues:
             print(issue)
         sys.exit(1)
-    print("✔ 硬编码与 JSON 校验通过")
+    print("[OK] 硬编码与 JSON 校验通过")

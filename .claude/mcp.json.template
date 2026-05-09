@@ -12,8 +12,8 @@
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/gkl/data/Mountains_and_Rivers_The_Warring_States"],
-      "description": "批量读写 JSON、搜索脚本、校验资产命名"
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "<YOUR_PROJECT_ABSOLUTE_PATH>"],
+      "description": "批量读写 JSON、搜索脚本、校验资产命名。请将 <YOUR_PROJECT_ABSOLUTE_PATH> 替换为本机项目根的绝对路径（Windows 推荐使用正斜杠 /）"
     }
   }
 }

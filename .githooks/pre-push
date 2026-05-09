@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+# 文档完整性由 PR review 把关，不再放入自动钩子，避免改章节标题就被误伤。
 import os, sys, re
 
 def check_asset_names():
@@ -10,20 +11,11 @@ def check_asset_names():
                 issues.append(f"资产命名不规范: {root}/{file}")
     return issues
 
-def check_doc_completeness():
-    issues = []
-    if os.path.exists('docs/策划案.md'):
-        with open('docs/策划案.md', 'r', encoding='utf-8') as f:
-            content = f.read()
-        if '核心玩法循环' not in content or '七大核心系统' not in content:
-            issues.append("策划案.md 不完整：缺少核心章节")
-    return issues
-
 if __name__ == "__main__":
-    issues = check_asset_names() + check_doc_completeness()
+    issues = check_asset_names()
     if issues:
         print("=== 推送拦截：发现以下问题 ===")
         for i in issues:
             print(i)
         sys.exit(1)
-    print("✔ 资产规范与文档完整性检查通过")
+    print("[OK] 资产命名规范检查通过")
