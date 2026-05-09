@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # 文档完整性由 PR review 把关，不再放入自动钩子，避免改章节标题就被误伤。
 import os, sys, re
 
