@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+import os, sys, re, json
+
+# 注意：这些正则模式可能产生误报（如测试代码、数据加载初始化）。可根据项目实际情况调整。
+HARDCODE_PATTERNS = [
+    r'(attack|defense|speed)\s*=\s*\d+',      # 直接赋值属性
+    r'faction\s*==\s*"[a-z]+"',               # 字符串国家比较
+    r'DataManager\.get_[a-z]+\(\)\s*[+\-*/]\s*\d+' # 数据 + 魔法数字
+]
+
+def check_hardcode(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    issues = []
+    for i, line in enumerate(lines, 1):
+        for pat in HARDCODE_PATTERNS:
+            if re.search(pat, line):
+                issues.append(f"{file_path}:{i}: 疑似硬编码：{line.strip()}")
+    return issues
+
+def validate_json(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        # 检查常见必填字段（以 units 为例）
+        if 'units' in file_path:
+            for unit in data if isinstance(data, list) else data.get('units', []):
+                for field in ['id', 'attack', 'defense']:
+                    if field not in unit:
+                        return [f"{file_path}: 单位缺少必要字段 '{field}'"]
+        # TODO: 阶段 0 末锁定 schema 后，启用对 frozen schema 的合规检查（决策 #1）
+        # schema = json.load(open('docs/schemas/frozen_schema.json'))
+        # validate_against_schema(data, schema)
+        return []
+    except Exception as e:
+        return [f"{file_path}: JSON 解析失败 - {e}"]
+
+if __name__ == "__main__":
+    all_issues = []
+    for root, dirs, files in os.walk('.'):
+        for file in files:
+            path = os.path.join(root, file)
+            if file.endswith('.gd'):
+                all_issues.extend(check_hardcode(path))
+            elif file.endswith('.json') and 'data' in path:
+                all_issues.extend(validate_json(path))
+
+    if all_issues:
+        print("=== 提交拦截：发现以下问题 ===")
+        for issue in all_issues:
+            print(issue)
+        sys.exit(1)
+    print("✔ 硬编码与 JSON 校验通过")

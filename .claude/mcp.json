@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "godotiq": {
+      "command": "npx",
+      "args": ["-y", "@exthilion/godot-mcp-server"],
+      "env": {
+        "GODOT_EDITOR_PORT": "9080"
+      },
+      "description": "连接 Godot 编辑器，用于场景操作、截图、寻路可视化"
+    },
+    "gamecodex": {
+      "command": "npx",
+      "args": ["-y", "gamecodex-mcp"],
+      "description": "游戏设计模式、AI 行为树、4X 常见算法参考"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-filesystem", "/home/gkl/data/Mountains_and_Rivers_The_Warring_States"],
+      "description": "批量读写 JSON、搜索脚本、校验资产命名"
+    }
+  }
+}

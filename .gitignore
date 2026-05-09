@@ -52,7 +52,11 @@ Desktop.ini
 # ====================
 # 本地工具配置（每人不同，不入仓）
 # ====================
-.claude/
+# Claude Code：忽略用户本地配置，保留项目共享文件（skills/commands/mcp.json）
+.claude/settings.json
+.claude/settings.local.json
+.claude/scheduled_tasks.json
+.claude/plans/
 .obsidian/
 
 # ====================
