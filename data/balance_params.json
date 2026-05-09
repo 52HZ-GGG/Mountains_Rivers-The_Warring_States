@@ -74,7 +74,7 @@
   },
   "culture": {
     "spread_rate": 0.05,
-    "distance_decay": {"1": 1.0, "2": 0.5, "3": 0.25},
+    "distance_decay": {"1": 1.0, "2": 0.3},
     "flip_threshold": 0.5,
     "victory_ratio": 0.7,
     "victory_turns": 10
