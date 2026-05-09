@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os, sys, re, json
 
 # 硬编码扫描白名单：只扫高敏感目录（系统逻辑与 AI 决策），避免误伤
