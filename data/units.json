@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "unit_types": [
+    {
+      "id": "infantry",
+      "name": "步兵",
+      "attack": 10,
+      "defense": 8,
+      "hp": 100,
+      "speed": 3,
+      "range": 1,
+      "cost_gold": 50,
+      "cost_food": 20,
+      "cost_iron": 10,
+      "upkeep_food": 5,
+      "special": null
+    },
+    {
+      "id": "archer",
+      "name": "弓兵",
+      "attack": 8,
+      "defense": 5,
+      "hp": 80,
+      "speed": 3,
+      "range": 2,
+      "cost_gold": 60,
+      "cost_food": 15,
+      "cost_iron": 15,
+      "upkeep_food": 4,
+      "special": "ranged"
+    },
+    {
+      "id": "cavalry",
+      "name": "骑兵",
+      "attack": 12,
+      "defense": 6,
+      "hp": 90,
+      "speed": 5,
+      "range": 1,
+      "cost_gold": 80,
+      "cost_food": 30,
+      "cost_iron": 20,
+      "upkeep_food": 8,
+      "special": "charge"
+    },
+    {
+      "id": "chariot",
+      "name": "战车",
+      "attack": 15,
+      "defense": 10,
+      "hp": 120,
+      "speed": 4,
+      "range": 1,
+      "cost_gold": 120,
+      "cost_food": 40,
+      "cost_iron": 40,
+      "upkeep_food": 12,
+      "special": "trample"
+    },
+    {
+      "id": "crossbow",
+      "name": "弩兵",
+      "attack": 9,
+      "defense": 5,
+      "hp": 75,
+      "speed": 3,
+      "range": 3,
+      "cost_gold": 80,
+      "cost_food": 15,
+      "cost_iron": 25,
+      "upkeep_food": 5,
+      "special": "ranged"
+    },
+    {
+      "id": "navy",
+      "name": "水军",
+      "attack": 10,
+      "defense": 7,
+      "hp": 90,
+      "speed": 4,
+      "range": 1,
+      "cost_gold": 70,
+      "cost_food": 20,
+      "cost_iron": 15,
+      "upkeep_food": 6,
+      "special": "amphibious"
+    },
+    {
+      "id": "siege",
+      "name": "攻城器械",
+      "attack": 18,
+      "defense": 3,
+      "hp": 60,
+      "speed": 2,
+      "range": 3,
+      "cost_gold": 150,
+      "cost_food": 20,
+      "cost_iron": 60,
+      "upkeep_food": 6,
+      "special": "siege_bonus"
+    }
+  ],
+  "faction_variants": [
+    {
+      "faction_id": "qin",
+      "base_unit": "infantry",
+      "variant_id": "rushi",
+      "variant_name": "锐士",
+      "stat_overrides": {
+        "attack": 12,
+        "defense": 10,
+        "cost_gold": 75
+      },
+      "special_description": "攻防+20%，造价+50%"
+    },
+    {
+      "faction_id": "zhao",
+      "base_unit": "cavalry",
+      "variant_id": "hufu_qibing",
+      "variant_name": "胡服骑兵",
+      "stat_overrides": {
+        "speed": 6
+      },
+      "special_description": "移动力+1，可在森林正常移动"
+    },
+    {
+      "faction_id": "qi",
+      "base_unit": "archer",
+      "variant_id": "jijishou",
+      "variant_name": "技击手",
+      "stat_overrides": {
+        "range": 3,
+        "defense": 4
+      },
+      "special_description": "射程+1，但防御-30%"
+    },
+    {
+      "faction_id": "chu",
+      "base_unit": "infantry",
+      "variant_id": "shenxi_zhishi",
+      "variant_name": "申息之师",
+      "stat_overrides": {
+        "attack": 9,
+        "defense": 9
+      },
+      "special_description": "混合兵种（步+弓），在山地无视移动惩罚"
+    },
+    {
+      "faction_id": "wei",
+      "base_unit": "infantry",
+      "variant_id": "wuzu",
+      "variant_name": "武卒",
+      "stat_overrides": {
+        "attack": 11,
+        "defense": 9,
+        "hp": 110
+      },
+      "special_description": "重装步兵，每击杀敌军恢复5%兵力"
+    },
+    {
+      "faction_id": "yan",
+      "base_unit": "cavalry",
+      "variant_id": "liaodong_gongqi",
+      "variant_name": "辽东弓骑",
+      "stat_overrides": {
+        "attack": 10,
+        "defense": 5,
+        "range": 2
+      },
+      "special_description": "骑射单位，可移动后射击"
+    },
+    {
+      "faction_id": "han",
+      "base_unit": "siege",
+      "variant_id": "jinnu",
+      "variant_name": "劲弩",
+      "stat_overrides": {
+        "attack": 20,
+        "defense": 2,
+        "range": 4,
+        "speed": 2
+      },
+      "special_description": "超远程弩炮，攻城伤害+50%，无法近战"
+    }
+  ]
+}

@@ -65,3 +65,4 @@
 - 国家 ID：`qin, chu, qi, zhao, wei, yan, han`
 - 学派 ID：`ru, fa, mo, dao, bing, zongheng`
 - 地形 ID：`plains, forest, mountain, river, marsh, pass, ford`
+- 兵种 ID：`infantry, archer, crossbow, cavalry, chariot, navy, siege`
