@@ -27,6 +27,14 @@ var _active_factions: Array[String] = []
 var _faction_index: int = 0
 var _player_faction: String = ""
 
+# 玩家资源状态（阶段1简化：单一资源池）
+var _player_food: int = 0
+var _player_gold: int = 0
+var _player_iron: int = 0
+var _player_morale: int = 50
+var _player_population: int = 0
+var _player_troops: int = 0
+
 # ============= 生命周期 =============
 
 func _ready() -> void:
@@ -89,6 +97,7 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_player_faction = player_faction
 	_faction_index = 0
 	_turn_number = 1
+	_init_player_resources()
 	_change_phase(Phase.TURN_START)
 	SignalBus.turn_started.emit(_turn_number, get_current_faction())
 	_change_phase(Phase.ACTION)
@@ -137,6 +146,48 @@ func check_victory() -> String:
 	return ""
 
 
+# ============= 资源管理（EventManager 调用） =============
+
+func get_player_morale() -> int:
+	return _player_morale
+
+
+func get_player_food() -> int:
+	return _player_food
+
+
+func get_player_gold() -> int:
+	return _player_gold
+
+
+func get_player_iron() -> int:
+	return _player_iron
+
+
+func apply_food_delta(delta: int) -> void:
+	_player_food = max(0, _player_food + delta)
+
+
+func apply_gold_delta(delta: int) -> void:
+	_player_gold = max(0, _player_gold + delta)
+
+
+func apply_iron_delta(delta: int) -> void:
+	_player_iron = max(0, _player_iron + delta)
+
+
+func apply_morale_delta(delta: int) -> void:
+	_player_morale = clampi(_player_morale + delta, 0, 100)
+
+
+func apply_population_delta(delta: int) -> void:
+	_player_population = max(0, _player_population + delta)
+
+
+func apply_troops_delta(delta: int) -> void:
+	_player_troops = max(0, _player_troops + delta)
+
+
 # ============= 测试与重开 =============
 
 ## 重置到初始状态。供单元测试与「重新开局」使用。
@@ -146,9 +197,33 @@ func reset() -> void:
 	_active_factions = []
 	_faction_index = 0
 	_player_faction = ""
+	_player_food = 0
+	_player_gold = 0
+	_player_iron = 0
+	_player_morale = 50
+	_player_population = 0
+	_player_troops = 0
 
 
 # ============= 内部 =============
+
+func _init_player_resources() -> void:
+	var capital: Dictionary = DataManager.get_capital(_player_faction)
+	if capital.is_empty():
+		push_warning("GameManager: 未找到玩家首都，使用默认资源")
+		_player_food = 500
+		_player_gold = 300
+		_player_iron = 100
+		_player_population = 10000
+		_player_troops = 0
+		return
+	_player_population = capital.get("base_population", 10000)
+	# 初始资源基于城市人口和基础产出
+	_player_food = int(_player_population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
+	_player_gold = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
+	_player_iron = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
+	_player_troops = 0
+
 
 func _change_phase(new_phase: Phase) -> void:
 	var old_phase := _phase

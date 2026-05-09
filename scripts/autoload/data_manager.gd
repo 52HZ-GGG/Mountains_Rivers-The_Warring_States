@@ -9,15 +9,25 @@ extends Node
 const TERRAIN_PATH := "res://data/terrain.json"
 const UNITS_PATH := "res://data/units.json"
 const CITIES_PATH := "res://data/cities.json"
+const EVENTS_PATH := "res://data/events.json"
+const BUILDINGS_PATH := "res://data/buildings.json"
+const BALANCE_PARAMS_PATH := "res://data/balance_params.json"
+const WONDERS_PATH := "res://data/wonders.json"
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
 var _cities: Dictionary = {}
+var _events: Dictionary = {}
+var _buildings: Dictionary = {}
+var _balance_params: Dictionary = {}
+var _wonders: Dictionary = {}
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
 var _city_index: Dictionary = {}
 var _cities_by_faction: Dictionary = {}
+var _building_index: Dictionary = {}
+var _wonder_index: Dictionary = {}
 
 
 func _ready() -> void:
@@ -30,6 +40,10 @@ func _load_all_data() -> void:
 	_terrains = _load_json(TERRAIN_PATH)
 	_units = _load_json(UNITS_PATH)
 	_cities = _load_json(CITIES_PATH)
+	_events = _load_json(EVENTS_PATH)
+	_buildings = _load_json(BUILDINGS_PATH)
+	_balance_params = _load_json(BALANCE_PARAMS_PATH)
+	_wonders = _load_json(WONDERS_PATH)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -58,6 +72,14 @@ func _build_indices() -> void:
 		if not _cities_by_faction.has(fid):
 			_cities_by_faction[fid] = []
 		_cities_by_faction[fid].append(c)
+
+	_building_index.clear()
+	for b in _buildings.get("buildings", []):
+		_building_index[b["id"]] = b
+
+	_wonder_index.clear()
+	for w in _wonders.get("wonders", []):
+		_wonder_index[w["id"]] = w
 
 
 # ============= 地形接口 =============
@@ -144,6 +166,81 @@ func get_map_size() -> Vector2i:
 	return Vector2i(_cities["map_width"], _cities["map_height"])
 
 
+# ============= 事件接口 =============
+
+func get_all_events() -> Array:
+	return _events.get("events", [])
+
+
+func get_event(event_id: String) -> Dictionary:
+	for evt in get_all_events():
+		if evt["id"] == event_id:
+			return evt
+	push_warning("DataManager: 未找到事件 %s" % event_id)
+	return {}
+
+
+# ============= 建筑接口 =============
+
+func get_building(building_id: String) -> Dictionary:
+	if _building_index.has(building_id):
+		return _building_index[building_id]
+	push_warning("DataManager: 未找到建筑 %s" % building_id)
+	return {}
+
+
+func get_all_buildings() -> Array:
+	return _buildings.get("buildings", [])
+
+
+func get_buildings_by_category(category: String) -> Array:
+	var result: Array = []
+	for b in get_all_buildings():
+		if b.get("category", "") == category:
+			result.append(b)
+	return result
+
+
+# ============= 奇观接口 =============
+
+func get_all_wonders() -> Array:
+	return _wonders.get("wonders", [])
+
+
+func get_wonder(wonder_id: String) -> Dictionary:
+	if _wonder_index.has(wonder_id):
+		return _wonder_index[wonder_id]
+	push_warning("DataManager: 未找到奇观 %s" % wonder_id)
+	return {}
+
+
+# ============= 平衡参数接口 =============
+
+func get_balance_param(path: String) -> Variant:
+	var parts: PackedStringArray = path.split(".")
+	var current: Variant = _balance_params
+	for part in parts:
+		if current is Dictionary and current.has(part):
+			current = current[part]
+		else:
+			push_warning("DataManager: 未找到平衡参数 %s" % path)
+			return null
+	return current
+
+
+func get_counter_multiplier(attacker_id: String, defender_id: String) -> float:
+	var matrix: Dictionary = _balance_params.get("counter_matrix", {})
+	if matrix.has(attacker_id) and matrix[attacker_id] is Dictionary:
+		return matrix[attacker_id].get(defender_id, 1.0)
+	return 1.0
+
+
+func get_current_season(turn_number: int) -> String:
+	var seasons: Array = _balance_params.get("season_cycle", {}).get("seasons", ["spring", "summer", "autumn", "winter"])
+	var idx: int = (turn_number - 1) % seasons.size()
+	return seasons[idx]
+
+
 # ============= 学派 / 科技占位（阶段 3 实现）=============
 
 func get_school(school_id: String) -> Dictionary:
@@ -175,5 +272,17 @@ func validate_data() -> bool:
 	for c in get_all_cities():
 		if not c.has("id") or not c.has("hex_q") or not c.has("hex_r"):
 			push_error("DataManager: 城市数据缺少必要字段: %s" % c)
+			valid = false
+	for b in get_all_buildings():
+		if not b.has("id") or not b.has("cost_gold"):
+			push_error("DataManager: 建筑数据缺少必要字段: %s" % b)
+			valid = false
+	for e in get_all_events():
+		if not e.has("id") or not e.has("trigger"):
+			push_error("DataManager: 事件数据缺少必要字段: %s" % e)
+			valid = false
+	for w in get_all_wonders():
+		if not w.has("id") or not w.has("cost_gold"):
+			push_error("DataManager: 奇观数据缺少必要字段: %s" % w)
 			valid = false
 	return valid

@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0",
+  "buildings": [
+    {
+      "id": "farm",
+      "name": "农田",
+      "description": "开垦荒地，增产粮食",
+      "category": "economic",
+      "cost_gold": 100,
+      "cost_iron": 0,
+      "build_turns": 1,
+      "max_level": 3,
+      "upkeep_gold": 5,
+      "effects": {
+        "food_production": 50
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "market",
+      "name": "市集",
+      "description": "招徕商贾，增课赋税",
+      "category": "economic",
+      "cost_gold": 120,
+      "cost_iron": 0,
+      "build_turns": 1,
+      "max_level": 3,
+      "upkeep_gold": 8,
+      "effects": {
+        "gold_production": 40
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "mine",
+      "name": "矿场",
+      "description": "凿山取铁，锻兵利器",
+      "category": "economic",
+      "cost_gold": 80,
+      "cost_iron": 20,
+      "build_turns": 1,
+      "max_level": 3,
+      "upkeep_gold": 10,
+      "effects": {
+        "iron_production": 20
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "barracks",
+      "name": "兵营",
+      "description": "募兵练卒，整军经武",
+      "category": "military",
+      "cost_gold": 150,
+      "cost_iron": 30,
+      "build_turns": 2,
+      "max_level": 2,
+      "upkeep_gold": 15,
+      "effects": {
+        "recruit_speed_bonus": 0.25
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "wall",
+      "name": "城墙",
+      "description": "高筑城垣，固守疆圉",
+      "category": "military",
+      "cost_gold": 200,
+      "cost_iron": 50,
+      "build_turns": 2,
+      "max_level": 2,
+      "upkeep_gold": 10,
+      "effects": {
+        "defense_bonus": 0.15
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "shrine",
+      "name": "祠堂",
+      "description": "祭祀先祖，安抚百姓，民心归附",
+      "category": "political",
+      "cost_gold": 150,
+      "cost_iron": 10,
+      "build_turns": 2,
+      "max_level": 2,
+      "upkeep_gold": 8,
+      "effects": {
+        "morale_bonus": 3
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 2
+    },
+    {
+      "id": "academy",
+      "name": "学宫",
+      "description": "延请名师，教化一方，文风鼎盛",
+      "category": "political",
+      "cost_gold": 200,
+      "cost_iron": 20,
+      "build_turns": 2,
+      "max_level": 2,
+      "upkeep_gold": 12,
+      "effects": {
+        "morale_bonus": 2,
+        "culture_production": 10
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 2
+    },
+    {
+      "id": "post_station",
+      "name": "驿站",
+      "description": "通达四方，传递消息，结交诸侯",
+      "category": "political",
+      "cost_gold": 120,
+      "cost_iron": 15,
+      "build_turns": 2,
+      "max_level": 1,
+      "upkeep_gold": 10,
+      "effects": {
+        "diplomacy_bonus": 0.10,
+        "intelligence_range": 1
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 2
+    },
+    {
+      "id": "granary",
+      "name": "粮仓",
+      "description": "广积粮谷，以备荒年，仓廪充实",
+      "category": "political",
+      "cost_gold": 100,
+      "cost_iron": 0,
+      "build_turns": 1,
+      "max_level": 2,
+      "upkeep_gold": 5,
+      "effects": {
+        "food_storage_cap": 200,
+        "supply_resist_bonus": 1
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 2
+    },
+    {
+      "id": "palace",
+      "name": "王宫",
+      "description": "营建宫室，威加海内，四方来朝",
+      "category": "special",
+      "cost_gold": 400,
+      "cost_iron": 100,
+      "build_turns": 3,
+      "max_level": 3,
+      "upkeep_gold": 20,
+      "effects": {
+        "morale_bonus": 5,
+        "tax_bonus": 0.10,
+        "diplomacy_reputation": 5
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 1
+    }
+  ]
+}

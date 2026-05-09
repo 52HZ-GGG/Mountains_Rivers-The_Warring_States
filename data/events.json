@@ -1,0 +1,1815 @@
+{
+  "schema_version": "1.0",
+  "events": [
+    {
+      "id": "evt_harvest_bumper",
+      "title": "五谷丰登",
+      "description": "岁稔年丰，仓廪充盈。百姓箪食壶浆，以迎王师。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "season": ["autumn"]
+        }
+      },
+      "effects": {
+        "food_delta": 200,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 10,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_merchant_gather",
+      "title": "商旅云集",
+      "description": "四方商贾辐辏，市井繁荣，国库日丰。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_min": 50
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 100,
+        "iron_delta": 0,
+        "morale_delta": 0,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_drought",
+      "title": "旱魃为虐",
+      "description": "赤地千里，禾苗枯槁。或开仓赈济，或强征于民？",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "season": ["summer"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "开仓赈济",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -150,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "强征于民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 50,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_mine_discovery",
+      "title": "矿脉发现",
+      "description": "探子来报，山中有铁矿脉露。开采需费金帛，然利在长远。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款开采",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 80,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "暂且封存",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_bandit_uprising",
+      "title": "匪寇蜂起",
+      "description": "山贼聚众劫掠，商旅断绝。或剿或抚，刻不容缓。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "morale_max": 40,
+          "turn_min": 5
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "发兵剿匪",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": -10
+          }
+        },
+        {
+          "id": "B",
+          "text": "招安收编",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_desertion",
+      "title": "逃兵四起",
+      "description": "士卒思乡心切，夜遁者众。军心动摇，不可不察。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_max": 35
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "严刑峻法",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "安抚军心",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -60,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_enemy_spy",
+      "title": "敌军细作",
+      "description": "斥候擒获敌国间谍，搜出密信。或加固城防，或行反间之计。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "加强巡防",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "反间之计",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_drill_success",
+      "title": "练兵有方",
+      "description": "将士日夜操演，阵法精熟。三军锐气正盛，可堪一战。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_min": 60
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 8,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_grand_sacrifice",
+      "title": "祭祀大典",
+      "description": "社稷之祭，国之大事。大祭耗费甚巨，小祭聊表诚心。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "season": ["spring"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "大祭天地",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 20,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "小祭社稷",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 8,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_plague",
+      "title": "瘟疫流行",
+      "description": "疫气蔓延，百姓染疾者众。延医问药耗费不赀，听之任之恐失民心。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "season": ["summer", "autumn"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "延医问药",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "听之任之",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": -500,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_scholar_visit",
+      "title": "贤士来投",
+      "description": "远方贤士慕名来投，愿效力麾下。拜为客卿则费金帛，婉拒则失人才。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "morale_min": 60,
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拜为客卿",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 100,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "婉言谢绝",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_public_anger",
+      "title": "民怨沸腾",
+      "description": "百姓怨声载道，聚众请愿。减税安民则国库受损，强力弹压则民心尽失。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "morale_max": 30
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "减税安民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 20,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "强力弹压",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -25,
+            "population_delta": -200,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_spring_farming",
+      "title": "春耕农忙",
+      "description": "春风化雨，正是播种时节。农事繁忙，征兵暂缓。",
+      "category": "season",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "season": ["spring"]
+        }
+      },
+      "effects": {
+        "food_delta": 100,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_harsh_winter",
+      "title": "寒冬苦厄",
+      "description": "朔风凛冽，大雪封路。或开仓放粮以济百姓，或紧缩度日以蓄国力？",
+      "category": "season",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "season": ["winter"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "开仓放粮",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -200,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "紧缩度日",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_bumper_year",
+      "title": "丰年有余",
+      "description": "秋收在望，五谷丰登。余粮可充实国库，亦可犒赏三军。",
+      "category": "season",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "season": ["autumn"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "充实国库",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 150,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "犒赏三军",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_maling",
+      "title": "马陵之战",
+      "description": "齐魏交兵于马陵，孙膑减灶诱敌，庞涓中伏身死。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "at_war_with": "wei",
+          "troops_in_hex_range": {
+            "center": [8, 6],
+            "radius": 3,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 减灶诱敌，伏击马陵道",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": -20
+          }
+        },
+        {
+          "id": "B",
+          "text": "正面迎战，以力破之",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -60,
+            "iron_delta": -20,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": -50
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_guiling",
+      "title": "桂陵之战",
+      "description": "魏围邯郸，齐师救赵。孙膑献策围魏救赵，攻敌必救。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "at_war_with": "zhao",
+          "troops_in_hex_range": {
+            "center": [5, 8],
+            "radius": 3,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 围魏救赵，攻敌必救",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": -15
+          }
+        },
+        {
+          "id": "B",
+          "text": "直赴邯郸，与魏决战",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": -30,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": -60
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_changping",
+      "title": "长平之战",
+      "description": "秦赵对峙于长平，廉颇坚壁不出。白起反间换将，赵括纸上谈兵。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "at_war_with": "qin",
+          "troops_in_hex_range": {
+            "center": [7, 7],
+            "radius": 3,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 坚持用廉颇，以守代攻",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -100,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": -10
+          }
+        },
+        {
+          "id": "B",
+          "text": "换将出击，速战速决",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": -10,
+            "morale_delta": -20,
+            "population_delta": -300,
+            "troops_delta": -80
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_handan",
+      "title": "邯郸之战",
+      "description": "秦围邯郸，赵国危在旦夕。信陵君窃符救赵，合兵击秦。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "at_war_with": "qin",
+          "troops_in_hex_range": {
+            "center": [5, 8],
+            "radius": 2,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 据城死守，等待援军",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -150,
+            "gold_delta": -80,
+            "iron_delta": -30,
+            "morale_delta": 10,
+            "population_delta": -100,
+            "troops_delta": -30
+          }
+        },
+        {
+          "id": "B",
+          "text": "开城投降，保全百姓",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -30,
+            "population_delta": 0,
+            "troops_delta": -50
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_jimo",
+      "title": "即墨之战",
+      "description": "燕军长驱直入，齐仅余即墨、莒二城。田单据城坚守，伺机反攻。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "at_war_with": "yan",
+          "troops_in_hex_range": {
+            "center": [12, 4],
+            "radius": 3,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 田单火牛阵奇袭",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -50,
+            "gold_delta": -60,
+            "iron_delta": -20,
+            "morale_delta": 25,
+            "population_delta": 0,
+            "troops_delta": -15
+          }
+        },
+        {
+          "id": "B",
+          "text": "遣使求和，割地赔款",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -200,
+            "gold_delta": -150,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_yique",
+      "title": "伊阙之战",
+      "description": "韩魏联军据伊阙，白起以寡击众。各个击破，先弱后强。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "at_war_with": "han",
+          "troops_in_hex_range": {
+            "center": [6, 6],
+            "radius": 3,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 各个击破，先弱后强",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": -15,
+            "morale_delta": 20,
+            "population_delta": 0,
+            "troops_delta": -25
+          }
+        },
+        {
+          "id": "B",
+          "text": "集中兵力，正面强攻",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": -40,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": -60
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_miechu",
+      "title": "灭楚之战",
+      "description": "秦欲灭楚，李信二十万兵败。王翦请六十万大军，稳扎稳打。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "at_war_with": "chu",
+          "troops_in_hex_range": {
+            "center": [9, 10],
+            "radius": 4,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 王翦六十万大军，稳扎稳打",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -300,
+            "gold_delta": -200,
+            "iron_delta": -80,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": -40
+          }
+        },
+        {
+          "id": "B",
+          "text": "李信轻兵疾进，速战速决",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -100,
+            "gold_delta": -80,
+            "iron_delta": -30,
+            "morale_delta": -15,
+            "population_delta": -200,
+            "troops_delta": -70
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_leyi",
+      "title": "乐毅伐齐",
+      "description": "燕昭王拜乐毅为上将军，联合五国伐齐。连下七十余城，齐国几亡。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "at_war_with": "qi",
+          "troops_in_hex_range": {
+            "center": [11, 5],
+            "radius": 4,
+            "both_factions": true
+          }
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 联合五国，分兵伐齐",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -200,
+            "gold_delta": -100,
+            "iron_delta": -40,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": -30
+          }
+        },
+        {
+          "id": "B",
+          "text": "单独出兵，独吞战果",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -150,
+            "gold_delta": -120,
+            "iron_delta": -50,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": -60
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_shangyang",
+      "title": "商鞅变法",
+      "description": "卫鞅入秦，说孝公变法。废井田、开阡陌、奖军功、行连坐。",
+      "category": "politics",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "turn_min": 3,
+          "faction": "qin"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 全面推行变法",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 100,
+            "gold_delta": 80,
+            "iron_delta": 20,
+            "morale_delta": -10,
+            "population_delta": 200,
+            "troops_delta": 30
+          }
+        },
+        {
+          "id": "B",
+          "text": "渐进改良，安抚旧贵族",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 30,
+            "gold_delta": 20,
+            "iron_delta": 5,
+            "morale_delta": 5,
+            "population_delta": 50,
+            "troops_delta": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_hufu",
+      "title": "胡服骑射",
+      "description": "赵武灵王力排众议，推行胡服骑射。革车战之弊，兴骑射之利。",
+      "category": "politics",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "turn_min": 5,
+          "faction": "zhao"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 全面推行胡服骑射",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -60,
+            "iron_delta": -20,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 40
+          }
+        },
+        {
+          "id": "B",
+          "text": "仅在边军试行",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -20,
+            "iron_delta": -5,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_sanjiashenjin",
+      "title": "三家分晋",
+      "description": "韩赵魏三家分晋，周天子册封为诸侯。战国大幕由此开启。",
+      "category": "politics",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 1.0,
+        "conditions": {
+          "turn_min": 1,
+          "turn_max": 2
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "hist_hezong",
+      "title": "合纵连横",
+      "description": "苏秦佩六国相印，合纵抗秦。张仪连横破纵，各个击破。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 10
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 六国合纵，联合封锁秦国",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "连横事秦，远交近攻",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_yuanjiao",
+      "title": "远交近攻",
+      "description": "范雎献策远交近攻，结好远邦，蚕食邻国。秦之大略也。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 12,
+          "faction": "qin"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 采纳远交近攻",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 10
+          }
+        },
+        {
+          "id": "B",
+          "text": "四面出击，全面扩张",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -100,
+            "gold_delta": -100,
+            "iron_delta": -30,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": -30
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_zhangyi",
+      "title": "张仪欺楚",
+      "description": "张仪以商於六百里地诈楚，楚怀王贪利受骗。齐楚断交，楚国孤立。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 6,
+          "faction": "chu"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 贪利受骗，与齐断交",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "识破张仪之计，将计就计",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -60,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_wanbi",
+      "title": "完璧归赵",
+      "description": "秦昭王诈以十五城换和氏璧。蔺相如奉璧入秦，以智勇归璧。",
+      "category": "special",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 8,
+          "faction": "zhao"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 蔺相如以智勇归璧",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "献璧求和，避免冲突",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_shaqiu",
+      "title": "沙丘之变",
+      "description": "赵武灵王困死沙丘宫，公子成与李兑专权。赵国政局动荡。",
+      "category": "special",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 8,
+          "faction": "zhao"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 顺势平叛，拥立新君",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": -10
+          }
+        },
+        {
+          "id": "B",
+          "text": "营救武灵王，拨乱反正",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": -20,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": -20
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_jingke",
+      "title": "荆轲刺秦",
+      "description": "燕太子丹遣荆轲入秦，图穷匕见。功败垂成，秦王震怒。",
+      "category": "special",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 16,
+          "faction": "yan"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 遣荆轲刺秦",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "放弃冒险，固守待变",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_xinling",
+      "title": "窃符救赵",
+      "description": "秦围邯郸，信陵君窃虎符夺军救赵。义薄云天，名震天下。",
+      "category": "special",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 14,
+          "faction": "wei"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 窃符救赵",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -60,
+            "iron_delta": -20,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": -30
+          }
+        },
+        {
+          "id": "B",
+          "text": "按兵不动，坐观成败",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_lvbuiwei",
+      "title": "奇货可居",
+      "description": "吕不韦见秦异人，以为奇货可居。千金投资，终成相国。",
+      "category": "special",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 8,
+          "faction": "qin"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 投资政治，扶植亲秦势力",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -120,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 100,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "专注经商，不涉政事",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 80,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_dujiangyan",
+      "title": "都江堰修建",
+      "description": "李冰父子主持修建都江堰，化水害为水利。沃野千里，天府之国。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 6,
+          "faction": "qin"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 兴修水利工程",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 200,
+            "gold_delta": -100,
+            "iron_delta": -30,
+            "morale_delta": 10,
+            "population_delta": 100,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "暂缓工程，积蓄国力",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_zhengguoqu",
+      "title": "郑国渠修建",
+      "description": "韩遣郑国间秦，劝修水渠以疲秦。秦知其计仍继续修建，反成强秦之基。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 8,
+          "faction": "qin"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 知其为计仍继续修建",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 150,
+            "gold_delta": -80,
+            "iron_delta": -20,
+            "morale_delta": 5,
+            "population_delta": 50,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "停工杀郑国，以绝后患",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_huanghe",
+      "title": "黄河决口",
+      "description": "黄河暴涨，堤岸溃决。洪水泛滥，百姓流离失所。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 4,
+          "season": ["summer"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 征发民夫，全力治水",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -100,
+            "gold_delta": -120,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": -200,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "任其自然，保全国力",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -200,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -20,
+            "population_delta": -500,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_guanzhong_drought",
+      "title": "关中大旱",
+      "description": "关中久旱不雨，赤地千里。禾苗枯槁，饥民遍野。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 6,
+          "faction": "qin",
+          "season": ["summer"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 开仓赈济，以工代赈",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -200,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "紧缩度日，优先军粮",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -50,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -15,
+            "population_delta": -300,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_locust",
+      "title": "蝗灾",
+      "description": "蝗虫蔽天而至，所过之处禾稼一空。百姓号哭，饿殍遍野。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 3,
+          "season": ["autumn"]
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 组织百姓扑蝗",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -80,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "祭祀天灾，祈求庇佑",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -150,
+            "gold_delta": -20,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": -100,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_earthquake",
+      "title": "地震",
+      "description": "大地震动，房舍倾塌。百姓惊恐，流言四起。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.06,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 紧急赈灾修城",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -50,
+            "gold_delta": -100,
+            "iron_delta": -20,
+            "morale_delta": 10,
+            "population_delta": -100,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "以天意示人，安抚民心",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 0,
+            "population_delta": -200,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_jixia",
+      "title": "稷下学宫",
+      "description": "齐国稷下学宫兴盛，天下贤士云集。百家争鸣，文风鼎盛。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 3,
+          "faction": "qi"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 大力资助稷下学宫",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": 20,
+            "population_delta": 100,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "量入为出，适度资助",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 8,
+            "population_delta": 30,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_baijia",
+      "title": "百家争鸣",
+      "description": "儒墨道法，各执一说。百花齐放，思想之盛空前绝后。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 5,
+          "morale_min": 50
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 百花齐放，兼容并蓄",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 50,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "独尊一家，统一思想",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -20,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_mengzi",
+      "title": "孟子见梁惠王",
+      "description": "孟子入梁，说仁义之道。王曰利，孟子曰仁义而已矣。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 5,
+          "faction": "wei"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 采纳孟子仁政",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 50,
+            "gold_delta": -40,
+            "iron_delta": 0,
+            "morale_delta": 20,
+            "population_delta": 100,
+            "troops_delta": -10
+          }
+        },
+        {
+          "id": "B",
+          "text": "重利轻义，富国强兵",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 30,
+            "iron_delta": 10,
+            "morale_delta": -5,
+            "population_delta": 0,
+            "troops_delta": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "hist_zhuangzi",
+      "title": "庄子拒楚相",
+      "description": "楚王遣使聘庄子为相。庄子以宁为泥中曳尾之龟，辞而不就。",
+      "category": "morale",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 5,
+          "faction": "chu"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "(历史) 尊重庄子意愿，厚赐而遣之",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -30,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "强征入朝，为我所用",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    }
+  ]
+}
