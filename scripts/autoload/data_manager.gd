@@ -12,6 +12,7 @@ const CITIES_PATH := "res://data/cities.json"
 const EVENTS_PATH := "res://data/events.json"
 const BUILDINGS_PATH := "res://data/buildings.json"
 const BALANCE_PARAMS_PATH := "res://data/balance_params.json"
+const WONDERS_PATH := "res://data/wonders.json"
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
@@ -19,12 +20,14 @@ var _cities: Dictionary = {}
 var _events: Dictionary = {}
 var _buildings: Dictionary = {}
 var _balance_params: Dictionary = {}
+var _wonders: Dictionary = {}
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
 var _city_index: Dictionary = {}
 var _cities_by_faction: Dictionary = {}
 var _building_index: Dictionary = {}
+var _wonder_index: Dictionary = {}
 
 
 func _ready() -> void:
@@ -40,6 +43,7 @@ func _load_all_data() -> void:
 	_events = _load_json(EVENTS_PATH)
 	_buildings = _load_json(BUILDINGS_PATH)
 	_balance_params = _load_json(BALANCE_PARAMS_PATH)
+	_wonders = _load_json(WONDERS_PATH)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -72,6 +76,10 @@ func _build_indices() -> void:
 	_building_index.clear()
 	for b in _buildings.get("buildings", []):
 		_building_index[b["id"]] = b
+
+	_wonder_index.clear()
+	for w in _wonders.get("wonders", []):
+		_wonder_index[w["id"]] = w
 
 
 # ============= 地形接口 =============
@@ -185,6 +193,27 @@ func get_all_buildings() -> Array:
 	return _buildings.get("buildings", [])
 
 
+func get_buildings_by_category(category: String) -> Array:
+	var result: Array = []
+	for b in get_all_buildings():
+		if b.get("category", "") == category:
+			result.append(b)
+	return result
+
+
+# ============= 奇观接口 =============
+
+func get_all_wonders() -> Array:
+	return _wonders.get("wonders", [])
+
+
+func get_wonder(wonder_id: String) -> Dictionary:
+	if _wonder_index.has(wonder_id):
+		return _wonder_index[wonder_id]
+	push_warning("DataManager: 未找到奇观 %s" % wonder_id)
+	return {}
+
+
 # ============= 平衡参数接口 =============
 
 func get_balance_param(path: String) -> Variant:
@@ -251,5 +280,9 @@ func validate_data() -> bool:
 	for e in get_all_events():
 		if not e.has("id") or not e.has("trigger"):
 			push_error("DataManager: 事件数据缺少必要字段: %s" % e)
+			valid = false
+	for w in get_all_wonders():
+		if not w.has("id") or not w.has("cost_gold"):
+			push_error("DataManager: 奇观数据缺少必要字段: %s" % w)
 			valid = false
 	return valid
