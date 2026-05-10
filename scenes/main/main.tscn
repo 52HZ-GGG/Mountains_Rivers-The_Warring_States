@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/diplomacy/diplomacy_panel.tscn" id="2"]
+[ext_resource type="Script" path="res://scenes/ui/tech/tech_tree_panel.gd" id="3"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1")
@@ -22,3 +23,19 @@ text = "外交"
 
 [node name="DiplomacyPanel" parent="." instance=ExtResource("2")]
 visible = false
+
+[node name="TechButton" type="Button" parent="."]
+offset_left = 220.0
+offset_top = 100.0
+offset_right = 380.0
+offset_bottom = 140.0
+text = "科技"
+
+[node name="TechTreePanel" type="Control" parent="."]
+script = ExtResource("3")
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

@@ -15,6 +15,7 @@ const BALANCE_PARAMS_PATH := "res://data/balance_params.json"
 const WONDERS_PATH := "res://data/wonders.json"
 const FACTIONS_PATH := "res://data/factions.json"
 const DIPLOMACY_PATH := "res://data/diplomacy.json"
+const TECH_TREE_PATH := "res://data/tech_tree.json"
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
@@ -25,6 +26,7 @@ var _balance_params: Dictionary = {}
 var _wonders: Dictionary = {}
 var _factions: Dictionary = {}
 var _diplomacy: Dictionary = {}
+var _tech_tree: Dictionary = {}
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
@@ -33,6 +35,7 @@ var _cities_by_faction: Dictionary = {}
 var _building_index: Dictionary = {}
 var _wonder_index: Dictionary = {}
 var _faction_index: Dictionary = {}
+var _tech_index: Dictionary = {}
 
 
 func _ready() -> void:
@@ -51,6 +54,7 @@ func _load_all_data() -> void:
 	_wonders = _load_json(WONDERS_PATH)
 	_factions = _load_json(FACTIONS_PATH)
 	_diplomacy = _load_json(DIPLOMACY_PATH)
+	_tech_tree = _load_json(TECH_TREE_PATH)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -91,6 +95,10 @@ func _build_indices() -> void:
 	_faction_index.clear()
 	for f in _factions.get("factions", []):
 		_faction_index[f["id"]] = f
+
+	_tech_index.clear()
+	for t in _tech_tree.get("techs", []):
+		_tech_index[t["id"]] = t
 
 
 # ============= 地形接口 =============
@@ -304,7 +312,7 @@ func get_difficulty_settings(difficulty: String) -> Dictionary:
 	return _diplomacy.get("difficulty", {}).get(difficulty, {"resource_mod": 0.0, "initial_gold_bonus": 0})
 
 
-# ============= 学派 / 科技占位（阶段 3 实现）=============
+# ============= 学派占位（阶段 3 实现）=============
 
 func get_school(school_id: String) -> Dictionary:
 	push_warning("DataManager: 学派数据尚未实现 (school_id=%s)" % school_id)
@@ -315,9 +323,43 @@ func get_all_schools() -> Array:
 	return []
 
 
+# ============= 科技接口 =============
+
 func get_tech(tech_id: String) -> Dictionary:
-	push_warning("DataManager: 科技数据尚未实现 (tech_id=%s)" % tech_id)
+	if _tech_index.has(tech_id):
+		return _tech_index[tech_id]
+	push_warning("DataManager: 未找到科技 %s" % tech_id)
 	return {}
+
+
+func get_all_techs() -> Array:
+	return _tech_tree.get("techs", [])
+
+
+func get_techs_by_category(category: String) -> Array:
+	var result: Array = []
+	for t in get_all_techs():
+		if t.get("category", "") == category:
+			result.append(t)
+	return result
+
+
+func get_techs_by_era(era: String) -> Array:
+	var result: Array = []
+	for t in get_all_techs():
+		if t.get("era", "") == era:
+			result.append(t)
+	return result
+
+
+func get_tech_cost(tech_id: String) -> int:
+	var tech := get_tech(tech_id)
+	return tech.get("cost_gold", 0)
+
+
+func get_tech_prerequisites(tech_id: String) -> Array:
+	var tech := get_tech(tech_id)
+	return tech.get("prerequisites", [])
 
 
 # ============= 数据校验 =============
@@ -358,4 +400,11 @@ func validate_data() -> bool:
 	if _diplomacy.is_empty():
 		push_error("DataManager: 外交参数数据为空")
 		valid = false
+	for t in get_all_techs():
+		if not t.has("id") or not t.has("name") or not t.has("category"):
+			push_error("DataManager: 科技数据缺少必要字段: %s" % t)
+			valid = false
+		if not t.has("effects") or not t["effects"].has("type"):
+			push_error("DataManager: 科技数据缺少effects: %s" % t)
+			valid = false
 	return valid

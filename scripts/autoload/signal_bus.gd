@@ -47,3 +47,10 @@ signal negotiation_started(proposer: String, target: String)
 signal negotiation_offer(proposer: String, target: String, terms: Dictionary)
 signal negotiation_accepted(proposer: String, target: String)
 signal negotiation_rejected(proposer: String, target: String)
+
+# ============= 科技系统 =============
+
+signal tech_research_started(tech_id: String)
+signal tech_research_completed(tech_id: String)
+signal tech_research_cancelled(tech_id: String)
+signal tech_available(tech_id: String)

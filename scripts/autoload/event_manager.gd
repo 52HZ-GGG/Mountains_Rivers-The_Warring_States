@@ -73,6 +73,10 @@ func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: Str
 		if faction_id != "" and not DiplomacySystem.are_at_war(faction_id, conditions["at_war_with"]):
 			return false
 
+	if conditions.has("tech_researched"):
+		if not TechSystem.is_researched(conditions["tech_researched"]):
+			return false
+
 	return true
 
 

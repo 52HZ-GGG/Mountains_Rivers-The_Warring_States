@@ -111,5 +111,11 @@
     "reputation_max": 100,
     "initial_reputation": 50,
     "border_distance_threshold": 4
+  },
+  "tech": {
+    "research_speed_base": 1.0,
+    "research_speed_per_turn": 1,
+    "special_condition_check_on_unlock": true,
+    "era_gate_enabled": false
   }
 }
