@@ -46,18 +46,54 @@
   "morale": {
     "base_drift": 1,
     "tax_base_rate": 0.3,
-    "tax_morale_penalty_per_percent": 0.5,
+    "tax_morale_values": {"0.1": 15, "0.2": 5, "0.3": 0, "0.4": -10, "0.5": -20},
     "threshold_high": 80,
     "threshold_mid": 50,
     "threshold_low": 30,
     "high_tax_bonus": 0.2,
     "high_recruit_bonus": 0.3,
+    "high_stability_bonus": 1,
     "mid_tax_penalty": -0.2,
     "mid_recruit_penalty": -0.2,
     "low_tax_penalty": -0.5,
+    "low_recruit_penalty": -0.5,
     "low_desertion_rate": 0.1,
     "low_riot_chance": 0.15,
-    "season_morale_mod": {"spring": 5, "summer": -5, "autumn": 10, "winter": -10}
+    "low_stability_penalty": -3,
+    "season_morale_mod": {"spring": 5, "summer": -5, "autumn": 10, "winter": -10},
+    "war_weariness_threshold": 20,
+    "war_weariness_per_turn": -2,
+    "war_recovery_per_turn": 2,
+    "victory_bonus": 5,
+    "victory_bonus_duration": 3,
+    "school_base_morale": {"confucianism": 2, "legalism": -1}
+  },
+  "stability": {
+    "initial": 50,
+    "threshold_high": 80,
+    "threshold_mid": 50,
+    "threshold_low": 30,
+    "threshold_critical": 10,
+    "high_output_bonus": 0.2,
+    "mid_output_penalty": 0,
+    "low_output_penalty": -0.2,
+    "critical_output_penalty": -0.5,
+    "low_revolt_chance": 0.15,
+    "critical_uprising_chance": 0.20,
+    "building_effect": {"shrine": 9, "academy": 6, "palace": 15},
+    "garrison_effect_per_unit": 6,
+    "culture_mismatch_penalty": -15,
+    "low_morale_threshold": 30,
+    "low_morale_stability_penalty": -3,
+    "city_captured_penalty": -30,
+    "war_recovery_per_turn": 3
+  },
+  "tax": {
+    "min_rate": 0.1,
+    "max_rate": 0.5,
+    "default_rate": 0.3,
+    "current_efficiency": 1.0,
+    "efficiency_formula_reserved": "rate / 0.3"
   },
   "supply": {
     "food_loss_per_turn": 0.05,
@@ -74,10 +110,26 @@
   },
   "culture": {
     "spread_rate": 0.05,
-    "distance_decay": {"1": 1.0, "2": 0.3},
+    "distance_decay": {"1": 1.0, "2": 0.7, "3": 0.4, "4": 0.2},
     "flip_threshold": 0.5,
     "victory_ratio": 0.7,
     "victory_turns": 10
+  },
+  "victory": {
+    "cultural": {
+      "name": "文化胜利",
+      "city_ratio": 0.7,
+      "maintain_turns": 10,
+      "description": "本国文化覆盖70%城市并维持10回合"
+    },
+    "military": {
+      "name": "军事胜利",
+      "capitals_required": 6,
+      "description": "征服全部六国首都"
+    },
+    "_reserved": {
+      "_comment": "后续阶段扩展：外交胜利、经济胜利等，每条路径结构与上述一致"
+    }
   },
   "general": {
     "exp_per_level": 100,
