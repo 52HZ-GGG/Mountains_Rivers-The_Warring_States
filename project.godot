@@ -22,6 +22,7 @@ SignalBus="*res://scripts/autoload/signal_bus.gd"
 DataManager="*res://scripts/autoload/data_manager.gd"
 EventManager="*res://scripts/autoload/event_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
+DiplomacySystem="*res://scripts/autoload/diplomacy_system.gd"
 
 [display]
 

@@ -13,6 +13,8 @@ const EVENTS_PATH := "res://data/events.json"
 const BUILDINGS_PATH := "res://data/buildings.json"
 const BALANCE_PARAMS_PATH := "res://data/balance_params.json"
 const WONDERS_PATH := "res://data/wonders.json"
+const FACTIONS_PATH := "res://data/factions.json"
+const DIPLOMACY_PATH := "res://data/diplomacy.json"
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
@@ -21,6 +23,8 @@ var _events: Dictionary = {}
 var _buildings: Dictionary = {}
 var _balance_params: Dictionary = {}
 var _wonders: Dictionary = {}
+var _factions: Dictionary = {}
+var _diplomacy: Dictionary = {}
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
@@ -28,6 +32,7 @@ var _city_index: Dictionary = {}
 var _cities_by_faction: Dictionary = {}
 var _building_index: Dictionary = {}
 var _wonder_index: Dictionary = {}
+var _faction_index: Dictionary = {}
 
 
 func _ready() -> void:
@@ -44,6 +49,8 @@ func _load_all_data() -> void:
 	_buildings = _load_json(BUILDINGS_PATH)
 	_balance_params = _load_json(BALANCE_PARAMS_PATH)
 	_wonders = _load_json(WONDERS_PATH)
+	_factions = _load_json(FACTIONS_PATH)
+	_diplomacy = _load_json(DIPLOMACY_PATH)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -80,6 +87,10 @@ func _build_indices() -> void:
 	_wonder_index.clear()
 	for w in _wonders.get("wonders", []):
 		_wonder_index[w["id"]] = w
+
+	_faction_index.clear()
+	for f in _factions.get("factions", []):
+		_faction_index[f["id"]] = f
 
 
 # ============= 地形接口 =============
@@ -241,6 +252,58 @@ func get_current_season(turn_number: int) -> String:
 	return seasons[idx]
 
 
+# ============= 国家接口 =============
+
+func get_faction(faction_id: String) -> Dictionary:
+	if _faction_index.has(faction_id):
+		return _faction_index[faction_id]
+	push_warning("DataManager: 未找到国家 %s" % faction_id)
+	return {}
+
+
+func get_all_factions() -> Array:
+	return _factions.get("factions", [])
+
+
+func get_initial_relations(faction_a: String, faction_b: String) -> int:
+	var relations: Dictionary = _factions.get("initial_relations", {})
+	if relations.has(faction_a) and relations[faction_a] is Dictionary:
+		return relations[faction_a].get(faction_b, 0)
+	return 0
+
+
+func get_ai_personality(faction_id: String) -> Dictionary:
+	var faction := get_faction(faction_id)
+	return faction.get("ai_personality", {"aggression": 2, "greed": 2, "honesty": 2, "diplomacy": 2})
+
+
+# ============= 外交参数接口 =============
+
+func get_diplomacy_param(path: String) -> Variant:
+	var parts: PackedStringArray = path.split(".")
+	var current: Variant = _diplomacy
+	for part in parts:
+		if current is Dictionary and current.has(part):
+			current = current[part]
+		else:
+			push_warning("DataManager: 未找到外交参数 %s" % path)
+			return null
+	return current
+
+
+func get_gift_tiers() -> Array:
+	return _diplomacy.get("gift_tiers", [])
+
+
+func get_action_effects(action: String) -> Dictionary:
+	var effects: Dictionary = _diplomacy.get("action_effects", {})
+	return effects.get(action, {})
+
+
+func get_difficulty_settings(difficulty: String) -> Dictionary:
+	return _diplomacy.get("difficulty", {}).get(difficulty, {"resource_mod": 0.0, "initial_gold_bonus": 0})
+
+
 # ============= 学派 / 科技占位（阶段 3 实现）=============
 
 func get_school(school_id: String) -> Dictionary:
@@ -285,4 +348,14 @@ func validate_data() -> bool:
 		if not w.has("id") or not w.has("cost_gold"):
 			push_error("DataManager: 奇观数据缺少必要字段: %s" % w)
 			valid = false
+	for f in get_all_factions():
+		if not f.has("id") or not f.has("name"):
+			push_error("DataManager: 国家数据缺少必要字段: %s" % f)
+			valid = false
+		if not f.has("ai_personality"):
+			push_error("DataManager: 国家数据缺少ai_personality: %s" % f)
+			valid = false
+	if _diplomacy.is_empty():
+		push_error("DataManager: 外交参数数据为空")
+		valid = false
 	return valid
