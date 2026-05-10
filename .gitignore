@@ -56,6 +56,7 @@ Desktop.ini
 # mcp.json 因含本机绝对路径，每人不同，不入仓；模板见 .claude/mcp.json.template
 .claude/settings.json
 .claude/settings.local.json
+.claude/.claude/
 .claude/scheduled_tasks.json
 .claude/plans/
 .claude/mcp.json
