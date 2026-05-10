@@ -287,7 +287,8 @@
       "upkeep_food": 6,
       "special": "naval",
       "vision_range": 3,
-      "category": "navy"
+      "category": "navy",
+      "special_description": "水战单位：水上防御100%，攻击陆地单位伤害-50%，陆地单位攻击水军伤害-50%。陆军进入水面时，攻防各-50%，水军保持正常数值。冬季河流结冰时搁浅，无法行动。"
     },
     {
       "id": "great_wing",
@@ -303,7 +304,8 @@
       "upkeep_food": 8,
       "special": "naval",
       "vision_range": 3,
-      "category": "navy"
+      "category": "navy",
+      "special_description": "水战单位：水上防御100%，攻击陆地单位伤害-50%，陆地单位攻击水军伤害-50%。陆军进入水面时，攻防各-50%，水军保持正常数值。冬季河流结冰时搁浅，无法行动。"
     },
     {
       "id": "tower_ship",
@@ -321,7 +323,8 @@
       "upkeep_food": 12,
       "special": "naval",
       "vision_range": 3,
-      "category": "navy"
+      "category": "navy",
+      "special_description": "水战单位：水上防御100%，攻击陆地单位伤害-50%，陆地单位攻击水军伤害-50%。陆军进入水面时，攻防各-50%，水军保持正常数值。冬季河流结冰时搁浅，无法行动。"
     }
   ],
   "faction_variants": [
@@ -335,7 +338,8 @@
         "defense": 10,
         "cost_gold": 75
       },
-      "special_description": "攻防+20%，造价+50%"
+      "special_description": "攻防+20%，造价+50%",
+      "category": "infantry"
     },
     {
       "faction_id": "zhao",
@@ -345,7 +349,8 @@
       "stat_overrides": {
         "speed": 6
       },
-      "special_description": "移动力+1，可在森林正常移动"
+      "special_description": "移动力+1，可在森林正常移动",
+      "category": "cavalry"
     },
     {
       "faction_id": "qi",
@@ -356,7 +361,8 @@
         "range": 3,
         "defense": 4
       },
-      "special_description": "射程+1，但防御-30%"
+      "special_description": "射程+1，但防御-30%",
+      "category": "archer"
     },
     {
       "faction_id": "chu",
@@ -367,7 +373,8 @@
         "attack": 9,
         "defense": 9
       },
-      "special_description": "混合兵种（步+弓），在山地无视移动惩罚"
+      "special_description": "混合兵种（步+弓），在山地无视移动惩罚",
+      "category": "infantry"
     },
     {
       "faction_id": "wei",
@@ -379,7 +386,8 @@
         "defense": 9,
         "hp": 110
       },
-      "special_description": "重装步兵，每击杀敌军恢复5%兵力"
+      "special_description": "重装步兵，每击杀敌军恢复5%兵力",
+      "category": "infantry"
     },
     {
       "faction_id": "yan",
@@ -391,7 +399,8 @@
         "defense": 5,
         "range": 2
       },
-      "special_description": "骑射单位，可移动后射击"
+      "special_description": "骑射单位，可移动后射击",
+      "category": "cavalry"
     },
     {
       "faction_id": "han",
@@ -404,7 +413,8 @@
         "range": 4,
         "speed": 2
       },
-      "special_description": "超远程弩炮，攻城伤害+50%，无法近战"
+      "special_description": "超远程弩炮，攻城伤害+50%，无法近战",
+      "category": "siege"
     }
   ]
 }
