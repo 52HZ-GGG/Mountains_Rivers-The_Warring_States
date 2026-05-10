@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "schools": [
+    {
+      "id": "confucianism",
+      "name": "儒家",
+      "core_idea": "仁政、礼治",
+      "description": "以仁德教化百姓，以礼乐规范秩序，追求天下归心",
+      "global_effects": {
+        "morale_cap_bonus": 20,
+        "culture_spread_rate": 0.3
+      },
+      "special_policy": {
+        "id": "grand_ceremony",
+        "name": "祭祀大典",
+        "cost_gold": 500,
+        "duration_turns": 3,
+        "effects": {
+          "morale": 15
+        }
+      },
+      "diplomacy_modifiers": null,
+      "season_bonus": [
+        {
+          "season": ["spring", "autumn"],
+          "effect": "culture_spread",
+          "value": 0.1
+        }
+      ],
+      "general_bonus": null
+    },
+    {
+      "id": "legalism",
+      "name": "法家",
+      "core_idea": "法治、耕战",
+      "description": "以严刑峻法治国，以耕战强国富民，追求富国强兵",
+      "global_effects": {
+        "tech_speed": 0.2,
+        "recruit_efficiency": 0.2
+      },
+      "special_policy": {
+        "id": "mutual_surveillance",
+        "name": "什伍连坐",
+        "cost_gold": 300,
+        "duration_turns": 5,
+        "effects": {
+          "revolt_chance": -0.5
+        }
+      },
+      "diplomacy_modifiers": {
+        "initial_opinion": -10
+      },
+      "season_bonus": null,
+      "general_bonus": null
+    },
+    {
+      "id": "mohism",
+      "name": "墨家",
+      "core_idea": "兼爱、非攻",
+      "description": "主张兼爱非攻，善守城之术，追求和平止战",
+      "global_effects": {
+        "def_combat_bonus": 0.25,
+        "siege_cost_multiplier": 0.5
+      },
+      "special_policy": {
+        "id": "forced_ceasefire",
+        "name": "止战之殇",
+        "cost_gold": 800,
+        "duration_turns": 3,
+        "effects": {
+          "force_ceasefire": true
+        }
+      },
+      "diplomacy_modifiers": null,
+      "season_bonus": null,
+      "general_bonus": null
+    },
+    {
+      "id": "daoism",
+      "name": "道家",
+      "core_idea": "无为而治",
+      "description": "顺应自然，无为而治，追求小国寡民的恬淡之境",
+      "global_effects": {
+        "building_upkeep_multiplier": 0.5,
+        "pop_growth_bonus": 0.3
+      },
+      "special_policy": {
+        "id": "small_state",
+        "name": "小国寡民",
+        "cost_gold": 0,
+        "duration_turns": 0,
+        "condition": "city_count <= 3",
+        "effects": {
+          "all_output": 0.5
+        }
+      },
+      "diplomacy_modifiers": null,
+      "season_bonus": [
+        {
+          "season": ["winter"],
+          "effect": "food_consumption_penalty",
+          "value": -0.5
+        }
+      ],
+      "general_bonus": null
+    },
+    {
+      "id": "military",
+      "name": "兵家",
+      "core_idea": "出奇制胜",
+      "description": "兵者诡道也，以奇制胜，追求战场上的绝对优势",
+      "global_effects": {
+        "general_xp_bonus": 0.5,
+        "ambush_damage_bonus": 0.5
+      },
+      "special_policy": {
+        "id": "elite_selection",
+        "name": "精锐选拔",
+        "cost_gold": 600,
+        "duration_turns": 2,
+        "effects": {
+          "recruit_elite_unit": true
+        }
+      },
+      "diplomacy_modifiers": null,
+      "season_bonus": [
+        {
+          "season": ["summer", "autumn"],
+          "effect": "fire_attack_bonus",
+          "value": 0.2
+        }
+      ],
+      "general_bonus": {
+        "initial_skill_level": 1,
+        "recruit_with_skill": true
+      }
+    },
+    {
+      "id": "diplomacy",
+      "name": "纵横家",
+      "core_idea": "合纵连横",
+      "description": "以口舌为剑，以谋略为盾，追求不战而屈人之兵",
+      "global_effects": {
+        "diplomacy_opinion_multiplier": 0.5,
+        "alliance_cost_multiplier": 0.7
+      },
+      "special_policy": {
+        "id": "sow_discord",
+        "name": "离间计",
+        "cost_gold": 400,
+        "duration_turns": 0,
+        "effects": {
+          "target_relation": -20
+        }
+      },
+      "diplomacy_modifiers": null,
+      "season_bonus": null,
+      "general_bonus": null
+    }
+  ]
+}

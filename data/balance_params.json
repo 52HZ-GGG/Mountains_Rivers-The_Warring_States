@@ -74,10 +74,26 @@
   },
   "culture": {
     "spread_rate": 0.05,
-    "distance_decay": {"1": 1.0, "2": 0.3},
+    "distance_decay": {"1": 1.0, "2": 0.7, "3": 0.4, "4": 0.2},
     "flip_threshold": 0.5,
     "victory_ratio": 0.7,
     "victory_turns": 10
+  },
+  "victory": {
+    "cultural": {
+      "name": "文化胜利",
+      "city_ratio": 0.7,
+      "maintain_turns": 10,
+      "description": "本国文化覆盖70%城市并维持10回合"
+    },
+    "military": {
+      "name": "军事胜利",
+      "capitals_required": 6,
+      "description": "征服全部六国首都"
+    },
+    "_reserved": {
+      "_comment": "后续阶段扩展：外交胜利、经济胜利等，每条路径结构与上述一致"
+    }
   },
   "general": {
     "exp_per_level": 100,

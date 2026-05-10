@@ -11,7 +11,12 @@
       "ranged_accuracy_mod": 0,
       "cavalry_allowed": true,
       "is_navigable": false,
-      "special": null
+      "special": null,
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null
     },
     {
       "id": "forest",
@@ -23,7 +28,12 @@
       "ranged_accuracy_mod": -20,
       "cavalry_allowed": true,
       "is_navigable": false,
-      "special": null
+      "special": null,
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null
     },
     {
       "id": "mountain",
@@ -35,7 +45,15 @@
       "ranged_accuracy_mod": 10,
       "cavalry_allowed": false,
       "is_navigable": false,
-      "special": null
+      "special": null,
+      "is_barrier": true,
+      "barrier_type": "mountain",
+      "crossing_rules": {
+        "move_cost_add": 99,
+        "atk_mod": -0.5
+      },
+      "tech_overrides": ["plank_road"],
+      "buildable_structures": null
     },
     {
       "id": "river",
@@ -48,7 +66,15 @@
       "cavalry_allowed": false,
       "is_navigable": true,
       "frozen_season": "winter",
-      "special": null
+      "special": null,
+      "is_barrier": true,
+      "barrier_type": "river",
+      "crossing_rules": {
+        "move_cost_add": 3,
+        "atk_mod": -0.3
+      },
+      "tech_overrides": ["bridge", "pontoon"],
+      "buildable_structures": null
     },
     {
       "id": "marsh",
@@ -60,7 +86,12 @@
       "ranged_accuracy_mod": -10,
       "cavalry_allowed": true,
       "is_navigable": false,
-      "special": null
+      "special": null,
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null
     },
     {
       "id": "pass",
@@ -72,7 +103,15 @@
       "ranged_accuracy_mod": 15,
       "cavalry_allowed": true,
       "is_navigable": false,
-      "special": "pass"
+      "special": "pass",
+      "is_barrier": true,
+      "barrier_type": "pass",
+      "crossing_rules": {
+        "atk_mod": -0.5,
+        "def_bonus": 0.5
+      },
+      "tech_overrides": null,
+      "buildable_structures": ["arrow_tower"]
     },
     {
       "id": "ford",
@@ -84,7 +123,12 @@
       "ranged_accuracy_mod": -5,
       "cavalry_allowed": true,
       "is_navigable": false,
-      "special": "ford"
+      "special": "ford",
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null
     }
   ]
 }
