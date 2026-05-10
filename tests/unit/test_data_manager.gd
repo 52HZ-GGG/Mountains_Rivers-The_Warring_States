@@ -15,12 +15,14 @@ func test_terrains_loaded() -> void:
 
 func test_unit_types_loaded() -> void:
 	var units := DataManager.get_all_unit_types()
-	assert_eq(units.size(), 7, "应有 7 种基础兵种（步/弓/弩/骑/战车/水军/攻城器械）")
+	# 决策 39：新增枪刺兵（spear）作为反骑兵专业兵种
+	assert_eq(units.size(), 8, "应有 8 种基础兵种（步/弓/弩/骑/战车/水军/攻城器械/枪刺兵）")
 
 
 func test_cities_loaded() -> void:
 	var cities := DataManager.get_all_cities()
-	assert_eq(cities.size(), 14, "应有 14 座城市（七国各 2 城）")
+	# 决策 43：城市从 14 扩展到 50（七国 47 + 中立 3）
+	assert_eq(cities.size(), 50, "应有 50 座城市（七国 47 + 中立 3）")
 
 
 # ============= ID 查询 =============
@@ -74,7 +76,8 @@ func test_faction_variant_no_match_returns_base() -> void:
 
 func test_get_faction_cities_qin() -> void:
 	var qin_cities := DataManager.get_faction_cities("qin")
-	assert_eq(qin_cities.size(), 2, "秦国应有 2 座城市")
+	# 决策 43：按历史疆域面积分配，秦国 8 城
+	assert_eq(qin_cities.size(), 8, "秦国应有 8 座城市")
 
 
 func test_get_capital_qin() -> void:
@@ -87,4 +90,5 @@ func test_get_capital_qin() -> void:
 
 func test_map_size() -> void:
 	var size := DataManager.get_map_size()
-	assert_eq(size, Vector2i(20, 15), "地图应为 20×15")
+	# 决策 43：地图从 20×15（300 格）扩大到 30×20（600 格）
+	assert_eq(size, Vector2i(30, 20), "地图应为 30×20")
