@@ -8,6 +8,10 @@ func _ready() -> void:
 	var diplomacy_button := $DiplomacyButton
 	diplomacy_button.pressed.connect(_on_diplomacy_button_pressed)
 
+	# 连接科技按钮
+	var tech_button := $TechButton
+	tech_button.pressed.connect(_on_tech_button_pressed)
+
 	# 初始化游戏（默认7国，玩家为秦）
 	_init_game()
 
@@ -23,3 +27,8 @@ func _init_game() -> void:
 func _on_diplomacy_button_pressed() -> void:
 	var panel := $DiplomacyPanel
 	panel.open()
+
+
+func _on_tech_button_pressed() -> void:
+	var panel := $TechTreePanel
+	panel.visible = not panel.visible

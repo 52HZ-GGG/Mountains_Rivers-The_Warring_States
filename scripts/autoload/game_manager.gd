@@ -106,6 +106,7 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_init_player_resources()
 	_init_ai_factions()
 	DiplomacySystem.initialize(active_factions)
+	TechSystem.reset()
 	_change_phase(Phase.TURN_START)
 	SignalBus.turn_started.emit(_turn_number, get_current_faction())
 	_change_phase(Phase.ACTION)
@@ -146,7 +147,9 @@ func process_ai_turn() -> void:
 	_ai_economy_tick(faction_id)
 	# 2. AI外交决策（概率触发）
 	DiplomacyAI.evaluate_diplomacy(faction_id, _turn_number)
-	# 3. AI军事决策（暂留阶段1占位）
+	# 3. AI科技研究
+	_ai_research_tick(faction_id)
+	# 4. AI军事决策（暂留阶段1占位）
 	end_current_turn()
 
 
@@ -163,6 +166,35 @@ func _ai_economy_tick(faction_id: String) -> void:
 	# 基础产出
 	apply_faction_resource_delta(faction_id, "gold", 10)
 	apply_faction_resource_delta(faction_id, "iron", 5)
+
+
+func _ai_research_tick(faction_id: String) -> void:
+	var ai_techs: Dictionary = TechSystem.get_ai_researched_techs(faction_id)
+	# 按时代优先，其次按成本从高到低
+	var available: Array = []
+	for tech in DataManager.get_all_techs():
+		var tech_id: String = tech["id"]
+		if ai_techs.has(tech_id):
+			continue
+		var can_research := true
+		for prereq in tech.get("prerequisites", []):
+			if not ai_techs.has(prereq):
+				can_research = false
+				break
+		if can_research:
+			available.append(tech)
+	if available.is_empty():
+		return
+	# 排序：晚期 > 中期 > 早期，同时代按成本降序
+	var era_priority := {"late": 3, "mid": 2, "early": 1}
+	available.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var ea: int = era_priority.get(a.get("era", ""), 0)
+		var eb: int = era_priority.get(b.get("era", ""), 0)
+		if ea != eb:
+			return ea > eb
+		return a.get("cost_gold", 0) > b.get("cost_gold", 0)
+	)
+	TechSystem.start_ai_research(faction_id, available[0]["id"])
 
 
 # ============= 胜利条件 =============
