@@ -13,7 +13,8 @@
       "cost_food": 20,
       "cost_iron": 10,
       "upkeep_food": 5,
-      "special": null
+      "special": null,
+      "vision_range": 2
     },
     {
       "id": "archer",
@@ -27,7 +28,8 @@
       "cost_food": 15,
       "cost_iron": 15,
       "upkeep_food": 4,
-      "special": "ranged"
+      "special": "ranged",
+      "vision_range": 2
     },
     {
       "id": "cavalry",
@@ -43,7 +45,8 @@
       "cost_horse": 5,
       "cost_refined_iron": 0,
       "upkeep_food": 8,
-      "special": "charge"
+      "special": "charge",
+      "vision_range": 2
     },
     {
       "id": "chariot",
@@ -57,7 +60,8 @@
       "cost_food": 40,
       "cost_iron": 40,
       "upkeep_food": 12,
-      "special": "trample"
+      "special": "trample",
+      "vision_range": 2
     },
     {
       "id": "crossbow",
@@ -71,11 +75,12 @@
       "cost_food": 15,
       "cost_iron": 25,
       "upkeep_food": 5,
-      "special": "ranged"
+      "special": "ranged",
+      "vision_range": 2
     },
     {
-      "id": "navy",
-      "name": "水军",
+      "id": "mengchong",
+      "name": "蒙冲",
       "attack": 10,
       "defense": 7,
       "hp": 90,
@@ -85,11 +90,12 @@
       "cost_food": 20,
       "cost_iron": 15,
       "upkeep_food": 6,
-      "special": "naval"
+      "special": "naval",
+      "vision_range": 3
     },
     {
       "id": "siege",
-      "name": "攻城器械",
+      "name": "投石车",
       "attack": 18,
       "defense": 3,
       "hp": 60,
@@ -99,7 +105,8 @@
       "cost_food": 20,
       "cost_iron": 60,
       "upkeep_food": 6,
-      "special": "siege_bonus"
+      "special": "siege_bonus",
+      "vision_range": 2
     },
     {
       "id": "spear",
@@ -113,7 +120,8 @@
       "cost_food": 20,
       "cost_iron": 15,
       "upkeep_food": 5,
-      "special": "anti_cavalry"
+      "special": "anti_cavalry",
+      "vision_range": 2
     },
     {
       "id": "ballista",
@@ -129,7 +137,8 @@
       "cost_horse": 0,
       "cost_refined_iron": 10,
       "upkeep_food": 6,
-      "special": "siege_bonus"
+      "special": "siege_bonus",
+      "vision_range": 2
     },
     {
       "id": "iron_armored",
@@ -145,7 +154,8 @@
       "cost_horse": 0,
       "cost_refined_iron": 8,
       "upkeep_food": 7,
-      "special": "heavy_armor"
+      "special": "heavy_armor",
+      "vision_range": 2
     },
     {
       "id": "heavy_cavalry",
@@ -161,7 +171,8 @@
       "cost_horse": 10,
       "cost_refined_iron": 5,
       "upkeep_food": 12,
-      "special": "charge"
+      "special": "charge",
+      "vision_range": 2
     },
     {
       "id": "shock_cavalry",
@@ -177,7 +188,119 @@
       "cost_horse": 8,
       "cost_refined_iron": 0,
       "upkeep_food": 8,
-      "special": "momentum_attack"
+      "special": "momentum_attack",
+      "vision_range": 2
+    },
+    {
+      "id": "militia",
+      "name": "民兵",
+      "attack": 5,
+      "defense": 4,
+      "hp": 60,
+      "speed": 3,
+      "range": 1,
+      "cost_gold": 20,
+      "cost_food": 10,
+      "cost_iron": 0,
+      "upkeep_food": 2,
+      "special": null,
+      "vision_range": 2
+    },
+    {
+      "id": "battering_ram",
+      "name": "冲车",
+      "attack": 12,
+      "defense": 5,
+      "hp": 80,
+      "speed": 2,
+      "range": 1,
+      "cost_gold": 80,
+      "cost_food": 15,
+      "cost_iron": 30,
+      "upkeep_food": 4,
+      "special": "siege_bonus",
+      "vision_range": 2
+    },
+    {
+      "id": "tower_ship",
+      "name": "楼船",
+      "attack": 18,
+      "defense": 14,
+      "hp": 150,
+      "speed": 3,
+      "range": 2,
+      "cost_gold": 200,
+      "cost_food": 40,
+      "cost_iron": 60,
+      "cost_horse": 0,
+      "cost_refined_iron": 10,
+      "upkeep_food": 12,
+      "special": "naval",
+      "vision_range": 3
+    },
+    {
+      "id": "great_wing",
+      "name": "大翼",
+      "attack": 14,
+      "defense": 10,
+      "hp": 110,
+      "speed": 5,
+      "range": 2,
+      "cost_gold": 120,
+      "cost_food": 30,
+      "cost_iron": 35,
+      "upkeep_food": 8,
+      "special": "naval",
+      "vision_range": 3
+    },
+    {
+      "id": "scout_team",
+      "name": "斥候小队",
+      "attack": 3,
+      "defense": 2,
+      "hp": 40,
+      "speed": 5,
+      "range": 1,
+      "cost_gold": 25,
+      "cost_food": 8,
+      "cost_iron": 0,
+      "upkeep_food": 2,
+      "special": "recon",
+      "vision_range": 4
+    },
+    {
+      "id": "scout_cavalry",
+      "name": "斥候骑兵",
+      "attack": 5,
+      "defense": 3,
+      "hp": 50,
+      "speed": 7,
+      "range": 1,
+      "cost_gold": 50,
+      "cost_food": 15,
+      "cost_iron": 5,
+      "cost_horse": 3,
+      "cost_refined_iron": 0,
+      "upkeep_food": 4,
+      "special": "recon",
+      "vision_range": 5
+    },
+    {
+      "id": "horse_archer",
+      "name": "弓骑兵",
+      "attack": 9,
+      "defense": 4,
+      "hp": 70,
+      "speed": 6,
+      "range": 2,
+      "cost_gold": 90,
+      "cost_food": 20,
+      "cost_iron": 15,
+      "cost_horse": 6,
+      "cost_refined_iron": 0,
+      "upkeep_food": 7,
+      "special": "ranged",
+      "vision_range": 3
     }
   ],
   "faction_variants": [

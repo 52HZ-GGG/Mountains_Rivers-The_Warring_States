@@ -983,6 +983,99 @@
         "morale_value": 10,
         "culture_value": 0.2
       }
+    },
+    {
+      "id": "naval_warfare",
+      "name": "水战之法",
+      "description": "习水战之术，制蒙冲快船，往来江湖如履平地。",
+      "category": "military",
+      "era": "early",
+      "cost_gold": 100,
+      "prerequisites": [],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "mengchong"
+      }
+    },
+    {
+      "id": "great_wing_tech",
+      "name": "大翼之制",
+      "description": "大翼战船，攻守兼备。进可突阵，退可固守，水战之利器也。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 200,
+      "prerequisites": [
+        "naval_warfare"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "great_wing"
+      }
+    },
+    {
+      "id": "tower_ship_tech",
+      "name": "楼船之制",
+      "description": "楼船高耸，势如城垣。箭矢如雨，横行江海，敌舟莫敢当也。",
+      "category": "military",
+      "era": "late",
+      "cost_gold": 400,
+      "prerequisites": [
+        "great_wing_tech"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "tower_ship"
+      }
+    },
+    {
+      "id": "scout_corps",
+      "name": "斥候之制",
+      "description": "遣轻锐之士，远出侦察。知敌虚实，而后动焉。",
+      "category": "military",
+      "era": "early",
+      "cost_gold": 80,
+      "prerequisites": [],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "scout_team"
+      }
+    },
+    {
+      "id": "mounted_scout",
+      "name": "斥候骑",
+      "description": "以骑代步，侦察千里。敌未动而我先知，此兵家之要也。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 150,
+      "prerequisites": [
+        "scout_corps",
+        "cavalry_archery"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "scout_cavalry"
+      }
+    },
+    {
+      "id": "horse_archery",
+      "name": "弓骑之道",
+      "description": "骑射之术，来去如风。马上张弓，百步穿杨，胡人之长技也。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 180,
+      "prerequisites": [
+        "cavalry_archery"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "horse_archer"
+      }
     }
   ]
 }
