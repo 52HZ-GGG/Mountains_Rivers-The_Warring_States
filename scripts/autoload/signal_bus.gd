@@ -27,3 +27,23 @@ signal event_triggered(event_data: Dictionary)
 
 ## 事件结算后发出（效果已应用）。choice_id 为空串表示无选项事件
 signal event_resolved(event_id: String, choice_id: String)
+
+# ============= 外交系统 =============
+
+signal war_declared(attacker: String, defender: String)
+signal ceasefire_signed(faction_a: String, faction_b: String)
+signal treaty_signed(faction_a: String, treaty_type: String)
+signal treaty_expired(faction_a: String, treaty_type: String)
+signal treaty_broken(breaker: String, victim: String, treaty_type: String)
+signal alliance_formed(faction_a: String, faction_b: String)
+signal alliance_broken(faction_a: String, faction_b: String)
+signal vassal_established(vassal: String, master: String)
+signal vassal_escaped(vassal: String, master: String)
+signal trade_route_opened(faction_a: String, faction_b: String)
+signal opinion_changed(faction_a: String, faction_b: String, old_val: int, new_val: int)
+signal reputation_changed(faction_id: String, old_val: int, new_val: int)
+signal diplomacy_action_performed(action: String, actor: String, target: String)
+signal negotiation_started(proposer: String, target: String)
+signal negotiation_offer(proposer: String, target: String, terms: Dictionary)
+signal negotiation_accepted(proposer: String, target: String)
+signal negotiation_rejected(proposer: String, target: String)

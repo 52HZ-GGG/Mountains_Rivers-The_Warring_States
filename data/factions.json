@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "factions": [
+    {
+      "id": "qin",
+      "name": "秦国",
+      "color": "#8B0000",
+      "description": "虎狼之秦，变法图强",
+      "ai_personality": {
+        "aggression": 4,
+        "greed": 3,
+        "honesty": 2,
+        "diplomacy": 1
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    },
+    {
+      "id": "zhao",
+      "name": "赵国",
+      "color": "#4169E1",
+      "description": "胡服骑射，尚武之邦",
+      "ai_personality": {
+        "aggression": 4,
+        "greed": 2,
+        "honesty": 3,
+        "diplomacy": 2
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    },
+    {
+      "id": "qi",
+      "name": "齐国",
+      "color": "#FFD700",
+      "description": "文风鼎盛，稷下学宫",
+      "ai_personality": {
+        "aggression": 1,
+        "greed": 2,
+        "honesty": 4,
+        "diplomacy": 4
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    },
+    {
+      "id": "chu",
+      "name": "楚国",
+      "color": "#228B22",
+      "description": "浪漫主义，地广人众",
+      "ai_personality": {
+        "aggression": 2,
+        "greed": 4,
+        "honesty": 2,
+        "diplomacy": 3
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    },
+    {
+      "id": "wei",
+      "name": "魏国",
+      "color": "#4B0082",
+      "description": "武卒传统，变法先驱",
+      "ai_personality": {
+        "aggression": 3,
+        "greed": 3,
+        "honesty": 2,
+        "diplomacy": 2
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    },
+    {
+      "id": "yan",
+      "name": "燕国",
+      "color": "#2F4F4F",
+      "description": "复仇情结，坚韧不拔",
+      "ai_personality": {
+        "aggression": 3,
+        "greed": 1,
+        "honesty": 4,
+        "diplomacy": 2
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    },
+    {
+      "id": "han",
+      "name": "韩国",
+      "color": "#FF6347",
+      "description": "精工巧匠，劲弩之国",
+      "ai_personality": {
+        "aggression": 1,
+        "greed": 2,
+        "honesty": 3,
+        "diplomacy": 4
+      },
+      "default_school": null,
+      "diplomacy_modifier": {}
+    }
+  ],
+  "initial_relations": {
+    "qin":  {"zhao": -15, "qi": 0,   "chu": -20, "wei": -10, "yan": -5,  "han": -10},
+    "zhao": {"qin": -15, "qi": 5,   "chu": 0,   "wei": -5,  "yan": 10,  "han": 5},
+    "qi":   {"qin": 0,   "zhao": 5, "chu": -10, "wei": 5,   "yan": -10, "han": 5},
+    "chu":  {"qin": -20, "zhao": 0, "qi": -10,  "wei": 0,   "yan": 5,   "han": 5},
+    "wei":  {"qin": -10, "zhao": -5,"qi": 5,    "chu": 0,   "yan": 0,   "han": 10},
+    "yan":  {"qin": -5,  "zhao": 10,"qi": -10,  "chu": 5,   "wei": 0,   "han": 0},
+    "han":  {"qin": -10, "zhao": 5, "qi": 5,    "chu": 5,   "wei": 10,  "yan": 0}
+  }
+}

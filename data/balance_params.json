@@ -102,5 +102,14 @@
     "stranded_can_move": false,
     "stranded_can_initiate_attack": false,
     "stranded_can_be_attacked": true
+  },
+  "diplomacy": {
+    "opinion_min": -100,
+    "opinion_max": 100,
+    "initial_opinion": 0,
+    "reputation_min": 0,
+    "reputation_max": 100,
+    "initial_reputation": 50,
+    "border_distance_threshold": 4
   }
 }

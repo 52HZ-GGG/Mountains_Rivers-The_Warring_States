@@ -35,6 +35,12 @@ var _player_morale: int = 50
 var _player_population: int = 0
 var _player_troops: int = 0
 
+# AI 国家资源追踪（阶段2）
+var _faction_resources: Dictionary = {}  # {faction_id: {food, gold, iron, morale, population, troops}}
+
+# 难度系统（阶段2）
+var _difficulty: String = "normal"
+
 # ============= 生命周期 =============
 
 func _ready() -> void:
@@ -98,6 +104,8 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_faction_index = 0
 	_turn_number = 1
 	_init_player_resources()
+	_init_ai_factions()
+	DiplomacySystem.initialize(active_factions)
 	_change_phase(Phase.TURN_START)
 	SignalBus.turn_started.emit(_turn_number, get_current_faction())
 	_change_phase(Phase.ACTION)
@@ -131,10 +139,30 @@ func end_current_turn() -> void:
 	_change_phase(Phase.ACTION)
 
 
-## AI 行动入口。阶段 1 同步占位：直接结束回合。
+## AI 行动入口。阶段2：外交决策 + 经济简单tick。
 func process_ai_turn() -> void:
-	# TODO 阶段 1：实现简易 AI（随机选可移动单位 → 随机目标）
+	var faction_id := get_current_faction()
+	# 1. AI经济决策（性格驱动建设）
+	_ai_economy_tick(faction_id)
+	# 2. AI外交决策（概率触发）
+	DiplomacyAI.evaluate_diplomacy(faction_id, _turn_number)
+	# 3. AI军事决策（暂留阶段1占位）
 	end_current_turn()
+
+
+func _ai_economy_tick(faction_id: String) -> void:
+	var personality: Dictionary = DataManager.get_ai_personality(faction_id)
+	var res: Dictionary = get_faction_resources(faction_id)
+	if res.is_empty():
+		return
+	# 简单规则：好战型优先攒兵，保守型优先攒粮
+	if personality.get("aggression", 2) >= 3:
+		apply_faction_resource_delta(faction_id, "troops", 5)
+	else:
+		apply_faction_resource_delta(faction_id, "food", 20)
+	# 基础产出
+	apply_faction_resource_delta(faction_id, "gold", 10)
+	apply_faction_resource_delta(faction_id, "iron", 5)
 
 
 # ============= 胜利条件 =============
@@ -203,6 +231,51 @@ func reset() -> void:
 	_player_morale = 50
 	_player_population = 0
 	_player_troops = 0
+	_faction_resources.clear()
+	_difficulty = "normal"
+
+
+# ============= AI 国家资源管理 =============
+
+func get_faction_resources(faction_id: String) -> Dictionary:
+	if faction_id == _player_faction:
+		return {"food": _player_food, "gold": _player_gold, "iron": _player_iron,
+				"morale": _player_morale, "population": _player_population, "troops": _player_troops}
+	return _faction_resources.get(faction_id, {})
+
+
+func get_faction_resource(faction_id: String, resource: String) -> int:
+	var res: Dictionary = get_faction_resources(faction_id)
+	return res.get(resource, 0)
+
+
+func apply_faction_resource_delta(faction_id: String, resource: String, delta: int) -> void:
+	if faction_id == _player_faction:
+		match resource:
+			"food": apply_food_delta(delta)
+			"gold": apply_gold_delta(delta)
+			"iron": apply_iron_delta(delta)
+			"morale": apply_morale_delta(delta)
+			"population": apply_population_delta(delta)
+			"troops": apply_troops_delta(delta)
+		return
+	if not _faction_resources.has(faction_id):
+		return
+	var res: Dictionary = _faction_resources[faction_id]
+	if not res.has(resource):
+		return
+	if resource == "morale":
+		res[resource] = clampi(res[resource] + delta, 0, 100)
+	else:
+		res[resource] = max(0, res[resource] + delta)
+
+
+func get_difficulty() -> String:
+	return _difficulty
+
+
+func set_difficulty(difficulty: String) -> void:
+	_difficulty = difficulty
 
 
 # ============= 内部 =============
@@ -223,6 +296,31 @@ func _init_player_resources() -> void:
 	_player_gold = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
 	_player_iron = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
 	_player_troops = 0
+
+
+func _init_ai_factions() -> void:
+	_faction_resources.clear()
+	var diff_settings: Dictionary = DataManager.get_difficulty_settings(_difficulty)
+	var gold_bonus: int = diff_settings.get("initial_gold_bonus", 0)
+	var res_mod: float = diff_settings.get("resource_mod", 0.0)
+
+	for fid in _active_factions:
+		if fid == _player_faction:
+			continue
+		var capital: Dictionary = DataManager.get_capital(fid)
+		var population: int = capital.get("base_population", 10000) if not capital.is_empty() else 10000
+		var base_food: int = int(population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
+		var base_gold: int = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
+		var base_iron: int = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
+		# 应用难度修正
+		_faction_resources[fid] = {
+			"food": int(base_food * (1.0 + res_mod)),
+			"gold": int(base_gold * (1.0 + res_mod)) + gold_bonus,
+			"iron": int(base_iron * (1.0 + res_mod)),
+			"morale": 50,
+			"population": population,
+			"troops": 0
+		}
 
 
 func _change_phase(new_phase: Phase) -> void:

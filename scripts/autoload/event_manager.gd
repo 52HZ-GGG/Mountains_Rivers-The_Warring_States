@@ -35,13 +35,13 @@ func _check_and_trigger_events(timing: String, turn_number: int, faction_id: Str
 			continue
 		if _is_on_cooldown(evt["id"]):
 			continue
-		if not _check_conditions(evt["trigger"].get("conditions", {}), turn_number):
+		if not _check_conditions(evt["trigger"].get("conditions", {}), turn_number, faction_id):
 			continue
 		if randf() <= evt["trigger"]["probability"]:
 			_trigger_event(evt, faction_id)
 
 
-func _check_conditions(conditions: Dictionary, turn_number: int) -> bool:
+func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: String = "") -> bool:
 	if conditions.has("season"):
 		var current_season: String = DataManager.get_current_season(turn_number)
 		if not conditions["season"].has(current_season):
@@ -63,6 +63,14 @@ func _check_conditions(conditions: Dictionary, turn_number: int) -> bool:
 
 	if conditions.has("turn_max"):
 		if turn_number > conditions["turn_max"]:
+			return false
+
+	if conditions.has("faction"):
+		if faction_id != "" and conditions["faction"] != faction_id:
+			return false
+
+	if conditions.has("at_war_with"):
+		if faction_id != "" and not DiplomacySystem.are_at_war(faction_id, conditions["at_war_with"]):
 			return false
 
 	return true
