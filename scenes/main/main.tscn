@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://dtofojljan6um"]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/diplomacy/diplomacy_panel.tscn" id="2"]
@@ -32,10 +32,11 @@ offset_bottom = 140.0
 text = "科技"
 
 [node name="TechTreePanel" type="Control" parent="."]
-script = ExtResource("3")
 visible = false
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("3")

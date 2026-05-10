@@ -220,3 +220,150 @@ func test_start_build_failure_does_not_deduct() -> void:
 	CityManager.start_build("xianyang", "nonexistent_building")
 	assert_eq(GameManager.get_player_gold(), PLAYER_INITIAL_GOLD, "失败不应扣金")
 	assert_eq(GameManager.get_player_iron(), PLAYER_INITIAL_IRON, "失败不应扣铁")
+
+
+# ============= 子任务 3：升级接口 =============
+
+func test_can_upgrade_allowed_basic() -> void:
+	# 给咸阳手动建一座 level 1 农田
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	var result := CityManager.can_upgrade("xianyang", "farm")
+	assert_true(result["allowed"], "已建 level 1 应允许升级")
+	assert_eq(result["reason"], CityManager.REASON_OK)
+
+
+func test_can_upgrade_rejects_invalid_city() -> void:
+	var result := CityManager.can_upgrade("nonexistent", "farm")
+	assert_false(result["allowed"])
+	assert_eq(result["reason"], CityManager.REASON_INVALID_CITY)
+
+
+func test_can_upgrade_rejects_invalid_building() -> void:
+	var result := CityManager.can_upgrade("xianyang", "nonexistent_building")
+	assert_false(result["allowed"])
+	assert_eq(result["reason"], CityManager.REASON_INVALID_BUILDING)
+
+
+func test_can_upgrade_rejects_not_built() -> void:
+	# 咸阳没建过 farm，不能升级
+	var result := CityManager.can_upgrade("xianyang", "farm")
+	assert_false(result["allowed"])
+	assert_eq(result["reason"], CityManager.REASON_BUILDING_NOT_BUILT)
+
+
+func test_can_upgrade_rejects_already_queued() -> void:
+	# 已建 level 1 + 已在升级队列，不能再发起升级
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	CityManager.start_upgrade("xianyang", "farm")
+	var result := CityManager.can_upgrade("xianyang", "farm")
+	assert_false(result["allowed"])
+	assert_eq(result["reason"], CityManager.REASON_ALREADY_QUEUED)
+
+
+func test_can_upgrade_rejects_max_level() -> void:
+	# farm max_level = 3，已是 level 3 不能升
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 3})
+	var result := CityManager.can_upgrade("xianyang", "farm")
+	assert_false(result["allowed"])
+	assert_eq(result["reason"], CityManager.REASON_MAX_LEVEL_REACHED)
+
+
+func test_can_upgrade_rejects_insufficient_resources() -> void:
+	# farm 升级 1→2 = 100 × 1.5 = 150 金；给玩家只 100 金
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	GameManager.reset()
+	GameManager.apply_gold_delta(100)
+	var result := CityManager.can_upgrade("xianyang", "farm")
+	assert_false(result["allowed"])
+	assert_eq(result["reason"], CityManager.REASON_INSUFFICIENT_RESOURCES)
+
+
+# ============= start_upgrade =============
+
+func test_start_upgrade_success_returns_true() -> void:
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	var ok := CityManager.start_upgrade("xianyang", "farm")
+	assert_true(ok)
+
+
+func test_start_upgrade_deducts_upgraded_cost() -> void:
+	# farm level 1→2: cost_gold = 100 × 1.5 = 150
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	CityManager.start_upgrade("xianyang", "farm")
+	assert_eq(GameManager.get_player_gold(), PLAYER_INITIAL_GOLD - 150)
+
+
+func test_start_upgrade_adds_to_queue() -> void:
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	CityManager.start_upgrade("xianyang", "farm")
+	var queue: Array = xianyang["build_queue"]
+	assert_eq(queue.size(), 1, "升级应入队")
+	assert_eq(queue[0]["building_id"], "farm")
+
+
+# ============= 拆除 =============
+
+func test_demolish_returns_true_and_removes() -> void:
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	var ok := CityManager.demolish("xianyang", "farm")
+	assert_true(ok)
+	assert_eq((xianyang["buildings"] as Array).size(), 0, "拆除后 buildings 应为空")
+
+
+func test_demolish_nonexistent_returns_false() -> void:
+	var ok := CityManager.demolish("xianyang", "farm")
+	assert_false(ok, "未建过的不能拆")
+
+
+func test_demolish_clears_pending_upgrade() -> void:
+	# 已建 level 1 + 升级中：拆除应同时清掉 buildings 和 build_queue
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	CityManager.start_upgrade("xianyang", "farm")
+	CityManager.demolish("xianyang", "farm")
+	assert_eq((xianyang["buildings"] as Array).size(), 0, "拆除后 buildings 应为空")
+	assert_eq((xianyang["build_queue"] as Array).size(), 0, "拆除后 build_queue 应为空")
+
+
+# ============= 难度返还 =============
+
+func test_demolish_normal_refunds_half() -> void:
+	# normal 难度 ratio=0.5；farm cost_gold=100，应返 50
+	GameManager.set_difficulty("normal")
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	var gold_before := GameManager.get_player_gold()
+	CityManager.demolish("xianyang", "farm")
+	assert_eq(GameManager.get_player_gold(), gold_before + 50, "normal 应返还 50%")
+
+
+func test_demolish_easy_refunds_three_quarters() -> void:
+	# easy 难度 ratio=0.75；farm cost_gold=100，应返 75
+	GameManager.set_difficulty("easy")
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	var gold_before := GameManager.get_player_gold()
+	CityManager.demolish("xianyang", "farm")
+	assert_eq(GameManager.get_player_gold(), gold_before + 75, "easy 应返还 75%")
+
+
+# ============= can_build 槽位回归（升级中的项不占新槽位） =============
+
+func test_can_build_slots_excludes_upgrades_in_queue() -> void:
+	# buildings=5 + 1 个已建项的升级正在队列中（占 5 槽，不是 6）
+	# 应能再建第 6 个（max=6），证明 _count_new_build_in_queue 排除了升级项
+	var xianyang := CityManager.get_city_state("xianyang")
+	var buildings: Array = xianyang["buildings"]
+	for bid in ["farm", "market", "mine", "barracks", "wall"]:
+		buildings.append({"building_id": bid, "level": 1})
+	CityManager.start_upgrade("xianyang", "farm")  # farm 入升级队列
+	var result := CityManager.can_build("xianyang", "shrine")
+	assert_true(result["allowed"], "升级中的不应占新槽位，应允许建第 6 个")
