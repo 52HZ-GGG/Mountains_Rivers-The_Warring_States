@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python tools/gen_battle_scene.py)",
-      "Bash(pip show *)",
-      "Bash(python scripts/generate_battle_assets.py)"
-    ]
-  }
-}

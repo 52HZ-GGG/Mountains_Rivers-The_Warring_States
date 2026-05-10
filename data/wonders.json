@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "wonders": [
+    {
+      "id": "terracotta_army",
+      "name": "兵马俑",
+      "description": "千军万马，拱卫陵寝。国之重器，威震四方。",
+      "cost_gold": 800,
+      "cost_iron": 200,
+      "build_turns": 5,
+      "upkeep_gold": 15,
+      "effects": {
+        "morale_national": 10,
+        "recruit_speed_bonus": 0.20
+      },
+      "flavor_text": "秦王扫六合，虎视何雄哉。"
+    },
+    {
+      "id": "great_wall",
+      "name": "万里长城",
+      "description": "筑城万里，拒胡于外。然劳民伤财，民心浮动。",
+      "cost_gold": 1000,
+      "cost_iron": 300,
+      "build_turns": 6,
+      "upkeep_gold": 25,
+      "effects": {
+        "defense_national": 0.30,
+        "diplomacy_opinion_neighbor": -5
+      },
+      "flavor_text": "但使龙城飞将在，不教胡马度阴山。"
+    },
+    {
+      "id": "dujiangyan",
+      "name": "都江堰",
+      "description": "因势利导，化水为利。沃野千里，天府之国。",
+      "cost_gold": 600,
+      "cost_iron": 100,
+      "build_turns": 4,
+      "upkeep_gold": 10,
+      "effects": {
+        "food_production_national": 0.25,
+        "drought_immune": true
+      },
+      "flavor_text": "深淘滩，低作堰。"
+    },
+    {
+      "id": "zhengguo_qu",
+      "name": "郑国渠",
+      "description": "引泾入洛，灌溉关中。疲秦之计，反成强秦之基。",
+      "cost_gold": 500,
+      "cost_iron": 80,
+      "build_turns": 4,
+      "upkeep_gold": 8,
+      "effects": {
+        "food_production_national": 0.20,
+        "iron_production_national": 0.10
+      },
+      "flavor_text": "韩遣郑国间秦，秦用其策而益强。"
+    },
+    {
+      "id": "zhanghuatai",
+      "name": "章华台",
+      "description": "高台凌云，歌舞升平。文治之盛，四方景仰。",
+      "cost_gold": 700,
+      "cost_iron": 50,
+      "build_turns": 5,
+      "upkeep_gold": 12,
+      "effects": {
+        "morale_national": 15,
+        "culture_production_national": 0.30
+      },
+      "flavor_text": "楚灵王为章华之台，与民休息。"
+    }
+  ]
+}

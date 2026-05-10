@@ -47,6 +47,7 @@
       "ranged_accuracy_mod": 0,
       "cavalry_allowed": false,
       "is_navigable": true,
+      "frozen_season": "winter",
       "special": null
     },
     {

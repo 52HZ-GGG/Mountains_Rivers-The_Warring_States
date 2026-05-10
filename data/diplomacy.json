@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "gift_tiers": [
+    {"name": "小礼", "cost_gold": 50,  "opinion_change": 10},
+    {"name": "中礼", "cost_gold": 150, "opinion_change": 20},
+    {"name": "大礼", "cost_gold": 300, "opinion_change": 30}
+  ],
+  "action_effects": {
+    "declare_war":     {"reputation_change": -20, "opinion_change_all": -10, "opinion_change_target": -30},
+    "surprise_war":    {"reputation_change": -20, "opinion_change_all": -10, "opinion_change_target": -30},
+    "ceasefire":       {"reputation_change": 0,   "opinion_change_target": 5},
+    "non_aggression":  {"reputation_change": 5,   "opinion_change_target": 5},
+    "military_access": {"reputation_change": 0,   "opinion_change_target": 3},
+    "trade_route":     {"reputation_change": 0,   "opinion_change_target": 5},
+    "tribute":         {"reputation_change": 0,   "opinion_change_target": 10},
+    "alliance":        {"reputation_change": 5,   "opinion_change_target": 15}
+  },
+  "betrayal_effects": {
+    "reputation_change": -30,
+    "opinion_change_target": -50,
+    "opinion_change_all": -15,
+    "morale_penalty": -10,
+    "debuff_duration": 3,
+    "debuff_attack_mod": 0.9
+  },
+  "treaty_params": {
+    "non_aggression_durations": [3, 5, 10],
+    "ceasefire_durations": [3, 5, 10],
+    "war_cooldown": 5,
+    "military_access_cost_per_unit": 10,
+    "military_access_max_units": 5
+  },
+  "trade_route": {
+    "base_income": 20,
+    "reputation_bonus_threshold": 70,
+    "reputation_bonus_rate": 0.10
+  },
+  "vassal": {
+    "tribute_rate": 0.15,
+    "escape_methods": ["third_party_lobby", "reputation_escape", "wartime_escape"],
+    "reputation_escape_threshold": 30,
+    "escape_penalty_reputation": -10,
+    "escape_penalty_opinion": -20
+  },
+  "opinion_decay": {
+    "decay_interval_turns": 5,
+    "decay_amount": 1
+  },
+  "gate_open_score_formula": {
+    "opinion_weight": 0.4,
+    "gold_weight": 0.3,
+    "gold_divisor": 100,
+    "reputation_weight": 0.3,
+    "threshold": 60
+  },
+  "negotiation": {
+    "max_rounds": 3,
+    "score_per_gold": 0.01,
+    "score_per_city_base": 2,
+    "score_vassal": 3,
+    "base_accept_threshold": 3,
+    "personality_mod_aggression": 0.3,
+    "personality_mod_greed": 0.2
+  },
+  "ceasefire_conditions": {
+    "min_war_turns": 5,
+    "player_city_loss_for_ai_offer": 3,
+    "ai_troop_loss_threshold": 0.5
+  },
+  "neutral_city": {
+    "lobby_opinion_threshold": 80,
+    "cost_gold": 200,
+    "opinion_decline_on_annex": -20
+  },
+  "power_score": {
+    "city_weight": 50,
+    "troop_weight": 3,
+    "tech_weight": 15,
+    "morale_weight": 1,
+    "culture_weight": 1,
+    "coalition_trigger_ratio": 1.5
+  },
+  "ai_decision": {
+    "war_eval_base_chance": 0.15,
+    "war_target_weights": {"distance": 0.3, "power": 0.3, "opinion": 0.4},
+    "gift_response": "same_as_player"
+  },
+  "difficulty": {
+    "easy":   {"resource_mod": -0.3, "initial_gold_bonus": 0},
+    "normal": {"resource_mod": 0.0,  "initial_gold_bonus": 0},
+    "hard":   {"resource_mod": 0.3,  "initial_gold_bonus": 100},
+    "hell":   {"resource_mod": 0.6,  "initial_gold_bonus": 300}
+  },
+  "reputation_thresholds": {
+    "very_low": 20,
+    "low": 30,
+    "high": 70,
+    "very_high": 80
+  },
+  "reputation_effects": {
+    "very_low":  {"event": "coalition_against_player"},
+    "low":       {"trade_penalty": 0.5},
+    "high":      {"trade_bonus": 0.10},
+    "very_high": {"alliance_success_bonus": 0.30}
+  }
+}

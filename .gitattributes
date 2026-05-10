@@ -1,0 +1,70 @@
+# 行尾规范化：仓库内所有文本统一存为 LF，跨 Windows / macOS / Linux 协作不再触发 CRLF 警告
+* text=auto eol=lf
+
+# Godot 文本格式（显式声明，避免被自动检测误判为二进制）
+*.gd        text eol=lf
+*.gdshader  text eol=lf
+*.tscn      text eol=lf
+*.tres      text eol=lf
+*.escn      text eol=lf
+*.import    text eol=lf
+*.cfg       text eol=lf
+*.godot     text eol=lf
+
+# 数据与文档
+*.json      text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.csv       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# 脚本（钩子、构建脚本等）
+*.sh        text eol=lf
+*.py        text eol=lf
+
+# 图片资产（二进制：不做行尾转换、不做 diff）
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.bmp   binary
+*.tga   binary
+*.webp  binary
+*.ico   binary
+*.exr   binary
+*.hdr   binary
+
+# 音频资产
+*.ogg   binary
+*.wav   binary
+*.mp3   binary
+*.flac  binary
+*.opus  binary
+
+# 字体资产
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+
+# 3D / 模型资产
+*.glb   binary
+*.gltf  binary
+*.fbx   binary
+*.obj   binary
+*.blend binary
+
+# 压缩包与可执行
+*.zip   binary
+*.7z    binary
+*.rar   binary
+*.gz    binary
+*.exe   binary
+*.dll   binary
+*.pck   binary
+
+# Godot 二进制资源
+*.scn   binary
+*.res   binary
+*.ctex  binary
