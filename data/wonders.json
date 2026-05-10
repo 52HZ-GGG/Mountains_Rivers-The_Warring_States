@@ -70,6 +70,21 @@
         "culture_production_national": 0.30
       },
       "flavor_text": "楚灵王为章华之台，与民休息。"
+    },
+    {
+      "id": "jixia_academy",
+      "name": "稷下学宫",
+      "description": "齐国稷下学宫，百家云集之地。孟子、荀子、邹衍皆曾讲学于此。",
+      "cost_gold": 600,
+      "cost_iron": 50,
+      "build_turns": 4,
+      "upkeep_gold": 10,
+      "effects": {
+        "culture_production_national": 0.20,
+        "research_speed_bonus": 0.15,
+        "morale_national": 5
+      },
+      "flavor_text": "稷下学宫，百家争鸣。道儒墨法，各展所长。"
     }
   ]
 }

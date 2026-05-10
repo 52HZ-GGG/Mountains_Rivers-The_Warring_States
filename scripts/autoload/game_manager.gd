@@ -34,6 +34,8 @@ var _player_iron: int = 0
 var _player_morale: int = 50
 var _player_population: int = 0
 var _player_troops: int = 0
+var _player_horse: int = 0
+var _player_refined_iron: int = 0
 
 # AI 国家资源追踪（阶段2）
 var _faction_resources: Dictionary = {}  # {faction_id: {food, gold, iron, morale, population, troops}}
@@ -248,6 +250,22 @@ func apply_troops_delta(delta: int) -> void:
 	_player_troops = max(0, _player_troops + delta)
 
 
+func get_player_horse() -> int:
+	return _player_horse
+
+
+func get_player_refined_iron() -> int:
+	return _player_refined_iron
+
+
+func apply_horse_delta(delta: int) -> void:
+	_player_horse = max(0, _player_horse + delta)
+
+
+func apply_refined_iron_delta(delta: int) -> void:
+	_player_refined_iron = max(0, _player_refined_iron + delta)
+
+
 # ============= 测试与重开 =============
 
 ## 重置到初始状态。供单元测试与「重新开局」使用。
@@ -263,6 +281,8 @@ func reset() -> void:
 	_player_morale = 50
 	_player_population = 0
 	_player_troops = 0
+	_player_horse = 0
+	_player_refined_iron = 0
 	_faction_resources.clear()
 	_difficulty = "normal"
 
@@ -272,7 +292,8 @@ func reset() -> void:
 func get_faction_resources(faction_id: String) -> Dictionary:
 	if faction_id == _player_faction:
 		return {"food": _player_food, "gold": _player_gold, "iron": _player_iron,
-				"morale": _player_morale, "population": _player_population, "troops": _player_troops}
+				"morale": _player_morale, "population": _player_population, "troops": _player_troops,
+				"horse": _player_horse, "refined_iron": _player_refined_iron}
 	return _faction_resources.get(faction_id, {})
 
 
@@ -290,6 +311,8 @@ func apply_faction_resource_delta(faction_id: String, resource: String, delta: i
 			"morale": apply_morale_delta(delta)
 			"population": apply_population_delta(delta)
 			"troops": apply_troops_delta(delta)
+			"horse": apply_horse_delta(delta)
+			"refined_iron": apply_refined_iron_delta(delta)
 		return
 	if not _faction_resources.has(faction_id):
 		return
@@ -321,6 +344,8 @@ func _init_player_resources() -> void:
 		_player_iron = 100
 		_player_population = 10000
 		_player_troops = 0
+		_player_horse = 0
+		_player_refined_iron = 0
 		return
 	_player_population = capital.get("base_population", 10000)
 	# 初始资源基于城市人口和基础产出
@@ -328,6 +353,8 @@ func _init_player_resources() -> void:
 	_player_gold = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
 	_player_iron = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
 	_player_troops = 0
+	_player_horse = 0
+	_player_refined_iron = 0
 
 
 func _init_ai_factions() -> void:
@@ -351,7 +378,9 @@ func _init_ai_factions() -> void:
 			"iron": int(base_iron * (1.0 + res_mod)),
 			"morale": 50,
 			"population": population,
-			"troops": 0
+			"troops": 0,
+			"horse": 0,
+			"refined_iron": 0
 		}
 
 

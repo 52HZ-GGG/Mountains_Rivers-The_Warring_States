@@ -10,7 +10,11 @@
       "cost_gold": 100,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "defense_bonus", "target": "infantry", "value": 0.10}
+      "effects": {
+        "type": "defense_bonus",
+        "target": "infantry",
+        "value": 0.1
+      }
     },
     {
       "id": "chariot_warfare",
@@ -19,9 +23,14 @@
       "category": "military",
       "era": "early",
       "cost_gold": 150,
-      "prerequisites": ["formation_tactics"],
+      "prerequisites": [
+        "formation_tactics"
+      ],
       "special_conditions": [],
-      "effects": {"type": "unlock_unit", "unit_id": "chariot"}
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "chariot"
+      }
     },
     {
       "id": "crossbow_basic",
@@ -30,9 +39,14 @@
       "category": "military",
       "era": "early",
       "cost_gold": 120,
-      "prerequisites": ["formation_tactics"],
+      "prerequisites": [
+        "formation_tactics"
+      ],
       "special_conditions": [],
-      "effects": {"type": "unlock_unit", "unit_id": "crossbow"}
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "crossbow"
+      }
     },
     {
       "id": "iron_forging",
@@ -43,7 +57,11 @@
       "cost_gold": 80,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "attack_bonus", "target": "all", "value": 0.05}
+      "effects": {
+        "type": "attack_bonus",
+        "target": "all",
+        "value": 0.05
+      }
     },
     {
       "id": "city_defense",
@@ -54,7 +72,10 @@
       "cost_gold": 100,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "city_defense_bonus", "value": 0.15}
+      "effects": {
+        "type": "city_defense_bonus",
+        "value": 0.15
+      }
     },
     {
       "id": "crossbow_improved",
@@ -63,9 +84,15 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 200,
-      "prerequisites": ["crossbow_basic"],
+      "prerequisites": [
+        "crossbow_basic"
+      ],
       "special_conditions": [],
-      "effects": {"type": "attack_bonus", "target": "crossbow", "value": 0.15}
+      "effects": {
+        "type": "attack_bonus",
+        "target": "crossbow",
+        "value": 0.15
+      }
     },
     {
       "id": "cavalry_archery",
@@ -74,9 +101,14 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 200,
-      "prerequisites": ["chariot_warfare"],
+      "prerequisites": [
+        "chariot_warfare"
+      ],
       "special_conditions": [],
-      "effects": {"type": "unlock_unit", "unit_id": "cavalry"}
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "cavalry"
+      }
     },
     {
       "id": "stratagem_warfare",
@@ -85,9 +117,16 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 250,
-      "prerequisites": ["formation_tactics", "crossbow_basic"],
+      "prerequisites": [
+        "formation_tactics",
+        "crossbow_basic"
+      ],
       "special_conditions": [],
-      "effects": {"type": "attack_bonus", "target": "all", "value": 0.10}
+      "effects": {
+        "type": "attack_bonus",
+        "target": "all",
+        "value": 0.1
+      }
     },
     {
       "id": "siege_warfare",
@@ -96,9 +135,14 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 220,
-      "prerequisites": ["city_defense"],
+      "prerequisites": [
+        "city_defense"
+      ],
       "special_conditions": [],
-      "effects": {"type": "siege_bonus", "value": 0.20}
+      "effects": {
+        "type": "siege_bonus",
+        "value": 0.2
+      }
     },
     {
       "id": "iron_armor",
@@ -107,9 +151,14 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 180,
-      "prerequisites": ["iron_forging"],
+      "prerequisites": [
+        "iron_forging"
+      ],
       "special_conditions": [],
-      "effects": {"type": "defense_bonus", "target": "infantry", "value": 0.15}
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "iron_armored"
+      }
     },
     {
       "id": "bridge_building",
@@ -118,9 +167,15 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 180,
-      "prerequisites": ["city_defense"],
+      "prerequisites": [
+        "city_defense"
+      ],
       "special_conditions": [],
-      "effects": {"type": "terrain_traversal", "terrain": "river_narrow", "value": true}
+      "effects": {
+        "type": "terrain_traversal",
+        "terrain": "river_narrow",
+        "value": true
+      }
     },
     {
       "id": "plank_road",
@@ -129,9 +184,64 @@
       "category": "military",
       "era": "mid",
       "cost_gold": 200,
-      "prerequisites": ["city_defense"],
+      "prerequisites": [
+        "city_defense"
+      ],
       "special_conditions": [],
-      "effects": {"type": "terrain_traversal", "terrain": "mountain", "value": true}
+      "effects": {
+        "type": "terrain_traversal",
+        "terrain": "mountain",
+        "value": true
+      }
+    },
+    {
+      "id": "ballista_tech",
+      "name": "弩炮之制",
+      "description": "发机如雷，所中皆摧。弩炮之威，城垣为之崩。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 250,
+      "prerequisites": [
+        "crossbow_improved",
+        "siege_warfare"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "ballista"
+      }
+    },
+    {
+      "id": "heavy_cavalry_tech",
+      "name": "重骑之制",
+      "description": "铁骑如山，冲阵无前。重甲利刃，所向披靡。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 220,
+      "prerequisites": [
+        "cavalry_archery"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "heavy_cavalry"
+      }
+    },
+    {
+      "id": "shock_cavalry_tech",
+      "name": "奇袭轻骑",
+      "description": "轻骑如风，出其不意。千里奔袭，一击必杀。",
+      "category": "military",
+      "era": "late",
+      "cost_gold": 280,
+      "prerequisites": [
+        "cavalry_archery"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "unlock_unit",
+        "unit_id": "shock_cavalry"
+      }
     },
     {
       "id": "repeating_crossbow",
@@ -140,9 +250,15 @@
       "category": "military",
       "era": "late",
       "cost_gold": 300,
-      "prerequisites": ["crossbow_improved"],
+      "prerequisites": [
+        "crossbow_improved"
+      ],
       "special_conditions": [],
-      "effects": {"type": "unlock_unit", "unit_id": "repeating_crossbow"}
+      "effects": {
+        "type": "attack_bonus",
+        "target": "crossbow",
+        "value": 0.15
+      }
     },
     {
       "id": "pontoon_bridge",
@@ -151,9 +267,15 @@
       "category": "military",
       "era": "late",
       "cost_gold": 280,
-      "prerequisites": ["bridge_building"],
+      "prerequisites": [
+        "bridge_building"
+      ],
       "special_conditions": [],
-      "effects": {"type": "terrain_traversal", "terrain": "river_wide", "value": true}
+      "effects": {
+        "type": "terrain_traversal",
+        "terrain": "river_wide",
+        "value": true
+      }
     },
     {
       "id": "fortress_assault",
@@ -162,9 +284,15 @@
       "category": "military",
       "era": "late",
       "cost_gold": 320,
-      "prerequisites": ["siege_warfare", "bridge_building"],
+      "prerequisites": [
+        "siege_warfare",
+        "bridge_building"
+      ],
       "special_conditions": [],
-      "effects": {"type": "siege_bonus", "value": 0.25}
+      "effects": {
+        "type": "siege_bonus",
+        "value": 0.25
+      }
     },
     {
       "id": "hu_cavalry_reform",
@@ -173,9 +301,20 @@
       "category": "military",
       "era": "late",
       "cost_gold": 300,
-      "prerequisites": ["cavalry_archery"],
-      "special_conditions": [{"type": "city_control", "city_id": "handan"}],
-      "effects": {"type": "attack_bonus", "target": "cavalry", "value": 0.20}
+      "prerequisites": [
+        "cavalry_archery"
+      ],
+      "special_conditions": [
+        {
+          "type": "city_control",
+          "city_id": "handan"
+        }
+      ],
+      "effects": {
+        "type": "attack_bonus",
+        "target": "cavalry",
+        "value": 0.2
+      }
     },
     {
       "id": "terracotta_array",
@@ -184,9 +323,16 @@
       "category": "military",
       "era": "late",
       "cost_gold": 350,
-      "prerequisites": ["stratagem_warfare", "iron_armor"],
+      "prerequisites": [
+        "stratagem_warfare",
+        "iron_armor"
+      ],
       "special_conditions": [],
-      "effects": {"type": "defense_bonus", "target": "all", "value": 0.15}
+      "effects": {
+        "type": "defense_bonus",
+        "target": "all",
+        "value": 0.15
+      }
     },
     {
       "id": "distant_alliance",
@@ -196,8 +342,16 @@
       "era": "late",
       "cost_gold": 250,
       "prerequisites": [],
-      "special_conditions": [{"type": "reputation", "value": 70}],
-      "effects": {"type": "diplomacy_bonus", "value": 0.5}
+      "special_conditions": [
+        {
+          "type": "reputation",
+          "value": 70
+        }
+      ],
+      "effects": {
+        "type": "diplomacy_bonus",
+        "value": 0.5
+      }
     },
     {
       "id": "unify_six_kingdoms",
@@ -206,9 +360,16 @@
       "category": "military",
       "era": "late",
       "cost_gold": 500,
-      "prerequisites": ["terracotta_array", "fortress_assault"],
+      "prerequisites": [
+        "terracotta_array",
+        "fortress_assault"
+      ],
       "special_conditions": [],
-      "effects": {"type": "attack_bonus", "target": "all", "value": 0.20}
+      "effects": {
+        "type": "attack_bonus",
+        "target": "all",
+        "value": 0.2
+      }
     },
     {
       "id": "iron_plow",
@@ -219,7 +380,11 @@
       "cost_gold": 80,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "food", "value": 0.10}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "food",
+        "value": 0.1
+      }
     },
     {
       "id": "trade_route_basic",
@@ -228,9 +393,15 @@
       "category": "economy",
       "era": "early",
       "cost_gold": 100,
-      "prerequisites": ["iron_plow"],
+      "prerequisites": [
+        "iron_plow"
+      ],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "gold", "value": 0.10}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "gold",
+        "value": 0.1
+      }
     },
     {
       "id": "salt_iron_debate",
@@ -241,7 +412,11 @@
       "cost_gold": 90,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "iron", "value": 0.15}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "iron",
+        "value": 0.15
+      }
     },
     {
       "id": "land_reclamation",
@@ -252,7 +427,11 @@
       "cost_gold": 100,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "food", "value": 0.10}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "food",
+        "value": 0.1
+      }
     },
     {
       "id": "dujiangyan_irrigation",
@@ -261,9 +440,21 @@
       "category": "economy",
       "era": "mid",
       "cost_gold": 250,
-      "prerequisites": ["land_reclamation"],
-      "special_conditions": [{"type": "city_control", "city_id": "chengdu"}],
-      "effects": {"type": "resource_bonus", "resource": "food", "value": 0.15}
+      "prerequisites": [
+        "land_reclamation"
+      ],
+      "special_conditions": [
+        {
+          "type": "city_control",
+          "city_id": "chengdu"
+        }
+      ],
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "food",
+        "value": 0.15,
+        "disaster_resist": 0.3
+      }
     },
     {
       "id": "zhengguo_canal",
@@ -272,9 +463,21 @@
       "category": "economy",
       "era": "mid",
       "cost_gold": 250,
-      "prerequisites": ["land_reclamation"],
-      "special_conditions": [{"type": "city_control", "city_id": "xianyang"}],
-      "effects": {"type": "resource_bonus", "resource": "food", "value": 0.15}
+      "prerequisites": [
+        "land_reclamation"
+      ],
+      "special_conditions": [
+        {
+          "type": "city_control",
+          "city_id": "xianyang"
+        }
+      ],
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "food",
+        "value": 0.15,
+        "disaster_resist": 0.3
+      }
     },
     {
       "id": "currency_unification",
@@ -283,9 +486,14 @@
       "category": "economy",
       "era": "mid",
       "cost_gold": 200,
-      "prerequisites": ["trade_route_basic"],
+      "prerequisites": [
+        "trade_route_basic"
+      ],
       "special_conditions": [],
-      "effects": {"type": "trade_bonus", "value": 0.20}
+      "effects": {
+        "type": "trade_bonus",
+        "value": 0.2
+      }
     },
     {
       "id": "pass_taxation",
@@ -294,9 +502,16 @@
       "category": "economy",
       "era": "mid",
       "cost_gold": 180,
-      "prerequisites": ["trade_route_basic", "salt_iron_debate"],
+      "prerequisites": [
+        "trade_route_basic",
+        "salt_iron_debate"
+      ],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "gold", "value": 0.25}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "gold",
+        "value": 0.25
+      }
     },
     {
       "id": "agriculture_priority",
@@ -307,7 +522,13 @@
       "cost_gold": 150,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus_malus", "bonus_resource": "food", "bonus_value": 0.20, "malus_resource": "gold", "malus_value": -0.10}
+      "effects": {
+        "type": "resource_bonus_malus",
+        "bonus_resource": "food",
+        "bonus_value": 0.2,
+        "malus_resource": "gold",
+        "malus_value": -0.1
+      }
     },
     {
       "id": "unified_weights",
@@ -316,9 +537,15 @@
       "category": "economy",
       "era": "late",
       "cost_gold": 300,
-      "prerequisites": ["currency_unification"],
+      "prerequisites": [
+        "currency_unification"
+      ],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "gold", "value": 0.15}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "gold",
+        "value": 0.15
+      }
     },
     {
       "id": "equal_field_system",
@@ -327,9 +554,15 @@
       "category": "economy",
       "era": "late",
       "cost_gold": 280,
-      "prerequisites": ["dujiangyan_irrigation"],
+      "prerequisites": [
+        "dujiangyan_irrigation"
+      ],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "food", "value": 0.20}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "food",
+        "value": 0.2
+      }
     },
     {
       "id": "salt_iron_monopoly",
@@ -338,9 +571,18 @@
       "category": "economy",
       "era": "late",
       "cost_gold": 350,
-      "prerequisites": ["pass_taxation", "unified_weights"],
+      "prerequisites": [
+        "pass_taxation",
+        "unified_weights"
+      ],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus_multi", "resources": {"iron": 0.20, "gold": 0.20}}
+      "effects": {
+        "type": "resource_bonus_multi",
+        "resources": {
+          "iron": 0.2,
+          "gold": 0.2
+        }
+      }
     },
     {
       "id": "qin_half_liang",
@@ -349,9 +591,20 @@
       "category": "economy",
       "era": "late",
       "cost_gold": 350,
-      "prerequisites": ["unified_weights"],
-      "special_conditions": [{"type": "city_control", "city_id": "xianyang"}],
-      "effects": {"type": "resource_bonus", "resource": "gold", "value": 0.25}
+      "prerequisites": [
+        "unified_weights"
+      ],
+      "special_conditions": [
+        {
+          "type": "city_control",
+          "city_id": "xianyang"
+        }
+      ],
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "gold",
+        "value": 0.25
+      }
     },
     {
       "id": "sericulture",
@@ -362,7 +615,11 @@
       "cost_gold": 60,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "gold", "value": 0.05}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "gold",
+        "value": 0.05
+      }
     },
     {
       "id": "folk_medicine",
@@ -373,7 +630,10 @@
       "cost_gold": 80,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "healing_bonus", "value": 0.15}
+      "effects": {
+        "type": "healing_bonus",
+        "value": 0.15
+      }
     },
     {
       "id": "private_academy",
@@ -382,9 +642,14 @@
       "category": "livelihood",
       "era": "early",
       "cost_gold": 100,
-      "prerequisites": ["sericulture"],
+      "prerequisites": [
+        "sericulture"
+      ],
       "special_conditions": [],
-      "effects": {"type": "culture_bonus", "value": 0.10}
+      "effects": {
+        "type": "culture_bonus",
+        "value": 0.1
+      }
     },
     {
       "id": "rites_music",
@@ -395,7 +660,10 @@
       "cost_gold": 80,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "morale_bonus", "value": 5}
+      "effects": {
+        "type": "morale_bonus",
+        "value": 5
+      }
     },
     {
       "id": "confucian_teaching",
@@ -404,9 +672,15 @@
       "category": "livelihood",
       "era": "mid",
       "cost_gold": 180,
-      "prerequisites": ["private_academy"],
+      "prerequisites": [
+        "private_academy"
+      ],
       "special_conditions": [],
-      "effects": {"type": "morale_opinion_bonus", "morale_value": 10, "opinion_value": 5}
+      "effects": {
+        "type": "morale_opinion_bonus",
+        "morale_value": 10,
+        "opinion_value": 5
+      }
     },
     {
       "id": "legalist_governance",
@@ -417,7 +691,10 @@
       "cost_gold": 150,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "security_bonus", "value": 0.15}
+      "effects": {
+        "type": "security_bonus",
+        "value": 0.15
+      }
     },
     {
       "id": "hundred_schools",
@@ -426,9 +703,20 @@
       "category": "livelihood",
       "era": "mid",
       "cost_gold": 250,
-      "prerequisites": ["private_academy", "rites_music"],
-      "special_conditions": [{"type": "building", "building_id": "jixia_academy"}],
-      "effects": {"type": "culture_bonus", "value": 0.30}
+      "prerequisites": [
+        "private_academy",
+        "rites_music"
+      ],
+      "special_conditions": [
+        {
+          "type": "building",
+          "building_id": "jixia_academy"
+        }
+      ],
+      "effects": {
+        "type": "culture_bonus",
+        "value": 0.3
+      }
     },
     {
       "id": "court_historian",
@@ -437,9 +725,14 @@
       "category": "livelihood",
       "era": "mid",
       "cost_gold": 120,
-      "prerequisites": ["rites_music"],
+      "prerequisites": [
+        "rites_music"
+      ],
       "special_conditions": [],
-      "effects": {"type": "event_chance_bonus", "value": 0.15}
+      "effects": {
+        "type": "event_chance_bonus",
+        "value": 0.15
+      }
     },
     {
       "id": "textual_legacy",
@@ -448,9 +741,14 @@
       "category": "livelihood",
       "era": "late",
       "cost_gold": 250,
-      "prerequisites": ["legalist_governance"],
+      "prerequisites": [
+        "legalist_governance"
+      ],
       "special_conditions": [],
-      "effects": {"type": "research_speed_bonus", "value": 0.15}
+      "effects": {
+        "type": "research_speed_bonus",
+        "value": 0.15
+      }
     },
     {
       "id": "name_penalty_theory",
@@ -459,9 +757,16 @@
       "category": "livelihood",
       "era": "late",
       "cost_gold": 280,
-      "prerequisites": ["legalist_governance", "confucian_teaching"],
+      "prerequisites": [
+        "legalist_governance",
+        "confucian_teaching"
+      ],
       "special_conditions": [],
-      "effects": {"type": "security_morale_bonus", "security_value": 0.20, "morale_value": -5}
+      "effects": {
+        "type": "security_morale_bonus",
+        "security_value": 0.2,
+        "morale_value": -5
+      }
     },
     {
       "id": "unified_script",
@@ -470,9 +775,19 @@
       "category": "livelihood",
       "era": "late",
       "cost_gold": 300,
-      "prerequisites": ["hundred_schools"],
-      "special_conditions": [{"type": "city_control", "city_id": "xianyang"}],
-      "effects": {"type": "culture_bonus", "value": 0.25}
+      "prerequisites": [
+        "hundred_schools"
+      ],
+      "special_conditions": [
+        {
+          "type": "city_control",
+          "city_id": "xianyang"
+        }
+      ],
+      "effects": {
+        "type": "culture_bonus",
+        "value": 0.25
+      }
     },
     {
       "id": "stone_inscriptions",
@@ -481,9 +796,20 @@
       "category": "livelihood",
       "era": "late",
       "cost_gold": 350,
-      "prerequisites": ["unified_script"],
-      "special_conditions": [{"type": "reputation", "value": 80}],
-      "effects": {"type": "morale_reputation_bonus", "morale_value": 15, "reputation_value": 10}
+      "prerequisites": [
+        "unified_script"
+      ],
+      "special_conditions": [
+        {
+          "type": "reputation",
+          "value": 80
+        }
+      ],
+      "effects": {
+        "type": "morale_reputation_bonus",
+        "morale_value": 15,
+        "reputation_value": 10
+      }
     },
     {
       "id": "rammed_earth",
@@ -494,7 +820,10 @@
       "cost_gold": 100,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "wall_durability_bonus", "value": 0.15}
+      "effects": {
+        "type": "wall_durability_bonus",
+        "value": 0.15
+      }
     },
     {
       "id": "irrigation_channel",
@@ -505,7 +834,12 @@
       "cost_gold": 80,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "food", "value": 0.10}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "food",
+        "value": 0.1,
+        "disaster_resist": 0.2
+      }
     },
     {
       "id": "military_camp_expand",
@@ -516,7 +850,10 @@
       "cost_gold": 90,
       "prerequisites": [],
       "special_conditions": [],
-      "effects": {"type": "garrison_bonus", "value": 0.20}
+      "effects": {
+        "type": "garrison_bonus",
+        "value": 0.2
+      }
     },
     {
       "id": "fortified_walls",
@@ -525,9 +862,14 @@
       "category": "architecture",
       "era": "mid",
       "cost_gold": 200,
-      "prerequisites": ["rammed_earth"],
+      "prerequisites": [
+        "rammed_earth"
+      ],
       "special_conditions": [],
-      "effects": {"type": "wall_durability_bonus", "value": 0.20}
+      "effects": {
+        "type": "wall_durability_bonus",
+        "value": 0.2
+      }
     },
     {
       "id": "beacon_towers",
@@ -536,9 +878,14 @@
       "category": "architecture",
       "era": "mid",
       "cost_gold": 150,
-      "prerequisites": ["rammed_earth"],
+      "prerequisites": [
+        "rammed_earth"
+      ],
       "special_conditions": [],
-      "effects": {"type": "vision_bonus", "value": 2}
+      "effects": {
+        "type": "vision_bonus",
+        "value": 2
+      }
     },
     {
       "id": "commandery_system",
@@ -547,9 +894,16 @@
       "category": "architecture",
       "era": "mid",
       "cost_gold": 250,
-      "prerequisites": ["fortified_walls", "irrigation_channel"],
+      "prerequisites": [
+        "fortified_walls",
+        "irrigation_channel"
+      ],
       "special_conditions": [],
-      "effects": {"type": "resource_bonus", "resource": "gold", "value": 0.15}
+      "effects": {
+        "type": "resource_bonus",
+        "resource": "gold",
+        "value": 0.15
+      }
     },
     {
       "id": "horse_pastures",
@@ -558,9 +912,15 @@
       "category": "architecture",
       "era": "mid",
       "cost_gold": 180,
-      "prerequisites": ["military_camp_expand"],
+      "prerequisites": [
+        "military_camp_expand"
+      ],
       "special_conditions": [],
-      "effects": {"type": "recruit_cost_reduction", "target": "cavalry", "value": 0.20}
+      "effects": {
+        "type": "recruit_cost_reduction",
+        "target": "cavalry",
+        "value": 0.2
+      }
     },
     {
       "id": "imperial_roads",
@@ -569,9 +929,14 @@
       "category": "architecture",
       "era": "late",
       "cost_gold": 300,
-      "prerequisites": ["commandery_system"],
+      "prerequisites": [
+        "commandery_system"
+      ],
       "special_conditions": [],
-      "effects": {"type": "movement_bonus", "value": 1}
+      "effects": {
+        "type": "movement_bonus",
+        "value": 1
+      }
     },
     {
       "id": "great_wall",
@@ -580,9 +945,22 @@
       "category": "architecture",
       "era": "late",
       "cost_gold": 400,
-      "prerequisites": ["fortified_walls", "beacon_towers"],
-      "special_conditions": [{"type": "region_control", "region": "northern_border", "min_cities": 4}],
-      "effects": {"type": "border_defense_bonus", "region": "north", "value": 0.30}
+      "prerequisites": [
+        "fortified_walls",
+        "beacon_towers"
+      ],
+      "special_conditions": [
+        {
+          "type": "region_control",
+          "region": "northern_border",
+          "min_cities": 4
+        }
+      ],
+      "effects": {
+        "type": "border_defense_bonus",
+        "region": "north",
+        "value": 0.3
+      }
     },
     {
       "id": "epang_palace",
@@ -591,9 +969,20 @@
       "category": "architecture",
       "era": "late",
       "cost_gold": 400,
-      "prerequisites": ["commandery_system"],
-      "special_conditions": [{"type": "reputation", "value": 70}],
-      "effects": {"type": "morale_culture_bonus", "morale_value": 10, "culture_value": 0.20}
+      "prerequisites": [
+        "commandery_system"
+      ],
+      "special_conditions": [
+        {
+          "type": "reputation",
+          "value": 70
+        }
+      ],
+      "effects": {
+        "type": "morale_culture_bonus",
+        "morale_value": 10,
+        "culture_value": 0.2
+      }
     }
   ]
 }

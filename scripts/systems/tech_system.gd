@@ -35,6 +35,7 @@ var _wall_durability_bonus: float = 0.0
 var _border_defense_bonus: Dictionary = {}   # {region: float}
 var _diplomacy_bonus: float = 0.0
 var _recruit_cost_reduction: Dictionary = {} # {target: float}
+var _disaster_resist_bonus: float = 0.0
 
 # ============= 生命周期 =============
 
@@ -330,6 +331,12 @@ func _apply_tech_effects(tech_id: String) -> void:
 		"recruit_cost_reduction":
 			var target: String = effect.get("target", "")
 			_recruit_cost_reduction[target] = _recruit_cost_reduction.get(target, 0.0) + effect.get("value", 0.0)
+		"disaster_resist":
+			_disaster_resist_bonus += effect.get("value", 0.0)
+
+	# 处理附加效果字段（如水利工程的 disaster_resist 作为次要效果）
+	if effect.has("disaster_resist") and effect_type != "disaster_resist":
+		_disaster_resist_bonus += effect.get("disaster_resist", 0.0)
 
 
 # ============= 效果查询接口（供其他系统调用） =============
@@ -414,6 +421,10 @@ func get_recruit_cost_reduction(target: String) -> float:
 	return _recruit_cost_reduction.get(target, 0.0)
 
 
+func get_disaster_resist_bonus() -> float:
+	return _disaster_resist_bonus
+
+
 # ============= 重置 =============
 
 func reset() -> void:
@@ -443,4 +454,5 @@ func reset() -> void:
 	_border_defense_bonus.clear()
 	_diplomacy_bonus = 0.0
 	_recruit_cost_reduction.clear()
+	_disaster_resist_bonus = 0.0
 	_ai_researched_techs.clear()
