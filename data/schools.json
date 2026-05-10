@@ -8,7 +8,8 @@
       "description": "以仁德教化百姓，以礼乐规范秩序，追求天下归心",
       "global_effects": {
         "morale_cap_bonus": 20,
-        "culture_spread_rate": 0.3
+        "culture_spread_rate": 0.3,
+        "school_base_morale": 2
       },
       "special_policy": {
         "id": "grand_ceremony",
@@ -36,7 +37,8 @@
       "description": "以严刑峻法治国，以耕战强国富民，追求富国强兵",
       "global_effects": {
         "tech_speed": 0.2,
-        "recruit_efficiency": 0.2
+        "recruit_efficiency": 0.2,
+        "school_base_morale": -1
       },
       "special_policy": {
         "id": "mutual_surveillance",
@@ -60,7 +62,8 @@
       "description": "主张兼爱非攻，善守城之术，追求和平止战",
       "global_effects": {
         "def_combat_bonus": 0.25,
-        "siege_cost_multiplier": 0.5
+        "siege_cost_multiplier": 0.5,
+        "school_base_morale": 0
       },
       "special_policy": {
         "id": "forced_ceasefire",
@@ -82,7 +85,8 @@
       "description": "顺应自然，无为而治，追求小国寡民的恬淡之境",
       "global_effects": {
         "building_upkeep_multiplier": 0.5,
-        "pop_growth_bonus": 0.3
+        "pop_growth_bonus": 0.3,
+        "school_base_morale": 0
       },
       "special_policy": {
         "id": "small_state",
@@ -111,7 +115,8 @@
       "description": "兵者诡道也，以奇制胜，追求战场上的绝对优势",
       "global_effects": {
         "general_xp_bonus": 0.5,
-        "ambush_damage_bonus": 0.5
+        "ambush_damage_bonus": 0.5,
+        "school_base_morale": 0
       },
       "special_policy": {
         "id": "elite_selection",
@@ -142,7 +147,8 @@
       "description": "以口舌为剑，以谋略为盾，追求不战而屈人之兵",
       "global_effects": {
         "diplomacy_opinion_multiplier": 0.5,
-        "alliance_cost_multiplier": 0.7
+        "alliance_cost_multiplier": 0.7,
+        "school_base_morale": 0
       },
       "special_policy": {
         "id": "sow_discord",
