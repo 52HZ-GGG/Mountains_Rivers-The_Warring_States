@@ -10,7 +10,9 @@
         "type": "turn_start",
         "probability": 0.15,
         "conditions": {
-          "season": ["autumn"]
+          "season": [
+            "autumn"
+          ]
         }
       },
       "effects": {
@@ -30,7 +32,7 @@
       "category": "economy",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "morale_min": 50
         }
@@ -54,7 +56,9 @@
         "type": "turn_start",
         "probability": 0.12,
         "conditions": {
-          "season": ["summer"]
+          "season": [
+            "summer"
+          ]
         }
       },
       "effects": null,
@@ -179,7 +183,7 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "morale_max": 35
         }
@@ -263,7 +267,7 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "morale_min": 60
         }
@@ -285,9 +289,11 @@
       "category": "morale",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
-          "season": ["spring"]
+          "season": [
+            "spring"
+          ]
         }
       },
       "effects": null,
@@ -329,7 +335,10 @@
         "type": "turn_start",
         "probability": 0.08,
         "conditions": {
-          "season": ["summer", "autumn"]
+          "season": [
+            "summer",
+            "autumn"
+          ]
         }
       },
       "effects": null,
@@ -369,7 +378,7 @@
       "category": "morale",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "morale_min": 60,
           "turn_min": 3
@@ -456,7 +465,9 @@
         "type": "turn_start",
         "probability": 1.0,
         "conditions": {
-          "season": ["spring"]
+          "season": [
+            "spring"
+          ]
         }
       },
       "effects": {
@@ -478,7 +489,9 @@
         "type": "turn_start",
         "probability": 1.0,
         "conditions": {
-          "season": ["winter"]
+          "season": [
+            "winter"
+          ]
         }
       },
       "effects": null,
@@ -520,7 +533,9 @@
         "type": "turn_start",
         "probability": 1.0,
         "conditions": {
-          "season": ["autumn"]
+          "season": [
+            "autumn"
+          ]
         }
       },
       "effects": null,
@@ -560,11 +575,14 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "at_war_with": "wei",
           "troops_in_hex_range": {
-            "center": [8, 6],
+            "center": [
+              8,
+              6
+            ],
             "radius": 3,
             "both_factions": true
           }
@@ -607,11 +625,14 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "at_war_with": "zhao",
           "troops_in_hex_range": {
-            "center": [5, 8],
+            "center": [
+              5,
+              8
+            ],
             "radius": 3,
             "both_factions": true
           }
@@ -654,11 +675,14 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "at_war_with": "qin",
           "troops_in_hex_range": {
-            "center": [7, 7],
+            "center": [
+              7,
+              7
+            ],
             "radius": 3,
             "both_factions": true
           }
@@ -701,11 +725,14 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "at_war_with": "qin",
           "troops_in_hex_range": {
-            "center": [5, 8],
+            "center": [
+              5,
+              8
+            ],
             "radius": 2,
             "both_factions": true
           }
@@ -748,11 +775,14 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "at_war_with": "yan",
           "troops_in_hex_range": {
-            "center": [12, 4],
+            "center": [
+              12,
+              4
+            ],
             "radius": 3,
             "both_factions": true
           }
@@ -795,11 +825,14 @@
       "category": "military",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "at_war_with": "han",
           "troops_in_hex_range": {
-            "center": [6, 6],
+            "center": [
+              6,
+              6
+            ],
             "radius": 3,
             "both_factions": true
           }
@@ -846,7 +879,10 @@
         "conditions": {
           "at_war_with": "chu",
           "troops_in_hex_range": {
-            "center": [9, 10],
+            "center": [
+              9,
+              10
+            ],
             "radius": 4,
             "both_factions": true
           }
@@ -893,7 +929,10 @@
         "conditions": {
           "at_war_with": "qi",
           "troops_in_hex_range": {
-            "center": [11, 5],
+            "center": [
+              11,
+              5
+            ],
             "radius": 4,
             "both_factions": true
           }
@@ -1087,7 +1126,7 @@
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 12,
           "faction": "qin"
@@ -1130,7 +1169,7 @@
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 6,
           "faction": "chu"
@@ -1173,7 +1212,7 @@
       "category": "special",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 8,
           "faction": "zhao"
@@ -1216,7 +1255,7 @@
       "category": "special",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 8,
           "faction": "zhao"
@@ -1345,7 +1384,7 @@
       "category": "special",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 8,
           "faction": "qin"
@@ -1388,7 +1427,7 @@
       "category": "economy",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 6,
           "faction": "qin"
@@ -1431,7 +1470,7 @@
       "category": "economy",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 8,
           "faction": "qin"
@@ -1477,7 +1516,9 @@
         "probability": 0.08,
         "conditions": {
           "turn_min": 4,
-          "season": ["summer"]
+          "season": [
+            "summer"
+          ]
         }
       },
       "effects": null,
@@ -1521,7 +1562,9 @@
         "conditions": {
           "turn_min": 6,
           "faction": "qin",
-          "season": ["summer"]
+          "season": [
+            "summer"
+          ]
         }
       },
       "effects": null,
@@ -1564,7 +1607,9 @@
         "probability": 0.08,
         "conditions": {
           "turn_min": 3,
-          "season": ["autumn"]
+          "season": [
+            "autumn"
+          ]
         }
       },
       "effects": null,
@@ -1646,7 +1691,7 @@
       "category": "morale",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 3,
           "faction": "qi"
@@ -1732,7 +1777,7 @@
       "category": "morale",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 5,
           "faction": "wei"
@@ -1775,7 +1820,7 @@
       "category": "morale",
       "trigger": {
         "type": "turn_start",
-        "probability": 0.10,
+        "probability": 0.1,
         "conditions": {
           "turn_min": 5,
           "faction": "chu"
@@ -1810,6 +1855,354 @@
           }
         }
       ]
+    },
+    {
+      "id": "school_confucian_debate",
+      "title": "稷下论道",
+      "description": "学宫辩论盛况空前，诸子各执一词，当何以处之？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "school": "confucianism",
+          "morale_min": 60
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "支持礼治派，重修礼乐",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "支持仁政派，开仓济民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -100,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 15,
+            "population_delta": 50,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_confucian_ritual",
+      "title": "礼乐大典",
+      "description": "春祭大典如期举行，钟鼓齐鸣，民心归附。",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.2,
+        "conditions": {
+          "school": "confucianism",
+          "season": [
+            "spring"
+          ]
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": -30,
+        "iron_delta": 0,
+        "morale_delta": 12,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "school_legalist_reform",
+      "title": "变法之争",
+      "description": "变法触动旧贵族利益，朝堂争论不休。坚持还是妥协？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "school": "legalism",
+          "turn_min": 10
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "坚持变法，严惩反对者",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -8,
+            "population_delta": -30,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "适度妥协，安抚旧族",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_legalist_informant",
+      "title": "告密之风",
+      "description": "什伍连坐推行，民间人人自危，虽安却怨。",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "school": "legalism",
+          "morale_min": 50
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 20,
+        "iron_delta": 0,
+        "morale_delta": -5,
+        "population_delta": -20,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "school_mohist_siege",
+      "title": "墨守成规",
+      "description": "敌军围城，墨者登城助守。坚守待援还是出城击敌？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.2,
+        "conditions": {
+          "school": "mohism",
+          "at_war": true
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "墨者助守，坚守城垣",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -50,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 20
+          }
+        },
+        {
+          "id": "B",
+          "text": "趁夜出击，焚其粮草",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": -10
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_daoist_hermit",
+      "title": "隐士出山",
+      "description": "山中隐士闻名而来，愿献无为之策以佐国事。",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.1,
+        "conditions": {
+          "school": "daoism",
+          "morale_min": 70
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "虚心求教，纳其策",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 80,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": 8,
+            "population_delta": 30,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "赠金遣之，不受其策",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "iron_delta": 0,
+            "morale_delta": 3,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_military_spy",
+      "title": "兵者诡道",
+      "description": "斥候探得敌军虚实，战机稍纵即逝。",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.18,
+        "conditions": {
+          "school": "military",
+          "at_war": true
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "school_diplomat_betray",
+      "title": "纵横捭阖",
+      "description": "盟国暗中与敌国密谋，局势微妙。如何应对？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "school": "diplomacy",
+          "has_alliance": true
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "遣使质问，花钱化解",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -150,
+            "iron_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "反施离间，削弱其盟",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "iron_delta": 0,
+            "morale_delta": -3,
+            "population_delta": 0,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_hundred_schools",
+      "title": "百家争鸣",
+      "description": "诸国学派各异，思想碰撞激荡。兼容并蓄还是独尊一术？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 15
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "兼容并蓄，博采众长",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "iron_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 50,
+            "troops_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "独尊一术，排斥异说",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "iron_delta": 0,
+            "morale_delta": -5,
+            "population_delta": -30,
+            "troops_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_traveling_scholar",
+      "title": "游士献策",
+      "description": "一游士远道而来，献治国之策，言辞恳切。",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.1,
+        "conditions": {}
+      },
+      "effects": {
+        "food_delta": 30,
+        "gold_delta": 0,
+        "iron_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0
+      },
+      "options": null
     }
   ]
 }
