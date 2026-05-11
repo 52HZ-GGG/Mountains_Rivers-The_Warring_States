@@ -420,10 +420,7 @@
     }
   },
   "resources": {
-    "city_base_food": 100,
-    "city_base_gold": 80,
     "city_base_iron": 30,
-    "pop_food_rate": 0.01,
     "army_upkeep_gold_per_unit": 5,
     "season_food_mod": {
       "spring": 1.2,
@@ -467,6 +464,35 @@
         "description": "精铁"
       }
     }
+  },
+  "population": {
+    "food_per_pop": 3,
+    "gold_per_pop": 10,
+    "food_consume_per_pop": 1,
+    "growth_base_period": 6.67,
+    "growth_season_mod": {
+      "spring": 1.0,
+      "summer": 1.0,
+      "autumn": 1.2,
+      "winter": 0.7
+    },
+    "growth_stability_formula": "0.5 + stability / 100.0",
+    "famine_pop_loss": 1,
+    "famine_stability_loss": 10,
+    "grain_shortage_morale_loss": 5,
+    "grain_shortage_army_morale_loss": 10,
+    "grain_shortage_atk_mod": 0.8,
+    "grain_shortage_def_mod": 0.8,
+    "conscription_rate": 0.20,
+    "conscription_fill_rate": 0.10,
+    "service_penalty_threshold": 0.10,
+    "service_penalty_food_mod": 2.0,
+    "service_penalty_gold_mod": 2.0,
+    "service_penalty_growth_mod": 5.0,
+    "death_recovery_period": 4,
+    "national_grain_cap_base": 200,
+    "granary_grain_cap_bonus": 50,
+    "description": "粮食·人口·征兵机制参数（决策88-100）"
   },
   "morale": {
     "base_drift": 1,

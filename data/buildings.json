@@ -12,7 +12,7 @@
       "max_level": 3,
       "upkeep_gold": 5,
       "effects": {
-        "food_production": 50
+        "food_production_bonus": 0.1
       },
       "upgrade_cost_multiplier": 1.5
     },
@@ -27,7 +27,7 @@
       "max_level": 3,
       "upkeep_gold": 8,
       "effects": {
-        "gold_production": 40
+        "gold_production_bonus": 0.1
       },
       "upgrade_cost_multiplier": 1.5
     },
@@ -120,7 +120,7 @@
       "max_level": 1,
       "upkeep_gold": 10,
       "effects": {
-        "diplomacy_bonus": 0.10,
+        "diplomacy_bonus": 0.1,
         "intelligence_range": 1
       },
       "upgrade_cost_multiplier": 1.5,
@@ -130,15 +130,15 @@
       "id": "granary",
       "name": "粮仓",
       "description": "广积粮谷，以备荒年，仓廪充实",
-      "category": "political",
+      "category": "economic",
       "cost_gold": 100,
       "cost_iron": 0,
       "build_turns": 1,
       "max_level": 2,
       "upkeep_gold": 5,
       "effects": {
-        "food_storage_cap": 200,
-        "supply_resist_bonus": 1
+        "max_food_production": 5,
+        "national_grain_cap": 50
       },
       "upgrade_cost_multiplier": 1.5,
       "max_national_count": 2
@@ -155,7 +155,7 @@
       "upkeep_gold": 20,
       "effects": {
         "morale_bonus": 5,
-        "tax_bonus": 0.10,
+        "tax_bonus": 0.1,
         "diplomacy_reputation": 5
       },
       "upgrade_cost_multiplier": 1.5,
@@ -176,7 +176,9 @@
       },
       "upgrade_cost_multiplier": 1.5,
       "max_national_count": 3,
-      "build_requires": {"special_resource": "horse"}
+      "build_requires": {
+        "special_resource": "horse"
+      }
     },
     {
       "id": "ironworks",
@@ -193,7 +195,9 @@
       },
       "upgrade_cost_multiplier": 1.5,
       "max_national_count": 3,
-      "build_requires": {"special_resource": "iron"}
+      "build_requires": {
+        "special_resource": "iron"
+      }
     }
   ]
 }
