@@ -25,6 +25,7 @@ GameManager="*res://scripts/autoload/game_manager.gd"
 CityManager="*res://scripts/autoload/city_manager.gd"
 DiplomacySystem="*res://scripts/autoload/diplomacy_system.gd"
 TechSystem="*res://scripts/systems/tech_system.gd"
+TacticalSkirmishManager="*res://scripts/autoload/tactical_skirmish_manager.gd"
 
 [display]
 
