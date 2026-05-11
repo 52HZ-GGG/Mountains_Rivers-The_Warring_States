@@ -115,6 +115,23 @@
     "victory_ratio": 0.7,
     "victory_turns": 10
   },
+  "game_settings": {
+    "map_width": 30,
+    "map_height": 20,
+    "total_cities": 50,
+    "factions": 7,
+    "turns_per_year": 4,
+    "max_turns": 200,
+    "starting_morale": 50,
+    "starting_stability": 50
+  },
+  "defeat": {
+    "lose_all_cities": true,
+    "capital_lost": false,
+    "morale_collapse": false,
+    "time_limit_exceeded": true,
+    "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落是否直接败北（当前否）；morale_collapse: 民心归零是否败北（当前否）；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
+  },
   "victory": {
     "cultural": {
       "name": "文化胜利",
@@ -126,6 +143,23 @@
       "name": "军事胜利",
       "capitals_required": 6,
       "description": "征服全部六国首都"
+    },
+    "score": {
+      "name": "分数胜利",
+      "enabled": false,
+      "description": "达到目标分数或超时后分数最高者获胜",
+      "target_score": 1000,
+      "overtime_winner": true,
+      "score_weights": {
+        "_comment": "分数计算权重，接口预留，具体公式待设计",
+        "city_count": 0,
+        "city_population": 0,
+        "tech_count": 0,
+        "military_power": 0,
+        "culture_coverage": 0,
+        "diplomacy_reputation": 0,
+        "wonders_built": 0
+      }
     },
     "_reserved": {
       "_comment": "后续阶段扩展：外交胜利、经济胜利等，每条路径结构与上述一致"
