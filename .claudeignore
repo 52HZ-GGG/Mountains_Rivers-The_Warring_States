@@ -1,0 +1,162 @@
+# ====================
+# Claude Code 忽略清单
+# ====================
+# 目的：避免 Claude 读到大量与"理解/修改源码"无关的二进制和缓存文件，
+#       减少 "Request too large (max 32MB)" 报错。
+# 语法：与 .gitignore 一致（gitignore-style globs）。
+# 维护：新加大体量目录或新增二进制类型时，请同步更新此文件。
+
+# ====================
+# Godot 引擎缓存与自动生成文件
+# ====================
+# 编辑器缓存（≈14MB 二进制 blob，无可读信息）
+.godot/
+.import/
+
+# 资源导入元数据（全仓 173 个，每次资源变动都会重写）
+*.import
+
+# 翻译表自动生成
+*.translation
+
+# ====================
+# 版本控制 / 编辑器配置
+# ====================
+.git/
+.obsidian/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ====================
+# 第三方插件（GUT 等；通常不需要 Claude 阅读其源码）
+# 如确需读某个 addon，可临时在此加 ! 例外，例如：
+#   !addons/some-addon/README.md
+# ====================
+addons/
+
+# ====================
+# 美术资源（21MB 的大头，Claude 无法解析像素，全部忽略）
+# ====================
+photos/
+
+# 兜底：仓库其它位置出现的二进制图像 / 工程源文件
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+*.tga
+*.ico
+*.svg
+*.aseprite
+*.aseprite-bak
+*.psd
+*.kra
+*.xcf
+
+# 音频
+*.wav
+*.ogg
+*.mp3
+*.flac
+*.opus
+
+# 视频
+*.mp4
+*.mov
+*.webm
+
+# 字体
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# ====================
+# 构建产物 / 二进制
+# ====================
+/build/
+/dist/
+/export/
+*.exe
+*.dmg
+*.apk
+*.aab
+*.app
+*.x86_64
+*.x86
+*.dll
+*.so
+*.dylib
+*.pdb
+*.pck
+*.zip
+*.7z
+*.tar
+*.gz
+
+# ====================
+# Python 缓存（photos/ 下美术生成脚本会留下 __pycache__）
+# ====================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# ====================
+# 操作系统垃圾文件
+# ====================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ====================
+# 临时 / 日志 / 备份
+# ====================
+*.tmp
+*.log
+*.bak
+*.cache
+*.lock
+
+# ====================
+# 本地敏感配置（不入仓也不需要 Claude 读）
+# ====================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets.json
+.claude/settings.local.json
+.claude/scheduled_tasks.json
+.claude/plans/
+.claude/mcp.json
+
+# ====================
+# 大块参考图片（占位资源整理期间放在仓库根）
+# ====================
+reference.jpg
+
+# ====================
+# 例外：保留必要的项目元数据
+# 即使匹配上面规则，这些文件 Claude 也必须能看到
+# ====================
+!.gitignore
+!.gitattributes
+!.gutconfig.json
+!project.godot
+!CLAUDE.md
+!README.md
+!data/**/*.json
+!.claude/skills/**
+!.claude/commands/**
+!.claude/mcp.json.template
