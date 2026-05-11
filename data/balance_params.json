@@ -66,6 +66,11 @@
     "war_recovery_per_turn": 2,
     "victory_bonus": 5,
     "victory_bonus_duration": 3,
+    "victory_bonus_first_capture_only": true,
+    "capital_captured_debuff": -20,
+    "capital_captured_recovery_per_turn": 2,
+    "capital_captured_recovery_cap": -10,
+    "capital_recapture_clear_all": true,
     "school_base_morale": {"confucianism": 2, "legalism": -1}
   },
   "stability": {
@@ -131,6 +136,26 @@
     "morale_collapse": false,
     "time_limit_exceeded": true,
     "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落是否直接败北（当前否）；morale_collapse: 民心归零是否败北（当前否）；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
+  },
+  "capital_relocation": {
+    "forced": {
+      "player_max_relocations": 2,
+      "cost_gold": 300,
+      "settle_turns": 2,
+      "stability_penalty": -20,
+      "stability_recovery_per_turn": 10,
+      "require_peace": false
+    },
+    "voluntary": {
+      "cost_gold": 300,
+      "settle_turns": 0,
+      "stability_penalty": 0,
+      "morale_penalty": 0,
+      "counts_toward_limit": false,
+      "require_peace": true
+    },
+    "ai_max_relocations": -1,
+    "ai_target": "highest_development"
   },
   "victory": {
     "cultural": {
