@@ -12,6 +12,10 @@ func _ready() -> void:
 	var tech_button := $TechButton
 	tech_button.pressed.connect(_on_tech_button_pressed)
 
+	# 战术演武（阶段1）
+	var skirmish_button := $SkirmishButton
+	skirmish_button.pressed.connect(_on_skirmish_button_pressed)
+
 	# 初始化游戏（默认7国，玩家为秦）
 	_init_game()
 
@@ -32,3 +36,7 @@ func _on_diplomacy_button_pressed() -> void:
 func _on_tech_button_pressed() -> void:
 	var panel := $TechTreePanel
 	panel.visible = not panel.visible
+
+
+func _on_skirmish_button_pressed() -> void:
+	$SkirmishPanel.open_panel()

@@ -172,5 +172,9 @@
   },
   "capital": {
     "player_max_relocations": 2
+  },
+  "tactical": {
+    "attack_move_cost": 2,
+    "_comment": "战术演武：发动攻击额外消耗的移动力（移动力不足则无法攻击）"
   }
 }

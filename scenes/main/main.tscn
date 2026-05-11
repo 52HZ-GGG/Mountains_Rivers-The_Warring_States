@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dtofojljan6um"]
+[gd_scene load_steps=5 format=3 uid="uid://dtofojljan6um"]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/diplomacy/diplomacy_panel.tscn" id="2"]
 [ext_resource type="Script" path="res://scenes/ui/tech/tech_tree_panel.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/skirmish/skirmish_mvp_panel.tscn" id="4"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1")
@@ -12,7 +13,7 @@ offset_left = 40.0
 offset_top = 40.0
 offset_right = 600.0
 offset_bottom = 80.0
-text = "山河策 — 阶段 2：外交博弈"
+text = "山河策 — 阶段1 战术演武 + 阶段2 外交/科技"
 
 [node name="DiplomacyButton" type="Button" parent="."]
 offset_left = 40.0
@@ -30,6 +31,15 @@ offset_top = 100.0
 offset_right = 380.0
 offset_bottom = 140.0
 text = "科技"
+
+[node name="SkirmishButton" type="Button" parent="."]
+offset_left = 400.0
+offset_top = 100.0
+offset_right = 600.0
+offset_bottom = 140.0
+text = "战术演武（阶段1）"
+
+[node name="SkirmishPanel" parent="." instance=ExtResource("4")]
 
 [node name="TechTreePanel" type="Control" parent="."]
 visible = false
