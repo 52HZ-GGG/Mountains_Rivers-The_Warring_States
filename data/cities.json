@@ -13,7 +13,8 @@
       "max_building_slots": 6,
       "special_resource": "iron",
       "is_capital": true,
-      "base_population": 12000
+      "base_population": 12000,
+      "development": 75
     },
     {
       "id": "yongcheng",
@@ -25,7 +26,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 20
     },
     {
       "id": "yueyang",
@@ -37,7 +39,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 7000
+      "base_population": 7000,
+      "development": 25
     },
     {
       "id": "chencang",
@@ -49,7 +52,8 @@
       "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "longxi",
@@ -61,7 +65,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "shujun",
@@ -73,7 +78,8 @@
       "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 8000
+      "base_population": 8000,
+      "development": 35
     },
     {
       "id": "nanzheng",
@@ -85,7 +91,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 15
     },
     {
       "id": "hanzhong",
@@ -97,7 +104,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 20
     },
     {
       "id": "ying",
@@ -109,7 +117,8 @@
       "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 14000
+      "base_population": 14000,
+      "development": 70
     },
     {
       "id": "shouchun",
@@ -121,7 +130,8 @@
       "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 8000
+      "base_population": 8000,
+      "development": 40
     },
     {
       "id": "yuancheng",
@@ -133,7 +143,8 @@
       "max_building_slots": 5,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 7000
+      "base_population": 7000,
+      "development": 35
     },
     {
       "id": "chencheng",
@@ -145,7 +156,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 25
     },
     {
       "id": "jiangling",
@@ -157,7 +169,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 25
     },
     {
       "id": "pengcheng",
@@ -169,7 +182,8 @@
       "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 7000
+      "base_population": 7000,
+      "development": 35
     },
     {
       "id": "wu",
@@ -181,7 +195,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 25
     },
     {
       "id": "kuaiji",
@@ -193,7 +208,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "changsha",
@@ -205,7 +221,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "linzi",
@@ -217,7 +234,8 @@
       "max_building_slots": 6,
       "special_resource": "salt",
       "is_capital": true,
-      "base_population": 13000
+      "base_population": 13000,
+      "development": 75
     },
     {
       "id": "jimo",
@@ -229,7 +247,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "yingqiu",
@@ -241,7 +260,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "donga",
@@ -253,7 +273,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "pinglu",
@@ -265,7 +286,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "xue",
@@ -277,7 +299,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "langye",
@@ -289,7 +312,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "handan",
@@ -301,7 +325,8 @@
       "max_building_slots": 6,
       "special_resource": "horse",
       "is_capital": true,
-      "base_population": 11000
+      "base_population": 11000,
+      "development": 70
     },
     {
       "id": "daijun",
@@ -313,7 +338,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "jinyang",
@@ -325,7 +351,8 @@
       "max_building_slots": 5,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 8000
+      "base_population": 8000,
+      "development": 40
     },
     {
       "id": "zhongshan",
@@ -337,7 +364,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "yunzhong",
@@ -349,7 +377,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "yanmen",
@@ -361,7 +390,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "taoyu",
@@ -373,7 +403,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 25
     },
     {
       "id": "daliang",
@@ -385,7 +416,8 @@
       "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 11000
+      "base_population": 11000,
+      "development": 65
     },
     {
       "id": "anyi",
@@ -397,7 +429,8 @@
       "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 7000
+      "base_population": 7000,
+      "development": 35
     },
     {
       "id": "hedong",
@@ -409,7 +442,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "puyang",
@@ -421,7 +455,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 25
     },
     {
       "id": "ye",
@@ -433,7 +468,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "huaxia",
@@ -445,7 +481,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "xinzheng",
@@ -457,7 +494,8 @@
       "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 10000
+      "base_population": 10000,
+      "development": 60
     },
     {
       "id": "shangdang",
@@ -469,7 +507,8 @@
       "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "yiyang",
@@ -481,7 +520,8 @@
       "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "yangzhai",
@@ -493,7 +533,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000
+      "base_population": 5000,
+      "development": 20
     },
     {
       "id": "nanyang",
@@ -505,7 +546,8 @@
       "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 30
     },
     {
       "id": "ji",
@@ -517,7 +559,8 @@
       "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 9000
+      "base_population": 9000,
+      "development": 55
     },
     {
       "id": "liaoyang",
@@ -529,7 +572,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 15
     },
     {
       "id": "liaoxi",
@@ -541,7 +585,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 3000
+      "base_population": 3000,
+      "development": 10
     },
     {
       "id": "shanggu",
@@ -553,7 +598,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 3000
+      "base_population": 3000,
+      "development": 10
     },
     {
       "id": "yuyang",
@@ -565,7 +611,8 @@
       "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 3000
+      "base_population": 3000,
+      "development": 10
     },
     {
       "id": "luoyi",
@@ -577,7 +624,8 @@
       "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 8000
+      "base_population": 8000,
+      "development": 45
     },
     {
       "id": "xingtai",
@@ -589,7 +637,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000
+      "base_population": 4000,
+      "development": 10
     },
     {
       "id": "dingtao",
@@ -601,7 +650,8 @@
       "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000
+      "base_population": 6000,
+      "development": 15
     }
   ]
 }
