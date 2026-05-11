@@ -12,6 +12,7 @@ const _ZOOM_MAX: float = 3.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 
 signal city_clicked(city_id: String)
+signal map_closed
 
 var _city_at_axial: Dictionary = {}   # Vector2i -> city Dictionary
 var _terrain_at_axial: Dictionary = {} # Vector2i -> terrain_id String
@@ -56,8 +57,12 @@ func close() -> void:
 	queue_free()
 
 
+func get_resource_bar_slot() -> VBoxContainer:
+	return $MarginContainer/MainVBox as VBoxContainer
+
+
 func _on_close_pressed() -> void:
-	close()
+	map_closed.emit()
 
 
 func _on_zoom_in_pressed() -> void:

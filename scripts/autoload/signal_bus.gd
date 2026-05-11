@@ -68,3 +68,11 @@ signal capital_relocated(faction_id: String, new_capital_id: String)
 
 ## faction 灭国时发出（无任何城市 或 玩家迁都次数耗尽且首都再次失守）
 signal faction_eliminated(faction_id: String)
+
+# ============= 城市管理 =============
+
+## 建筑建造/升级完成时发出
+signal building_completed(city_id: String, building_id: String, level: int)
+
+## 势力每回合资源产出结算后发出
+signal resources_produced(faction_id: String, production: Dictionary)

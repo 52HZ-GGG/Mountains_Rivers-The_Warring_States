@@ -424,7 +424,10 @@
     "city_base_gold": 80,
     "city_base_iron": 30,
     "pop_food_rate": 0.01,
+    "pop_growth_rate": 0.02,
     "army_upkeep_gold_per_unit": 5,
+    "army_upkeep_food_per_unit": 2,
+    "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
       "spring": 1.2,
       "summer": 1.0,

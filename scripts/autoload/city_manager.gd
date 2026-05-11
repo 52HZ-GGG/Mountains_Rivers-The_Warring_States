@@ -278,6 +278,33 @@ func demolish(city_id: String, building_id: String) -> bool:
 	return true
 
 
+# ============= 取消建造 =============
+
+## 取消建造队列中指定位置的条目。退还全部建造费用。
+## queue_index 为 build_queue 中的索引（0-based）。
+## 返回 true 表示取消成功。
+func cancel_build(city_id: String, queue_index: int) -> bool:
+	if not _city_states.has(city_id):
+		return false
+	var city: Dictionary = _city_states[city_id]
+	var queue: Array = city["build_queue"] as Array
+	if queue_index < 0 or queue_index >= queue.size():
+		return false
+	var entry: Dictionary = queue[queue_index]
+	var bid: String = str(entry["building_id"])
+	var building: Dictionary = DataManager.get_building(bid)
+	if not building.is_empty():
+		# 退还全部建造费用
+		var cost_gold: int = int(building.get("cost_gold", 0))
+		var cost_iron: int = int(building.get("cost_iron", 0))
+		if cost_gold > 0:
+			GameManager.apply_gold_delta(cost_gold)
+		if cost_iron > 0:
+			GameManager.apply_iron_delta(cost_iron)
+	queue.remove_at(queue_index)
+	return true
+
+
 # ============= 测试与重开 =============
 
 ## 重置到初始状态。供单元测试与「重新开局」使用。
@@ -414,6 +441,167 @@ func _pick_ai_capital_city(available: Array, weight: Variant) -> String:
 		if int(state.get("current_population", 0)) > int(best_pop.get("current_population", 0)):
 			best_pop = state
 	return best_pop["id"]
+
+
+# ============= 回合结算 =============
+
+## 每回合调用。递减建造队列、自动完成建造、推进人口增长，返回本回合事件摘要。
+func process_turn(faction_id: String) -> Dictionary:
+	var events: Dictionary = {"buildings_completed": [], "upgrades_completed": []}
+	var cities: Array = get_faction_city_states(faction_id)
+	for city in cities:
+		var city_id: String = str(city["id"])
+		_process_build_queue(city_id, events)
+		_process_population_growth(city_id)
+	return events
+
+
+## 递减建造队列，turns_remaining <= 0 时自动完成建造/升级。
+func _process_build_queue(city_id: String, events: Dictionary) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	var queue: Array = city["build_queue"] as Array
+	var completed_indices: Array = []
+	for i in range(queue.size()):
+		var entry: Dictionary = queue[i] as Dictionary
+		entry["turns_remaining"] = int(entry["turns_remaining"]) - 1
+		if int(entry["turns_remaining"]) <= 0:
+			completed_indices.append(i)
+	# 倒序移除已完成项（避免索引偏移）
+	for i in range(completed_indices.size() - 1, -1, -1):
+		var idx: int = completed_indices[i]
+		var entry: Dictionary = queue[idx] as Dictionary
+		var bid: String = str(entry["building_id"])
+		var city_state: Dictionary = _city_states[city_id]
+		if _city_has_building(city_state, bid):
+			# 已有该建筑 → 升级完成，提升等级
+			for b in (city_state["buildings"] as Array):
+				if b.get("building_id") == bid:
+					b["level"] = int(b.get("level", 1)) + 1
+					events["upgrades_completed"].append({"city_id": city_id, "building_id": bid, "level": b["level"]})
+					SignalBus.building_completed.emit(city_id, bid, b["level"])
+					break
+		else:
+			# 新建完成
+			(city_state["buildings"] as Array).append({"building_id": bid, "level": 1})
+			events["buildings_completed"].append({"city_id": city_id, "building_id": bid})
+			SignalBus.building_completed.emit(city_id, bid, 1)
+		queue.remove_at(idx)
+
+
+## 人口增长：基于当前人口 × 增长率。
+func _process_population_growth(city_id: String) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	var pop: int = int(city.get("current_population", 0))
+	if pop <= 0:
+		return
+	var growth_rate: float = DataManager.get_balance_param("resources.pop_growth_rate")
+	var morale_mod: float = 1.0  # 后续接入民心修正
+	var new_pop: int = int(pop * (1.0 + growth_rate * morale_mod))
+	city["current_population"] = new_pop
+
+
+# ============= 建筑效果与产出 =============
+
+## 获取指定 faction 的城市列表。
+func get_faction_cities(faction_id: String) -> Array:
+	return get_faction_city_states(faction_id)
+
+
+## 返回城市本回合产出（已含建筑效果，未含季节/特产修正）。
+func get_city_production(city_id: String) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {}
+	var prod: Dictionary = {
+		"food": 0, "gold": 0, "iron": 0,
+		"horse": 0, "refined_iron": 0,
+		"morale_bonus": 0, "defense_bonus": 0.0,
+		"recruit_speed_bonus": 0.0, "tax_bonus": 0.0,
+	}
+	# 基础产出
+	var pop: int = int(city.get("current_population", 0))
+	prod["food"] = int(pop * DataManager.get_balance_param("resources.pop_food_rate"))
+	prod["gold"] = int(DataManager.get_balance_param("resources.city_base_gold"))
+	prod["iron"] = int(DataManager.get_balance_param("resources.city_base_iron"))
+	# 累加建筑效果
+	for b in city.get("buildings", []):
+		var bid: String = str(b.get("building_id", ""))
+		var bdata: Dictionary = DataManager.get_building(bid)
+		if bdata.is_empty():
+			continue
+		var effects: Dictionary = bdata.get("effects", {})
+		var level: int = int(b.get("level", 1))
+		for key in effects:
+			if prod.has(key):
+				var val: Variant = effects[key]
+				if val is int or val is float:
+					prod[key] += val * level
+	# 特产加成
+	var sr: Variant = city.get("special_resource", null)
+	if sr != null:
+		_apply_special_resource_modifier(prod, str(sr))
+	return prod
+
+
+## 获取指定 faction 所有城市的总产出（已含季节修正）。
+func get_faction_total_production(faction_id: String) -> Dictionary:
+	var total: Dictionary = {
+		"food": 0, "gold": 0, "iron": 0,
+		"horse": 0, "refined_iron": 0,
+	}
+	var season: String = get_current_season(GameManager.get_current_turn())
+	var cities: Array = get_faction_city_states(faction_id)
+	for city in cities:
+		var city_prod: Dictionary = get_city_production(str(city["id"]))
+		if city_prod.is_empty():
+			continue
+		var season_prod: Dictionary = _apply_season_modifier(city_prod, season)
+		total["food"] += int(season_prod.get("food", 0))
+		total["gold"] += int(season_prod.get("gold", 0))
+		total["iron"] += int(season_prod.get("iron", 0))
+		total["horse"] += int(season_prod.get("horse", 0))
+		total["refined_iron"] += int(season_prod.get("refined_iron", 0))
+	return total
+
+
+## 根据回合数返回当前季节。
+func get_current_season(turn_number: int) -> String:
+	var seasons_cfg: Dictionary = DataManager.get_balance_param("season_cycle")
+	var seasons: Array = seasons_cfg.get("seasons", ["spring", "summer", "autumn", "winter"])
+	var idx: int = (turn_number - 1) % seasons.size()
+	return str(seasons[idx])
+
+
+## 应用季节修正（返回新字典，不修改原字典）。
+func _apply_season_modifier(prod: Dictionary, season: String) -> Dictionary:
+	var result: Dictionary = prod.duplicate()
+	var food_mod: Dictionary = DataManager.get_balance_param("resources.season_food_mod")
+	var gold_mod: Dictionary = DataManager.get_balance_param("resources.season_gold_mod")
+	var iron_mod: Dictionary = DataManager.get_balance_param("resources.season_iron_mod")
+	result["food"] = int(result["food"] * float(food_mod.get(season, 1.0)))
+	result["gold"] = int(result["gold"] * float(gold_mod.get(season, 1.0)))
+	result["iron"] = int(result["iron"] * float(iron_mod.get(season, 1.0)))
+	return result
+
+
+## 应用特产加成（直接修改 prod）。
+func _apply_special_resource_modifier(prod: Dictionary, special_resource: String) -> void:
+	var sr_mods: Dictionary = DataManager.get_balance_param("resources.special_resource_mod")
+	var mod: Dictionary = sr_mods.get(special_resource, {})
+	for key in mod:
+		if prod.has(key):
+			var factor: float = float(mod[key])
+			prod[key] = int(prod[key] * factor)
+	# 马匹/精铁特产城市直接产出对应资源
+	var sr_production: Dictionary = DataManager.get_balance_param("resources.special_resources")
+	if sr_production.has(special_resource):
+		var sr_data: Dictionary = sr_production[special_resource]
+		if not prod.has(special_resource):
+			prod[special_resource] = int(sr_data.get("city_base_production", 0))
 
 
 # ============= 内部 =============
