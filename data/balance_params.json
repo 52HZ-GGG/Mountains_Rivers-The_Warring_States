@@ -157,6 +157,13 @@
     "ai_max_relocations": -1,
     "ai_target": "highest_development"
   },
+  "fortification": {
+    "pass_hp": 500,
+    "city_hp": 1000,
+    "siege_damage_multiplier": 3.0,
+    "hp_type": "fortification",
+    "artificial_pass_enabled": false
+  },
   "victory": {
     "cultural": {
       "name": "文化胜利",
