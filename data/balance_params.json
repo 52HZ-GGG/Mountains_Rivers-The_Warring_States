@@ -117,5 +117,8 @@
     "research_speed_per_turn": 1,
     "special_condition_check_on_unlock": true,
     "era_gate_enabled": false
+  },
+  "capital": {
+    "player_max_relocations": 2
   }
 }

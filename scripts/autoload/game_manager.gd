@@ -200,9 +200,25 @@ func _ai_research_tick(faction_id: String) -> void:
 # ============= 胜利条件 =============
 
 ## 检查胜利。返回获胜方 faction_id 或空串。
+## 规则（子任务 4）：
+## - 唯一存活的 faction → 该 faction 获胜（征服胜利）
+## - 玩家已被灭（0 城）但仍有多个 AI 存活 → 游戏对玩家结束，返第一个存活 AI 作为获胜方
+## - 其它情况 → 返空串（游戏继续）
 func check_victory() -> String:
-	# TODO 阶段 1：实现「占领敌城即胜」
-	# 依赖 CityManager（尚未实现），目前返回空串占位
+	if _active_factions.is_empty():
+		return ""
+
+	var alive: Array[String] = []
+	for fid in _active_factions:
+		if not CityManager.is_faction_eliminated(fid):
+			alive.append(fid)
+
+	if alive.size() == 1:
+		return alive[0]
+
+	if _player_faction != "" and CityManager.is_faction_eliminated(_player_faction):
+		return alive[0] if not alive.is_empty() else ""
+
 	return ""
 
 
