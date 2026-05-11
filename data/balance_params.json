@@ -133,9 +133,9 @@
   "defeat": {
     "lose_all_cities": true,
     "capital_lost": false,
-    "morale_collapse": false,
+    "morale_collapse": true,
     "time_limit_exceeded": true,
-    "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落是否直接败北（当前否）；morale_collapse: 民心归零是否败北（当前否）；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
+    "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落+无法迁都时败北；morale_collapse: 民心归零判定败北；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
   },
   "capital_relocation": {
     "forced": {
