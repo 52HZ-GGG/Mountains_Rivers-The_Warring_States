@@ -17,6 +17,11 @@ const _TERRAIN_PATHS: Dictionary = {
 const _CAPITAL_PATHS: Dictionary = {
 	"qin": "res://photos/city(c)/city_capital_qin_hex.png",
 	"zhao": "res://photos/city(c)/city_capital_zhao.png",
+	"chu": "res://photos/city(c)/city_capital_chu.png",
+	"qi": "res://photos/city(c)/city_capital_qi.png",
+	"wei": "res://photos/city(c)/city_capital_wei.png",
+	"yan": "res://photos/city(c)/city_capital_yan.png",
+	"han": "res://photos/city(c)/city_capital_han.png",
 }
 
 const _UNIT_PATHS: Dictionary = {

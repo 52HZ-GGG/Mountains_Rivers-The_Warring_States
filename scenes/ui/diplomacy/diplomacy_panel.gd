@@ -12,7 +12,6 @@ var _faction_buttons: Array[Button] = []
 
 
 func _ready() -> void:
-	visible = false
 	_build_ui()
 
 
@@ -20,6 +19,7 @@ func _build_ui() -> void:
 	# 主布局
 	var main_vbox := VBoxContainer.new()
 	main_vbox.name = "MainVBox"
+	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(main_vbox)
 
 	# 标题栏
@@ -209,16 +209,17 @@ func _update_detail_panel() -> void:
 
 
 func _on_close_pressed() -> void:
-	visible = false
 	diplomacy_panel_closed.emit()
+	queue_free()
 
 
 func open() -> void:
+	print("[Diplomacy] open() 开始")
 	_populate_faction_list()
 	if _selected_faction.is_empty() and GameManager.FACTION_IDS.size() > 1:
 		_selected_faction = GameManager.FACTION_IDS[0] if GameManager.FACTION_IDS[0] != GameManager.get_player_faction() else GameManager.FACTION_IDS[1]
 	_update_detail_panel()
-	visible = true
+	print("[Diplomacy] open() 完成, panel size: %s, children: %d" % [str(size), get_child_count()])
 
 
 # ============= 外交动作 =============
