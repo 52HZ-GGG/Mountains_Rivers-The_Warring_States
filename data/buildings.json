@@ -160,6 +160,40 @@
       },
       "upgrade_cost_multiplier": 1.5,
       "max_national_count": 1
+    },
+    {
+      "id": "stable",
+      "name": "马厩",
+      "description": "蓄养战马，以备骑兵之用。仅产马之地可建。",
+      "category": "military",
+      "cost_gold": 150,
+      "cost_iron": 20,
+      "build_turns": 2,
+      "max_level": 1,
+      "upkeep_gold": 10,
+      "effects": {
+        "horse_production": 5
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 3,
+      "build_requires": {"special_resource": "horse"}
+    },
+    {
+      "id": "ironworks",
+      "name": "精铁坊",
+      "description": "百炼精铁，铸兵利器。仅产铁之地可建。",
+      "category": "economic",
+      "cost_gold": 200,
+      "cost_iron": 30,
+      "build_turns": 2,
+      "max_level": 1,
+      "upkeep_gold": 12,
+      "effects": {
+        "refined_iron_production": 3
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 3,
+      "build_requires": {"special_resource": "iron"}
     }
   ]
 }

@@ -104,14 +104,19 @@
       "cavalry_allowed": true,
       "is_navigable": false,
       "special": "pass",
-      "is_barrier": true,
-      "barrier_type": "pass",
+      "is_barrier": false,
+      "barrier_type": null,
       "crossing_rules": {
-        "atk_mod": -0.5,
-        "def_bonus": 0.5
+        "move_speed_modifier": 0.5,
+        "atk_mod": -0.3,
+        "def_bonus": 0.5,
+        "blocks_culture_except_owner": true
       },
       "tech_overrides": null,
-      "buildable_structures": ["arrow_tower"]
+      "buildable_structures": null,
+      "is_occupiable": true,
+      "structure_hp": 500,
+      "hp_type": "fortification"
     },
     {
       "id": "ford",
