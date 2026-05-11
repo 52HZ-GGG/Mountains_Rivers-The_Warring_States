@@ -545,7 +545,9 @@
   },
   "culture": {
     "spread_rate": 0.05,
+
     "distance_decay": {"1": 1.0, "2": 0.7, "3": 0.4, "4": 0.2},
+
     "flip_threshold": 0.5,
     "victory_ratio": 0.7,
     "victory_turns": 10
