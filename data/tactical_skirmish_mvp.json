@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "description": "阶段1战术演武：7x7 odd-R 偏移格（rows[row][col]、据点与单位的 q,r 均为列/行），秦军 vs 赵国，攻占对方城格即胜（策划案 §5）",
+  "map_width": 7,
+  "map_height": 7,
+  "player_faction_id": "qin",
+  "enemy_faction_id": "zhao",
+  "player_city": { "q": 0, "r": 3 },
+  "enemy_city": { "q": 6, "r": 3 },
+  "rows": [
+    ["plains", "plains", "forest", "plains", "forest", "plains", "mountain"],
+    ["plains", "forest", "plains", "plains", "plains", "pass", "plains"],
+    ["plains", "plains", "plains", "marsh", "plains", "plains", "plains"],
+    ["plains", "ford", "river", "river", "river", "ford", "plains"],
+    ["forest", "plains", "plains", "marsh", "plains", "plains", "plains"],
+    ["plains", "plains", "forest", "plains", "plains", "forest", "plains"],
+    ["mountain", "plains", "plains", "forest", "plains", "plains", "plains"]
+  ],
+  "initial_units": [
+    { "id": "mvp_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+    { "id": "mvp_p2", "faction_id": "qin", "unit_type_id": "archer", "q": 0, "r": 2 },
+    { "id": "mvp_e1", "faction_id": "zhao", "unit_type_id": "infantry", "q": 5, "r": 3 },
+    { "id": "mvp_e2", "faction_id": "zhao", "unit_type_id": "cavalry", "q": 6, "r": 4 }
+  ]
+}

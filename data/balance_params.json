@@ -420,11 +420,11 @@
     }
   },
   "resources": {
-    "city_base_food": 100,
-    "city_base_gold": 80,
     "city_base_iron": 30,
-    "pop_food_rate": 0.01,
+    "pop_growth_rate": 0.02,
     "army_upkeep_gold_per_unit": 5,
+    "army_upkeep_food_per_unit": 2,
+    "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
       "spring": 1.2,
       "summer": 1.0,
@@ -467,6 +467,35 @@
         "description": "精铁"
       }
     }
+  },
+  "population": {
+    "food_per_pop": 3,
+    "gold_per_pop": 10,
+    "food_consume_per_pop": 1,
+    "growth_base_period": 6.67,
+    "growth_season_mod": {
+      "spring": 1.0,
+      "summer": 1.0,
+      "autumn": 1.2,
+      "winter": 0.7
+    },
+    "growth_stability_formula": "0.5 + stability / 100.0",
+    "famine_pop_loss": 1,
+    "famine_stability_loss": 10,
+    "grain_shortage_morale_loss": 5,
+    "grain_shortage_army_morale_loss": 10,
+    "grain_shortage_atk_mod": 0.8,
+    "grain_shortage_def_mod": 0.8,
+    "conscription_rate": 0.20,
+    "conscription_fill_rate": 0.10,
+    "service_penalty_threshold": 0.10,
+    "service_penalty_food_mod": 2.0,
+    "service_penalty_gold_mod": 2.0,
+    "service_penalty_growth_mod": 5.0,
+    "death_recovery_period": 4,
+    "national_grain_cap_base": 200,
+    "granary_grain_cap_bonus": 50,
+    "description": "粮食·人口·征兵机制参数（决策88-100）"
   },
   "morale": {
     "base_drift": 1,
@@ -673,6 +702,13 @@
     "special_condition_check_on_unlock": true,
     "era_gate_enabled": false
   },
+  "capital": {
+    "player_max_relocations": 2
+  },
+  "tactical": {
+    "attack_move_cost": 2,
+    "_comment": "战术演武：发动攻击额外消耗的移动力（移动力不足则无法攻击）"
+  },
   "unit_morale": {
     "base_morale": 100,
     "morale_break_threshold": 20,
@@ -720,5 +756,60 @@
       "siege": 0.5,
       "navy": 1.0
     }
+  },
+  "minister": {
+    "max_level": 5,
+    "exp_per_level": [0, 100, 250, 500, 800],
+    "stat_gain_per_level": 5,
+    "skill_max_level": 3,
+    "exp_gain": {
+      "civil_per_turn": 20,
+      "military_battle_win": 30,
+      "military_battle_draw": 15,
+      "military_battle_lose": 5,
+      "diplomat_per_action": 25
+    },
+    "acquisition": {
+      "building_interval_turns": 8,
+      "battle_win_chance": 0.15,
+      "battle_great_victory_chance": 0.25,
+      "base_probabilities": {
+        "common": 0.6,
+        "rare": 0.3,
+        "legendary": 0.1
+      }
+    },
+    "transfer_turns": 3,
+    "fate": {
+      "death_chance": 0.3,
+      "capture_chance": 0.4,
+      "escape_chance": 0.3,
+      "capture_suicide_chance": 0.4,
+      "capture_defect_chance": 0.6,
+      "diplomat_lifespan_turns": 30
+    },
+    "capacity": {
+      "civil": 5,
+      "military": 5,
+      "diplomat": 2
+    }
+  },
+  "city_levels": {
+    "1": {"name": "村", "hp": 300, "attack": 5, "attack_range": 1, "building_slots": 1, "base_food": 3, "base_gold": 5, "max_population": 10, "max_food_production": 30},
+    "2": {"name": "镇", "hp": 600, "attack": 10, "attack_range": 1, "building_slots": 2, "base_food": 6, "base_gold": 10, "max_population": 15, "max_food_production": 45},
+    "3": {"name": "城", "hp": 1000, "attack": 15, "attack_range": 1, "building_slots": 3, "base_food": 10, "base_gold": 15, "max_population": 20, "max_food_production": 60},
+    "4": {"name": "府", "hp": 1500, "attack": 20, "attack_range": 2, "building_slots": 4, "base_food": 15, "base_gold": 25, "max_population": 25, "max_food_production": 75},
+    "5": {"name": "都", "hp": 2000, "attack": 25, "attack_range": 2, "building_slots": 5, "base_food": 20, "base_gold": 35, "max_population": 30, "max_food_production": 90},
+    "capital_bonus": {"hp": 500, "attack": 5}
+  },
+  "city_combat": {
+    "damage_split_garrison": 0.5,
+    "damage_split_wall": 0.5,
+    "no_garrison_wall_ratio": 1.0,
+    "siege_damage_multiplier": 3.0,
+    "capture_restore_ratio": 0.25,
+    "natural_recovery_ratio": 0.05,
+    "natural_recovery_requires_no_attack": true,
+    "building_occupy_turns": 1
   }
 }
