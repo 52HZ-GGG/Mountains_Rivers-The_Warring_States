@@ -78,7 +78,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - **测试**：核心系统（寻路、战斗公式、文化扩散、AI 决策、存档读写）必须有 GUT 单元测试
 - **main 分支纪律**：始终保持可在 Godot 编辑器中正常启动
 - **占位资源**：阶段 0~1 美术不足时使用 Kenney.nl 等 CC0 素材库占位，禁止下场画终稿
-- **TBD 项追踪**：策划案中标 ⚠️ 的待定项（如法家「法律指数」系统、纵横家盟友数量平衡）需在指定阶段前定稿，不得遗忘
 
 ## 项目知识与工具（配置维护）
 - 游戏设计知识：见 `.claude/skills/shanhece-world.md`
