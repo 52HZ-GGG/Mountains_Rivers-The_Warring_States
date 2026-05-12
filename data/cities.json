@@ -10,11 +10,13 @@
       "hex_q": 3,
       "hex_r": 10,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": "iron",
       "is_capital": true,
-      "base_population": 12000,
-      "development": 75
+      "development": 75,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "yongcheng",
@@ -23,11 +25,13 @@
       "hex_q": 2,
       "hex_r": 13,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yueyang",
@@ -36,11 +40,13 @@
       "hex_q": 4,
       "hex_r": 8,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 7000,
-      "development": 25
+      "development": 25,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "chencang",
@@ -49,11 +55,13 @@
       "hex_q": 2,
       "hex_r": 11,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "longxi",
@@ -62,11 +70,13 @@
       "hex_q": 1,
       "hex_r": 9,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "shujun",
@@ -75,11 +85,13 @@
       "hex_q": 1,
       "hex_r": 15,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 8000,
-      "development": 35
+      "development": 35,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "nanzheng",
@@ -88,11 +100,13 @@
       "hex_q": 3,
       "hex_r": 16,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "hanzhong",
@@ -101,11 +115,13 @@
       "hex_q": 4,
       "hex_r": 14,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "ying",
@@ -114,11 +130,13 @@
       "hex_q": 10,
       "hex_r": 18,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 14000,
-      "development": 70
+      "development": 70,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "shouchun",
@@ -127,11 +145,13 @@
       "hex_q": 16,
       "hex_r": 19,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 8000,
-      "development": 40
+      "development": 40,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "yuancheng",
@@ -140,11 +160,13 @@
       "hex_q": 9,
       "hex_r": 15,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 7000,
-      "development": 35
+      "development": 35,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "chencheng",
@@ -153,11 +175,13 @@
       "hex_q": 13,
       "hex_r": 18,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 25
+      "development": 25,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "jiangling",
@@ -166,11 +190,13 @@
       "hex_q": 8,
       "hex_r": 19,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 25
+      "development": 25,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "pengcheng",
@@ -179,11 +205,13 @@
       "hex_q": 17,
       "hex_r": 17,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 7000,
-      "development": 35
+      "development": 35,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "wu",
@@ -192,11 +220,13 @@
       "hex_q": 20,
       "hex_r": 18,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 25
+      "development": 25,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "kuaiji",
@@ -205,11 +235,13 @@
       "hex_q": 22,
       "hex_r": 19,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "changsha",
@@ -218,11 +250,13 @@
       "hex_q": 10,
       "hex_r": 19,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "linzi",
@@ -231,11 +265,13 @@
       "hex_q": 25,
       "hex_r": 10,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": "salt",
       "is_capital": true,
-      "base_population": 13000,
-      "development": 75
+      "development": 75,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "jimo",
@@ -244,11 +280,13 @@
       "hex_q": 27,
       "hex_r": 13,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yingqiu",
@@ -257,11 +295,13 @@
       "hex_q": 24,
       "hex_r": 8,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "donga",
@@ -270,11 +310,13 @@
       "hex_q": 22,
       "hex_r": 9,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "pinglu",
@@ -283,11 +325,13 @@
       "hex_q": 23,
       "hex_r": 11,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "xue",
@@ -296,11 +340,13 @@
       "hex_q": 23,
       "hex_r": 14,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "langye",
@@ -309,11 +355,13 @@
       "hex_q": 27,
       "hex_r": 11,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "handan",
@@ -322,11 +370,13 @@
       "hex_q": 14,
       "hex_r": 5,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": "horse",
       "is_capital": true,
-      "base_population": 11000,
-      "development": 70
+      "development": 70,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "daijun",
@@ -335,11 +385,13 @@
       "hex_q": 16,
       "hex_r": 2,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "jinyang",
@@ -348,11 +400,13 @@
       "hex_q": 11,
       "hex_r": 3,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 8000,
-      "development": 40
+      "development": 40,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "zhongshan",
@@ -361,11 +415,13 @@
       "hex_q": 17,
       "hex_r": 4,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yunzhong",
@@ -374,11 +430,13 @@
       "hex_q": 13,
       "hex_r": 1,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yanmen",
@@ -387,11 +445,13 @@
       "hex_q": 12,
       "hex_r": 2,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "taoyu",
@@ -400,11 +460,13 @@
       "hex_q": 18,
       "hex_r": 6,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 25
+      "development": 25,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "daliang",
@@ -413,11 +475,13 @@
       "hex_q": 17,
       "hex_r": 10,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 11000,
-      "development": 65
+      "development": 65,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "anyi",
@@ -426,11 +490,13 @@
       "hex_q": 13,
       "hex_r": 9,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 7000,
-      "development": 35
+      "development": 35,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "hedong",
@@ -439,11 +505,13 @@
       "hex_q": 12,
       "hex_r": 7,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "puyang",
@@ -452,11 +520,13 @@
       "hex_q": 19,
       "hex_r": 10,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 25
+      "development": 25,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "ye",
@@ -465,11 +535,13 @@
       "hex_q": 15,
       "hex_r": 7,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "huaxia",
@@ -478,11 +550,13 @@
       "hex_q": 14,
       "hex_r": 8,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "xinzheng",
@@ -491,11 +565,13 @@
       "hex_q": 14,
       "hex_r": 12,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 10000,
-      "development": 60
+      "development": 60,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "shangdang",
@@ -504,11 +580,13 @@
       "hex_q": 11,
       "hex_r": 7,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yiyang",
@@ -517,11 +595,13 @@
       "hex_q": 10,
       "hex_r": 11,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "iron",
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yangzhai",
@@ -530,11 +610,13 @@
       "hex_q": 13,
       "hex_r": 13,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 5000,
-      "development": 20
+      "development": 20,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "nanyang",
@@ -543,11 +625,13 @@
       "hex_q": 11,
       "hex_r": 14,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 30
+      "development": 30,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "ji",
@@ -556,11 +640,13 @@
       "hex_q": 20,
       "hex_r": 2,
       "jurisdiction_radius": 1,
-      "max_building_slots": 6,
       "special_resource": null,
       "is_capital": true,
-      "base_population": 9000,
-      "development": 55
+      "development": 55,
+      "city_level": 5,
+      "initial_population": 10,
+      "city_attack": 30,
+      "city_attack_range": 2
     },
     {
       "id": "liaoyang",
@@ -569,11 +655,13 @@
       "hex_q": 25,
       "hex_r": 3,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 4000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "liaoxi",
@@ -582,11 +670,13 @@
       "hex_q": 22,
       "hex_r": 3,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 3000,
-      "development": 10
+      "development": 10,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "shanggu",
@@ -595,11 +685,13 @@
       "hex_q": 19,
       "hex_r": 1,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 3000,
-      "development": 10
+      "development": 10,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "yuyang",
@@ -608,11 +700,13 @@
       "hex_q": 21,
       "hex_r": 1,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": "horse",
       "is_capital": false,
-      "base_population": 3000,
-      "development": 10
+      "development": 10,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "luoyi",
@@ -621,11 +715,13 @@
       "hex_q": 15,
       "hex_r": 11,
       "jurisdiction_radius": 1,
-      "max_building_slots": 5,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 8000,
-      "development": 45
+      "development": 45,
+      "city_level": 3,
+      "initial_population": 7,
+      "city_attack": 15,
+      "city_attack_range": 1
     },
     {
       "id": "xingtai",
@@ -634,11 +730,13 @@
       "hex_q": 16,
       "hex_r": 5,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 4000,
-      "development": 10
+      "development": 10,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     },
     {
       "id": "dingtao",
@@ -647,11 +745,13 @@
       "hex_q": 20,
       "hex_r": 12,
       "jurisdiction_radius": 1,
-      "max_building_slots": 4,
       "special_resource": null,
       "is_capital": false,
-      "base_population": 6000,
-      "development": 15
+      "development": 15,
+      "city_level": 1,
+      "initial_population": 3,
+      "city_attack": 5,
+      "city_attack_range": 1
     }
   ]
 }

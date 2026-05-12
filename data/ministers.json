@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.0",
+  "minister_pool": {
+    "civil": {
+      "common": [
+        {
+          "id": "civil_common_template",
+          "name_template": "random",
+          "description": "普通文大夫，随机生成",
+          "base_stats": {"理财": [5, 30], "安民": [5, 30]},
+          "skills": ["劝农"],
+          "is_historical": false
+        }
+      ],
+      "rare": [
+        {
+          "id": "li_si",
+          "name": "李斯",
+          "title": "法家名臣",
+          "description": "助秦统一六国，废分封行郡县",
+          "base_stats": {"理财": [30, 60], "安民": [20, 50]},
+          "skills": ["兴商", "教化"],
+          "is_historical": true
+        },
+        {
+          "id": "wu_qi",
+          "name": "吴起",
+          "title": "兵家亚圣",
+          "description": "在楚变法，强兵富国",
+          "base_stats": {"理财": [25, 55], "安民": [25, 55]},
+          "skills": ["劝农", "练兵"],
+          "is_historical": true
+        },
+        {
+          "id": "civil_rare_template",
+          "name_template": "random",
+          "description": "稀有文大夫，随机生成",
+          "base_stats": {"理财": [15, 60], "安民": [15, 60]},
+          "skills": ["劝农", "兴商"],
+          "is_historical": false
+        }
+      ],
+      "legendary": [
+        {
+          "id": "shang_yang",
+          "name": "商鞅",
+          "title": "变法名相",
+          "description": "在秦变法，废井田开阡陌，强秦之基",
+          "base_stats": {"理财": [60, 100], "安民": [50, 90]},
+          "skills": ["变法", "兴商", "教化"],
+          "is_historical": true,
+          "unique_skill": "变法"
+        },
+        {
+          "id": "guan_zhong",
+          "name": "管仲",
+          "title": "华夏第一相",
+          "description": "辅佐齐桓公九合诸侯，一匡天下",
+          "base_stats": {"理财": [70, 100], "安民": [60, 95]},
+          "skills": ["兴商", "劝农", "名望"],
+          "is_historical": true,
+          "unique_skill": "名望"
+        }
+      ]
+    },
+    "military": {
+      "common": [
+        {
+          "id": "mil_common_template",
+          "name_template": "random",
+          "description": "普通武大夫，随机生成",
+          "base_stats": {"勇武": [5, 30], "韬略": [5, 30]},
+          "skills": ["坚守"],
+          "is_historical": false
+        }
+      ],
+      "rare": [
+        {
+          "id": "zhao_kuo",
+          "name": "赵括",
+          "title": "马服君之子",
+          "description": "熟读兵书，长平之战败于白起",
+          "base_stats": {"勇武": [20, 50], "韬略": [25, 55]},
+          "skills": ["坚守", "先见"],
+          "is_historical": true
+        },
+        {
+          "id": "pang_juan",
+          "name": "庞涓",
+          "title": "魏国名将",
+          "description": "魏国上将军，败于马陵之战",
+          "base_stats": {"勇武": [25, 55], "韬略": [20, 50]},
+          "skills": ["突击", "地利"],
+          "is_historical": true
+        },
+        {
+          "id": "mil_rare_template",
+          "name_template": "random",
+          "description": "稀有武大夫，随机生成",
+          "base_stats": {"勇武": [15, 60], "韬略": [15, 60]},
+          "skills": ["坚守", "突击"],
+          "is_historical": false
+        }
+      ],
+      "legendary": [
+        {
+          "id": "bai_qi",
+          "name": "白起",
+          "title": "杀神",
+          "description": "战国四大名将之首，长平坑赵卒四十万",
+          "base_stats": {"勇武": [80, 100], "韬略": [60, 90]},
+          "skills": ["人屠", "突击", "地利"],
+          "is_historical": true,
+          "unique_skill": "人屠"
+        },
+        {
+          "id": "wang_jian",
+          "name": "王翦",
+          "title": "秦灭六国主将",
+          "description": "助秦灭赵、燕、楚，战国四大名将之一",
+          "base_stats": {"勇武": [70, 95], "韬略": [70, 100]},
+          "skills": ["坚守", "先见", "连击"],
+          "is_historical": true,
+          "unique_skill": "先见"
+        },
+        {
+          "id": "lian_po",
+          "name": "廉颇",
+          "title": "赵国名将",
+          "description": "负荆请罪，战国四大名将之一",
+          "base_stats": {"勇武": [65, 90], "韬略": [60, 90]},
+          "skills": ["坚守", "铁壁", "地利"],
+          "is_historical": true,
+          "unique_skill": "铁壁"
+        },
+        {
+          "id": "li_mu",
+          "name": "李牧",
+          "title": "赵国良将",
+          "description": "北击匈奴，战国四大名将之一",
+          "base_stats": {"勇武": [70, 95], "韬略": [65, 95]},
+          "skills": ["突击", "先见", "连击"],
+          "is_historical": true,
+          "unique_skill": "连击"
+        }
+      ]
+    },
+    "diplomat": {
+      "common": [
+        {
+          "id": "dip_common_template",
+          "name_template": "random",
+          "description": "普通外交大夫，随机生成",
+          "base_stats": {"辩才": [5, 30], "亲和": [5, 30]},
+          "skills": ["巧舌"],
+          "is_historical": false
+        }
+      ],
+      "rare": [
+        {
+          "id": "su_dai",
+          "name": "苏代",
+          "title": "纵横家",
+          "description": "苏秦之弟，合纵连横之术",
+          "base_stats": {"辩才": [25, 55], "亲和": [20, 50]},
+          "skills": ["巧舌", "结交"],
+          "is_historical": true
+        },
+        {
+          "id": "dip_rare_template",
+          "name_template": "random",
+          "description": "稀有外交大夫，随机生成",
+          "base_stats": {"辩才": [15, 60], "亲和": [15, 60]},
+          "skills": ["巧舌", "结交"],
+          "is_historical": false
+        }
+      ],
+      "legendary": [
+        {
+          "id": "zhang_yi",
+          "name": "张仪",
+          "title": "连横之父",
+          "description": "以连横之策破六国合纵",
+          "base_stats": {"辩才": [80, 100], "亲和": [60, 90]},
+          "skills": ["连横", "巧舌", "结交"],
+          "is_historical": true,
+          "unique_skill": "连横"
+        },
+        {
+          "id": "su_qin",
+          "name": "苏秦",
+          "title": "合纵之长",
+          "description": "佩六国相印，合纵抗秦",
+          "base_stats": {"辩才": [75, 100], "亲和": [70, 95]},
+          "skills": ["合纵", "巧舌", "名望"],
+          "is_historical": true,
+          "unique_skill": "合纵"
+        }
+      ]
+    }
+  },
+  "name_parts": {
+    "surnames": ["赵", "钱", "孙", "李", "周", "吴", "郑", "王", "冯", "陈", "褚", "卫", "蒋", "沈", "韩", "杨", "朱", "秦", "尤", "许", "何", "吕", "施", "张", "孔", "曹", "严", "华", "金", "魏", "陶", "姜", "戚", "谢", "邹", "喻", "柏", "窦", "章", "苏", "潘", "范", "彭", "鲁", "韦", "昌", "马", "苗", "凤", "花"],
+    "given_names": ["文", "武", "德", "仁", "义", "礼", "智", "信", "忠", "孝", "勇", "谋", "远", "达", "明", "哲", "贤", "良", "恭", "俭", "谦", "和", "正", "直", "刚", "毅", "清", "廉", "威", "望"]
+  },
+  "skills": {
+    "civil": [
+      {"id": "劝农", "name": "劝农", "description": "城市粮食产出+N%", "type": "passive", "max_level": 3},
+      {"id": "兴商", "name": "兴商", "description": "城市金钱产出+N%", "type": "passive", "max_level": 3},
+      {"id": "教化", "name": "教化", "description": "城市稳定度每回合恢复+N", "type": "passive", "max_level": 3},
+      {"id": "变法", "name": "变法", "description": "在任城市所有产出+N%", "type": "unique", "max_level": 3}
+    ],
+    "military": [
+      {"id": "坚守", "name": "坚守", "description": "部队防御+N%", "type": "passive", "max_level": 3},
+      {"id": "突击", "name": "突击", "description": "部队攻击+N%", "type": "passive", "max_level": 3},
+      {"id": "铁壁", "name": "铁壁", "description": "士气高于70时防御额外+N%", "type": "conditional", "max_level": 3},
+      {"id": "先见", "name": "先见", "description": "伏击率+N%，被伏击率-N%", "type": "passive", "max_level": 3},
+      {"id": "连击", "name": "连击", "description": "击败敌军后概率追击造成额外伤害", "type": "trigger", "max_level": 3},
+      {"id": "地利", "name": "地利", "description": "特定地形战斗时攻防+N%", "type": "conditional", "max_level": 3},
+      {"id": "人屠", "name": "人屠", "description": "击败敌军时额外俘获部队", "type": "unique", "max_level": 3}
+    ],
+    "diplomat": [
+      {"id": "巧舌", "name": "巧舌", "description": "外交行动资源消耗-N%", "type": "passive", "max_level": 3},
+      {"id": "结交", "name": "结交", "description": "目标国友好度每回合额外+N", "type": "passive", "max_level": 3},
+      {"id": "离间", "name": "离间", "description": "降低目标国与第三国的关系", "type": "active", "max_level": 3},
+      {"id": "连横", "name": "连横", "description": "外交行动成功率+N%", "type": "unique", "max_level": 3},
+      {"id": "合纵", "name": "合纵", "description": "同盟关系维持更久，不易破裂", "type": "unique", "max_level": 3}
+    ],
+    "universal": [
+      {"id": "名望", "name": "名望", "description": "全国士气每回合+N", "type": "passive", "max_level": 3},
+      {"id": "识人", "name": "识人", "description": "大夫获取概率+N%", "type": "passive", "max_level": 3}
+    ]
+  }
+}
