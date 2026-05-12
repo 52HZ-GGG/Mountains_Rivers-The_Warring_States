@@ -14,6 +14,8 @@ var _queue_list: VBoxContainer
 var _build_list: VBoxContainer
 var _detail_label: RichTextLabel
 var _selected_building_id: String = ""
+var _city_illustration: TextureRect
+var _portrait_rect: TextureRect
 
 signal return_to_map
 signal panel_closed
@@ -69,6 +71,13 @@ func _build_ui() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_bar.add_child(spacer)
 
+	# 城市插画
+	_city_illustration = TextureRect.new()
+	_city_illustration.custom_minimum_size = Vector2(200, 110)
+	_city_illustration.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_city_illustration.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	title_bar.add_child(_city_illustration)
+
 	var back_btn := Button.new()
 	back_btn.text = "返回大地图"
 	back_btn.pressed.connect(_on_back_pressed)
@@ -91,6 +100,13 @@ func _build_ui() -> void:
 	left_pane.custom_minimum_size = Vector2(300, 0)
 	left_pane.add_theme_constant_override("separation", 6)
 	split.add_child(left_pane)
+
+	# 君主头像
+	_portrait_rect = TextureRect.new()
+	_portrait_rect.custom_minimum_size = Vector2(120, 120)
+	_portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	left_pane.add_child(_portrait_rect)
 
 	# 城市信息
 	_info_label = Label.new()
@@ -188,6 +204,10 @@ func _refresh_info() -> void:
 
 	var fid: String = str(city.get("current_faction_id", ""))
 	var fname: String = _faction_display_name(fid)
+
+	# 更新插画和头像
+	_city_illustration.texture = _load_city_illustration(fid)
+	_portrait_rect.texture = SkirmishTileTextures.portrait_texture(fid)
 	var pop: int = int(city.get("current_population", 0))
 	var slots: int = int(city.get("max_building_slots", 0))
 	var dev: int = int(city.get("development", 0))
@@ -484,6 +504,14 @@ func _format_pop(pop: int) -> String:
 	if pop >= 10000:
 		return "%.1f万" % (pop / 10000.0)
 	return str(pop)
+
+
+func _load_city_illustration(faction_id: String) -> Texture2D:
+	var path: String = "res://photos/city/%s.png" % faction_id
+	var res: Resource = load(path)
+	if res != null:
+		return res as Texture2D
+	return null
 
 
 func _reason_text(reason: String) -> String:

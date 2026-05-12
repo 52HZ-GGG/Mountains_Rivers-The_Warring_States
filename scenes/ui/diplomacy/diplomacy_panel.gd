@@ -9,6 +9,7 @@ signal diplomacy_panel_closed
 
 var _selected_faction: String = ""
 var _faction_buttons: Array[Button] = []
+var _diplomacy_illustration: TextureRect
 
 
 func _ready() -> void:
@@ -107,9 +108,26 @@ func _populate_faction_list() -> void:
 	for fid in GameManager.FACTION_IDS:
 		if fid == player_faction:
 			continue
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		faction_list.add_child(row)
+
+		# 旗帜图标
+		var flag_tex: Texture2D = SkirmishTileTextures.flag_texture(fid)
+		if flag_tex != null:
+			var flag_rect := TextureRect.new()
+			flag_rect.custom_minimum_size = Vector2(24, 24)
+			flag_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			flag_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			flag_rect.texture = flag_tex
+			row.add_child(flag_rect)
+		else:
+			print("[Diplomacy] 旗帜加载失败: %s" % fid)
+
 		var btn := Button.new()
 		var faction_data: Dictionary = DataManager.get_faction(fid)
-		var name: String = faction_data.get("name", fid)
+		var fname: String = faction_data.get("name", fid)
 		var opinion: int = DiplomacySystem.get_opinion(player_faction, fid)
 		var rep_level: String = DiplomacySystem.get_reputation_level(fid)
 		var war_status := ""
@@ -117,9 +135,10 @@ func _populate_faction_list() -> void:
 			war_status = " [战争]"
 		elif DiplomacySystem.are_allied(player_faction, fid):
 			war_status = " [盟友]"
-		btn.text = "%s (好感:%d) %s%s" % [name, opinion, _rep_level_text(rep_level), war_status]
+		btn.text = "%s (好感:%d) %s%s" % [fname, opinion, _rep_level_text(rep_level), war_status]
 		btn.pressed.connect(_on_faction_selected.bind(fid))
-		faction_list.add_child(btn)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(btn)
 		_faction_buttons.append(btn)
 
 
@@ -148,6 +167,19 @@ func _update_detail_panel() -> void:
 
 	var player_faction: String = GameManager.get_player_faction()
 	var faction_data: Dictionary = DataManager.get_faction(_selected_faction)
+
+	# 外交插画（根据关系状态）
+	var rel_status: String = _get_relationship_status(player_faction, _selected_faction)
+	var dip_tex: Texture2D = SkirmishTileTextures.diplomacy_texture_for_status(rel_status)
+	if dip_tex != null:
+		_diplomacy_illustration = TextureRect.new()
+		_diplomacy_illustration.custom_minimum_size = Vector2(300, 180)
+		_diplomacy_illustration.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_diplomacy_illustration.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_diplomacy_illustration.texture = dip_tex
+		detail.add_child(_diplomacy_illustration)
+	else:
+		print("[Diplomacy] 外交插画加载失败: status=%s, action=%s" % [rel_status, SkirmishTileTextures._STATUS_DIPLOMACY_MAP.get(rel_status, "?")])
 
 	# 基本信息
 	var info_label := Label.new()
@@ -299,3 +331,15 @@ func _on_trade_route_pressed() -> void:
 	if result["success"]:
 		_populate_faction_list()
 		_update_detail_panel()
+
+
+func _get_relationship_status(player_faction: String, target_faction: String) -> String:
+	if DiplomacySystem.are_at_war(player_faction, target_faction):
+		return "war"
+	if DiplomacySystem.are_allied(player_faction, target_faction):
+		return "alliance"
+	if DiplomacySystem.have_non_aggression(player_faction, target_faction):
+		return "non_aggression"
+	if DiplomacySystem.have_trade_route(player_faction, target_faction):
+		return "trade"
+	return "peace"

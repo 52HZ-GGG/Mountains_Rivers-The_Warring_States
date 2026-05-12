@@ -28,6 +28,13 @@ func _ready() -> void:
 	$MarginContainer/MainVBox/TitleBar/ZoomOutBtn.pressed.connect(_on_zoom_out_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomResetBtn.pressed.connect(_on_zoom_reset_pressed)
 	$MarginContainer/MainVBox/TitleBar/PoliticalBtn.pressed.connect(_on_political_toggle)
+	# 事件测试按钮（开发用）
+	var test_btn := Button.new()
+	test_btn.text = "事件测试"
+	test_btn.pressed.connect(_on_event_test_pressed)
+	var title_bar := $MarginContainer/MainVBox/TitleBar
+	title_bar.add_child(test_btn)
+	title_bar.move_child(test_btn, title_bar.get_node("CloseBtn").get_index())
 
 
 func open() -> void:
@@ -63,6 +70,13 @@ func get_resource_bar_slot() -> VBoxContainer:
 
 func _on_close_pressed() -> void:
 	map_closed.emit()
+
+
+func _on_event_test_pressed() -> void:
+	# 通过 main 场景打开事件测试面板
+	var main := get_parent()
+	if main != null and main.has_method("_on_event_test_button_pressed"):
+		main._on_event_test_button_pressed()
 
 
 func _on_zoom_in_pressed() -> void:
@@ -312,7 +326,7 @@ func _ensure_board_backdrop() -> void:
 		bg.offset_bottom = 0.0
 		_hex_board.add_child(bg)
 		_hex_board.move_child(bg, 0)
-	bg.color = Color(0.19, 0.21, 0.18, 1.0)
+	bg.color = Color(0.55, 0.58, 0.50, 1.0)
 	_ensure_hex_map_canvas()
 
 
