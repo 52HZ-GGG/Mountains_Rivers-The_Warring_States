@@ -1,0 +1,76 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/splash/loading_screen.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/ui_loading_hex.png" id="2"]
+
+[node name="LoadingScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Overlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="HexFrame" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 3
+texture_filter = 0
+texture = ExtResource("2")
+
+[node name="WeaponIcon" type="TextureRect" parent="HexFrame"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 3
+texture_filter = 0
+
+[node name="HintLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.784, 0.659, 0.306, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+text = "厉兵秣马..."
