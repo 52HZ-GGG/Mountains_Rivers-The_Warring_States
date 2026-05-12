@@ -11,6 +11,8 @@ const _TERRAIN_PATHS: Dictionary = {
 	"marsh": "res://photos/terrain(c)/tile_swamp.png",
 	"pass": "res://photos/terrain(c)/tile_pass.png",
 	"ford": "res://photos/terrain(c)/tile_bridge.png",
+	"desert": "res://photos/terrain(c)/tile_desert.png",
+	"tundra": "res://photos/terrain(c)/tile_tundra.png",
 }
 
 ## 战术演武城格据点：秦 / 赵首都（美工资源）

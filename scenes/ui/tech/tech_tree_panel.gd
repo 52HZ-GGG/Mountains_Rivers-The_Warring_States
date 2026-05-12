@@ -316,7 +316,9 @@ func _resource_name(resource: String) -> String:
 	match resource:
 		"food": return "粮食"
 		"gold": return "金币"
-		"iron": return "铁矿"
+		"wood": return "木材"
+		"craftsmen": return "工匠"
+		"building_materials": return "建材"
 		_: return resource
 
 

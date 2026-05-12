@@ -10,9 +10,11 @@ func _ready() -> void:
 	add_to_group("resource_bar")
 	_add_resource_cell("food", "粮食")
 	_add_resource_cell("gold", "金币")
-	_add_resource_cell("iron", "铁")
+	_add_resource_cell("wood", "木材")
 	_add_resource_cell("horse", "马匹")
 	_add_resource_cell("refined_iron", "精铁")
+	_add_resource_cell("craftsmen", "工匠")
+	_add_resource_cell("building_materials", "建材")
 	_add_resource_cell("troops", "兵力")
 	_add_resource_cell("population", "人口")
 	_add_resource_cell("morale", "民心")
@@ -46,9 +48,11 @@ func _resource_icon(key: String) -> String:
 	match key:
 		"food": return "🌾"
 		"gold": return "💰"
-		"iron": return "⚙"
+		"wood": return "🪵"
 		"horse": return "🐎"
 		"refined_iron": return "⚔"
+		"craftsmen": return "🔨"
+		"building_materials": return "🧱"
 		"troops": return "🛡"
 		"population": return "👥"
 		"morale": return "🔥"
@@ -63,9 +67,11 @@ func _on_turn_started(_turn: int, _faction: String) -> void:
 func refresh() -> void:
 	_set_val("food", GameManager.get_player_food())
 	_set_val("gold", GameManager.get_player_gold())
-	_set_val("iron", GameManager.get_player_iron())
+	_set_val("wood", GameManager.get_player_wood())
 	_set_val("horse", GameManager.get_player_horse())
 	_set_val("refined_iron", GameManager.get_player_refined_iron())
+	_set_val("craftsmen", GameManager.get_player_craftsmen())
+	_set_val("building_materials", GameManager.get_player_building_materials())
 	_set_val("troops", GameManager.get_player_troops())
 	_set_val("population", GameManager.get_player_population())
 	_set_val("morale", GameManager.get_player_morale())
