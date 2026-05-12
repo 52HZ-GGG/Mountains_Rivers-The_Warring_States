@@ -1,0 +1,9 @@
+[gd_resource type="BitmapFont" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/fonts/pixel_lishu_0.png" id="1"]
+
+[resource]
+textures = [ExtResource("1")]
+height = 16
+# 使用 BMFont 格式导入，共 582 个字符
+# 在 Godot 中导入 pixel_lishu.fnt 即可
