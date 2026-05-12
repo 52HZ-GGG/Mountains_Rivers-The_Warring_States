@@ -54,3 +54,25 @@ signal tech_research_started(tech_id: String)
 signal tech_research_completed(tech_id: String)
 signal tech_research_cancelled(tech_id: String)
 signal tech_available(tech_id: String)
+
+# ============= 城市占领系统（子任务 4） =============
+
+## 城市归属变更时发出。new_faction 已成为 current_faction_id
+signal city_occupied(city_id: String, old_faction: String, new_faction: String)
+
+## faction 失去自己的首都时发出（占领触发）。等待迁都决策
+signal capital_lost(faction_id: String, lost_city_id: String)
+
+## faction 完成迁都（玩家手动 / AI 自动）时发出
+signal capital_relocated(faction_id: String, new_capital_id: String)
+
+## faction 灭国时发出（无任何城市 或 玩家迁都次数耗尽且首都再次失守）
+signal faction_eliminated(faction_id: String)
+
+# ============= 城市管理 =============
+
+## 建筑建造/升级完成时发出
+signal building_completed(city_id: String, building_id: String, level: int)
+
+## 势力每回合资源产出结算后发出
+signal resources_produced(faction_id: String, production: Dictionary)

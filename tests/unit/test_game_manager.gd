@@ -13,6 +13,8 @@ const PLAYER: String = "qin"
 
 func before_each() -> void:
 	GameManager.reset()
+	# 子任务 4 后 check_victory 依赖 CityManager 状态；同步重置防止跨脚本污染。
+	CityManager.reset()
 
 
 # ============= 初始状态 =============

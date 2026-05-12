@@ -16,6 +16,7 @@ const WONDERS_PATH := "res://data/wonders.json"
 const FACTIONS_PATH := "res://data/factions.json"
 const DIPLOMACY_PATH := "res://data/diplomacy.json"
 const TECH_TREE_PATH := "res://data/tech_tree.json"
+const TACTICAL_SKIRMISH_MVP_PATH := "res://data/tactical_skirmish_mvp.json"
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
@@ -27,6 +28,7 @@ var _wonders: Dictionary = {}
 var _factions: Dictionary = {}
 var _diplomacy: Dictionary = {}
 var _tech_tree: Dictionary = {}
+var _tactical_skirmish_mvp: Dictionary = {}
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
@@ -55,6 +57,7 @@ func _load_all_data() -> void:
 	_factions = _load_json(FACTIONS_PATH)
 	_diplomacy = _load_json(DIPLOMACY_PATH)
 	_tech_tree = _load_json(TECH_TREE_PATH)
+	_tactical_skirmish_mvp = _load_json(TACTICAL_SKIRMISH_MVP_PATH)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -352,6 +355,10 @@ func get_techs_by_era(era: String) -> Array:
 	return result
 
 
+func get_tactical_skirmish_mvp() -> Dictionary:
+	return _tactical_skirmish_mvp
+
+
 func get_tech_cost(tech_id: String) -> int:
 	var tech := get_tech(tech_id)
 	return tech.get("cost_gold", 0)
@@ -407,4 +414,37 @@ func validate_data() -> bool:
 		if not t.has("effects") or not t["effects"].has("type"):
 			push_error("DataManager: 科技数据缺少effects: %s" % t)
 			valid = false
+	if not _tactical_skirmish_mvp.is_empty():
+		if not _validate_tactical_skirmish_mvp():
+			valid = false
 	return valid
+
+
+func _validate_tactical_skirmish_mvp() -> bool:
+	var cfg: Dictionary = _tactical_skirmish_mvp
+	var ok: bool = true
+	if not cfg.has("map_width") or not cfg.has("map_height"):
+		push_error("DataManager: tactical_skirmish_mvp 缺少 map_width / map_height")
+		return false
+	var w: int = int(cfg["map_width"])
+	var h: int = int(cfg["map_height"])
+	if not cfg.has("rows"):
+		push_error("DataManager: tactical_skirmish_mvp 缺少 rows")
+		return false
+	var rows: Array = cfg["rows"]
+	if rows.size() != h:
+		push_error("DataManager: tactical_skirmish_mvp rows 行数与 map_height 不符")
+		ok = false
+	for i in range(rows.size()):
+		var row: Variant = rows[i]
+		if row is Array and (row as Array).size() == w:
+			continue
+		push_error("DataManager: tactical_skirmish_mvp rows[%d] 列数与 map_width 不符" % i)
+		ok = false
+	if not cfg.has("player_city") or not cfg.has("enemy_city"):
+		push_error("DataManager: tactical_skirmish_mvp 缺少 player_city / enemy_city")
+		ok = false
+	if not cfg.has("initial_units"):
+		push_error("DataManager: tactical_skirmish_mvp 缺少 initial_units")
+		ok = false
+	return ok
