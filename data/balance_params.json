@@ -740,14 +740,20 @@
   },
   "unit_morale": {
     "base_morale": 100,
-    "morale_break_threshold": 20,
-    "retreat_chance_at_break": 0.5,
-    "morale_loss_on_defeat": 15,
+    "max_morale": 130,
+    "morale_break_threshold": 50,
+    "high_morale_threshold": 130,
+    "high_morale_atk_bonus": 0.1,
+    "broken_hp_loss_per_turn": 0.2,
+    "broken_atk_mod": 0.5,
+    "broken_def_mod": 0.5,
+    "broken_speed_mod": 0.5,
     "morale_loss_on_ally_death": 5,
+    "morale_gain_on_ally_kill": 5,
+    "morale_gain_on_self_kill": 15,
     "morale_recovery_per_turn": 3,
     "morale_recovery_in_city": 8,
-    "low_morale_atk_penalty": 0.3,
-    "high_morale_atk_bonus": 0.1
+    "natural_recovery_cap": 100
   },
   "category_counter_matrix": {
     "infantry": {
