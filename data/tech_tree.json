@@ -404,9 +404,9 @@
       }
     },
     {
-      "id": "salt_iron_debate",
-      "name": "盐铁之议",
-      "description": "盐铁之利，国之大宝。筦山海之藏，以佐百姓之急。",
+      "id": "salt_wood_debate",
+      "name": "盐木之议",
+      "description": "讨论盐铁专营之利弊，木材产出+15%",
       "category": "economy",
       "era": "early",
       "cost_gold": 90,
@@ -414,7 +414,7 @@
       "special_conditions": [],
       "effects": {
         "type": "resource_bonus",
-        "resource": "iron",
+        "resource": "wood",
         "value": 0.15
       }
     },
@@ -504,7 +504,7 @@
       "cost_gold": 180,
       "prerequisites": [
         "trade_route_basic",
-        "salt_iron_debate"
+        "salt_wood_debate"
       ],
       "special_conditions": [],
       "effects": {
@@ -565,9 +565,9 @@
       }
     },
     {
-      "id": "salt_iron_monopoly",
-      "name": "盐铁专营",
-      "description": "笼天下盐铁之利，以佐用度。富商大贾无所牟利。",
+      "id": "salt_wood_monopoly",
+      "name": "盐木专营",
+      "description": "实行盐铁专营之策，木材和金币各+20%",
       "category": "economy",
       "era": "late",
       "cost_gold": 350,
@@ -579,7 +579,7 @@
       "effects": {
         "type": "resource_bonus_multi",
         "resources": {
-          "iron": 0.2,
+          "wood": 0.2,
           "gold": 0.2
         }
       }

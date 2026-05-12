@@ -30,15 +30,17 @@ var _player_faction: String = ""
 # 玩家资源状态（阶段1简化：单一资源池）
 var _player_food: int = 0
 var _player_gold: int = 0
-var _player_iron: int = 0
+var _player_wood: int = 0
 var _player_morale: int = 50
 var _player_population: int = 0
 var _player_troops: int = 0
 var _player_horse: int = 0
 var _player_refined_iron: int = 0
+var _player_craftsmen: int = 0
+var _player_building_materials: int = 0
 
 # AI 国家资源追踪（阶段2）
-var _faction_resources: Dictionary = {}  # {faction_id: {food, gold, iron, morale, population, troops}}
+var _faction_resources: Dictionary = {}  # {faction_id: {food, gold, wood, morale, population, troops, horse, refined_iron, craftsmen, building_materials}}
 
 # 难度系统（阶段2）
 var _difficulty: String = "normal"
@@ -175,7 +177,7 @@ func _ai_economy_tick(faction_id: String) -> void:
 		apply_faction_resource_delta(faction_id, "food", 20)
 	# 基础产出
 	apply_faction_resource_delta(faction_id, "gold", 10)
-	apply_faction_resource_delta(faction_id, "iron", 5)
+	apply_faction_resource_delta(faction_id, "wood", 5)
 
 
 func _ai_research_tick(faction_id: String) -> void:
@@ -214,9 +216,11 @@ func _process_production(faction_id: String) -> void:
 	var total: Dictionary = CityManager.get_faction_total_production(faction_id)
 	apply_faction_resource_delta(faction_id, "food", total["food"])
 	apply_faction_resource_delta(faction_id, "gold", total["gold"])
-	apply_faction_resource_delta(faction_id, "iron", total["iron"])
+	apply_faction_resource_delta(faction_id, "wood", total["wood"])
 	apply_faction_resource_delta(faction_id, "horse", total.get("horse", 0))
 	apply_faction_resource_delta(faction_id, "refined_iron", total.get("refined_iron", 0))
+	apply_faction_resource_delta(faction_id, "craftsmen", total.get("craftsmen", 0))
+	apply_faction_resource_delta(faction_id, "building_materials", total.get("building_materials", 0))
 	SignalBus.resources_produced.emit(faction_id, total)
 
 
@@ -274,8 +278,8 @@ func get_player_gold() -> int:
 	return _player_gold
 
 
-func get_player_iron() -> int:
-	return _player_iron
+func get_player_wood() -> int:
+	return _player_wood
 
 
 func get_player_population() -> int:
@@ -294,8 +298,8 @@ func apply_gold_delta(delta: int) -> void:
 	_player_gold = max(0, _player_gold + delta)
 
 
-func apply_iron_delta(delta: int) -> void:
-	_player_iron = max(0, _player_iron + delta)
+func apply_wood_delta(delta: int) -> void:
+	_player_wood = max(0, _player_wood + delta)
 
 
 func apply_morale_delta(delta: int) -> void:
@@ -326,6 +330,22 @@ func apply_refined_iron_delta(delta: int) -> void:
 	_player_refined_iron = max(0, _player_refined_iron + delta)
 
 
+func get_player_craftsmen() -> int:
+	return _player_craftsmen
+
+
+func apply_craftsmen_delta(delta: int) -> void:
+	_player_craftsmen = max(0, _player_craftsmen + delta)
+
+
+func get_player_building_materials() -> int:
+	return _player_building_materials
+
+
+func apply_building_materials_delta(delta: int) -> void:
+	_player_building_materials = max(0, _player_building_materials + delta)
+
+
 # ============= 测试与重开 =============
 
 ## 重置到初始状态。供单元测试与「重新开局」使用。
@@ -337,12 +357,14 @@ func reset() -> void:
 	_player_faction = ""
 	_player_food = 0
 	_player_gold = 0
-	_player_iron = 0
+	_player_wood = 0
 	_player_morale = 50
 	_player_population = 0
 	_player_troops = 0
 	_player_horse = 0
 	_player_refined_iron = 0
+	_player_craftsmen = 0
+	_player_building_materials = 0
 	_faction_resources.clear()
 	_difficulty = "normal"
 
@@ -351,9 +373,10 @@ func reset() -> void:
 
 func get_faction_resources(faction_id: String) -> Dictionary:
 	if faction_id == _player_faction:
-		return {"food": _player_food, "gold": _player_gold, "iron": _player_iron,
+		return {"food": _player_food, "gold": _player_gold, "wood": _player_wood,
 				"morale": _player_morale, "population": _player_population, "troops": _player_troops,
-				"horse": _player_horse, "refined_iron": _player_refined_iron}
+				"horse": _player_horse, "refined_iron": _player_refined_iron,
+				"craftsmen": _player_craftsmen, "building_materials": _player_building_materials}
 	return _faction_resources.get(faction_id, {})
 
 
@@ -367,12 +390,14 @@ func apply_faction_resource_delta(faction_id: String, resource: String, delta: i
 		match resource:
 			"food": apply_food_delta(delta)
 			"gold": apply_gold_delta(delta)
-			"iron": apply_iron_delta(delta)
+			"wood": apply_wood_delta(delta)
 			"morale": apply_morale_delta(delta)
 			"population": apply_population_delta(delta)
 			"troops": apply_troops_delta(delta)
 			"horse": apply_horse_delta(delta)
 			"refined_iron": apply_refined_iron_delta(delta)
+			"craftsmen": apply_craftsmen_delta(delta)
+			"building_materials": apply_building_materials_delta(delta)
 		return
 	if not _faction_resources.has(faction_id):
 		return
@@ -401,20 +426,24 @@ func _init_player_resources() -> void:
 		push_warning("GameManager: 未找到玩家首都，使用默认资源")
 		_player_food = 500
 		_player_gold = 300
-		_player_iron = 100
+		_player_wood = 100
 		_player_population = 10000
 		_player_troops = 0
 		_player_horse = 0
 		_player_refined_iron = 0
+		_player_craftsmen = 0
+		_player_building_materials = 0
 		return
 	_player_population = capital.get("base_population", 10000)
 	# 初始资源基于城市人口和基础产出
 	_player_food = int(_player_population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
 	_player_gold = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
-	_player_iron = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
+	_player_wood = int(DataManager.get_balance_param("resources.city_base_wood") * 3)
 	_player_troops = 0
 	_player_horse = 0
 	_player_refined_iron = 0
+	_player_craftsmen = 0
+	_player_building_materials = 0
 
 
 func _init_ai_factions() -> void:
@@ -430,17 +459,19 @@ func _init_ai_factions() -> void:
 		var population: int = capital.get("base_population", 10000) if not capital.is_empty() else 10000
 		var base_food: int = int(population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
 		var base_gold: int = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
-		var base_iron: int = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
+		var base_wood: int = int(DataManager.get_balance_param("resources.city_base_wood") * 3)
 		# 应用难度修正
 		_faction_resources[fid] = {
 			"food": int(base_food * (1.0 + res_mod)),
 			"gold": int(base_gold * (1.0 + res_mod)) + gold_bonus,
-			"iron": int(base_iron * (1.0 + res_mod)),
+			"wood": int(base_wood * (1.0 + res_mod)),
 			"morale": 50,
 			"population": population,
 			"troops": 0,
 			"horse": 0,
-			"refined_iron": 0
+			"refined_iron": 0,
+			"craftsmen": 0,
+			"building_materials": 0
 		}
 
 

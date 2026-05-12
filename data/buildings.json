@@ -7,7 +7,7 @@
       "description": "开垦荒地，增产粮食",
       "category": "economic",
       "cost_gold": 100,
-      "cost_iron": 0,
+      "cost_wood": 0,
       "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 5,
@@ -22,7 +22,7 @@
       "description": "招徕商贾，增课赋税",
       "category": "economic",
       "cost_gold": 120,
-      "cost_iron": 0,
+      "cost_wood": 0,
       "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 8,
@@ -32,17 +32,47 @@
       "upgrade_cost_multiplier": 1.5
     },
     {
-      "id": "mine",
-      "name": "矿场",
-      "description": "凿山取铁，锻兵利器",
+      "id": "lumbermill",
+      "name": "伐木场",
+      "description": "伐木取材，营造之基",
       "category": "economic",
       "cost_gold": 80,
-      "cost_iron": 20,
+      "cost_wood": 20,
       "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 10,
       "effects": {
-        "iron_production": 20
+        "wood_production": 20
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "craftsmen_workshop",
+      "name": "工匠坊",
+      "description": "聚百工之巧，造器制物",
+      "category": "economic",
+      "cost_gold": 80,
+      "cost_wood": 20,
+      "build_turns": 1,
+      "max_level": 3,
+      "upkeep_gold": 10,
+      "effects": {
+        "craftsmen_production": 3
+      },
+      "upgrade_cost_multiplier": 1.5
+    },
+    {
+      "id": "building_materials_workshop",
+      "name": "建材坊",
+      "description": "伐木烧砖，采石备料",
+      "category": "economic",
+      "cost_gold": 100,
+      "cost_wood": 30,
+      "build_turns": 1,
+      "max_level": 3,
+      "upkeep_gold": 10,
+      "effects": {
+        "building_materials_production": 3
       },
       "upgrade_cost_multiplier": 1.5
     },
@@ -52,7 +82,7 @@
       "description": "募兵练卒，整军经武。可生产步兵类兵种。",
       "category": "military",
       "cost_gold": 150,
-      "cost_iron": 30,
+      "cost_wood": 30,
       "build_turns": 2,
       "max_level": 3,
       "upkeep_gold": 15,
@@ -68,7 +98,7 @@
       "description": "高筑城垣，固守疆圉。建于辖区格子上，可重复建造。",
       "category": "military",
       "cost_gold": 200,
-      "cost_iron": 50,
+      "cost_wood": 50,
       "build_turns": 2,
       "max_level": 3,
       "upkeep_gold": 10,
@@ -77,6 +107,9 @@
         "structure_hp": 200
       },
       "upgrade_cost_multiplier": 1.5,
+      "upgrade_building_materials": {
+        "3": 30
+      },
       "is_repeatable": true,
       "is_defense_building": true
     },
@@ -86,7 +119,7 @@
       "description": "祭祀先祖，安抚百姓，民心归附",
       "category": "political",
       "cost_gold": 150,
-      "cost_iron": 10,
+      "cost_wood": 10,
       "build_turns": 2,
       "max_level": 2,
       "upkeep_gold": 8,
@@ -102,7 +135,7 @@
       "description": "延请名师，教化一方，文风鼎盛",
       "category": "political",
       "cost_gold": 200,
-      "cost_iron": 20,
+      "cost_wood": 20,
       "build_turns": 2,
       "max_level": 2,
       "upkeep_gold": 12,
@@ -119,7 +152,7 @@
       "description": "通达四方，传递消息，结交诸侯",
       "category": "political",
       "cost_gold": 120,
-      "cost_iron": 15,
+      "cost_wood": 15,
       "build_turns": 2,
       "max_level": 1,
       "upkeep_gold": 10,
@@ -136,7 +169,7 @@
       "description": "广积粮谷，以备荒年，仓廪充实",
       "category": "economic",
       "cost_gold": 100,
-      "cost_iron": 0,
+      "cost_wood": 0,
       "build_turns": 1,
       "max_level": 2,
       "upkeep_gold": 5,
@@ -153,7 +186,7 @@
       "description": "营建宫室，威加海内，四方来朝",
       "category": "special",
       "cost_gold": 400,
-      "cost_iron": 100,
+      "cost_wood": 100,
       "build_turns": 3,
       "max_level": 3,
       "upkeep_gold": 20,
@@ -163,6 +196,10 @@
         "diplomacy_reputation": 5
       },
       "upgrade_cost_multiplier": 1.5,
+      "upgrade_building_materials": {
+        "2": 20,
+        "3": 40
+      },
       "max_national_count": 1
     },
     {
@@ -171,7 +208,7 @@
       "description": "蓄养战马，以备骑兵之用。可生产骑兵类兵种。仅产马之地可建。",
       "category": "military",
       "cost_gold": 150,
-      "cost_iron": 20,
+      "cost_wood": 20,
       "build_turns": 2,
       "max_level": 2,
       "upkeep_gold": 10,
@@ -188,10 +225,10 @@
     {
       "id": "ironworks",
       "name": "精铁坊",
-      "description": "百炼精铁，铸兵利器。仅产铁之地可建。",
+      "description": "百炼精铁，铸兵利器。仅产木之地可建。",
       "category": "economic",
       "cost_gold": 200,
-      "cost_iron": 30,
+      "cost_wood": 30,
       "build_turns": 2,
       "max_level": 1,
       "upkeep_gold": 12,
@@ -201,7 +238,7 @@
       "upgrade_cost_multiplier": 1.5,
       "max_national_count": 3,
       "build_requires": {
-        "special_resource": "iron"
+        "special_resource": "wood"
       }
     },
     {
@@ -210,7 +247,7 @@
       "description": "居高临下，矢如雨发。建于辖区格子上，可重复建造。",
       "category": "military",
       "cost_gold": 150,
-      "cost_iron": 30,
+      "cost_wood": 30,
       "build_turns": 2,
       "max_level": 3,
       "upkeep_gold": 8,
@@ -220,6 +257,9 @@
       },
       "produces_category": "archer",
       "upgrade_cost_multiplier": 1.5,
+      "upgrade_building_materials": {
+        "3": 25
+      },
       "is_repeatable": true,
       "is_defense_building": true
     },
@@ -229,7 +269,7 @@
       "description": "造攻城之器，备冲车投石。可生产攻城类兵种。",
       "category": "military",
       "cost_gold": 200,
-      "cost_iron": 40,
+      "cost_wood": 40,
       "build_turns": 2,
       "max_level": 2,
       "upkeep_gold": 12,
@@ -243,7 +283,7 @@
       "description": "临水造船，以备水战。可生产水军类兵种。须建于水上。",
       "category": "military",
       "cost_gold": 180,
-      "cost_iron": 35,
+      "cost_wood": 35,
       "build_turns": 2,
       "max_level": 2,
       "upkeep_gold": 10,
