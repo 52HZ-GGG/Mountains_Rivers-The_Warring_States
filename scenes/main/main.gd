@@ -55,6 +55,10 @@ func _close_city_panel() -> void:
 
 
 func _init_game() -> void:
+	# 如果 StartupFlow 已经启动了游戏，跳过
+	if GameManager.get_current_phase() != GameManager.Phase.GAME_INIT:
+		print("[Main] 游戏已由 StartupFlow 启动，跳过重复初始化")
+		return
 	var active_factions: Array[String] = []
 	for fid in GameManager.FACTION_IDS:
 		active_factions.append(fid)
