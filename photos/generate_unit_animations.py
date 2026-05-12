@@ -17,8 +17,8 @@ SZ = 64
 FRAME_W = 64
 FRAME_H = 64
 NUM_FRAMES = 4
-WHITE = (255, 255, 255)
-BG = (255, 255, 255)  # 透明背景
+TRANSPARENT = (0, 0, 0, 0)
+BG = (0, 0, 0, 0)  # 透明背景
 
 # ── 色彩 ──
 P = {
@@ -58,7 +58,7 @@ def draw_body(d, x1, y1, x2, y2, c):
 
 def save_sheet(frames, name):
     """将 4 帧合并为精灵表并保存"""
-    sheet = Image.new("RGB", (FRAME_W * len(frames), FRAME_H), BG)
+    sheet = Image.new("RGBA", (FRAME_W * len(frames), FRAME_H), BG)
     for i, frame in enumerate(frames):
         sheet.paste(frame, (i * FRAME_W, 0))
     # 放大到 1024x1024/帧
@@ -76,7 +76,7 @@ def save_sheet(frames, name):
 
 def draw_infantry_frame(ox=0, oy=0, arm_angle=0, leg_phase=0, shield_y=0, spear_angle=0, hurt=False, dead=False):
     """画一帧步兵，返回 Image"""
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["漆器红"]
     cx, cy = 30 + ox, 30 + oy
@@ -135,7 +135,7 @@ def draw_infantry_frame(ox=0, oy=0, arm_angle=0, leg_phase=0, shield_y=0, spear_
 
 def draw_archer_frame(ox=0, oy=0, bow_draw=0, leg_phase=0, hurt=False, dead=False):
     """画一帧弓兵"""
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = N["森林"]
     cx, cy = 32 + ox, 30 + oy
@@ -191,7 +191,7 @@ def draw_archer_frame(ox=0, oy=0, bow_draw=0, leg_phase=0, hurt=False, dead=Fals
 
 def draw_cavalry_frame(ox=0, oy=0, leg_phase=0, lance_angle=0, horse_bob=0, hurt=False, dead=False):
     """画一帧骑兵"""
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["青铜靛"]
     cx, cy = 30 + ox, 30 + oy
@@ -252,7 +252,7 @@ def draw_cavalry_frame(ox=0, oy=0, leg_phase=0, lance_angle=0, horse_bob=0, hurt
 
 def draw_siege_frame(ox=0, oy=0, arm_angle=0, rock_y=0, fire=False, hurt=False, dead=False):
     """画一帧攻城器械（投石车）"""
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["水墨黑"]
     cx, cy = 30 + ox, 30 + oy
@@ -309,7 +309,7 @@ def draw_siege_frame(ox=0, oy=0, arm_angle=0, rock_y=0, fire=False, hurt=False, 
 
 def draw_navy_frame(ox=0, oy=0, wave_phase=0, arrow_angle=0, hurt=False, dead=False):
     """画一帧水军（蒙冲）"""
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = N["森林"]
     cx, cy = 30 + ox, 30 + oy
@@ -449,7 +449,7 @@ def gen_death(draw_func, **kwargs):
 # ══════════════════════════════════════════════════════════
 
 def draw_militia_frame(ox=0, oy=0, leg_phase=0, stick_angle=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["竹简黄"]
     cx, cy = 30 + ox, 30 + oy
@@ -518,7 +518,7 @@ def draw_militia_death():
 # ══════════════════════════════════════════════════════════
 
 def draw_spear_frame(ox=0, oy=0, leg_phase=0, spear_phase=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["青铜靛"]
     cx, cy = 30 + ox, 30 + oy
@@ -596,7 +596,7 @@ def draw_spear_death():
 # ══════════════════════════════════════════════════════════
 
 def draw_scout_frame(ox=0, oy=0, leg_phase=0, look_phase=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = N["森林"]
     cx, cy = 32 + ox, 30 + oy
@@ -679,7 +679,7 @@ def draw_scout_death():
 # ══════════════════════════════════════════════════════════
 
 def draw_heavy_infantry_frame(ox=0, oy=0, leg_phase=0, sword_angle=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["水墨黑"]
     cx, cy = 30 + ox, 30 + oy
@@ -759,7 +759,7 @@ def draw_heavy_infantry_death():
 
 def draw_cavalry_variant_frame(variant="normal", ox=0, oy=0, leg_phase=0, lance_angle=-10, horse_bob=0, hurt=False, dead=False):
     """骑兵变体：scout=轻骑, normal=标准, shock=突击, heavy=重骑"""
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
 
     if variant == "scout":
@@ -905,7 +905,7 @@ def make_cavalry_anim(variant):
 # ══════════════════════════════════════════════════════════
 
 def draw_crossbow_frame(ox=0, oy=0, leg_phase=0, draw_phase=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["青铜靛"]
     cx, cy = 30 + ox, 30 + oy
@@ -959,7 +959,7 @@ def draw_crossbow_frame(ox=0, oy=0, leg_phase=0, draw_phase=0, hurt=False, dead=
 
 
 def draw_horse_archer_frame(ox=0, oy=0, leg_phase=0, bow_draw=0, horse_bob=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["竹简黄"]
     cx, cy = 30 + ox, 30 + oy
@@ -1020,7 +1020,7 @@ def draw_horse_archer_frame(ox=0, oy=0, leg_phase=0, bow_draw=0, horse_bob=0, hu
 # ══════════════════════════════════════════════════════════
 
 def draw_battering_ram_frame(ox=0, oy=0, ram_phase=0, push_phase=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = P["漆器红"]
     cx, cy = 30 + ox, 30 + oy
@@ -1067,7 +1067,7 @@ def draw_battering_ram_frame(ox=0, oy=0, ram_phase=0, push_phase=0, hurt=False, 
 
 
 def draw_siege_crossbow_frame(ox=0, oy=0, draw_phase=0, recoil=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = N["山地"]
     cx, cy = 30 + ox, 30 + oy
@@ -1127,7 +1127,7 @@ def draw_siege_crossbow_frame(ox=0, oy=0, draw_phase=0, recoil=0, hurt=False, de
 # ══════════════════════════════════════════════════════════
 
 def draw_dayi_frame(ox=0, oy=0, wave_phase=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = N["森林"]
     cx, cy = 30 + ox, 30 + oy
@@ -1165,7 +1165,7 @@ def draw_dayi_frame(ox=0, oy=0, wave_phase=0, hurt=False, dead=False):
 
 
 def draw_louchuan_frame(ox=0, oy=0, wave_phase=0, hurt=False, dead=False):
-    img = Image.new("RGB", (SZ, SZ), BG)
+    img = Image.new("RGBA", (SZ, SZ), BG)
     d = ImageDraw.Draw(img)
     b, h, s, dd = N["森林"]
     cx, cy = 30 + ox, 30 + oy
@@ -1343,7 +1343,7 @@ def generate_all():
 
         for anim_name, anim_func in zip(anim_names, [idle_f, move_f, attack_f, hurt_f, death_f]):
             frames = anim_func()
-            sheet = Image.new("RGB", (FRAME_W * len(frames), FRAME_H), BG)
+            sheet = Image.new("RGBA", (FRAME_W * len(frames), FRAME_H), BG)
             for i, frame in enumerate(frames):
                 sheet.paste(frame, (i * FRAME_W, 0))
             # 放大到 1024x1024/帧

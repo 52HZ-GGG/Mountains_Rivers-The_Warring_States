@@ -12,7 +12,7 @@ OUT_DIR = os.path.join(ROOT, "unit")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 SZ = 64
-WHITE = (255, 255, 255)
+TRANSPARENT = (0, 0, 0, 0)
 
 # ── 色彩 ──
 P = {
@@ -187,7 +187,7 @@ def draw_scout(img, draw, pal):
     draw_head(draw, 36,18, 5, SK[0], s)
     # 眼睛（睁大警觉）
     dot(draw, 38,18, (20,20,20))
-    dot(draw, 38,17, WHITE)
+    dot(draw, 38,17, (255,255,255,255))
     # 左臂（撑地保持平衡）
     draw_limb(draw, 26,30, 16,38, SK[0], 2)
     pb(draw, 14,36, 4,4, SK[0])
@@ -1121,7 +1121,7 @@ def generate_all():
     ]
 
     for fn, label, func, pal in units:
-        img = Image.new("RGB", (SZ,SZ), WHITE)
+        img = Image.new("RGBA", (SZ,SZ), TRANSPARENT)
         d = ImageDraw.Draw(img)
         func(img, d, pal)
         save(img, fn)
