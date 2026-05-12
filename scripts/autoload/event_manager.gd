@@ -118,8 +118,12 @@ func _apply_effects(effects: Dictionary) -> void:
 		GameManager.apply_food_delta(effects["food_delta"])
 	if effects.has("gold_delta"):
 		GameManager.apply_gold_delta(effects["gold_delta"])
-	if effects.has("iron_delta"):
-		GameManager.apply_iron_delta(effects["iron_delta"])
+	if effects.has("wood_delta"):
+		GameManager.apply_wood_delta(effects["wood_delta"])
+	if effects.has("craftsmen_delta"):
+		GameManager.apply_craftsmen_delta(effects["craftsmen_delta"])
+	if effects.has("building_materials_delta"):
+		GameManager.apply_building_materials_delta(effects["building_materials_delta"])
 	if effects.has("morale_delta"):
 		GameManager.apply_morale_delta(effects["morale_delta"])
 	if effects.has("population_delta"):

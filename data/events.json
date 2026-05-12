@@ -18,10 +18,10 @@
       "effects": {
         "food_delta": 200,
         "gold_delta": 0,
-        "iron_delta": 0,
         "morale_delta": 10,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -40,10 +40,10 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": 100,
-        "iron_delta": 0,
         "morale_delta": 0,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -70,10 +70,10 @@
           "outcomes": {
             "food_delta": -150,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -83,10 +83,10 @@
           "outcomes": {
             "food_delta": 50,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -112,10 +112,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 80,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 80
           }
         },
         {
@@ -125,10 +125,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -155,10 +155,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": -10
+            "troops_delta": -10,
+            "wood_delta": 0
           }
         },
         {
@@ -168,10 +168,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 20
+            "troops_delta": 20,
+            "wood_delta": 0
           }
         }
       ]
@@ -197,10 +197,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -15,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -210,10 +210,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -239,10 +239,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -252,10 +252,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -275,10 +275,10 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": 0,
-        "iron_delta": 0,
         "morale_delta": 8,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -305,10 +305,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
-            "iron_delta": 0,
             "morale_delta": 20,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -318,10 +318,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
-            "iron_delta": 0,
             "morale_delta": 8,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -350,10 +350,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -363,10 +363,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -15,
             "population_delta": -500,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -393,10 +393,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 100,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -406,10 +406,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -435,10 +435,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
-            "iron_delta": 0,
             "morale_delta": 20,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -448,10 +448,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -25,
             "population_delta": -200,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -473,10 +473,10 @@
       "effects": {
         "food_delta": 100,
         "gold_delta": 0,
-        "iron_delta": 0,
         "morale_delta": 5,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -503,10 +503,10 @@
           "outcomes": {
             "food_delta": -200,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -516,10 +516,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -547,10 +547,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 150,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -560,10 +560,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": 10
+            "troops_delta": 10,
+            "wood_delta": 0
           }
         }
       ]
@@ -597,10 +597,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": -20
+            "troops_delta": -20,
+            "wood_delta": 0
           }
         },
         {
@@ -610,10 +610,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
-            "iron_delta": -20,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": -50
+            "troops_delta": -50,
+            "wood_delta": -20
           }
         }
       ]
@@ -647,10 +647,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": -15
+            "troops_delta": -15,
+            "wood_delta": 0
           }
         },
         {
@@ -660,10 +660,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": -30,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": -60
+            "troops_delta": -60,
+            "wood_delta": -30
           }
         }
       ]
@@ -697,10 +697,10 @@
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": -10
+            "troops_delta": -10,
+            "wood_delta": 0
           }
         },
         {
@@ -710,10 +710,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
-            "iron_delta": -10,
             "morale_delta": -20,
             "population_delta": -300,
-            "troops_delta": -80
+            "troops_delta": -80,
+            "wood_delta": -10
           }
         }
       ]
@@ -747,10 +747,10 @@
           "outcomes": {
             "food_delta": -150,
             "gold_delta": -80,
-            "iron_delta": -30,
             "morale_delta": 10,
             "population_delta": -100,
-            "troops_delta": -30
+            "troops_delta": -30,
+            "wood_delta": -30
           }
         },
         {
@@ -760,10 +760,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -30,
             "population_delta": 0,
-            "troops_delta": -50
+            "troops_delta": -50,
+            "wood_delta": 0
           }
         }
       ]
@@ -797,10 +797,10 @@
           "outcomes": {
             "food_delta": -50,
             "gold_delta": -60,
-            "iron_delta": -20,
             "morale_delta": 25,
             "population_delta": 0,
-            "troops_delta": -15
+            "troops_delta": -15,
+            "wood_delta": -20
           }
         },
         {
@@ -810,10 +810,10 @@
           "outcomes": {
             "food_delta": -200,
             "gold_delta": -150,
-            "iron_delta": 0,
             "morale_delta": -15,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -847,10 +847,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
-            "iron_delta": -15,
             "morale_delta": 20,
             "population_delta": 0,
-            "troops_delta": -25
+            "troops_delta": -25,
+            "wood_delta": -15
           }
         },
         {
@@ -860,10 +860,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": -40,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": -60
+            "troops_delta": -60,
+            "wood_delta": -40
           }
         }
       ]
@@ -897,10 +897,10 @@
           "outcomes": {
             "food_delta": -300,
             "gold_delta": -200,
-            "iron_delta": -80,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": -40
+            "troops_delta": -40,
+            "wood_delta": -80
           }
         },
         {
@@ -910,10 +910,10 @@
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -80,
-            "iron_delta": -30,
             "morale_delta": -15,
             "population_delta": -200,
-            "troops_delta": -70
+            "troops_delta": -70,
+            "wood_delta": -30
           }
         }
       ]
@@ -947,10 +947,10 @@
           "outcomes": {
             "food_delta": -200,
             "gold_delta": -100,
-            "iron_delta": -40,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": -30
+            "troops_delta": -30,
+            "wood_delta": -40
           }
         },
         {
@@ -960,10 +960,10 @@
           "outcomes": {
             "food_delta": -150,
             "gold_delta": -120,
-            "iron_delta": -50,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": -60
+            "troops_delta": -60,
+            "wood_delta": -50
           }
         }
       ]
@@ -990,10 +990,10 @@
           "outcomes": {
             "food_delta": 100,
             "gold_delta": 80,
-            "iron_delta": 20,
             "morale_delta": -10,
             "population_delta": 200,
-            "troops_delta": 30
+            "troops_delta": 30,
+            "wood_delta": 20
           }
         },
         {
@@ -1003,10 +1003,10 @@
           "outcomes": {
             "food_delta": 30,
             "gold_delta": 20,
-            "iron_delta": 5,
             "morale_delta": 5,
             "population_delta": 50,
-            "troops_delta": 5
+            "troops_delta": 5,
+            "wood_delta": 5
           }
         }
       ]
@@ -1033,10 +1033,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
-            "iron_delta": -20,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 40
+            "troops_delta": 40,
+            "wood_delta": -20
           }
         },
         {
@@ -1046,10 +1046,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -20,
-            "iron_delta": -5,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 10
+            "troops_delta": 10,
+            "wood_delta": -5
           }
         }
       ]
@@ -1070,10 +1070,10 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": 0,
-        "iron_delta": 0,
         "morale_delta": 5,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -1098,10 +1098,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1111,10 +1111,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1141,10 +1141,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 10
+            "troops_delta": 10,
+            "wood_delta": 0
           }
         },
         {
@@ -1154,10 +1154,10 @@
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -100,
-            "iron_delta": -30,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": -30
+            "troops_delta": -30,
+            "wood_delta": -30
           }
         }
       ]
@@ -1184,10 +1184,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -15,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1197,10 +1197,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1227,10 +1227,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1240,10 +1240,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1270,10 +1270,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": -10
+            "troops_delta": -10,
+            "wood_delta": 0
           }
         },
         {
@@ -1283,10 +1283,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": -20,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": -20
+            "troops_delta": -20,
+            "wood_delta": -20
           }
         }
       ]
@@ -1313,10 +1313,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1326,10 +1326,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 10
+            "troops_delta": 10,
+            "wood_delta": 0
           }
         }
       ]
@@ -1356,10 +1356,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
-            "iron_delta": -20,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": -30
+            "troops_delta": -30,
+            "wood_delta": -20
           }
         },
         {
@@ -1369,10 +1369,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1399,10 +1399,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -120,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 100,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1412,10 +1412,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 80,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1442,10 +1442,10 @@
           "outcomes": {
             "food_delta": 200,
             "gold_delta": -100,
-            "iron_delta": -30,
             "morale_delta": 10,
             "population_delta": 100,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": -30
           }
         },
         {
@@ -1455,10 +1455,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1485,10 +1485,10 @@
           "outcomes": {
             "food_delta": 150,
             "gold_delta": -80,
-            "iron_delta": -20,
             "morale_delta": 5,
             "population_delta": 50,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": -20
           }
         },
         {
@@ -1498,10 +1498,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1530,10 +1530,10 @@
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -120,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": -200,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1543,10 +1543,10 @@
           "outcomes": {
             "food_delta": -200,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -20,
             "population_delta": -500,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1576,10 +1576,10 @@
           "outcomes": {
             "food_delta": -200,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1589,10 +1589,10 @@
           "outcomes": {
             "food_delta": -50,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -15,
             "population_delta": -300,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1621,10 +1621,10 @@
           "outcomes": {
             "food_delta": -80,
             "gold_delta": -30,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1634,10 +1634,10 @@
           "outcomes": {
             "food_delta": -150,
             "gold_delta": -20,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": -100,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1663,10 +1663,10 @@
           "outcomes": {
             "food_delta": -50,
             "gold_delta": -100,
-            "iron_delta": -20,
             "morale_delta": 10,
             "population_delta": -100,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": -20
           }
         },
         {
@@ -1676,10 +1676,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
-            "iron_delta": 0,
             "morale_delta": 0,
             "population_delta": -200,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1706,10 +1706,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": 20,
             "population_delta": 100,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1719,10 +1719,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
-            "iron_delta": 0,
             "morale_delta": 8,
             "population_delta": 30,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1749,10 +1749,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 50,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1762,10 +1762,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -20,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": 5
+            "troops_delta": 5,
+            "wood_delta": 0
           }
         }
       ]
@@ -1792,10 +1792,10 @@
           "outcomes": {
             "food_delta": 50,
             "gold_delta": -40,
-            "iron_delta": 0,
             "morale_delta": 20,
             "population_delta": 100,
-            "troops_delta": -10
+            "troops_delta": -10,
+            "wood_delta": 0
           }
         },
         {
@@ -1805,10 +1805,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 30,
-            "iron_delta": 10,
             "morale_delta": -5,
             "population_delta": 0,
-            "troops_delta": 10
+            "troops_delta": 10,
+            "wood_delta": 10
           }
         }
       ]
@@ -1835,10 +1835,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1848,10 +1848,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1878,10 +1878,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1891,10 +1891,10 @@
           "outcomes": {
             "food_delta": -100,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 15,
             "population_delta": 50,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1917,10 +1917,10 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": -30,
-        "iron_delta": 0,
         "morale_delta": 12,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -1946,10 +1946,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -8,
             "population_delta": -30,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -1959,10 +1959,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -1983,10 +1983,10 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": 20,
-        "iron_delta": 0,
         "morale_delta": -5,
         "population_delta": -20,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -2012,10 +2012,10 @@
           "outcomes": {
             "food_delta": -50,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 0,
-            "troops_delta": 20
+            "troops_delta": 20,
+            "wood_delta": 0
           }
         },
         {
@@ -2025,10 +2025,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": -10
+            "troops_delta": -10,
+            "wood_delta": 0
           }
         }
       ]
@@ -2055,10 +2055,10 @@
           "outcomes": {
             "food_delta": 80,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": 8,
             "population_delta": 30,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -2068,10 +2068,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "iron_delta": 0,
             "morale_delta": 3,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -2092,10 +2092,10 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": 0,
-        "iron_delta": 0,
         "morale_delta": 5,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     },
@@ -2121,10 +2121,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -150,
-            "iron_delta": 0,
             "morale_delta": 5,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -2134,10 +2134,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
-            "iron_delta": 0,
             "morale_delta": -3,
             "population_delta": 0,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -2163,10 +2163,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
-            "iron_delta": 0,
             "morale_delta": 10,
             "population_delta": 50,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         },
         {
@@ -2176,10 +2176,10 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "iron_delta": 0,
             "morale_delta": -5,
             "population_delta": -30,
-            "troops_delta": 0
+            "troops_delta": 0,
+            "wood_delta": 0
           }
         }
       ]
@@ -2197,10 +2197,10 @@
       "effects": {
         "food_delta": 30,
         "gold_delta": 0,
-        "iron_delta": 0,
         "morale_delta": 5,
         "population_delta": 0,
-        "troops_delta": 0
+        "troops_delta": 0,
+        "wood_delta": 0
       },
       "options": null
     }
