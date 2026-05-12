@@ -30,7 +30,7 @@ extends Node
 ## 拆除返还语义（子任务 3 决策）：
 ## - 按当前难度查 data/diplomacy.json difficulty.<diff>.demolish_refund_ratio
 ## - easy 0.75 / normal 0.50 / hard 0.25 / hell 0.00
-## - 返还基数：仅基础建造成本（cost_gold + cost_iron），不返还升级花费
+## - 返还基数：仅基础建造成本（cost_gold + cost_wood），不返还升级花费
 ##
 ## 占领规则（子任务 4 决策）：
 ## - 占领后建筑随城易主（含等级），在建队列清空且不退资源
@@ -140,8 +140,8 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 			return {"allowed": false, "reason": REASON_NATIONAL_CAP_REACHED}
 
 	var cost_gold: int = int(building.get("cost_gold", 0))
-	var cost_iron: int = int(building.get("cost_iron", 0))
-	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_iron() < cost_iron:
+	var cost_wood: int = int(building.get("cost_wood", 0))
+	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_wood() < cost_wood:
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
 	return {"allowed": true, "reason": REASON_OK}
@@ -157,11 +157,11 @@ func start_build(city_id: String, building_id: String) -> bool:
 
 	var building: Dictionary = DataManager.get_building(building_id)
 	var cost_gold: int = int(building.get("cost_gold", 0))
-	var cost_iron: int = int(building.get("cost_iron", 0))
+	var cost_wood: int = int(building.get("cost_wood", 0))
 	var build_turns: int = int(building.get("build_turns", 1))
 
 	GameManager.apply_gold_delta(-cost_gold)
-	GameManager.apply_iron_delta(-cost_iron)
+	GameManager.apply_wood_delta(-cost_wood)
 
 	var city: Dictionary = _city_states[city_id]
 	(city["build_queue"] as Array).append({
@@ -202,7 +202,7 @@ func can_upgrade(city_id: String, building_id: String) -> Dictionary:
 		return {"allowed": false, "reason": REASON_MAX_LEVEL_REACHED}
 
 	var costs: Array = _calculate_upgrade_cost(building, current_level)
-	if GameManager.get_player_gold() < int(costs[0]) or GameManager.get_player_iron() < int(costs[1]):
+	if GameManager.get_player_gold() < int(costs[0]) or GameManager.get_player_wood() < int(costs[1]):
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
 	return {"allowed": true, "reason": REASON_OK}
@@ -224,7 +224,7 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 	var build_turns: int = int(building.get("build_turns", 1))
 
 	GameManager.apply_gold_delta(-int(costs[0]))
-	GameManager.apply_iron_delta(-int(costs[1]))
+	GameManager.apply_wood_delta(-int(costs[1]))
 
 	(city["build_queue"] as Array).append({
 		"building_id": building_id,
@@ -238,7 +238,7 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 ## 拆除 city_id 已建的 building_id。
 ## 按当前难度查 difficulty.<diff>.demolish_refund_ratio 返还基础建造成本：
 ##   easy 0.75 / normal 0.50 / hard 0.25 / hell 0.00（兜底 0.50）
-## 返还基数：仅基础建造成本（cost_gold + cost_iron），不返还升级花费。
+## 返还基数：仅基础建造成本（cost_gold + cost_wood），不返还升级花费。
 ## 若该建筑同时在 build_queue（升级中），一并清除（不补偿升级费）。
 ## 仅拆已建建筑：未建（仅在队列中）的建筑请用 cancel_build（暂未实现）。
 ##
@@ -257,11 +257,11 @@ func demolish(city_id: String, building_id: String) -> bool:
 		var settings: Dictionary = DataManager.get_difficulty_settings(diff)
 		var ratio: float = float(settings.get("demolish_refund_ratio", 0.5))
 		var refund_gold: int = int(round(float(building.get("cost_gold", 0)) * ratio))
-		var refund_iron: int = int(round(float(building.get("cost_iron", 0)) * ratio))
+		var refund_wood: int = int(round(float(building.get("cost_wood", 0)) * ratio))
 		if refund_gold > 0:
 			GameManager.apply_gold_delta(refund_gold)
-		if refund_iron > 0:
-			GameManager.apply_iron_delta(refund_iron)
+		if refund_wood > 0:
+			GameManager.apply_wood_delta(refund_wood)
 
 	# 移除 buildings 中匹配项（倒序遍历安全删除）
 	var buildings: Array = city["buildings"]
@@ -296,11 +296,11 @@ func cancel_build(city_id: String, queue_index: int) -> bool:
 	if not building.is_empty():
 		# 退还全部建造费用
 		var cost_gold: int = int(building.get("cost_gold", 0))
-		var cost_iron: int = int(building.get("cost_iron", 0))
+		var cost_wood: int = int(building.get("cost_wood", 0))
 		if cost_gold > 0:
 			GameManager.apply_gold_delta(cost_gold)
-		if cost_iron > 0:
-			GameManager.apply_iron_delta(cost_iron)
+		if cost_wood > 0:
+			GameManager.apply_wood_delta(cost_wood)
 	queue.remove_at(queue_index)
 	return true
 
@@ -517,8 +517,9 @@ func get_city_production(city_id: String) -> Dictionary:
 	if city.is_empty():
 		return {}
 	var prod: Dictionary = {
-		"food": 0, "gold": 0, "iron": 0,
+		"food": 0, "gold": 0, "wood": 0,
 		"horse": 0, "refined_iron": 0,
+		"craftsmen": 0, "building_materials": 0,
 		"morale_bonus": 0, "defense_bonus": 0.0,
 		"recruit_speed_bonus": 0.0, "tax_bonus": 0.0,
 	}
@@ -526,7 +527,7 @@ func get_city_production(city_id: String) -> Dictionary:
 	var pop: int = int(city.get("current_population", 0))
 	prod["food"] = int(pop * DataManager.get_balance_param("resources.pop_food_rate"))
 	prod["gold"] = int(DataManager.get_balance_param("resources.city_base_gold"))
-	prod["iron"] = int(DataManager.get_balance_param("resources.city_base_iron"))
+	prod["wood"] = int(DataManager.get_balance_param("resources.city_base_wood"))
 	# 累加建筑效果
 	for b in city.get("buildings", []):
 		var bid: String = str(b.get("building_id", ""))
@@ -550,8 +551,9 @@ func get_city_production(city_id: String) -> Dictionary:
 ## 获取指定 faction 所有城市的总产出（已含季节修正）。
 func get_faction_total_production(faction_id: String) -> Dictionary:
 	var total: Dictionary = {
-		"food": 0, "gold": 0, "iron": 0,
+		"food": 0, "gold": 0, "wood": 0,
 		"horse": 0, "refined_iron": 0,
+		"craftsmen": 0, "building_materials": 0,
 	}
 	var season: String = get_current_season(GameManager.get_current_turn())
 	var cities: Array = get_faction_city_states(faction_id)
@@ -562,9 +564,11 @@ func get_faction_total_production(faction_id: String) -> Dictionary:
 		var season_prod: Dictionary = _apply_season_modifier(city_prod, season)
 		total["food"] += int(season_prod.get("food", 0))
 		total["gold"] += int(season_prod.get("gold", 0))
-		total["iron"] += int(season_prod.get("iron", 0))
+		total["wood"] += int(season_prod.get("wood", 0))
 		total["horse"] += int(season_prod.get("horse", 0))
 		total["refined_iron"] += int(season_prod.get("refined_iron", 0))
+		total["craftsmen"] += int(season_prod.get("craftsmen", 0))
+		total["building_materials"] += int(season_prod.get("building_materials", 0))
 	return total
 
 
@@ -581,10 +585,14 @@ func _apply_season_modifier(prod: Dictionary, season: String) -> Dictionary:
 	var result: Dictionary = prod.duplicate()
 	var food_mod: Dictionary = DataManager.get_balance_param("resources.season_food_mod")
 	var gold_mod: Dictionary = DataManager.get_balance_param("resources.season_gold_mod")
-	var iron_mod: Dictionary = DataManager.get_balance_param("resources.season_iron_mod")
+	var wood_mod: Dictionary = DataManager.get_balance_param("resources.season_wood_mod")
+	var craftsmen_mod: Dictionary = DataManager.get_balance_param("resources.season_craftsmen_mod")
+	var bm_mod: Dictionary = DataManager.get_balance_param("resources.season_building_materials_mod")
 	result["food"] = int(result["food"] * float(food_mod.get(season, 1.0)))
 	result["gold"] = int(result["gold"] * float(gold_mod.get(season, 1.0)))
-	result["iron"] = int(result["iron"] * float(iron_mod.get(season, 1.0)))
+	result["wood"] = int(result["wood"] * float(wood_mod.get(season, 1.0)))
+	result["craftsmen"] = int(result["craftsmen"] * float(craftsmen_mod.get(season, 1.0)))
+	result["building_materials"] = int(result["building_materials"] * float(bm_mod.get(season, 1.0)))
 	return result
 
 
@@ -674,13 +682,13 @@ func _city_building_level(city: Dictionary, building_id: String) -> int:
 
 
 ## 升级到下一级的成本（基础成本 × multiplier^current_level）。
-## 返回 [cost_gold, cost_iron]，已 round + int 化。
+## 返回 [cost_gold, cost_wood]，已 round + int 化。
 func _calculate_upgrade_cost(building: Dictionary, current_level: int) -> Array:
 	var multiplier: float = float(building.get("upgrade_cost_multiplier", 1.5))
 	var factor: float = pow(multiplier, current_level)
 	var cost_gold: int = int(round(float(building.get("cost_gold", 0)) * factor))
-	var cost_iron: int = int(round(float(building.get("cost_iron", 0)) * factor))
-	return [cost_gold, cost_iron]
+	var cost_wood: int = int(round(float(building.get("cost_wood", 0)) * factor))
+	return [cost_gold, cost_wood]
 
 
 ## 该城市 build_queue 中「新建」类型的项数（即 building_id 未在 buildings 中）。

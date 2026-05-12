@@ -134,6 +134,42 @@
       "crossing_rules": null,
       "tech_overrides": null,
       "buildable_structures": null
+    },
+    {
+      "id": "desert",
+      "name": "沙漠",
+      "move_cost": 2,
+      "atk_mod": 0.95,
+      "def_mod": 0.9,
+      "ambush_chance": 0.05,
+      "ranged_accuracy_mod": -5,
+      "cavalry_allowed": true,
+      "is_navigable": false,
+      "special": null,
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null,
+      "supply_cost_modifier": 1.2
+    },
+    {
+      "id": "tundra",
+      "name": "冻土",
+      "move_cost": 2,
+      "atk_mod": 0.9,
+      "def_mod": 1.0,
+      "ambush_chance": 0.10,
+      "ranged_accuracy_mod": -10,
+      "cavalry_allowed": true,
+      "is_navigable": false,
+      "special": null,
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null,
+      "supply_cost_modifier": 1.2
     }
   ]
 }

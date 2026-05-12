@@ -215,13 +215,14 @@ func _refresh_info() -> void:
 	var sr_str: String = "\n特产：%s" % _special_resource_name(str(sr)) if sr != null else ""
 	var prod: Dictionary = CityManager.get_city_production(_city_id)
 
-	_info_label.text = "势力：%s\n人口：%s\n发展度：%d\n建筑槽位：%d / %d%s\n\n每回合产出：\n  粮食 +%d  金币 +%d  铁 +%d" % [
+	_info_label.text = "势力：%s\n人口：%s\n发展度：%d\n建筑槽位：%d / %d%s\n\n每回合产出：\n  粮食 +%d  金币 +%d  木材 +%d  工匠 +%d  建材 +%d" % [
 		fname,
 		_format_pop(pop),
 		dev,
 		city.get("buildings", []).size(), slots,
 		sr_str,
-		prod.get("food", 0), prod.get("gold", 0), prod.get("iron", 0),
+		prod.get("food", 0), prod.get("gold", 0), prod.get("wood", 0),
+		prod.get("craftsmen", 0), prod.get("building_materials", 0),
 	]
 
 
@@ -263,8 +264,8 @@ func _refresh_buildings() -> void:
 			var multiplier: float = float(bdata.get("upgrade_cost_multiplier", 1.5))
 			var factor: float = pow(multiplier, level)
 			var up_gold: int = int(round(float(bdata.get("cost_gold", 0)) * factor))
-			var up_iron: int = int(round(float(bdata.get("cost_iron", 0)) * factor))
-			up_btn.tooltip_text = "费用：%d金 %d铁" % [up_gold, up_iron]
+			var up_wood: int = int(round(float(bdata.get("cost_wood", 0)) * factor))
+			up_btn.tooltip_text = "费用：%d金 %d木材" % [up_gold, up_wood]
 		up_btn.pressed.connect(_on_upgrade_pressed.bind(bid))
 		row.add_child(up_btn)
 
@@ -328,7 +329,7 @@ func _refresh_build_list() -> void:
 		var bname: String = str(bdata.get("name", bid))
 		var category: String = str(bdata.get("category", ""))
 		var cost_gold: int = int(bdata.get("cost_gold", 0))
-		var cost_iron: int = int(bdata.get("cost_iron", 0))
+		var cost_wood: int = int(bdata.get("cost_wood", 0))
 
 		var check: Dictionary = CityManager.can_build(_city_id, bid)
 		var allowed: bool = check["allowed"]
@@ -338,7 +339,7 @@ func _refresh_build_list() -> void:
 		_build_list.add_child(row)
 
 		var btn := Button.new()
-		btn.text = "%s [%s] (%d金 %d铁)" % [bname, _category_name(category), cost_gold, cost_iron]
+		btn.text = "%s [%s] (%d金 %d木材)" % [bname, _category_name(category), cost_gold, cost_wood]
 		btn.add_theme_font_size_override("font_size", 13)
 		btn.disabled = not allowed
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -371,7 +372,7 @@ func _show_building_detail(building_id: String) -> void:
 	var desc: String = str(bdata.get("description", ""))
 	var category: String = _category_name(str(bdata.get("category", "")))
 	var cost_gold: int = int(bdata.get("cost_gold", 0))
-	var cost_iron: int = int(bdata.get("cost_iron", 0))
+	var cost_wood: int = int(bdata.get("cost_wood", 0))
 	var build_turns: int = int(bdata.get("build_turns", 1))
 	var max_level: int = int(bdata.get("max_level", 1))
 	var upkeep: int = int(bdata.get("upkeep_gold", 0))
@@ -382,7 +383,7 @@ func _show_building_detail(building_id: String) -> void:
 	lines.append("[b]%s[/b]  [%s]" % [bname, category])
 	lines.append(desc)
 	lines.append("")
-	lines.append("建造费用：%d金 %d铁" % [cost_gold, cost_iron])
+	lines.append("建造费用：%d金 %d木材" % [cost_gold, cost_wood])
 	lines.append("建造回合：%d  最高等级：%d" % [build_turns, max_level])
 	lines.append("维护费：%d 金/回合" % upkeep)
 	lines.append("")
@@ -456,9 +457,11 @@ func _faction_display_name(faction_id: String) -> String:
 
 func _special_resource_name(sr: String) -> String:
 	match sr:
-		"iron": return "铁矿（铁产量+30%）"
+		"wood": return "林木（木材产量+30%）"
 		"horse": return "马匹（骑兵训练+30%）"
 		"salt": return "盐池（金钱收入+20%）"
+		"craftsmen": return "工匠（工匠产量+30%）"
+		"building_materials": return "建材（建材产量+30%）"
 		_: return sr
 
 
@@ -484,9 +487,11 @@ func _effect_display_name(key: String) -> String:
 	match key:
 		"food_production": return "粮食"
 		"gold_production": return "金币"
-		"iron_production": return "铁"
+		"wood_production": return "木材"
 		"horse_production": return "马匹"
 		"refined_iron_production": return "精铁"
+		"craftsmen_production": return "工匠"
+		"building_materials_production": return "建材"
 		"morale_bonus": return "民心"
 		"defense_bonus": return "防御"
 		"recruit_speed_bonus": return "征兵加速"

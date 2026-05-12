@@ -90,14 +90,14 @@ func test_get_all_city_states_count() -> void:
 # - 限建语义按解读 B（每国限建数）
 
 const PLAYER_INITIAL_GOLD := 10000
-const PLAYER_INITIAL_IRON := 2000
+const PLAYER_INITIAL_WOOD := 2000
 
 
 func before_each() -> void:
 	CityManager.reset()
 	GameManager.reset()
 	GameManager.apply_gold_delta(PLAYER_INITIAL_GOLD)
-	GameManager.apply_iron_delta(PLAYER_INITIAL_IRON)
+	GameManager.apply_wood_delta(PLAYER_INITIAL_WOOD)
 
 
 # ============= can_build：成功路径 =============
@@ -142,7 +142,7 @@ func test_can_build_rejects_slots_full() -> void:
 	# 咸阳 max_building_slots = 6，强制塞 6 个进 buildings
 	var xianyang := CityManager.get_city_state("xianyang")
 	var buildings: Array = xianyang["buildings"]
-	for bid in ["farm", "market", "mine", "barracks", "wall", "shrine"]:
+	for bid in ["farm", "market", "lumbermill", "barracks", "wall", "shrine"]:
 		buildings.append({"building_id": bid, "level": 1})
 	# 再尝试建第 7 个应被拒（不与上述 6 种重名）
 	var result := CityManager.can_build("xianyang", "academy")
@@ -173,17 +173,17 @@ func test_can_build_rejects_national_cap_palace() -> void:
 func test_can_build_rejects_insufficient_gold() -> void:
 	GameManager.reset()
 	GameManager.apply_gold_delta(50)         # 农田要 100 金
-	GameManager.apply_iron_delta(100)
+	GameManager.apply_wood_delta(100)
 	var result := CityManager.can_build("xianyang", "farm")
 	assert_false(result["allowed"])
 	assert_eq(result["reason"], CityManager.REASON_INSUFFICIENT_RESOURCES)
 
 
-func test_can_build_rejects_insufficient_iron() -> void:
+func test_can_build_rejects_insufficient_wood() -> void:
 	GameManager.reset()
 	GameManager.apply_gold_delta(1000)
-	GameManager.apply_iron_delta(10)         # 矿场要 20 铁
-	var result := CityManager.can_build("xianyang", "mine")
+	GameManager.apply_wood_delta(10)         # 伐木场要 20 木材
+	var result := CityManager.can_build("xianyang", "lumbermill")
 	assert_false(result["allowed"])
 	assert_eq(result["reason"], CityManager.REASON_INSUFFICIENT_RESOURCES)
 
@@ -196,10 +196,10 @@ func test_start_build_success_returns_true() -> void:
 
 
 func test_start_build_success_deducts_resources() -> void:
-	# 矿场：80 金 + 20 铁
-	CityManager.start_build("xianyang", "mine")
+	# 伐木场：80 金 + 20 木材
+	CityManager.start_build("xianyang", "lumbermill")
 	assert_eq(GameManager.get_player_gold(), PLAYER_INITIAL_GOLD - 80)
-	assert_eq(GameManager.get_player_iron(), PLAYER_INITIAL_IRON - 20)
+	assert_eq(GameManager.get_player_wood(), PLAYER_INITIAL_WOOD - 20)
 
 
 func test_start_build_success_adds_to_queue() -> void:
@@ -219,7 +219,7 @@ func test_start_build_failure_returns_false() -> void:
 func test_start_build_failure_does_not_deduct() -> void:
 	CityManager.start_build("xianyang", "nonexistent_building")
 	assert_eq(GameManager.get_player_gold(), PLAYER_INITIAL_GOLD, "失败不应扣金")
-	assert_eq(GameManager.get_player_iron(), PLAYER_INITIAL_IRON, "失败不应扣铁")
+	assert_eq(GameManager.get_player_wood(), PLAYER_INITIAL_WOOD, "失败不应扣木材")
 
 
 # ============= 子任务 3：升级接口 =============
@@ -362,7 +362,7 @@ func test_can_build_slots_excludes_upgrades_in_queue() -> void:
 	# 应能再建第 6 个（max=6），证明 _count_new_build_in_queue 排除了升级项
 	var xianyang := CityManager.get_city_state("xianyang")
 	var buildings: Array = xianyang["buildings"]
-	for bid in ["farm", "market", "mine", "barracks", "wall"]:
+	for bid in ["farm", "market", "lumbermill", "barracks", "wall"]:
 		buildings.append({"building_id": bid, "level": 1})
 	CityManager.start_upgrade("xianyang", "farm")  # farm 入升级队列
 	var result := CityManager.can_build("xianyang", "shrine")
