@@ -86,10 +86,10 @@
     "gift_response": "same_as_player"
   },
   "difficulty": {
-    "easy":   {"resource_mod": -0.3, "initial_gold_bonus": 0},
-    "normal": {"resource_mod": 0.0,  "initial_gold_bonus": 0},
-    "hard":   {"resource_mod": 0.3,  "initial_gold_bonus": 100},
-    "hell":   {"resource_mod": 0.6,  "initial_gold_bonus": 300}
+    "easy":   {"resource_mod": -0.3, "initial_gold_bonus": 0,   "demolish_refund_ratio": 0.75},
+    "normal": {"resource_mod": 0.0,  "initial_gold_bonus": 0,   "demolish_refund_ratio": 0.50},
+    "hard":   {"resource_mod": 0.3,  "initial_gold_bonus": 100, "demolish_refund_ratio": 0.25},
+    "hell":   {"resource_mod": 0.6,  "initial_gold_bonus": 300, "demolish_refund_ratio": 0.00}
   },
   "reputation_thresholds": {
     "very_low": 20,

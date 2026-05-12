@@ -421,7 +421,11 @@
   },
   "resources": {
     "city_base_iron": 30,
+    "pop_food_rate": 0.01,
+    "pop_growth_rate": 0.02,
     "army_upkeep_gold_per_unit": 5,
+    "army_upkeep_food_per_unit": 2,
+    "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
       "spring": 1.2,
       "summer": 1.0,
@@ -698,6 +702,13 @@
     "research_speed_per_turn": 1,
     "special_condition_check_on_unlock": true,
     "era_gate_enabled": false
+  },
+  "capital": {
+    "player_max_relocations": 2
+  },
+  "tactical": {
+    "attack_move_cost": 2,
+    "_comment": "战术演武：发动攻击额外消耗的移动力（移动力不足则无法攻击）"
   },
   "unit_morale": {
     "base_morale": 100,

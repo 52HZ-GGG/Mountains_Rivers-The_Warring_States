@@ -110,7 +110,12 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	DiplomacySystem.initialize(active_factions)
 	TechSystem.reset()
 	_change_phase(Phase.TURN_START)
-	SignalBus.turn_started.emit(_turn_number, get_current_faction())
+	# 首回合：城市结算 + 资源产出 + 军队维护
+	var first_faction := get_current_faction()
+	CityManager.process_turn(first_faction)
+	_process_production(first_faction)
+	_apply_upkeep(first_faction)
+	SignalBus.turn_started.emit(_turn_number, first_faction)
 	_change_phase(Phase.ACTION)
 
 
@@ -138,20 +143,23 @@ func end_current_turn() -> void:
 		_turn_number += 1
 
 	_change_phase(Phase.TURN_START)
-	SignalBus.turn_started.emit(_turn_number, get_current_faction())
+	var new_faction := get_current_faction()
+	# 回合开始：城市结算（建造队列+人口）→ 资源产出 → 军队维护
+	CityManager.process_turn(new_faction)
+	_process_production(new_faction)
+	_apply_upkeep(new_faction)
+	SignalBus.turn_started.emit(_turn_number, new_faction)
 	_change_phase(Phase.ACTION)
 
 
 ## AI 行动入口。阶段2：外交决策 + 经济简单tick。
 func process_ai_turn() -> void:
 	var faction_id := get_current_faction()
-	# 1. AI经济决策（性格驱动建设）
-	_ai_economy_tick(faction_id)
-	# 2. AI外交决策（概率触发）
+	# 1. AI外交决策（概率触发）
 	DiplomacyAI.evaluate_diplomacy(faction_id, _turn_number)
-	# 3. AI科技研究
+	# 2. AI科技研究
 	_ai_research_tick(faction_id)
-	# 4. AI军事决策（暂留阶段1占位）
+	# 3. AI军事决策（暂留阶段1占位）
 	end_current_turn()
 
 
@@ -199,12 +207,56 @@ func _ai_research_tick(faction_id: String) -> void:
 	TechSystem.start_ai_research(faction_id, available[0]["id"])
 
 
+# ============= 每回合资源产出 =============
+
+## 计算并应用势力的每回合资源产出（建筑效果 + 季节修正）。
+func _process_production(faction_id: String) -> void:
+	var total: Dictionary = CityManager.get_faction_total_production(faction_id)
+	apply_faction_resource_delta(faction_id, "food", total["food"])
+	apply_faction_resource_delta(faction_id, "gold", total["gold"])
+	apply_faction_resource_delta(faction_id, "iron", total["iron"])
+	apply_faction_resource_delta(faction_id, "horse", total.get("horse", 0))
+	apply_faction_resource_delta(faction_id, "refined_iron", total.get("refined_iron", 0))
+	SignalBus.resources_produced.emit(faction_id, total)
+
+
+## 扣除军队维护费（粮食 + 金币）。
+func _apply_upkeep(faction_id: String) -> void:
+	var troops: int = get_faction_resource(faction_id, "troops")
+	var horse: int = get_faction_resource(faction_id, "horse")
+	var food_per_troop: int = int(DataManager.get_balance_param("resources.army_upkeep_food_per_unit"))
+	var gold_per_troop: int = int(DataManager.get_balance_param("resources.army_upkeep_gold_per_unit"))
+	var food_per_horse: int = int(DataManager.get_balance_param("resources.horse_upkeep_food_per_unit"))
+	var total_food_upkeep: int = troops * food_per_troop + horse * food_per_horse
+	var total_gold_upkeep: int = troops * gold_per_troop
+	if total_food_upkeep > 0:
+		apply_faction_resource_delta(faction_id, "food", -total_food_upkeep)
+	if total_gold_upkeep > 0:
+		apply_faction_resource_delta(faction_id, "gold", -total_gold_upkeep)
+
+
 # ============= 胜利条件 =============
 
 ## 检查胜利。返回获胜方 faction_id 或空串。
+## 规则（子任务 4）：
+## - 唯一存活的 faction → 该 faction 获胜（征服胜利）
+## - 玩家已被灭（0 城）但仍有多个 AI 存活 → 游戏对玩家结束，返第一个存活 AI 作为获胜方
+## - 其它情况 → 返空串（游戏继续）
 func check_victory() -> String:
-	# TODO 阶段 1：实现「占领敌城即胜」
-	# 依赖 CityManager（尚未实现），目前返回空串占位
+	if _active_factions.is_empty():
+		return ""
+
+	var alive: Array[String] = []
+	for fid in _active_factions:
+		if not CityManager.is_faction_eliminated(fid):
+			alive.append(fid)
+
+	if alive.size() == 1:
+		return alive[0]
+
+	if _player_faction != "" and CityManager.is_faction_eliminated(_player_faction):
+		return alive[0] if not alive.is_empty() else ""
+
 	return ""
 
 
@@ -224,6 +276,14 @@ func get_player_gold() -> int:
 
 func get_player_iron() -> int:
 	return _player_iron
+
+
+func get_player_population() -> int:
+	return _player_population
+
+
+func get_player_troops() -> int:
+	return _player_troops
 
 
 func apply_food_delta(delta: int) -> void:
