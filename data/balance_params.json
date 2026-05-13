@@ -58,6 +58,7 @@
     "gold_cap_per_market_level": 50,
     "wood_cap_base": 200,
     "wood_cap_per_lumbermill_level": 30,
+    "city_base_wood": 10,
     "pop_growth_rate": 0.02,
     "army_upkeep_gold_per_unit": 5,
     "army_upkeep_food_per_unit": 2,
@@ -127,6 +128,14 @@
       "building_materials": {
         "city_base_production": 2,
         "description": "建材"
+      },
+      "wood": {
+        "city_base_production": 0,
+        "description": "木材（特产城通过 special_resource_mod 加成，无特产基础产出）"
+      },
+      "salt": {
+        "city_base_production": 0,
+        "description": "盐（特产城通过 special_resource_mod 加成，无特产基础产出）"
       }
     }
   },
@@ -176,9 +185,9 @@
     "high_tax_bonus": 0.2,
     "high_recruit_bonus": 0.3,
     "high_stability_bonus": 1,
-    "mid_tax_penalty": -0.2,
+    "low_tax_penalty": -0.2,
     "mid_recruit_penalty": -0.2,
-    "low_tax_penalty": -0.5,
+    "critical_tax_penalty": -0.5,
     "low_recruit_penalty": -0.5,
     "low_desertion_rate": 0.1,
     "low_riot_chance": 0.15,
@@ -215,7 +224,7 @@
     "low_output_penalty": -0.2,
     "critical_output_penalty": -0.5,
     "low_revolt_chance": 0.15,
-    "critical_uprising_chance": 0.2,
+    "critical_uprising_chance": 0.3,
     "building_effect": {
       "shrine": 9,
       "academy": 6,

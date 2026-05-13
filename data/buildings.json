@@ -291,7 +291,7 @@
       "produces_category": "navy",
       "upgrade_cost_multiplier": 1.5,
       "build_requires": {
-        "terrain": "water"
+        "terrain": ["river", "deep_ocean", "shallow_ocean", "ford"]
       }
     }
   ]
