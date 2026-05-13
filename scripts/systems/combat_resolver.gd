@@ -1,6 +1,8 @@
 extends RefCounted
 
 ## 战术战斗结算 — 对齐 docs/数值公式.md §1（阶段 1 MVP：将领/派系加成固定为 1.0）
+##
+## 伤害溢出机制：当目标HP不足以承受全部伤害时，多余伤害直接丢弃，不转移至其他单位
 
 static func morale_attack_multiplier(attacker_morale: int) -> float:
 	var floor_v: Variant = DataManager.get_balance_param("combat.morale_atk_floor")

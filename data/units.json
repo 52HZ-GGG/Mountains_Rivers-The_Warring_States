@@ -128,7 +128,7 @@
       "cost_horse": 5,
       "cost_refined_iron": 0,
       "upkeep_food": 8,
-      "special": "charge",
+      "special": null,
       "vision_range": 2,
       "category": "cavalry",
       "upkeep_gold": 5,
@@ -146,7 +146,7 @@
       "cost_gold": 120,
       "cost_food": 40,
       "upkeep_food": 12,
-      "special": "trample",
+      "special": null,
       "vision_range": 2,
       "category": "cavalry",
       "upkeep_gold": 5,
@@ -186,7 +186,7 @@
       "cost_horse": 10,
       "cost_refined_iron": 5,
       "upkeep_food": 12,
-      "special": "charge",
+      "special": null,
       "vision_range": 2,
       "category": "cavalry",
       "upkeep_gold": 5,
@@ -209,7 +209,8 @@
       "category": "archer",
       "upkeep_gold": 5,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "ranged_attack_mode": "no_counter"
     },
     {
       "id": "crossbow",
@@ -227,7 +228,8 @@
       "category": "archer",
       "upkeep_gold": 5,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "ranged_attack_mode": "no_counter"
     },
     {
       "id": "horse_archer",
@@ -247,7 +249,8 @@
       "category": "archer",
       "upkeep_gold": 5,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "ranged_attack_mode": "no_counter"
     },
     {
       "id": "battering_ram",
@@ -390,7 +393,7 @@
       "stat_overrides": {
         "speed": 6
       },
-      "special_description": "移动力+1，可在森林正常移动",
+      "special_description": "移动力+1，森林move_cost-1（2→1）",
       "category": "cavalry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -420,7 +423,7 @@
         "attack": 9,
         "defense": 9
       },
-      "special_description": "混合兵种（步+弓），在山地无视移动惩罚",
+      "special_description": "混合兵种（步+弓），山地move_cost-2（3→1）",
       "category": "infantry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -452,7 +455,7 @@
         "defense": 5,
         "range": 2
       },
-      "special_description": "骑射单位，可移动后射击",
+      "special_description": "骑射单位，攻击消耗2移动力后可继续移动，每回合限攻击1次",
       "category": "cavalry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -466,10 +469,10 @@
       "stat_overrides": {
         "attack": 20,
         "defense": 2,
-        "range": 4,
+        "range": 3,
         "speed": 2
       },
-      "special_description": "超远程弩炮，攻城伤害+50%，无法近战",
+      "special_description": "远程弩炮，攻城伤害×4.5（siege_bonus ×3.0 × 额外1.5），range=1时无法反击",
       "category": "siege",
       "upkeep_gold": 5,
       "cost_wood": 0,

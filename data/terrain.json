@@ -16,7 +16,9 @@
       "barrier_type": null,
       "crossing_rules": null,
       "tech_overrides": null,
-      "buildable_structures": null
+      "buildable_structures": null,
+      "elevation": 0,
+      "vision_cost": 1
     },
     {
       "id": "forest",
@@ -24,7 +26,7 @@
       "move_cost": 2,
       "atk_mod": 0.9,
       "def_mod": 1.1,
-      "ambush_chance": 0.30,
+      "ambush_chance": 0.3,
       "ranged_accuracy_mod": -20,
       "cavalry_allowed": true,
       "is_navigable": false,
@@ -33,15 +35,17 @@
       "barrier_type": null,
       "crossing_rules": null,
       "tech_overrides": null,
-      "buildable_structures": null
+      "buildable_structures": null,
+      "elevation": 1,
+      "vision_cost": 2
     },
     {
       "id": "mountain",
       "name": "山地",
-      "move_cost": 3,
+      "move_cost": -1,
       "atk_mod": 0.8,
       "def_mod": 1.2,
-      "ambush_chance": 0.20,
+      "ambush_chance": 0.2,
       "ranged_accuracy_mod": 10,
       "cavalry_allowed": false,
       "is_navigable": false,
@@ -49,11 +53,15 @@
       "is_barrier": true,
       "barrier_type": "mountain",
       "crossing_rules": {
-        "move_cost_add": 99,
+        "move_cost_add": 3,
         "atk_mod": -0.5
       },
-      "tech_overrides": ["plank_road"],
-      "buildable_structures": null
+      "tech_overrides": [
+        "plank_road"
+      ],
+      "buildable_structures": null,
+      "elevation": 1,
+      "vision_cost": 3
     },
     {
       "id": "river",
@@ -73,8 +81,12 @@
         "move_cost_add": 3,
         "atk_mod": -0.3
       },
-      "tech_overrides": ["bridge", "pontoon"],
-      "buildable_structures": null
+      "tech_overrides": [
+        "pontoon"
+      ],
+      "buildable_structures": null,
+      "elevation": -1,
+      "vision_cost": 1
     },
     {
       "id": "marsh",
@@ -82,7 +94,7 @@
       "move_cost": 4,
       "atk_mod": 0.5,
       "def_mod": 0.7,
-      "ambush_chance": 0.10,
+      "ambush_chance": 0.1,
       "ranged_accuracy_mod": -10,
       "cavalry_allowed": true,
       "is_navigable": false,
@@ -91,7 +103,9 @@
       "barrier_type": null,
       "crossing_rules": null,
       "tech_overrides": null,
-      "buildable_structures": null
+      "buildable_structures": null,
+      "elevation": 1,
+      "vision_cost": 2
     },
     {
       "id": "pass",
@@ -116,7 +130,9 @@
       "buildable_structures": null,
       "is_occupiable": true,
       "structure_hp": 500,
-      "hp_type": "fortification"
+      "hp_type": "fortification",
+      "elevation": 1,
+      "vision_cost": 3
     },
     {
       "id": "ford",
@@ -127,18 +143,20 @@
       "ambush_chance": 0.0,
       "ranged_accuracy_mod": -5,
       "cavalry_allowed": true,
-      "is_navigable": false,
+      "is_navigable": true,
       "special": "ford",
       "is_barrier": false,
       "barrier_type": null,
       "crossing_rules": null,
       "tech_overrides": null,
-      "buildable_structures": null
+      "buildable_structures": null,
+      "elevation": 1,
+      "vision_cost": 1
     },
     {
       "id": "desert",
       "name": "沙漠",
-      "move_cost": 2,
+      "move_cost": 3,
       "atk_mod": 0.95,
       "def_mod": 0.9,
       "ambush_chance": 0.05,
@@ -151,15 +169,17 @@
       "crossing_rules": null,
       "tech_overrides": null,
       "buildable_structures": null,
-      "supply_cost_modifier": 1.2
+      "supply_cost_modifier": 1.2,
+      "elevation": 0,
+      "vision_cost": 1
     },
     {
       "id": "tundra",
       "name": "冻土",
-      "move_cost": 2,
+      "move_cost": 3,
       "atk_mod": 0.9,
       "def_mod": 1.0,
-      "ambush_chance": 0.10,
+      "ambush_chance": 0.1,
       "ranged_accuracy_mod": -10,
       "cavalry_allowed": true,
       "is_navigable": false,
@@ -169,7 +189,47 @@
       "crossing_rules": null,
       "tech_overrides": null,
       "buildable_structures": null,
-      "supply_cost_modifier": 1.2
+      "supply_cost_modifier": 1.2,
+      "elevation": 0,
+      "vision_cost": 2
+    },
+    {
+      "id": "deep_ocean",
+      "name": "深海",
+      "move_cost": -1,
+      "atk_mod": 0.6,
+      "def_mod": 0.7,
+      "ambush_chance": 0.0,
+      "ranged_accuracy_mod": -15,
+      "cavalry_allowed": false,
+      "is_navigable": true,
+      "special": null,
+      "is_barrier": true,
+      "barrier_type": "ocean",
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null,
+      "elevation": -1,
+      "vision_cost": 1
+    },
+    {
+      "id": "shallow_ocean",
+      "name": "浅海",
+      "move_cost": 4,
+      "atk_mod": 0.7,
+      "def_mod": 0.8,
+      "ambush_chance": 0.0,
+      "ranged_accuracy_mod": -10,
+      "cavalry_allowed": false,
+      "is_navigable": true,
+      "special": null,
+      "is_barrier": false,
+      "barrier_type": null,
+      "crossing_rules": null,
+      "tech_overrides": null,
+      "buildable_structures": null,
+      "elevation": 0,
+      "vision_cost": 1
     }
   ]
 }
