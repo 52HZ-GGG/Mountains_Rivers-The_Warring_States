@@ -85,4 +85,5 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - 美术资产管线：见 `.claude/skills/art-pipeline.md`
 - 自定义命令：`.claude/commands/` 下的 `/balance`、`/event`、`/audit`、`/tilegen`、`/save`
 - MCP 服务器配置：见 `.claude/mcp.json.template`（首次使用需复制为 `.claude/mcp.json` 后再按本地环境调整；`mcp.json` 已被 `.gitignore` 排除）
-- 决策记录：见 `docs/decisions/阶段0-决策记录.md`
+- 决策记录：见 `docs/`下文档
+- 游戏机制总览：见`docs/机制概览/`文件夹下内容
