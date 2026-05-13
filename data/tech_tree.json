@@ -161,23 +161,6 @@
       }
     },
     {
-      "id": "bridge_building",
-      "name": "架桥之法",
-      "description": "逢山开路，遇水搭桥。军行至此，天堑变通途。",
-      "category": "military",
-      "era": "mid",
-      "cost_gold": 180,
-      "prerequisites": [
-        "city_defense"
-      ],
-      "special_conditions": [],
-      "effects": {
-        "type": "terrain_traversal",
-        "terrain": "river_narrow",
-        "value": true
-      }
-    },
-    {
       "id": "plank_road",
       "name": "栈道之术",
       "description": "凿石架木，以通蜀道。绝壁之上，犹可行军。",
@@ -268,12 +251,12 @@
       "era": "late",
       "cost_gold": 280,
       "prerequisites": [
-        "bridge_building"
+        "city_defense"
       ],
       "special_conditions": [],
       "effects": {
         "type": "terrain_traversal",
-        "terrain": "river_wide",
+        "terrain": "river",
         "value": true
       }
     },
@@ -286,7 +269,7 @@
       "cost_gold": 320,
       "prerequisites": [
         "siege_warfare",
-        "bridge_building"
+        "city_defense"
       ],
       "special_conditions": [],
       "effects": {
