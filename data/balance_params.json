@@ -54,78 +54,77 @@
     "tech_cost_elimination": "zoc_freedom"
   },
   "resources": {
-    "city_base_wood": 20,
+    "gold_cap_base": 500,
+    "gold_cap_per_market_level": 50,
+    "wood_cap_base": 200,
+    "wood_cap_per_lumbermill_level": 30,
     "pop_growth_rate": 0.02,
     "army_upkeep_gold_per_unit": 5,
     "army_upkeep_food_per_unit": 2,
     "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
-      "spring": 1.2,
-      "summer": 1.0,
-      "autumn": 2.0,
-      "winter": 0.7
+      "spring": 0.2,
+      "summer": 0.0,
+      "autumn": 1.0,
+      "winter": -0.3
     },
     "season_gold_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
-      "autumn": 1.5,
-      "winter": 0.8
+      "spring": 0.0,
+      "summer": 0.0,
+      "autumn": 0.5,
+      "winter": -0.2
     },
     "season_wood_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
-      "autumn": 1.0,
-      "winter": 0.8
+      "spring": 0.0,
+      "summer": 0.0,
+      "autumn": 0.0,
+      "winter": -0.2
     },
     "season_craftsmen_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
-      "autumn": 1.2,
-      "winter": 0.8
+      "spring": 0.0,
+      "summer": 0.0,
+      "autumn": 0.2,
+      "winter": -0.2
     },
     "season_building_materials_mod": {
-      "spring": 1.2,
-      "summer": 1.0,
-      "autumn": 1.0,
-      "winter": 0.7
+      "spring": 0.2,
+      "summer": 0.0,
+      "autumn": 0.0,
+      "winter": -0.3
     },
     "special_resource_mod": {
       "wood": {
-        "wood_production": 1.3,
-        "wood_cost_reduction": 0.8
+        "wood_production": 0.3,
+        "wood_cost_reduction": -0.2
       },
       "horse": {
-        "cavalry_train_speed": 1.3
+        "horse_production": 0.3
       },
       "salt": {
-        "gold_production": 1.2
+        "gold_production": 0.2
       },
       "craftsmen": {
-        "craftsmen_production": 1.3
+        "craftsmen_production": 0.3
       },
       "building_materials": {
-        "building_materials_production": 1.3,
-        "building_materials_cost_reduction": 0.8
+        "building_materials_production": 0.3,
+        "building_materials_cost_reduction": -0.2
       }
     },
     "special_resources": {
       "horse": {
-        "base_production": 5,
         "city_base_production": 2,
         "description": "马匹"
       },
       "refined_iron": {
-        "base_production": 3,
         "city_base_production": 2,
         "description": "精铁"
       },
       "craftsmen": {
-        "base_production": 3,
         "city_base_production": 2,
         "description": "工匠"
       },
       "building_materials": {
-        "base_production": 3,
         "city_base_production": 2,
         "description": "建材"
       }
@@ -170,6 +169,7 @@
       "0.4": -10,
       "0.5": -20
     },
+    "tax_change_cooldown": 10,
     "threshold_high": 80,
     "threshold_mid": 50,
     "threshold_low": 30,
@@ -240,9 +240,7 @@
     "hp_loss_per_turn": 0.05
   },
   "recruitment": {
-    "base_recruit_turns": 1,
-    "barracks_speed_bonus_per_level": 0.25,
-    "barracks_discount_per_level": 0.05
+    "barracks_discount_per_level": 0.1
   },
   "season_cycle": {
     "turns_per_year": 4,

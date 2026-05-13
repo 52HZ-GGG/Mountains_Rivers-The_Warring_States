@@ -521,13 +521,13 @@ func get_city_production(city_id: String) -> Dictionary:
 		"horse": 0, "refined_iron": 0,
 		"craftsmen": 0, "building_materials": 0,
 		"morale_bonus": 0, "defense_bonus": 0.0,
-		"recruit_speed_bonus": 0.0, "tax_bonus": 0.0,
+		"recruit_discount": 0.0, "tax_bonus": 0.0,
 	}
 	# 基础产出
 	var pop: int = int(city.get("current_population", 0))
 	prod["food"] = int(pop * DataManager.get_balance_param("resources.pop_food_rate"))
 	prod["gold"] = int(DataManager.get_balance_param("resources.city_base_gold"))
-	prod["wood"] = int(DataManager.get_balance_param("resources.city_base_wood"))
+	prod["wood"] = 0
 	# 累加建筑效果
 	for b in city.get("buildings", []):
 		var bid: String = str(b.get("building_id", ""))
@@ -588,11 +588,11 @@ func _apply_season_modifier(prod: Dictionary, season: String) -> Dictionary:
 	var wood_mod: Dictionary = DataManager.get_balance_param("resources.season_wood_mod")
 	var craftsmen_mod: Dictionary = DataManager.get_balance_param("resources.season_craftsmen_mod")
 	var bm_mod: Dictionary = DataManager.get_balance_param("resources.season_building_materials_mod")
-	result["food"] = int(result["food"] * float(food_mod.get(season, 1.0)))
-	result["gold"] = int(result["gold"] * float(gold_mod.get(season, 1.0)))
-	result["wood"] = int(result["wood"] * float(wood_mod.get(season, 1.0)))
-	result["craftsmen"] = int(result["craftsmen"] * float(craftsmen_mod.get(season, 1.0)))
-	result["building_materials"] = int(result["building_materials"] * float(bm_mod.get(season, 1.0)))
+	result["food"] = int(result["food"] * (1.0 + float(food_mod.get(season, 0.0))))
+	result["gold"] = int(result["gold"] * (1.0 + float(gold_mod.get(season, 0.0))))
+	result["wood"] = int(result["wood"] * (1.0 + float(wood_mod.get(season, 0.0))))
+	result["craftsmen"] = int(result["craftsmen"] * (1.0 + float(craftsmen_mod.get(season, 0.0))))
+	result["building_materials"] = int(result["building_materials"] * (1.0 + float(bm_mod.get(season, 0.0))))
 	return result
 
 
@@ -602,8 +602,8 @@ func _apply_special_resource_modifier(prod: Dictionary, special_resource: String
 	var mod: Dictionary = sr_mods.get(special_resource, {})
 	for key in mod:
 		if prod.has(key):
-			var factor: float = float(mod[key])
-			prod[key] = int(prod[key] * factor)
+			var offset: float = float(mod[key])
+			prod[key] = int(prod[key] * (1.0 + offset))
 	# 马匹/精铁特产城市直接产出对应资源
 	var sr_production: Dictionary = DataManager.get_balance_param("resources.special_resources")
 	if sr_production.has(special_resource):

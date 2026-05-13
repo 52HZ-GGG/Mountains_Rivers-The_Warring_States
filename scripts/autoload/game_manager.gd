@@ -438,7 +438,7 @@ func _init_player_resources() -> void:
 	# 初始资源基于城市人口和基础产出
 	_player_food = int(_player_population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
 	_player_gold = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
-	_player_wood = int(DataManager.get_balance_param("resources.city_base_wood") * 3)
+	_player_wood = 0
 	_player_troops = 0
 	_player_horse = 0
 	_player_refined_iron = 0
@@ -459,7 +459,7 @@ func _init_ai_factions() -> void:
 		var population: int = capital.get("base_population", 10000) if not capital.is_empty() else 10000
 		var base_food: int = int(population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
 		var base_gold: int = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
-		var base_wood: int = int(DataManager.get_balance_param("resources.city_base_wood") * 3)
+		var base_wood: int = 0
 		# 应用难度修正
 		_faction_resources[fid] = {
 			"food": int(base_food * (1.0 + res_mod)),

@@ -87,7 +87,7 @@
       "max_level": 3,
       "upkeep_gold": 15,
       "effects": {
-        "recruit_speed_bonus": 0.25
+        "recruit_discount": 0.1
       },
       "produces_category": "infantry",
       "upgrade_cost_multiplier": 1.5
