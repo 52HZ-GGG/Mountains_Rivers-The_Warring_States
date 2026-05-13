@@ -8,8 +8,6 @@
     "ambush_atk_bonus": 0.3,
     "ambush_chance_cap": 0.95,
     "ambush_damage_multiplier": 2.0,
-    "flank_def_reduction": 0.7,
-    "flank_damage_multiplier": 1.5,
     "siege_wall_damage_multiplier": 3.0,
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
@@ -27,6 +25,33 @@
   "movement": {
     "insufficient_mp_uses_per_turn": 1,
     "insufficient_mp_ends_turn": true
+  },
+  "zoc": {
+    "base_range": 1,
+    "extra_move_cost": 1,
+    "stacking": false,
+    "navy_immune_to_land_zoc": true,
+    "requires_garrison": true,
+    "generates_zoc": {
+      "infantry": true,
+      "cavalry": true,
+      "archer": false,
+      "siege": false,
+      "navy": false,
+      "city": true,
+      "pass": true
+    },
+    "affected_by_zoc": {
+      "infantry": true,
+      "cavalry": true,
+      "archer": true,
+      "siege": true,
+      "navy": false,
+      "city": false,
+      "pass": false
+    },
+    "tech_range_expansion": "zoc_expansion",
+    "tech_cost_elimination": "zoc_freedom"
   },
   "resources": {
     "city_base_wood": 20,
@@ -404,7 +429,9 @@
     "morale_recovery_in_city": 8,
     "natural_recovery_cap": 100,
     "low_morale_threshold": 50,
-    "low_morale_atk_penalty": -0.1
+    "low_morale_atk_penalty": -0.1,
+    "flanking_morale_loss": -20,
+    "encirclement_morale_loss": -50
   },
   "category_counter_matrix": {
     "infantry": {
