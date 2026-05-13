@@ -4,11 +4,25 @@ import os, sys, re
 
 def check_asset_names():
     issues = []
-    pattern = re.compile(r'^(tile|unit|ui)_[a-z]+(_[a-z0-9]+)*\.png$')
+    # 顶层图块/UI：tile_plain_01.png / unit_militia_01.png / ui_highlight_select.png
+    top_pattern = re.compile(r'^(tile|unit|ui)_[a-z]+(_[a-z0-9]+)*\.png$')
+    # 兵种动画帧：units/base/unit_battering_ram/attack_01.png
+    unit_anim_pattern = re.compile(r'.*[/\\\\]units[/\\\\](base|qin|zhao|qi|chu|wei|yan|han)[/\\\\]unit_[a-z_]+[/\\\\][a-z_]+(_[0-9]+)?\.png$')
+    # 特效帧：units/effects/fx_fire/fx_fire_01.png
+    fx_pattern = re.compile(r'.*[/\\\\]units[/\\\\]effects[/\\\\]fx_[a-z_]+[/\\\\]fx_[a-z_]+(_[0-9]+)?\.png$')
+
     for root, dirs, files in os.walk('assets/sprites'):
         for file in files:
-            if file.endswith('.png') and not pattern.match(file):
-                issues.append(f"资产命名不规范: {root}/{file}")
+            if not file.endswith('.png'):
+                continue
+            full = os.path.join(root, file).replace('\\', '/')
+            if top_pattern.match(file):
+                continue
+            if unit_anim_pattern.match(full):
+                continue
+            if fx_pattern.match(full):
+                continue
+            issues.append(f"资产命名不规范: {full}")
     return issues
 
 if __name__ == "__main__":
