@@ -138,7 +138,7 @@
       "ambush_chance": 0.0,
       "ranged_accuracy_mod": -5,
       "cavalry_allowed": true,
-      "is_navigable": false,
+      "is_navigable": true,
       "special": "ford",
       "is_barrier": false,
       "barrier_type": null,
