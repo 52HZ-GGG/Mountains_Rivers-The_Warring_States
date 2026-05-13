@@ -3,7 +3,7 @@ extends CanvasLayer
 ## 大地图面板：30×20 六角密铺，复用 SkirmishHexCell + HexMapCanvas 渲染栈。
 ## 显示 50 座城市及其势力归属，悬停查看地形/城市详情，点击城市发射信号。
 
-const _HEX_RADIUS_BASE_PX: float = 20.0
+const _HEX_RADIUS_BASE_PX: float = 120.0
 const _HEX_BOARD_PAD_PX: float = 8.0
 const _HEX_BOARD_LAYOUT_VERSION: int = 1
 const _ZOOM_STEP: float = 0.15
@@ -51,6 +51,16 @@ func open() -> void:
 			break
 	_hex_refit_pending = true
 	call_deferred("_deferred_refit_hex_radius_if_needed")
+
+
+func _debug_row_tint() -> void:
+	for ch: Node in _hex_board.get_children():
+		if ch is SkirmishHexCell:
+			var hc: SkirmishHexCell = ch as SkirmishHexCell
+			if (hc.cell_r & 1) == 0:
+				hc.set_tint_color(Color(1, 0, 0, 0.3))
+			else:
+				hc.set_tint_color(Color(0, 0, 1, 0.3))
 
 
 func close() -> void:
@@ -178,34 +188,37 @@ func _ensure_hex_buttons() -> void:
 	var pad: float = _HEX_BOARD_PAD_PX
 	var radius_px: float = _compute_hex_radius_px(w, h, pad)
 	var sqrt3: float = sqrt(3.0)
-	var cell_w: float = radius_px * 2.0
-	var cell_h: float = radius_px * sqrt3
+	var cell_w: float = radius_px * sqrt3
+	var cell_h: float = radius_px * 2.0
 	var min_tl_x: float = INF
 	var min_tl_y: float = INF
 	var max_br_x: float = -INF
 	var max_br_y: float = -INF
 	var row_scan: int = 0
 	while row_scan < h:
+		var axial_col_shift_s: int = (row_scan - (row_scan & 1)) / 2
 		var col_scan: int = 0
 		while col_scan < w:
-			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_scan, row_scan, radius_px)
-			min_tl_x = minf(min_tl_x, tl_scan.x)
-			min_tl_y = minf(min_tl_y, tl_scan.y)
-			max_br_x = maxf(max_br_x, tl_scan.x + cell_w)
-			max_br_y = maxf(max_br_y, tl_scan.y + cell_h)
+			var ax_s: Vector2i = Vector2i(col_scan - axial_col_shift_s, row_scan)
+			var tl_s: Vector2 = _HexAxial.axial_flat_top_cell_top_left(ax_s.x, ax_s.y, radius_px)
+			min_tl_x = minf(min_tl_x, tl_s.x)
+			min_tl_y = minf(min_tl_y, tl_s.y)
+			max_br_x = maxf(max_br_x, tl_s.x + cell_w)
+			max_br_y = maxf(max_br_y, tl_s.y + cell_h)
 			col_scan += 1
 		row_scan += 1
 	var origin_shift: Vector2 = Vector2(min_tl_x, min_tl_y)
 	var row_var: int = 0
 	while row_var < h:
+		var axial_col_shift: int = (row_var - (row_var & 1)) / 2
 		var col_var: int = 0
 		while col_var < w:
-			var axial_pos: Vector2i = _HexAxial.offset_odd_r_to_axial(col_var, row_var)
-			var top_left: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_var, row_var, radius_px)
+			var axial_pos: Vector2i = Vector2i(col_var - axial_col_shift, row_var)
+			var tl: Vector2 = _HexAxial.axial_flat_top_cell_top_left(axial_pos.x, axial_pos.y, radius_px)
 			var cell: SkirmishHexCell = SkirmishHexCell.new()
 			cell.configure(axial_pos.x, axial_pos.y, radius_px, cell_w, cell_h)
 			cell.set_board_bounds(w, h)
-			var pos: Vector2 = top_left - origin_shift + Vector2(pad, pad)
+			var pos: Vector2 = tl - origin_shift + Vector2(pad, pad)
 			cell.position = pos.snapped(Vector2(0.5, 0.5))
 			var cap: Label = Label.new()
 			cap.name = "CellCaption"
@@ -228,6 +241,8 @@ func _ensure_hex_buttons() -> void:
 			cell.mouse_exited.connect(_on_hex_mouse_exit)
 			_hex_board.add_child(cell)
 			cell.notify_size_changed()
+			if row_var < 3 and col_var < 3:
+				print("[BigMap] cell q=%d r=%d pos=%s size=%s" % [axial_pos.x, axial_pos.y, str(cell.position), str(cell.size)])
 			col_var += 1
 		row_var += 1
 	var bb_w: float = max_br_x - min_tl_x + pad * 2.0
@@ -268,8 +283,8 @@ func _deferred_refit_hex_radius_if_needed() -> void:
 
 func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	var sqrt3: float = sqrt(3.0)
-	var cell_w: float = radius * 2.0
-	var cell_h: float = radius * sqrt3
+	var cell_w: float = radius * sqrt3
+	var cell_h: float = radius * 2.0
 	var min_tl_x: float = INF
 	var min_tl_y: float = INF
 	var max_br_x: float = -INF
@@ -278,7 +293,7 @@ func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	while row_scan < h:
 		var col_scan: int = 0
 		while col_scan < w:
-			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_scan, row_scan, radius)
+			var tl_scan: Vector2 = _HexAxial.offset_odd_r_cell_top_left(col_scan, row_scan, radius)
 			min_tl_x = minf(min_tl_x, tl_scan.x)
 			min_tl_y = minf(min_tl_y, tl_scan.y)
 			max_br_x = maxf(max_br_x, tl_scan.x + cell_w)
@@ -294,7 +309,7 @@ func _compute_hex_radius_px(w: int, h: int, pad: float) -> float:
 		return _HEX_RADIUS_BASE_PX * _zoom_level
 	var avail: Vector2 = _hex_play_area_avail_px()
 	var s: float = minf(avail.x / bb_unit.x, avail.y / bb_unit.y) * 0.99
-	s = clampf(s, 12.0, 60.0) * _zoom_level
+	s = clampf(s, 60.0, 220.0) * _zoom_level
 	return s
 
 
@@ -312,7 +327,7 @@ func _ensure_board_backdrop() -> void:
 		bg.offset_bottom = 0.0
 		_hex_board.add_child(bg)
 		_hex_board.move_child(bg, 0)
-	bg.color = Color(0.19, 0.21, 0.18, 1.0)
+	bg.color = Color(0.50, 0.55, 0.45, 1.0)
 	_ensure_hex_map_canvas()
 
 

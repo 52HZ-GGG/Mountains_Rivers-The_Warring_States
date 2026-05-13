@@ -4,7 +4,7 @@ extends CanvasLayer
 ## 选中己方单位后：可走格移动，或直接点击射程内敌军攻击（无需切换模式）
 
 ## 六角外接圆半径基准（像素）；实际半径按战术区可用尺寸换算，使蜂巢棋盘尽量大、看得清
-const _HEX_RADIUS_BASE_PX: float = 40.0
+const _HEX_RADIUS_BASE_PX: float = 60.0
 ## 棋盘外沿留白（像素）；过小易导致裁切，过大浪费可视面积
 const _HEX_BOARD_PAD_PX: float = 8.0
 ## 递增后下次打开面板会重建六角格（修正布局/绘制逻辑后避免沿用旧节点）
@@ -106,35 +106,38 @@ func _ensure_hex_buttons() -> void:
 	var pad: float = _HEX_BOARD_PAD_PX
 	var radius_px: float = _compute_hex_radius_px(w, h, pad)
 	var sqrt3: float = sqrt(3.0)
-	## 平顶六角外包：宽 2R、高 √3·R（相对点状顶旋转 90° / 常用策略盘面朝向）
-	var cell_w: float = radius_px * 2.0
-	var cell_h: float = radius_px * sqrt3
+	## 尖顶六角外包：宽 √3·R、高 2R
+	var cell_w: float = radius_px * sqrt3
+	var cell_h: float = radius_px * 2.0
 	var min_tl_x: float = INF
 	var min_tl_y: float = INF
 	var max_br_x: float = -INF
 	var max_br_y: float = -INF
 	var row_scan: int = 0
 	while row_scan < h:
+		var axial_col_shift_s: int = (row_scan - (row_scan & 1)) / 2
 		var col_scan: int = 0
 		while col_scan < w:
-			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_scan, row_scan, radius_px)
-			min_tl_x = minf(min_tl_x, tl_scan.x)
-			min_tl_y = minf(min_tl_y, tl_scan.y)
-			max_br_x = maxf(max_br_x, tl_scan.x + cell_w)
-			max_br_y = maxf(max_br_y, tl_scan.y + cell_h)
+			var ax_s: Vector2i = Vector2i(col_scan - axial_col_shift_s, row_scan)
+			var tl_s: Vector2 = _HexAxial.axial_flat_top_cell_top_left(ax_s.x, ax_s.y, radius_px)
+			min_tl_x = minf(min_tl_x, tl_s.x)
+			min_tl_y = minf(min_tl_y, tl_s.y)
+			max_br_x = maxf(max_br_x, tl_s.x + cell_w)
+			max_br_y = maxf(max_br_y, tl_s.y + cell_h)
 			col_scan += 1
 		row_scan += 1
 	var origin_shift: Vector2 = Vector2(min_tl_x, min_tl_y)
 	var row_var: int = 0
 	while row_var < h:
+		var axial_col_shift: int = (row_var - (row_var & 1)) / 2
 		var col_var: int = 0
 		while col_var < w:
-			var axial_pos: Vector2i = _HexAxial.offset_odd_r_to_axial(col_var, row_var)
-			var top_left: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_var, row_var, radius_px)
+			var axial_pos: Vector2i = Vector2i(col_var - axial_col_shift, row_var)
+			var tl: Vector2 = _HexAxial.axial_flat_top_cell_top_left(axial_pos.x, axial_pos.y, radius_px)
 			var cell: SkirmishHexCell = SkirmishHexCell.new()
 			cell.configure(axial_pos.x, axial_pos.y, radius_px, cell_w, cell_h)
 			cell.set_board_bounds(w, h)
-			var pos: Vector2 = top_left - origin_shift + Vector2(pad, pad)
+			var pos: Vector2 = tl - origin_shift + Vector2(pad, pad)
 			cell.position = pos.snapped(Vector2(0.5, 0.5))
 			var cap: Label = Label.new()
 			cap.name = "CellCaption"
@@ -198,8 +201,8 @@ func _deferred_refit_hex_radius_if_needed() -> void:
 
 func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	var sqrt3: float = sqrt(3.0)
-	var cell_w: float = radius * 2.0
-	var cell_h: float = radius * sqrt3
+	var cell_w: float = radius * sqrt3
+	var cell_h: float = radius * 2.0
 	var min_tl_x: float = INF
 	var min_tl_y: float = INF
 	var max_br_x: float = -INF
@@ -208,7 +211,7 @@ func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	while row_scan < h:
 		var col_scan: int = 0
 		while col_scan < w:
-			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_scan, row_scan, radius)
+			var tl_scan: Vector2 = _HexAxial.offset_odd_r_cell_top_left(col_scan, row_scan, radius)
 			min_tl_x = minf(min_tl_x, tl_scan.x)
 			min_tl_y = minf(min_tl_y, tl_scan.y)
 			max_br_x = maxf(max_br_x, tl_scan.x + cell_w)
@@ -224,7 +227,7 @@ func _compute_hex_radius_px(w: int, h: int, pad: float) -> float:
 		return _HEX_RADIUS_BASE_PX
 	var avail: Vector2 = _hex_play_area_avail_px()
 	var s: float = minf(avail.x / bb_unit.x, avail.y / bb_unit.y) * 0.99
-	s = clampf(s, 32.0, 96.0)
+	s = clampf(s, 48.0, 144.0)
 	return s
 
 
@@ -242,7 +245,7 @@ func _ensure_board_backdrop() -> void:
 		bg.offset_bottom = 0.0
 		_hex_board.add_child(bg)
 		_hex_board.move_child(bg, 0)
-	bg.color = Color(0.19, 0.21, 0.18, 1.0)
+	bg.color = Color(0.35, 0.38, 0.32, 1.0)
 	_ensure_hex_map_canvas()
 
 
