@@ -6,6 +6,8 @@
     "min_damage": 1,
     "ambush_base_chance": 0.05,
     "ambush_atk_bonus": 0.3,
+    "ambush_chance_cap": 0.95,
+    "ambush_damage_multiplier": 2.0,
     "flank_def_reduction": 0.7,
     "flank_damage_multiplier": 1.5,
     "siege_wall_damage_multiplier": 3.0,
@@ -18,7 +20,13 @@
     "general_force_atk_rate": 0.003,
     "general_command_def_rate": 0.001,
     "general_intelligence_ambush_rate": 0.002,
-    "momentum_max_bonus": 0.25
+    "momentum_max_bonus": 0.25,
+    "attack_ends_turn": true,
+    "fog_enemy_stops_movement": true
+  },
+  "movement": {
+    "insufficient_mp_uses_per_turn": 1,
+    "insufficient_mp_ends_turn": true
   },
   "resources": {
     "city_base_wood": 20,
@@ -272,10 +280,8 @@
   "fortification": {
     "pass_hp": 500,
     "pass_defense": 100,
-    "city_hp": 1000,
     "siege_damage_multiplier": 3.0,
-    "hp_type": "fortification",
-    "artificial_pass_enabled": false
+    "hp_type": "fortification"
   },
   "victory": {
     "cultural": {
@@ -339,6 +345,25 @@
     "stranded_can_initiate_attack": false,
     "stranded_can_be_attacked": true,
     "stranded_attack_mode": "counter_only"
+  },
+  "vision": {
+    "city_vision_radius": 1,
+    "capital_vision_bonus": 1,
+    "pass_vision_radius": 1,
+    "winter_vision_penalty": 1,
+    "adjacent_guarantee": true,
+    "fog_show_terrain": true,
+    "fog_hide_units_outside_range": true,
+    "unit_disappear_on_leave": true,
+    "tech_vision_bonus": {
+      "scout": 2,
+      "scout_cavalry": 2,
+      "bow_cavalry": 1,
+      "infantry": 1,
+      "cavalry": 1,
+      "siege": 0,
+      "navy": 0
+    }
   },
   "diplomacy": {
     "opinion_min": -100,
