@@ -153,7 +153,8 @@
       "category": "cavalry",
       "upkeep_gold": 8,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "is_mounted": true
     },
     {
       "id": "shock_cavalry",
@@ -399,6 +400,15 @@
         "speed": 6
       },
       "special_description": "移动力+1，森林move_cost-1（2→1）",
+      "skills": [
+        {
+          "id": "forest_march",
+          "name": "林地行军",
+          "type": "passive",
+          "description": "森林地形移动力消耗-1",
+          "terrain_move_modifier": { "forest": -1 }
+        }
+      ],
       "category": "cavalry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -429,6 +439,15 @@
         "defense": 9
       },
       "special_description": "混合兵种（步+弓），山地move_cost-2（3→1）",
+      "skills": [
+        {
+          "id": "mountain_march",
+          "name": "山地行军",
+          "type": "passive",
+          "description": "山地地形移动力消耗-2",
+          "terrain_move_modifier": { "mountain": -2 }
+        }
+      ],
       "category": "infantry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -445,6 +464,15 @@
         "hp": 110
       },
       "special_description": "重装步兵，每击杀敌军恢复5%兵力",
+      "skills": [
+        {
+          "id": "wuzu_recover",
+          "name": "武卒恢复",
+          "type": "combat_on_kill",
+          "description": "击杀敌军时恢复自身5%兵力",
+          "recover_ratio": 0.05
+        }
+      ],
       "category": "infantry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -461,6 +489,16 @@
         "range": 2
       },
       "special_description": "骑射单位，攻击消耗2移动力后可继续移动，每回合限攻击1次",
+      "skills": [
+        {
+          "id": "hit_and_run",
+          "name": "骑射游击",
+          "type": "move_after_attack",
+          "description": "攻击消耗2移动力后可继续移动，每回合限1次",
+          "attack_move_cost": 2,
+          "per_turn_limit": 1
+        }
+      ],
       "category": "cavalry",
       "upkeep_gold": 5,
       "cost_wood": 0,
@@ -477,7 +515,16 @@
         "range": 3,
         "speed": 2
       },
-      "special_description": "远程弩炮，攻城伤害×4.5（siege_bonus ×3.0 × 额外1.5），range=1时无法反击",
+      "special_description": "远程弩炮，攻城伤害加法层+1.5（合计×4.5），range=1时无法反击",
+      "skills": [
+        {
+          "id": "enhanced_siege",
+          "name": "强弩攻城",
+          "type": "passive",
+          "description": "攻城伤害加法层+1.5",
+          "value": 1.5
+        }
+      ],
       "category": "siege",
       "upkeep_gold": 5,
       "cost_wood": 0,

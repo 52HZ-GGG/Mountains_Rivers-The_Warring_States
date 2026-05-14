@@ -507,7 +507,7 @@
           "cost_wood": 113,
           "build_turns": 3,
           "cost_building_materials": 30,
-          "effects": { "defense_bonus": 0.50, "structure_hp": 550 }
+          "effects": { "defense_bonus": 0.45, "structure_hp": 500 }
         }
       ]
     },
@@ -538,7 +538,7 @@
           "cost_wood": 68,
           "build_turns": 3,
           "cost_building_materials": 25,
-          "effects": { "structure_hp": 380, "tower_attack": 20 }
+          "effects": { "structure_hp": 380, "tower_attack": 18 }
         }
       ]
     },

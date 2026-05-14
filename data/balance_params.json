@@ -1,30 +1,66 @@
 {
   "schema_version": "1.0",
   "combat": {
-    "morale_atk_floor": 0.7,
-    "morale_atk_ceil": 1.0,
     "min_damage": 1,
     "ambush_base_chance": 0.05,
     "ambush_atk_bonus": 0.3,
     "ambush_chance_cap": 0.95,
     "ambush_damage_multiplier": 2.0,
-    "siege_wall_damage_multiplier": 3.0,
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
     "fire_burn_dot_ratio": 0.3,
     "base_random_spread_lo": 0.9,
     "base_random_spread_hi": 1.1,
     "accuracy_spread_factor": 0.001,
-    "general_force_atk_rate": 0.003,
-    "general_command_def_rate": 0.001,
-    "general_intelligence_ambush_rate": 0.002,
     "momentum_max_bonus": 0.25,
     "attack_ends_turn": true,
     "fog_enemy_stops_movement": true
   },
+  "unit_skills": {
+    "description": "兵种技能系统。技能定义在 units.json → skills 数组中，运行时按 type 分发到对应系统处理。",
+    "skill_types": {
+      "passive": {
+        "description": "被动常驻效果，读取 value 字段累加到公式",
+        "formula_integration": "atk_buff += skill.value（累加到 unit_ability_bonus）",
+        "instances": [
+          { "id": "enhanced_siege", "unit": "jinnu", "value": 1.5, "note": "攻城加法层+1.5" }
+        ]
+      },
+      "terrain_move_modifier": {
+        "description": "地形移动力修正，读取 terrain_move_modifier 字典按地形类型覆盖",
+        "formula_integration": "move_cost = max(1, base_move_cost + skill.terrain_move_modifier[terrain])",
+        "instances": [
+          { "id": "forest_march", "unit": "hufu_qibing", "modifier": { "forest": -1 } },
+          { "id": "mountain_march", "unit": "shenxi_zhishi", "modifier": { "mountain": -2 } }
+        ]
+      },
+      "combat_on_kill": {
+        "description": "击杀时触发效果，读取 recover_ratio 字段",
+        "formula_integration": "on_kill: hp += max_hp × skill.recover_ratio",
+        "instances": [
+          { "id": "wuzu_recover", "unit": "wuzu", "recover_ratio": 0.05 }
+        ]
+      },
+      "move_after_attack": {
+        "description": "攻击后可继续移动，读取 attack_move_cost 和 per_turn_limit",
+        "formula_integration": "on_attack: remaining_mp -= skill.attack_move_cost; if remaining_mp > 0 and attacks_this_turn < skill.per_turn_limit: can_continue_move",
+        "instances": [
+          { "id": "hit_and_run", "unit": "liaodong_gongqi", "attack_move_cost": 2, "per_turn_limit": 1 }
+        ]
+      }
+    }
+  },
   "movement": {
     "insufficient_mp_uses_per_turn": 1,
     "insufficient_mp_ends_turn": true
+  },
+  "healing": {
+    "description": "脱离战斗后 HP 恢复（周围无敌军且本回合未参与战斗，持续>1回合）",
+    "outskirts_hp_per_turn": 10,
+    "city_area_hp_per_turn": 15,
+    "city_inside_hp_per_turn": 20,
+    "max_heal_to_full": true,
+    "no_heal_when_morale_broken": true
   },
   "zoc": {
     "base_range": 1,
@@ -385,25 +421,11 @@
       "_comment": "后续阶段扩展：外交胜利、经济胜利等，每条路径结构与上述一致"
     }
   },
-  "general": {
-    "exp_per_level": 100,
-    "max_level": 5,
-    "base_exp_per_battle": 15,
-    "exp_result_mod": {
-      "great_victory": 1.5,
-      "victory": 1.0,
-      "draw": 0.5,
-      "defeat": 0.3
-    },
-    "death_chance": 0.5,
-    "capture_chance": 0.3,
-    "escape_chance": 0.2
-  },
   "event_cooldown_turns": 3,
   "naval_combat": {
     "navy_vs_land_attack_mod": 0.5,
     "land_vs_navy_attack_mod": 0.5,
-    "land_on_water_vs_navy_attack_mod": 0.5,
+    "land_on_water_attack_mod": 0.5,
     "land_on_water_defense_mod": 0.5,
     "navy_on_water_defense_mod": 1.0
   },

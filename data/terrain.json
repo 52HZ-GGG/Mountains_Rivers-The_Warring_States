@@ -78,7 +78,7 @@
       "is_barrier": true,
       "barrier_type": "river",
       "crossing_rules": {
-        "move_cost_add": 3,
+        "move_cost_add": 2,
         "atk_mod": -0.3
       },
       "tech_overrides": [
