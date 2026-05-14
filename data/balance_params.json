@@ -268,7 +268,7 @@
     "threshold_critical": 10,
     "high_output_bonus": 0.2,
     "mid_output_penalty": 0,
-    "unstable_output_penalty": -0.1,
+    "unstable_output_penalty": -0.2,
     "low_output_penalty": -0.2,
     "critical_output_penalty": -0.5,
     "low_revolt_chance": 0.15,
