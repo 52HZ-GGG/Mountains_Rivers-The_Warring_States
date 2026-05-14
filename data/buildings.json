@@ -260,6 +260,35 @@
       ]
     },
     {
+      "id": "fishery",
+      "name": "渔场",
+      "description": "临水设网，捕鱼收虾，兼得粮钱之利",
+      "category": "economic",
+      "max_level": 3,
+      "upkeep_gold": 5,
+      "build_requires": { "terrain": ["river", "ford", "deep_ocean", "shallow_ocean"] },
+      "levels": [
+        {
+          "cost_gold": 80,
+          "cost_wood": 15,
+          "build_turns": 1,
+          "effects": { "food_production_bonus": 0.05, "gold_production_bonus": 0.05 }
+        },
+        {
+          "cost_gold": 120,
+          "cost_wood": 23,
+          "build_turns": 1,
+          "effects": { "food_production_bonus": 0.12, "gold_production_bonus": 0.10 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 35,
+          "build_turns": 2,
+          "effects": { "food_production_bonus": 0.20, "gold_production_bonus": 0.15 }
+        }
+      ]
+    },
+    {
       "id": "barracks",
       "name": "兵营",
       "description": "募兵练卒，整军经武。等级越高可训练越精锐的步兵。",
