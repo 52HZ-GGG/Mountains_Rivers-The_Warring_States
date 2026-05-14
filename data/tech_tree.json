@@ -465,7 +465,7 @@
       "special_conditions": [
         {
           "type": "city_control",
-          "city_id": "chengdu"
+          "city_id": "shujun"
         }
       ],
       "effects": {
@@ -547,6 +547,22 @@
         "bonus_value": 0.2,
         "malus_resource": "gold",
         "malus_value": -0.1
+      }
+    },
+    {
+      "id": "censor_system",
+      "name": "御史之制",
+      "description": "设御史以察百官，风宪肃然，贪墨者惧。上下相维，内外相制。",
+      "category": "economy",
+      "era": "mid",
+      "cost_gold": 200,
+      "prerequisites": [
+        "agriculture_priority"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "corruption_reduction",
+        "value": 0.2
       }
     },
     {
@@ -728,8 +744,8 @@
       ],
       "special_conditions": [
         {
-          "type": "building",
-          "building_id": "jixia_academy"
+          "type": "wonder",
+          "wonder_id": "jixia_academy"
         }
       ],
       "effects": {

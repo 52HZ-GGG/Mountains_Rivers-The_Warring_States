@@ -14,9 +14,7 @@
       "is_capital": true,
       "development": 75,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "yongcheng",
@@ -29,9 +27,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yueyang",
@@ -44,9 +40,7 @@
       "is_capital": false,
       "development": 25,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "chencang",
@@ -59,9 +53,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "longxi",
@@ -74,9 +66,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "shujun",
@@ -89,9 +79,7 @@
       "is_capital": false,
       "development": 35,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "nanzheng",
@@ -104,9 +92,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "hanzhong",
@@ -119,9 +105,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "ying",
@@ -134,9 +118,7 @@
       "is_capital": true,
       "development": 70,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "shouchun",
@@ -149,9 +131,7 @@
       "is_capital": false,
       "development": 40,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "yuancheng",
@@ -164,9 +144,7 @@
       "is_capital": false,
       "development": 35,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "chencheng",
@@ -179,9 +157,7 @@
       "is_capital": false,
       "development": 25,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "jiangling",
@@ -194,9 +170,7 @@
       "is_capital": false,
       "development": 25,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "pengcheng",
@@ -209,9 +183,7 @@
       "is_capital": false,
       "development": 35,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "wu",
@@ -224,9 +196,7 @@
       "is_capital": false,
       "development": 25,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "kuaiji",
@@ -239,9 +209,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "changsha",
@@ -254,9 +222,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "linzi",
@@ -269,9 +235,7 @@
       "is_capital": true,
       "development": 75,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "jimo",
@@ -284,9 +248,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yingqiu",
@@ -299,9 +261,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "donga",
@@ -314,9 +274,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "pinglu",
@@ -329,9 +287,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "xue",
@@ -344,9 +300,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "langye",
@@ -359,9 +313,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "handan",
@@ -374,9 +326,7 @@
       "is_capital": true,
       "development": 70,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "daijun",
@@ -389,9 +339,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "jinyang",
@@ -404,9 +352,7 @@
       "is_capital": false,
       "development": 40,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "zhongshan",
@@ -419,9 +365,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yunzhong",
@@ -434,9 +378,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yanmen",
@@ -449,9 +391,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "taoyu",
@@ -464,9 +404,7 @@
       "is_capital": false,
       "development": 25,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "daliang",
@@ -479,9 +417,7 @@
       "is_capital": true,
       "development": 65,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "anyi",
@@ -494,9 +430,7 @@
       "is_capital": false,
       "development": 35,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "hedong",
@@ -509,9 +443,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "puyang",
@@ -524,9 +456,7 @@
       "is_capital": false,
       "development": 25,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "ye",
@@ -539,9 +469,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "huaxia",
@@ -554,9 +482,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "xinzheng",
@@ -569,9 +495,7 @@
       "is_capital": true,
       "development": 60,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "shangdang",
@@ -584,9 +508,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yiyang",
@@ -599,9 +521,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yangzhai",
@@ -614,9 +534,7 @@
       "is_capital": false,
       "development": 20,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "nanyang",
@@ -629,9 +547,7 @@
       "is_capital": false,
       "development": 30,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "ji",
@@ -644,9 +560,7 @@
       "is_capital": true,
       "development": 55,
       "city_level": 5,
-      "initial_population": 10,
-      "city_attack": 30,
-      "city_attack_range": 2
+      "initial_population": 10
     },
     {
       "id": "liaoyang",
@@ -659,9 +573,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "liaoxi",
@@ -674,9 +586,7 @@
       "is_capital": false,
       "development": 10,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "shanggu",
@@ -689,9 +599,7 @@
       "is_capital": false,
       "development": 10,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "yuyang",
@@ -704,9 +612,7 @@
       "is_capital": false,
       "development": 10,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "luoyi",
@@ -719,9 +625,7 @@
       "is_capital": false,
       "development": 45,
       "city_level": 3,
-      "initial_population": 7,
-      "city_attack": 15,
-      "city_attack_range": 1
+      "initial_population": 7
     },
     {
       "id": "xingtai",
@@ -734,9 +638,7 @@
       "is_capital": false,
       "development": 10,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     },
     {
       "id": "dingtao",
@@ -749,9 +651,7 @@
       "is_capital": false,
       "development": 15,
       "city_level": 1,
-      "initial_population": 3,
-      "city_attack": 5,
-      "city_attack_range": 1
+      "initial_population": 3
     }
   ]
 }

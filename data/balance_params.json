@@ -1,30 +1,66 @@
 {
   "schema_version": "1.0",
   "combat": {
-    "morale_atk_floor": 0.7,
-    "morale_atk_ceil": 1.0,
     "min_damage": 1,
     "ambush_base_chance": 0.05,
     "ambush_atk_bonus": 0.3,
     "ambush_chance_cap": 0.95,
     "ambush_damage_multiplier": 2.0,
-    "siege_wall_damage_multiplier": 3.0,
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
     "fire_burn_dot_ratio": 0.3,
     "base_random_spread_lo": 0.9,
     "base_random_spread_hi": 1.1,
     "accuracy_spread_factor": 0.001,
-    "general_force_atk_rate": 0.003,
-    "general_command_def_rate": 0.001,
-    "general_intelligence_ambush_rate": 0.002,
     "momentum_max_bonus": 0.25,
     "attack_ends_turn": true,
     "fog_enemy_stops_movement": true
   },
+  "unit_skills": {
+    "description": "兵种技能系统。技能定义在 units.json → skills 数组中，运行时按 type 分发到对应系统处理。",
+    "skill_types": {
+      "passive": {
+        "description": "被动常驻效果，读取 value 字段累加到公式",
+        "formula_integration": "atk_buff += skill.value（累加到 unit_ability_bonus）",
+        "instances": [
+          { "id": "enhanced_siege", "unit": "jinnu", "value": 1.5, "note": "攻城加法层+1.5" }
+        ]
+      },
+      "terrain_move_modifier": {
+        "description": "地形移动力修正，读取 terrain_move_modifier 字典按地形类型覆盖",
+        "formula_integration": "move_cost = max(1, base_move_cost + skill.terrain_move_modifier[terrain])",
+        "instances": [
+          { "id": "forest_march", "unit": "hufu_qibing", "modifier": { "forest": -1 } },
+          { "id": "mountain_march", "unit": "shenxi_zhishi", "modifier": { "mountain": -2 } }
+        ]
+      },
+      "combat_on_kill": {
+        "description": "击杀时触发效果，读取 recover_ratio 字段",
+        "formula_integration": "on_kill: hp += max_hp × skill.recover_ratio",
+        "instances": [
+          { "id": "wuzu_recover", "unit": "wuzu", "recover_ratio": 0.05 }
+        ]
+      },
+      "move_after_attack": {
+        "description": "攻击后可继续移动，读取 attack_move_cost 和 per_turn_limit",
+        "formula_integration": "on_attack: remaining_mp -= skill.attack_move_cost; if remaining_mp > 0 and attacks_this_turn < skill.per_turn_limit: can_continue_move",
+        "instances": [
+          { "id": "hit_and_run", "unit": "liaodong_gongqi", "attack_move_cost": 2, "per_turn_limit": 1 }
+        ]
+      }
+    }
+  },
   "movement": {
     "insufficient_mp_uses_per_turn": 1,
     "insufficient_mp_ends_turn": true
+  },
+  "healing": {
+    "description": "脱离战斗后 HP 恢复（周围无敌军且本回合未参与战斗，持续>1回合）",
+    "outskirts_hp_per_turn": 10,
+    "city_area_hp_per_turn": 15,
+    "city_inside_hp_per_turn": 20,
+    "max_heal_to_full": true,
+    "no_heal_when_morale_broken": true
   },
   "zoc": {
     "base_range": 1,
@@ -59,9 +95,6 @@
     "wood_cap_base": 200,
     "wood_cap_per_lumbermill_level": 30,
     "city_base_wood": 10,
-    "pop_growth_rate": 0.02,
-    "army_upkeep_gold_per_unit": 5,
-    "army_upkeep_food_per_unit": 2,
     "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
       "spring": 0.2,
@@ -158,7 +191,8 @@
       "autumn": 1.2,
       "winter": 0.7
     },
-    "growth_stability_formula": "0.5 + stability / 100.0",
+    "growth_stability_base": 0.5,
+    "growth_stability_per_point": 0.01,
     "famine_pop_loss": 1,
     "famine_stability_loss": 10,
     "grain_shortage_morale_loss": 5,
@@ -194,9 +228,9 @@
     "high_recruit_bonus": 0.3,
     "high_stability_bonus": 1,
     "low_tax_penalty": -0.2,
-    "mid_recruit_penalty": -0.2,
+    "mid_recruit_penalty": 0,
     "critical_tax_penalty": -0.5,
-    "low_recruit_penalty": -0.5,
+    "low_recruit_penalty": -0.2,
     "low_desertion_rate": 0.1,
     "low_riot_chance": 0.15,
     "low_stability_penalty": -3,
@@ -229,10 +263,12 @@
     "initial": 50,
     "threshold_high": 80,
     "threshold_mid": 50,
-    "threshold_low": 30,
+    "threshold_unstable": 30,
+    "threshold_low": 10,
     "threshold_critical": 10,
     "high_output_bonus": 0.2,
     "mid_output_penalty": 0,
+    "unstable_output_penalty": -0.2,
     "low_output_penalty": -0.2,
     "critical_output_penalty": -0.5,
     "low_revolt_chance": 0.15,
@@ -322,7 +358,7 @@
   },
   "defeat": {
     "lose_all_cities": true,
-    "capital_lost": false,
+    "capital_lost": true,
     "morale_collapse": true,
     "time_limit_exceeded": true,
     "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落+无法迁都时败北；morale_collapse: 民心归零判定败北；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
@@ -368,43 +404,28 @@
     "score": {
       "name": "分数胜利",
       "enabled": false,
-      "description": "达到目标分数或超时后分数最高者获胜",
-      "target_score": 1000,
+      "description": "回合限制到达后，未取得军事/文化胜利时，按分数最高者判定为胜者，最低者判定为败者",
       "overtime_winner": true,
       "score_weights": {
-        "_comment": "分数计算权重，接口预留，具体公式待设计",
-        "city_count": 0,
-        "city_population": 0,
-        "tech_count": 0,
-        "military_power": 0,
-        "culture_coverage": 0,
-        "diplomacy_reputation": 0,
-        "wonders_built": 0
+        "_comment": "分数计算权重，均衡分配",
+        "city_count": 8,
+        "city_population": 2,
+        "tech_count": 3,
+        "military_power": 5,
+        "culture_coverage": 3,
+        "diplomacy_reputation": 2,
+        "wonders_built": 50
       }
     },
     "_reserved": {
       "_comment": "后续阶段扩展：外交胜利、经济胜利等，每条路径结构与上述一致"
     }
   },
-  "general": {
-    "exp_per_level": 100,
-    "max_level": 5,
-    "base_exp_per_battle": 15,
-    "exp_result_mod": {
-      "great_victory": 1.5,
-      "victory": 1.0,
-      "draw": 0.5,
-      "defeat": 0.3
-    },
-    "death_chance": 0.5,
-    "capture_chance": 0.3,
-    "escape_chance": 0.2
-  },
   "event_cooldown_turns": 3,
   "naval_combat": {
     "navy_vs_land_attack_mod": 0.5,
     "land_vs_navy_attack_mod": 0.5,
-    "land_on_water_vs_navy_attack_mod": 0.5,
+    "land_on_water_attack_mod": 0.5,
     "land_on_water_defense_mod": 0.5,
     "navy_on_water_defense_mod": 1.0
   },
@@ -663,12 +684,15 @@
     "damage_split_garrison": 0.5,
     "damage_split_wall": 0.5,
     "no_garrison_wall_ratio": 1.0,
+    "no_wall_hp_damage_split_garrison": 1.0,
     "siege_damage_multiplier": 3.0,
     "capture_restore_ratio": 0.3,
     "natural_recovery_ratio": 0.05,
     "natural_recovery_requires_no_attack": true,
     "building_occupy_turns": 1,
-    "demolish_turns": 1
+    "demolish_turns": 1,
+    "wall_defense_hp_scaling": true,
+    "wall_defense_min_ratio": 0.5
   },
   "building_effects": {
     "revolt_suppression_per_level": {
