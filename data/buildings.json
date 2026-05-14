@@ -104,7 +104,8 @@
       "upkeep_gold": 10,
       "effects": {
         "defense_bonus": 0.15,
-        "structure_hp": 200
+        "structure_hp": 200,
+        "structure_hp_per_level": 150
       },
       "upgrade_cost_multiplier": 1.5,
       "upgrade_building_materials": {
@@ -269,7 +270,9 @@
       "upkeep_gold": 8,
       "effects": {
         "structure_hp": 150,
-        "tower_attack": 8
+        "structure_hp_per_level": 100,
+        "tower_attack": 8,
+        "tower_attack_per_level": 5
       },
       "produces_category": "archer",
       "upgrade_cost_multiplier": 1.5,
