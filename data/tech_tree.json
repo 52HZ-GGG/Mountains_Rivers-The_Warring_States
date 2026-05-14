@@ -453,6 +453,26 @@
       }
     },
     {
+      "id": "market_prosperity",
+      "name": "市贸繁荣",
+      "description": "繁荣市场贸易，提升商路容量和资源交换效率。",
+      "category": "economy",
+      "era": "early",
+      "cost_gold": 100,
+      "prerequisites": [],
+      "special_conditions": [],
+      "effects": [
+        {
+          "type": "trade_route_capacity",
+          "value": 1
+        },
+        {
+          "type": "trade_route_exchange_bonus",
+          "value": 0.05
+        }
+      ]
+    },
+    {
       "id": "dujiangyan_irrigation",
       "name": "都江之堰",
       "description": "李冰凿离堆，分江流以灌沃野。水旱从人，不知饥馑。",
