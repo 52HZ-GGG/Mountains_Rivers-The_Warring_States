@@ -337,13 +337,13 @@
           "cost_gold": 225,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "unlock_cavalry": ["chariot", "cavalry"] }
+          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot", "cavalry"] }
         },
         {
           "cost_gold": 338,
           "cost_wood": 45,
           "build_turns": 3,
-          "effects": { "unlock_cavalry": ["chariot", "cavalry", "shock_cavalry"] }
+          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot", "cavalry", "shock_cavalry"] }
         }
       ]
     },
@@ -665,13 +665,13 @@
           "cost_gold": 120,
           "cost_wood": 15,
           "build_turns": 2,
-          "effects": { "revolt_suppression": 0.15, "stability_bonus": 3 }
+          "effects": { "revolt_suppression": 0.15 }
         },
         {
           "cost_gold": 180,
           "cost_wood": 23,
           "build_turns": 2,
-          "effects": { "revolt_suppression": 0.30, "stability_bonus": 6 }
+          "effects": { "revolt_suppression": 0.30 }
         }
       ]
     },
@@ -688,13 +688,13 @@
           "cost_gold": 150,
           "cost_wood": 20,
           "build_turns": 2,
-          "effects": { "stability_bonus": 5, "morale_bonus": 2 }
+          "effects": { "morale_bonus": 2 }
         },
         {
           "cost_gold": 225,
           "cost_wood": 30,
           "build_turns": 3,
-          "effects": { "stability_bonus": 10, "morale_bonus": 5 }
+          "effects": { "morale_bonus": 5 }
         }
       ]
     },

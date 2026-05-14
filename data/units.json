@@ -113,7 +113,8 @@
       "category": "cavalry",
       "upkeep_gold": 4,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "is_mounted": true
     },
     {
       "id": "cavalry",
@@ -133,7 +134,8 @@
       "category": "cavalry",
       "upkeep_gold": 5,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "is_mounted": true
     },
     {
       "id": "chariot",
@@ -171,7 +173,8 @@
       "category": "cavalry",
       "upkeep_gold": 6,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "is_mounted": true
     },
     {
       "id": "heavy_cavalry",
@@ -191,7 +194,8 @@
       "category": "cavalry",
       "upkeep_gold": 10,
       "cost_wood": 0,
-      "cost_craftsmen": 0
+      "cost_craftsmen": 0,
+      "is_mounted": true
     },
     {
       "id": "archer",
@@ -250,7 +254,8 @@
       "upkeep_gold": 6,
       "cost_wood": 0,
       "cost_craftsmen": 0,
-      "ranged_attack_mode": "no_counter"
+      "ranged_attack_mode": "no_counter",
+      "is_mounted": true
     },
     {
       "id": "battering_ram",

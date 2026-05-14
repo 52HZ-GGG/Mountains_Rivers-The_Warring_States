@@ -59,9 +59,6 @@
     "wood_cap_base": 200,
     "wood_cap_per_lumbermill_level": 30,
     "city_base_wood": 10,
-    "pop_growth_rate": 0.02,
-    "army_upkeep_gold_per_unit": 5,
-    "army_upkeep_food_per_unit": 2,
     "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
       "spring": 0.2,
@@ -158,7 +155,8 @@
       "autumn": 1.2,
       "winter": 0.7
     },
-    "growth_stability_formula": "0.5 + stability / 100.0",
+    "growth_stability_base": 0.5,
+    "growth_stability_per_point": 0.01,
     "famine_pop_loss": 1,
     "famine_stability_loss": 10,
     "grain_shortage_morale_loss": 5,
@@ -194,9 +192,9 @@
     "high_recruit_bonus": 0.3,
     "high_stability_bonus": 1,
     "low_tax_penalty": -0.2,
-    "mid_recruit_penalty": -0.2,
+    "mid_recruit_penalty": 0,
     "critical_tax_penalty": -0.5,
-    "low_recruit_penalty": -0.5,
+    "low_recruit_penalty": -0.2,
     "low_desertion_rate": 0.1,
     "low_riot_chance": 0.15,
     "low_stability_penalty": -3,
@@ -229,10 +227,12 @@
     "initial": 50,
     "threshold_high": 80,
     "threshold_mid": 50,
-    "threshold_low": 30,
+    "threshold_unstable": 30,
+    "threshold_low": 10,
     "threshold_critical": 10,
     "high_output_bonus": 0.2,
     "mid_output_penalty": 0,
+    "unstable_output_penalty": -0.1,
     "low_output_penalty": -0.2,
     "critical_output_penalty": -0.5,
     "low_revolt_chance": 0.15,
@@ -322,7 +322,7 @@
   },
   "defeat": {
     "lose_all_cities": true,
-    "capital_lost": false,
+    "capital_lost": true,
     "morale_collapse": true,
     "time_limit_exceeded": true,
     "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落+无法迁都时败北；morale_collapse: 民心归零判定败北；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
@@ -368,18 +368,17 @@
     "score": {
       "name": "分数胜利",
       "enabled": false,
-      "description": "达到目标分数或超时后分数最高者获胜",
-      "target_score": 1000,
+      "description": "回合限制到达后，未取得军事/文化胜利时，按分数最高者判定为胜者，最低者判定为败者",
       "overtime_winner": true,
       "score_weights": {
-        "_comment": "分数计算权重，接口预留，具体公式待设计",
-        "city_count": 0,
-        "city_population": 0,
-        "tech_count": 0,
-        "military_power": 0,
-        "culture_coverage": 0,
-        "diplomacy_reputation": 0,
-        "wonders_built": 0
+        "_comment": "分数计算权重，均衡分配",
+        "city_count": 8,
+        "city_population": 2,
+        "tech_count": 3,
+        "military_power": 5,
+        "culture_coverage": 3,
+        "diplomacy_reputation": 2,
+        "wonders_built": 50
       }
     },
     "_reserved": {
