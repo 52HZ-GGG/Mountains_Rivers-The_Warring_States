@@ -241,8 +241,32 @@
     "min_rate": 0.1,
     "max_rate": 0.5,
     "default_rate": 0.3,
-    "current_efficiency": 1.0,
-    "efficiency_formula_reserved": "rate / 0.3"
+    "current_efficiency": 1.0
+  },
+  "corruption": {
+    "growth": {
+      "C_cities": 12,
+      "C_pop": 8,
+      "C_border": 5,
+      "border_distance_threshold": 8,
+      "formula": "C_cities * log2(city_count + 1) + C_pop * log2(total_pop + 1) + C_border * border_city_count"
+    },
+    "tech_reduction_max": 0.2,
+    "threshold_clean": 20,
+    "threshold_normal": 50,
+    "threshold_corrupt": 80,
+    "clean_tax_bonus_max": 0.1,
+    "clean_morale_bonus_max": 5,
+    "corrupt_tax_penalty_rate": 0.02,
+    "corrupt_morale_penalty_rate": 0.5,
+    "severe_tax_penalty_rate": 0.02,
+    "severe_morale_penalty_rate": 0.8,
+    "censor": {
+      "corruption_reduction_per_level": 3,
+      "max_levels": 2,
+      "national_limit": 2
+    },
+    "description": "腐败值 = 固定值（每回合由帝国规模决定），非累加。清廉提供正面效果，腐败/严重腐败施加负面效果（决策#169）"
   },
   "supply": {
     "morale_loss_per_turn": 10,

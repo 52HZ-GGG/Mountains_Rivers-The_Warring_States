@@ -164,6 +164,22 @@
       "max_national_count": 2
     },
     {
+      "id": "censor_office",
+      "name": "御史台",
+      "description": "监察百官，肃贪倡廉，澄清吏治",
+      "category": "political",
+      "cost_gold": 200,
+      "cost_wood": 20,
+      "build_turns": 2,
+      "max_level": 2,
+      "upkeep_gold": 15,
+      "effects": {
+        "corruption_reduction": 3
+      },
+      "upgrade_cost_multiplier": 1.5,
+      "max_national_count": 2
+    },
+    {
       "id": "granary",
       "name": "粮仓",
       "description": "广积粮谷，以备荒年，仓廪充实",
