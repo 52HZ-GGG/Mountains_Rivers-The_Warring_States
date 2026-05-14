@@ -110,6 +110,14 @@
       "building_materials": {
         "building_materials_production": 0.3,
         "building_materials_cost_reduction": -0.2
+      },
+      "silk": {
+        "gold_production": 0.2,
+        "stability_bonus": 10
+      },
+      "culture": {
+        "culture_production": 0.2,
+        "academy_effect_bonus": 0.5
       }
     },
     "special_resources": {
@@ -228,7 +236,9 @@
     "building_effect": {
       "shrine": 9,
       "academy": 6,
-      "palace": 15
+      "palace": 15,
+      "altar": 5,
+      "prison": 3
     },
     "garrison_effect_per_unit": 6,
     "culture_mismatch_penalty": -15,
@@ -272,9 +282,6 @@
     "morale_loss_per_turn": 10,
     "hp_loss_per_turn": 0.05
   },
-  "recruitment": {
-    "barracks_discount_per_level": 0.1
-  },
   "season_cycle": {
     "turns_per_year": 4,
     "seasons": [
@@ -294,7 +301,10 @@
     },
     "flip_threshold": 0.5,
     "victory_ratio": 0.7,
-    "victory_turns": 10
+    "victory_turns": 10,
+    "culture_mismatch_garrison_atk_penalty": -0.2,
+    "culture_mismatch_garrison_def_penalty": -0.2,
+    "culture_mismatch_capital_morale_penalty": -10
   },
   "game_settings": {
     "map_width": 30,
@@ -435,6 +445,18 @@
     "research_speed_per_turn": 1,
     "special_condition_check_on_unlock": true,
     "era_gate_enabled": false
+  },
+  "development": {
+    "base_per_level": 10,
+    "building_bonus": 3,
+    "population_bonus": 1,
+    "city_type_ranges": {
+      "capital": {"min": 55, "max": 75},
+      "major": {"min": 30, "max": 50},
+      "medium": {"min": 15, "max": 30},
+      "minor": {"min": 5, "max": 15},
+      "neutral": {"min": 10, "max": 45}
+    }
   },
   "capital": {
     "player_max_relocations": 2
@@ -627,7 +649,10 @@
     },
     "capital_bonus": {
       "hp": 500,
-      "attack": 5
+      "attack": 5,
+      "stability": 20,
+      "garrison_atk_bonus": 0.2,
+      "garrison_def_bonus": 0.2
     }
   },
   "city_combat": {
@@ -638,6 +663,18 @@
     "capture_restore_ratio": 0.3,
     "natural_recovery_ratio": 0.05,
     "natural_recovery_requires_no_attack": true,
-    "building_occupy_turns": 1
+    "building_occupy_turns": 1,
+    "demolish_turns": 1
+  },
+  "building_effects": {
+    "revolt_suppression_per_level": {
+      "prison": 0.15
+    },
+    "garrison_atk_bonus_per_level": {
+      "training_ground": 0.10
+    },
+    "garrison_def_bonus_per_level": {
+      "training_ground": 0.10
+    }
   }
 }
