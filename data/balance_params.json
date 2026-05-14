@@ -257,9 +257,9 @@
     "threshold_corrupt": 80,
     "clean_tax_bonus_max": 0.1,
     "clean_morale_bonus_max": 5,
-    "corrupt_tax_penalty_rate": 0.02,
+    "corrupt_tax_penalty_rate": 0.00333,
     "corrupt_morale_penalty_rate": 0.5,
-    "severe_tax_penalty_rate": 0.02,
+    "severe_tax_penalty_rate": 0.015,
     "severe_morale_penalty_rate": 0.8,
     "censor": {
       "corruption_reduction_per_level": 3,
