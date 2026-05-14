@@ -538,7 +538,7 @@
           "cost_wood": 68,
           "build_turns": 3,
           "cost_building_materials": 25,
-          "effects": { "structure_hp": 380, "tower_attack": 18 }
+          "effects": { "structure_hp": 350, "tower_attack": 18 }
         }
       ]
     },

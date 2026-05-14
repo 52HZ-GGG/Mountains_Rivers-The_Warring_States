@@ -684,12 +684,15 @@
     "damage_split_garrison": 0.5,
     "damage_split_wall": 0.5,
     "no_garrison_wall_ratio": 1.0,
+    "no_wall_hp_damage_split_garrison": 1.0,
     "siege_damage_multiplier": 3.0,
     "capture_restore_ratio": 0.3,
     "natural_recovery_ratio": 0.05,
     "natural_recovery_requires_no_attack": true,
     "building_occupy_turns": 1,
-    "demolish_turns": 1
+    "demolish_turns": 1,
+    "wall_defense_hp_scaling": true,
+    "wall_defense_min_ratio": 0.5
   },
   "building_effects": {
     "revolt_suppression_per_level": {
