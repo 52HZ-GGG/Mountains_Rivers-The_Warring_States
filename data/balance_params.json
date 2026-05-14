@@ -218,7 +218,11 @@
     "capital_recapture_clear_all": true,
     "school_base_morale": {
       "confucianism": 2,
-      "legalism": -1
+      "legalism": -1,
+      "mohism": 0,
+      "daoism": 0,
+      "military": 0,
+      "diplomacy": 0
     }
   },
   "stability": {
