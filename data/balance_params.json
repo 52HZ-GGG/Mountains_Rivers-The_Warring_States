@@ -344,7 +344,56 @@
     "victory_turns": 10,
     "culture_mismatch_garrison_atk_penalty": -0.2,
     "culture_mismatch_garrison_def_penalty": -0.2,
-    "culture_mismatch_capital_morale_penalty": -10
+    "culture_mismatch_capital_morale_penalty": -10,
+    "base_culture_per_level": 5,
+    "decay": {
+      "base_decay_rate": 0.3,
+      "decay_reduction": 0.1,
+      "radiation_input_max": 1.0
+    },
+    "trade_route": {
+      "establish_cost": 100,
+      "maintenance_per_turn": 10,
+      "duration_multiplier": 2,
+      "distance_limit": 8,
+      "resource_exchange_rate": 0.1,
+      "culture_spread_multiplier": 1.5,
+      "max_routes_default": 2
+    },
+    "military_occupation": {
+      "forced_culture_amount": 50,
+      "culture_reduction_amount": 50
+    },
+    "scholar": {
+      "cost_gold": 100,
+      "culture_effect_amount": 30,
+      "cooldown_turns": 5,
+      "target_restriction": "any_city",
+      "ai_use_threshold": 0.3,
+      "ai_cooldown_randomness": 2
+    },
+    "school_culture_effects": {
+      "legalism": {
+        "foreign_culture_resistance": 0.5,
+        "foreign_culture_suppression_per_turn": 5
+      },
+      "mohism": {
+        "culture_defense_bonus": 0.3
+      },
+      "daoism": {
+        "culture_incoming_reduction": 0.25,
+        "self_culture_decay_reduction": 0.5
+      },
+      "military": {
+        "occupation_culture_bonus": 0.5,
+        "conquest_culture_spread_range": 2
+      },
+      "diplomacy": {
+        "trade_route_culture_bonus": 0.5,
+        "scholar_cost_reduction": 0.3,
+        "diplomacy_culture_opinion_bonus": 5
+      }
+    }
   },
   "game_settings": {
     "map_width": 30,

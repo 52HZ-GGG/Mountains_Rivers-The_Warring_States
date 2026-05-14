@@ -38,7 +38,9 @@
       "global_effects": {
         "tech_speed": 0.2,
         "recruit_efficiency": 0.2,
-        "school_base_morale": -1
+        "school_base_morale": -1,
+        "foreign_culture_resistance": 0.5,
+        "foreign_culture_suppression_per_turn": 5
       },
       "special_policy": {
         "id": "mutual_surveillance",
@@ -63,7 +65,8 @@
       "global_effects": {
         "def_combat_bonus": 0.25,
         "siege_cost_multiplier": 0.5,
-        "school_base_morale": 0
+        "school_base_morale": 0,
+        "culture_defense_bonus": 0.3
       },
       "special_policy": {
         "id": "forced_ceasefire",
@@ -86,7 +89,9 @@
       "global_effects": {
         "building_upkeep_multiplier": 0.5,
         "pop_growth_bonus": 0.3,
-        "school_base_morale": 0
+        "school_base_morale": 0,
+        "culture_incoming_reduction": 0.25,
+        "self_culture_decay_reduction": 0.5
       },
       "special_policy": {
         "id": "small_state",
@@ -116,7 +121,9 @@
       "global_effects": {
         "general_xp_bonus": 0.5,
         "ambush_damage_bonus": 0.5,
-        "school_base_morale": 0
+        "school_base_morale": 0,
+        "occupation_culture_bonus": 0.5,
+        "conquest_culture_spread_range": 2
       },
       "special_policy": {
         "id": "elite_selection",
@@ -148,7 +155,10 @@
       "global_effects": {
         "diplomacy_opinion_multiplier": 0.5,
         "alliance_cost_multiplier": 0.7,
-        "school_base_morale": 0
+        "school_base_morale": 0,
+        "trade_route_culture_bonus": 0.5,
+        "scholar_cost_reduction": 0.3,
+        "diplomacy_culture_opinion_bonus": 5
       },
       "special_policy": {
         "id": "sow_discord",
