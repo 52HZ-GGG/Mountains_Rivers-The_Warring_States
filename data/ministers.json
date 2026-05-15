@@ -6,6 +6,7 @@
         {
           "id": "civil_common_template",
           "name_template": "random",
+          "school": null,
           "description": "普通文大夫，随机生成",
           "base_stats": {
             "理财": [
@@ -28,15 +29,16 @@
           "id": "li_si",
           "name": "李斯",
           "title": "法家名臣",
+          "school": "legalism",
           "description": "助秦统一六国，废分封行郡县",
           "base_stats": {
             "理财": [
-              20,
-              70
+              30,
+              65
             ],
             "安民": [
               20,
-              70
+              55
             ]
           },
           "skills": [
@@ -49,15 +51,16 @@
           "id": "wu_qi",
           "name": "吴起",
           "title": "兵家亚圣",
+          "school": "military",
           "description": "在楚变法，强兵富国",
           "base_stats": {
             "理财": [
-              20,
-              70
+              25,
+              60
             ],
             "安民": [
-              20,
-              70
+              25,
+              60
             ]
           },
           "skills": [
@@ -69,6 +72,7 @@
         {
           "id": "civil_rare_template",
           "name_template": "random",
+          "school": null,
           "description": "稀有文大夫，随机生成",
           "base_stats": {
             "理财": [
@@ -92,15 +96,16 @@
           "id": "shang_yang",
           "name": "商鞅",
           "title": "变法名相",
+          "school": "legalism",
           "description": "在秦变法，废井田开阡陌，强秦之基",
           "base_stats": {
             "理财": [
-              40,
-              100
+              60,
+              95
             ],
             "安民": [
-              40,
-              100
+              55,
+              90
             ]
           },
           "skills": [
@@ -112,24 +117,73 @@
           "unique_skill": "变法"
         },
         {
-          "id": "guan_zhong",
-          "name": "管仲",
-          "title": "华夏第一相",
-          "description": "辅佐齐桓公九合诸侯，一匡天下",
+          "id": "meng_zi",
+          "name": "孟子",
+          "title": "儒家亚圣",
+          "school": "confucianism",
+          "description": "周游列国推行仁政，儒家亚圣",
           "base_stats": {
             "理财": [
               40,
-              100
+              75
             ],
             "安民": [
-              40,
-              100
+              60,
+              95
             ]
           },
           "skills": [
-            "兴商",
-            "劝农",
-            "名望"
+            "教化",
+            "名望",
+            "劝农"
+          ],
+          "is_historical": true,
+          "unique_skill": "教化"
+        },
+        {
+          "id": "mo_zi",
+          "name": "墨子",
+          "title": "墨家钜子",
+          "school": "mohism",
+          "description": "墨家创始人，兼爱非攻，善守城之术",
+          "base_stats": {
+            "理财": [
+              45,
+              80
+            ],
+            "安民": [
+              55,
+              90
+            ]
+          },
+          "skills": [
+            "坚守",
+            "教化",
+            "劝农"
+          ],
+          "is_historical": true,
+          "unique_skill": "坚守"
+        },
+        {
+          "id": "zhuang_zi",
+          "name": "庄子",
+          "title": "道家宗师",
+          "school": "daoism",
+          "description": "道家代表人物，逍遥无为，顺应自然",
+          "base_stats": {
+            "理财": [
+              35,
+              70
+            ],
+            "安民": [
+              50,
+              85
+            ]
+          },
+          "skills": [
+            "教化",
+            "名望",
+            "识人"
           ],
           "is_historical": true,
           "unique_skill": "名望"
@@ -141,6 +195,7 @@
         {
           "id": "mil_common_template",
           "name_template": "random",
+          "school": null,
           "description": "普通武大夫，随机生成",
           "base_stats": {
             "勇武": [
@@ -163,15 +218,16 @@
           "id": "zhao_kuo",
           "name": "赵括",
           "title": "马服君之子",
+          "school": "military",
           "description": "熟读兵书，长平之战败于白起",
           "base_stats": {
             "勇武": [
-              20,
-              70
+              25,
+              55
             ],
             "韬略": [
               20,
-              70
+              50
             ]
           },
           "skills": [
@@ -184,15 +240,16 @@
           "id": "pang_juan",
           "name": "庞涓",
           "title": "魏国名将",
+          "school": "military",
           "description": "魏国上将军，败于马陵之战",
           "base_stats": {
             "勇武": [
-              20,
-              70
+              35,
+              65
             ],
             "韬略": [
-              20,
-              70
+              25,
+              55
             ]
           },
           "skills": [
@@ -204,6 +261,7 @@
         {
           "id": "mil_rare_template",
           "name_template": "random",
+          "school": null,
           "description": "稀有武大夫，随机生成",
           "base_stats": {
             "勇武": [
@@ -227,14 +285,15 @@
           "id": "bai_qi",
           "name": "白起",
           "title": "杀神",
+          "school": "military",
           "description": "战国四大名将之首，长平坑赵卒四十万",
           "base_stats": {
             "勇武": [
-              40,
+              85,
               100
             ],
             "韬略": [
-              40,
+              75,
               100
             ]
           },
@@ -250,14 +309,15 @@
           "id": "wang_jian",
           "name": "王翦",
           "title": "秦灭六国主将",
+          "school": "military",
           "description": "助秦灭赵、燕、楚，战国四大名将之一",
           "base_stats": {
             "勇武": [
-              40,
-              100
+              70,
+              95
             ],
             "韬略": [
-              40,
+              75,
               100
             ]
           },
@@ -273,15 +333,16 @@
           "id": "lian_po",
           "name": "廉颇",
           "title": "赵国名将",
+          "school": "military",
           "description": "负荆请罪，战国四大名将之一",
           "base_stats": {
             "勇武": [
-              40,
-              100
+              70,
+              95
             ],
             "韬略": [
-              40,
-              100
+              65,
+              90
             ]
           },
           "skills": [
@@ -296,15 +357,16 @@
           "id": "li_mu",
           "name": "李牧",
           "title": "赵国良将",
+          "school": "military",
           "description": "北击匈奴，战国四大名将之一",
           "base_stats": {
             "勇武": [
-              40,
-              100
+              70,
+              95
             ],
             "韬略": [
-              40,
-              100
+              70,
+              95
             ]
           },
           "skills": [
@@ -322,6 +384,7 @@
         {
           "id": "dip_common_template",
           "name_template": "random",
+          "school": null,
           "description": "普通外交大夫，随机生成",
           "base_stats": {
             "辩才": [
@@ -344,15 +407,16 @@
           "id": "su_dai",
           "name": "苏代",
           "title": "纵横家",
+          "school": "diplomacy",
           "description": "苏秦之弟，合纵连横之术",
           "base_stats": {
             "辩才": [
-              20,
-              70
+              30,
+              60
             ],
             "亲和": [
-              20,
-              70
+              25,
+              55
             ]
           },
           "skills": [
@@ -364,6 +428,7 @@
         {
           "id": "dip_rare_template",
           "name_template": "random",
+          "school": null,
           "description": "稀有外交大夫，随机生成",
           "base_stats": {
             "辩才": [
@@ -387,15 +452,16 @@
           "id": "zhang_yi",
           "name": "张仪",
           "title": "连横之父",
+          "school": "diplomacy",
           "description": "以连横之策破六国合纵",
           "base_stats": {
             "辩才": [
-              40,
+              80,
               100
             ],
             "亲和": [
-              40,
-              100
+              60,
+              90
             ]
           },
           "skills": [
@@ -410,15 +476,16 @@
           "id": "su_qin",
           "name": "苏秦",
           "title": "合纵之长",
+          "school": "diplomacy",
           "description": "佩六国相印，合纵抗秦",
           "base_stats": {
             "辩才": [
-              40,
+              75,
               100
             ],
             "亲和": [
-              40,
-              100
+              65,
+              95
             ]
           },
           "skills": [
@@ -428,6 +495,54 @@
           ],
           "is_historical": true,
           "unique_skill": "合纵"
+        },
+        {
+          "id": "fan_ju",
+          "name": "范雎",
+          "title": "远交近攻",
+          "school": "diplomacy",
+          "description": "献远交近攻之策，助秦蚕食六国",
+          "base_stats": {
+            "辩才": [
+              70,
+              95
+            ],
+            "亲和": [
+              55,
+              85
+            ]
+          },
+          "skills": [
+            "连横",
+            "离间",
+            "巧舌"
+          ],
+          "is_historical": true,
+          "unique_skill": "离间"
+        },
+        {
+          "id": "lin_xiangru",
+          "name": "蔺相如",
+          "title": "完璧归赵",
+          "school": "diplomacy",
+          "description": "完璧归赵、渑池之会，以口舌折秦王",
+          "base_stats": {
+            "辩才": [
+              65,
+              90
+            ],
+            "亲和": [
+              70,
+              100
+            ]
+          },
+          "skills": [
+            "巧舌",
+            "名望",
+            "结交"
+          ],
+          "is_historical": true,
+          "unique_skill": "名望"
         }
       ]
     }
@@ -597,6 +712,13 @@
         "name": "地利",
         "description": "特定地形战斗时攻防+N%",
         "type": "conditional",
+        "max_level": 3
+      },
+      {
+        "id": "练兵",
+        "name": "练兵",
+        "description": "部队获得经验+N%",
+        "type": "passive",
         "max_level": 3
       },
       {

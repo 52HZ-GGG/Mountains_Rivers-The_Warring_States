@@ -13,8 +13,8 @@
         "diplomacy": 1
       },
       "action_speed": 80,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "legalism",
+      "initial_tribute": 20,
       "ai_capital_relocation_weight": null
     },
     {
@@ -29,8 +29,8 @@
         "diplomacy": 2
       },
       "action_speed": 70,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "military",
+      "initial_tribute": 45,
       "ai_capital_relocation_weight": null
     },
     {
@@ -45,8 +45,8 @@
         "diplomacy": 4
       },
       "action_speed": 55,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "confucianism",
+      "initial_tribute": 60,
       "ai_capital_relocation_weight": null
     },
     {
@@ -61,8 +61,8 @@
         "diplomacy": 3
       },
       "action_speed": 50,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "daoism",
+      "initial_tribute": 30,
       "ai_capital_relocation_weight": null
     },
     {
@@ -77,8 +77,8 @@
         "diplomacy": 2
       },
       "action_speed": 65,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "military",
+      "initial_tribute": 50,
       "ai_capital_relocation_weight": null
     },
     {
@@ -93,8 +93,8 @@
         "diplomacy": 2
       },
       "action_speed": 60,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "mohism",
+      "initial_tribute": 55,
       "ai_capital_relocation_weight": null
     },
     {
@@ -109,8 +109,8 @@
         "diplomacy": 4
       },
       "action_speed": 45,
-      "default_school": null,
-      "diplomacy_modifier": {},
+      "default_school": "diplomacy",
+      "initial_tribute": 50,
       "ai_capital_relocation_weight": null
     }
   ],

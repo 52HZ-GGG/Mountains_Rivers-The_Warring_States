@@ -1,19 +1,22 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "gift_tiers": [
     {"name": "小礼", "cost_gold": 50,  "opinion_change": 10},
     {"name": "中礼", "cost_gold": 150, "opinion_change": 20},
     {"name": "大礼", "cost_gold": 300, "opinion_change": 30}
   ],
   "action_effects": {
-    "declare_war":     {"reputation_change": -20, "opinion_change_all": -10, "opinion_change_target": -30},
-    "surprise_war":    {"reputation_change": -20, "opinion_change_all": -10, "opinion_change_target": -30},
-    "ceasefire":       {"reputation_change": 0,   "opinion_change_target": 5},
-    "non_aggression":  {"reputation_change": 5,   "opinion_change_target": 5},
-    "military_access": {"reputation_change": 0,   "opinion_change_target": 3},
-    "trade_route":     {"reputation_change": 0,   "opinion_change_target": 5},
-    "tribute":         {"reputation_change": 0,   "opinion_change_target": 10},
-    "alliance":        {"reputation_change": 5,   "opinion_change_target": 15}
+    "declare_war":      {"reputation_change": -25, "opinion_change_all": -15, "opinion_change_target": -50},
+    "surprise_war":     {"reputation_change": -40, "opinion_change_all": -25, "opinion_change_target": -70},
+    "ceasefire":        {"reputation_change": 0,   "opinion_change_target": 5},
+    "non_aggression":   {"reputation_change": 5,   "opinion_change_target": 5},
+    "military_access":  {"reputation_change": 0,   "opinion_change_target": 3},
+    "trade_route":      {"reputation_change": 0,   "opinion_change_target": 5},
+    "tribute":          {"reputation_change": 0,   "opinion_change_target": 10},
+    "alliance":         {"reputation_change": 5,   "opinion_change_target": 15},
+    "send_hostage":     {"reputation_change": 0,   "opinion_change_target": 20},
+    "release_hostage":  {"reputation_change": 5,   "opinion_change_target": 15},
+    "recall_hostage":   {"reputation_change": -5,  "opinion_change_target": -15}
   },
   "betrayal_effects": {
     "reputation_change": -30,
@@ -23,6 +26,10 @@
     "debuff_duration": 3,
     "debuff_attack_mod": 0.9
   },
+  "alliance": {
+    "min_opinion": 30,
+    "min_reputation": 40
+  },
   "treaty_params": {
     "non_aggression_durations": [3, 5, 10],
     "ceasefire_durations": [3, 5, 10],
@@ -31,7 +38,13 @@
     "military_access_max_units": 5
   },
   "trade_route": {
-    "base_income": 20,
+    "establish_cost": 100,
+    "maintenance_per_turn": 10,
+    "duration_multiplier": 2,
+    "distance_limit": 8,
+    "resource_exchange_rate": 0.1,
+    "culture_spread_multiplier": 1.5,
+    "max_routes_default": 2,
     "reputation_bonus_threshold": 70,
     "reputation_bonus_rate": 0.10
   },
@@ -41,6 +54,76 @@
     "reputation_escape_threshold": 30,
     "escape_penalty_reputation": -10,
     "escape_penalty_opinion": -20
+  },
+  "hostage": {
+    "opinion_boost_on_send": 20,
+    "opinion_penalty_on_recall": -15,
+    "reputation_penalty_on_recall": -5,
+    "opinion_boost_on_return": 10,
+    "opinion_per_turn_bonus": 1,
+    "escape_chance_per_turn": 0.05,
+    "death_chance_per_turn": 0.02,
+    "opinion_penalty_on_escape": -25,
+    "reputation_penalty_on_escape": -10,
+    "opinion_penalty_on_death": -40,
+    "reputation_penalty_on_death": -15,
+    "min_opinion_to_send": 20,
+    "max_per_faction": 1
+  },
+  "tribute": {
+    "small":    {"cost_gold": 100, "tribute_change": 5,  "reputation_change": 3, "cooldown_turns": 1},
+    "large":    {"cost_gold": 300, "tribute_change": 15, "reputation_change": 5, "cooldown_turns": 3},
+    "ceremony": {"cost_gold": 200, "cost_food": 50,      "tribute_change": 20, "reputation_change": 8, "cooldown_turns": 5},
+    "decay_interval_turns": 10,
+    "decay_amount": -5,
+    "attack_zhou_penalty": -50,
+    "usurp_title_penalty": -30,
+    "tribute_to_reputation_ratio": 10,
+    "tribute_low_threshold": 20,
+    "tribute_low_reputation_penalty": -5,
+    "tribute_high_threshold": 80,
+    "tribute_high_reputation_bonus": 5
+  },
+  "enfeoffment": {
+    "vassal": {
+      "tribute_threshold": 40,
+      "reputation_boost": 10,
+      "opinion_boost_zhou": 5
+    },
+    "regional_lord": {
+      "tribute_threshold": 60,
+      "reputation_boost": 15,
+      "war_penalty_reduction": 0.5
+    },
+    "hegemon": {
+      "tribute_threshold": 80,
+      "reputation_boost": 20,
+      "alliance_cost_reduction": 0.3,
+      "can_command_allies": true
+    },
+    "failure_penalty_tribute": -5,
+    "max_per_type_per_game": 1
+  },
+  "intelligence": {
+    "points_per_opinion": 1,
+    "level_thresholds": {
+      "blackout_max": 19,
+      "basic_min": 20,
+      "basic_max": 49,
+      "detailed_min": 50,
+      "detailed_max": 99,
+      "complete_min": 100
+    },
+    "modifiers": {
+      "post_station": 15,
+      "guest_house": 30,
+      "trade_route": 10,
+      "hostage_held": 10,
+      "diplomat_in_border": 10
+    },
+    "war_forced_points": 0,
+    "surprise_war_penalty_points": -10,
+    "surprise_war_penalty_duration": 10
   },
   "opinion_decay": {
     "decay_interval_turns": 5,
@@ -58,6 +141,10 @@
     "score_per_gold": 0.01,
     "score_per_city_base": 2,
     "score_vassal": 3,
+    "score_release_prisoner": 2,
+    "score_open_pass": 1.5,
+    "score_non_aggression": 1,
+    "score_reopen_trade": 0.5,
     "base_accept_threshold": 3,
     "personality_mod_aggression": 0.3,
     "personality_mod_greed": 0.2
@@ -85,22 +172,16 @@
     "war_target_weights": {"distance": 0.3, "power": 0.3, "opinion": 0.4},
     "gift_response": "same_as_player"
   },
-  "difficulty": {
-    "easy":   {"resource_mod": -0.3, "initial_gold_bonus": 0,   "demolish_refund_ratio": 0.75},
-    "normal": {"resource_mod": 0.0,  "initial_gold_bonus": 0,   "demolish_refund_ratio": 0.50},
-    "hard":   {"resource_mod": 0.3,  "initial_gold_bonus": 100, "demolish_refund_ratio": 0.25},
-    "hell":   {"resource_mod": 0.6,  "initial_gold_bonus": 300, "demolish_refund_ratio": 0.00}
-  },
   "reputation_thresholds": {
     "very_low": 20,
-    "low": 30,
-    "high": 70,
+    "low": 40,
+    "high": 61,
     "very_high": 80
   },
   "reputation_effects": {
-    "very_low":  {"event": "coalition_against_player"},
-    "low":       {"trade_penalty": 0.5},
-    "high":      {"trade_bonus": 0.10},
-    "very_high": {"alliance_success_bonus": 0.30}
+    "very_low":  {"event": "coalition_against_player", "trade_penalty": 0.5, "alliance_success_penalty": 0.3},
+    "low":       {"trade_penalty": 0.25, "alliance_success_penalty": 0.2},
+    "high":      {"trade_bonus": 0.10, "alliance_success_bonus": 0.15},
+    "very_high": {"trade_bonus": 0.20, "alliance_success_bonus": 0.30, "unlock_enfeoffment": true}
   }
 }

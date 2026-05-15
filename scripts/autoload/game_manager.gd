@@ -88,6 +88,10 @@ func is_player_faction(faction_id: String) -> bool:
 	return faction_id == _player_faction
 
 
+func get_player_faction_id() -> String:
+	return _player_faction
+
+
 # ============= 状态转换 =============
 
 ## 开始游戏。active_factions 是激活的国家 ID 列表，player_faction 是人类玩家。

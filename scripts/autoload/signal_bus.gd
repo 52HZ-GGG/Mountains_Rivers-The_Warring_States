@@ -69,6 +69,11 @@ signal capital_relocated(faction_id: String, new_capital_id: String)
 ## faction 灭国时发出（无任何城市 或 玩家迁都次数耗尽且首都再次失守）
 signal faction_eliminated(faction_id: String)
 
+# ============= 学派系统 =============
+
+## 事件获得学派经验时发出（待学派系统实现后连接）
+signal school_exp_gained(amount: int)
+
 # ============= 城市管理 =============
 
 ## 建筑建造/升级完成时发出

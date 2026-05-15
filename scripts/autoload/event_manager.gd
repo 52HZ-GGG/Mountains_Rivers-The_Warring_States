@@ -93,20 +93,73 @@ func _trigger_event(evt: Dictionary, _faction_id: String) -> void:
 		SignalBus.event_resolved.emit(evt["id"], "")
 
 
-func resolve_event_choice(event_id: String, choice_id: String) -> void:
+func resolve_event_choice(event_id: String, choice_id: String) -> bool:
 	var evt: Dictionary = DataManager.get_event(event_id)
 	if evt.is_empty():
 		push_warning("EventManager: 未找到事件 %s" % event_id)
-		return
+		return false
 	if evt.get("options") == null:
 		push_warning("EventManager: 事件 %s 无选项" % event_id)
-		return
+		return false
 	for opt in evt["options"]:
 		if opt["id"] == choice_id:
+			var cost: Dictionary = opt.get("cost", {})
+			if not cost.is_empty() and not _can_afford(cost):
+				push_warning("EventManager: 资源不足，无法选择选项 %s" % choice_id)
+				return false
+			if not cost.is_empty():
+				_deduct_cost(cost)
 			_apply_effects(opt["outcomes"])
 			SignalBus.event_resolved.emit(event_id, choice_id)
-			return
+			return true
 	push_warning("EventManager: 事件 %s 中未找到选项 %s" % [event_id, choice_id])
+	return false
+
+
+## 检查选项是否可承担（供 UI 调用）
+func can_afford_option(event_id: String, choice_id: String) -> bool:
+	var evt: Dictionary = DataManager.get_event(event_id)
+	if evt.is_empty() or evt.get("options") == null:
+		return false
+	for opt in evt["options"]:
+		if opt["id"] == choice_id:
+			return _can_afford(opt.get("cost", {}))
+	return false
+
+
+func _can_afford(cost: Dictionary) -> bool:
+	if cost.has("food") and GameManager.get_player_food() < cost["food"]:
+		return false
+	if cost.has("gold") and GameManager.get_player_gold() < cost["gold"]:
+		return false
+	if cost.has("wood") and GameManager.get_player_wood() < cost["wood"]:
+		return false
+	if cost.has("craftsmen") and GameManager.get_player_craftsmen() < cost["craftsmen"]:
+		return false
+	if cost.has("building_materials") and GameManager.get_player_building_materials() < cost["building_materials"]:
+		return false
+	if cost.has("horse") and GameManager.get_player_horse() < cost["horse"]:
+		return false
+	if cost.has("refined_iron") and GameManager.get_player_refined_iron() < cost["refined_iron"]:
+		return false
+	return true
+
+
+func _deduct_cost(cost: Dictionary) -> void:
+	if cost.has("food"):
+		GameManager.apply_food_delta(-cost["food"])
+	if cost.has("gold"):
+		GameManager.apply_gold_delta(-cost["gold"])
+	if cost.has("wood"):
+		GameManager.apply_wood_delta(-cost["wood"])
+	if cost.has("craftsmen"):
+		GameManager.apply_craftsmen_delta(-cost["craftsmen"])
+	if cost.has("building_materials"):
+		GameManager.apply_building_materials_delta(-cost["building_materials"])
+	if cost.has("horse"):
+		GameManager.apply_horse_delta(-cost["horse"])
+	if cost.has("refined_iron"):
+		GameManager.apply_refined_iron_delta(-cost["refined_iron"])
 
 
 func _apply_effects(effects: Dictionary) -> void:
@@ -130,6 +183,56 @@ func _apply_effects(effects: Dictionary) -> void:
 		GameManager.apply_population_delta(effects["population_delta"])
 	if effects.has("troops_delta"):
 		GameManager.apply_troops_delta(effects["troops_delta"])
+	if effects.has("horse_delta"):
+		GameManager.apply_horse_delta(effects["horse_delta"])
+	if effects.has("refined_iron_delta"):
+		GameManager.apply_refined_iron_delta(effects["refined_iron_delta"])
+	if effects.has("school_exp"):
+		SignalBus.school_exp_gained.emit(effects["school_exp"])
+
+	# 外交数值效果
+	if effects.has("reputation_change"):
+		DiplomacySystem.change_reputation(GameManager.get_player_faction_id(), effects["reputation_change"])
+	if effects.has("opinion_change_aid_factions"):
+		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), effects["opinion_change_aid_factions"])
+	if effects.has("opinion_change_all_hezong_members"):
+		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), effects["opinion_change_all_hezong_members"])
+	if effects.has("opinion_change_defector_all"):
+		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), effects["opinion_change_defector_all"])
+	if effects.has("opinion_change_all_lianheng_members"):
+		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), effects["opinion_change_all_lianheng_members"])
+	if effects.has("opinion_change_lianheng_allies"):
+		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), effects["opinion_change_lianheng_allies"])
+	if effects.has("diplomacy_random_opinion_shift"):
+		var shift_range: Dictionary = effects["diplomacy_random_opinion_shift"]
+		var min_val: int = shift_range.get("min", -10)
+		var max_val: int = shift_range.get("max", 10)
+		var shift: int = randi_range(min_val, max_val)
+		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), shift)
+	if effects.has("tribute_change"):
+		DiplomacySystem.set_event_chain_flag("tribute_change", effects["tribute_change"])
+	if effects.has("diplomacy_independence_bonus"):
+		DiplomacySystem.set_event_chain_flag("independence_bonus", effects["diplomacy_independence_bonus"])
+
+	# 事件链状态标记（存入 DiplomacySystem，不触发链式逻辑）
+	if effects.has("diplomacy_hezong_trigger"):
+		DiplomacySystem.set_event_chain_flag("hezong_active", true)
+	if effects.has("diplomacy_hezong_dissolve"):
+		DiplomacySystem.set_event_chain_flag("hezong_active", false)
+	if effects.has("diplomacy_hezong_defection"):
+		DiplomacySystem.set_event_chain_flag("hezong_defection", true)
+	if effects.has("diplomacy_lianheng_trigger"):
+		DiplomacySystem.set_event_chain_flag("lianheng_active", true)
+	if effects.has("diplomacy_lianheng_dissolve"):
+		DiplomacySystem.set_event_chain_flag("lianheng_active", false)
+	if effects.has("diplomacy_lianheng_backlash"):
+		DiplomacySystem.set_event_chain_flag("lianheng_backlash", true)
+	if effects.has("diplomacy_zhou_aid"):
+		DiplomacySystem.set_event_chain_flag("zhou_aid", true)
+
+	# TODO: 待实现效果（需要深度系统集成）
+	# grant_ability: 授予发起合纵/连横能力（需 DiplomacySystem 扩展）
+	# special_victory: 九鼎/禅让特殊胜利（需胜利系统扩展）
 
 
 func _update_cooldowns() -> void:
