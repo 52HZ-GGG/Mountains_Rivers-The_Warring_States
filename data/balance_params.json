@@ -1,108 +1,182 @@
 {
   "schema_version": "1.0",
   "combat": {
-    "morale_atk_floor": 0.7,
-    "morale_atk_ceil": 1.0,
     "min_damage": 1,
     "ambush_base_chance": 0.05,
     "ambush_atk_bonus": 0.3,
     "ambush_chance_cap": 0.95,
     "ambush_damage_multiplier": 2.0,
-    "flank_def_reduction": 0.7,
-    "flank_damage_multiplier": 1.5,
-    "siege_wall_damage_multiplier": 3.0,
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
     "fire_burn_dot_ratio": 0.3,
     "base_random_spread_lo": 0.9,
     "base_random_spread_hi": 1.1,
     "accuracy_spread_factor": 0.001,
-    "general_force_atk_rate": 0.003,
-    "general_command_def_rate": 0.001,
-    "general_intelligence_ambush_rate": 0.002,
     "momentum_max_bonus": 0.25,
     "attack_ends_turn": true,
     "fog_enemy_stops_movement": true
+  },
+  "unit_skills": {
+    "description": "兵种技能系统。技能定义在 units.json → skills 数组中，运行时按 type 分发到对应系统处理。",
+    "skill_types": {
+      "passive": {
+        "description": "被动常驻效果，读取 value 字段累加到公式",
+        "formula_integration": "atk_buff += skill.value（累加到 unit_ability_bonus）",
+        "instances": [
+          { "id": "enhanced_siege", "unit": "jinnu", "value": 1.5, "note": "攻城加法层+1.5" }
+        ]
+      },
+      "terrain_move_modifier": {
+        "description": "地形移动力修正，读取 terrain_move_modifier 字典按地形类型覆盖",
+        "formula_integration": "move_cost = max(1, base_move_cost + skill.terrain_move_modifier[terrain])",
+        "instances": [
+          { "id": "forest_march", "unit": "hufu_qibing", "modifier": { "forest": -1 } },
+          { "id": "mountain_march", "unit": "shenxi_zhishi", "modifier": { "mountain": -2 } }
+        ]
+      },
+      "combat_on_kill": {
+        "description": "击杀时触发效果，读取 recover_ratio 字段",
+        "formula_integration": "on_kill: hp += max_hp × skill.recover_ratio",
+        "instances": [
+          { "id": "wuzu_recover", "unit": "wuzu", "recover_ratio": 0.05 }
+        ]
+      },
+      "move_after_attack": {
+        "description": "攻击后可继续移动，读取 attack_move_cost 和 per_turn_limit",
+        "formula_integration": "on_attack: remaining_mp -= skill.attack_move_cost; if remaining_mp > 0 and attacks_this_turn < skill.per_turn_limit: can_continue_move",
+        "instances": [
+          { "id": "hit_and_run", "unit": "liaodong_gongqi", "attack_move_cost": 2, "per_turn_limit": 1 }
+        ]
+      }
+    }
   },
   "movement": {
     "insufficient_mp_uses_per_turn": 1,
     "insufficient_mp_ends_turn": true
   },
+  "healing": {
+    "description": "脱离战斗后 HP 恢复（周围无敌军且本回合未参与战斗，持续>1回合）",
+    "outskirts_hp_per_turn": 10,
+    "city_area_hp_per_turn": 15,
+    "city_inside_hp_per_turn": 20,
+    "max_heal_to_full": true,
+    "no_heal_when_morale_broken": true
+  },
+  "zoc": {
+    "base_range": 1,
+    "extra_move_cost": 1,
+    "stacking": false,
+    "navy_immune_to_land_zoc": true,
+    "requires_garrison": true,
+    "generates_zoc": {
+      "infantry": true,
+      "cavalry": true,
+      "archer": false,
+      "siege": false,
+      "navy": false,
+      "city": true,
+      "pass": true
+    },
+    "affected_by_zoc": {
+      "infantry": true,
+      "cavalry": true,
+      "archer": true,
+      "siege": true,
+      "navy": false,
+      "city": false,
+      "pass": false
+    },
+    "tech_range_expansion": "zoc_expansion",
+    "tech_cost_elimination": "zoc_freedom"
+  },
   "resources": {
-    "city_base_wood": 20,
-    "pop_growth_rate": 0.02,
-    "army_upkeep_gold_per_unit": 5,
-    "army_upkeep_food_per_unit": 2,
+    "gold_cap_base": 500,
+    "gold_cap_per_market_level": 50,
+    "wood_cap_base": 200,
+    "wood_cap_per_lumbermill_level": 30,
+    "city_base_wood": 10,
     "horse_upkeep_food_per_unit": 3,
     "season_food_mod": {
-      "spring": 1.2,
-      "summer": 1.0,
-      "autumn": 2.0,
-      "winter": 0.7
+      "spring": 0.2,
+      "summer": 0.0,
+      "autumn": 1.0,
+      "winter": -0.3
     },
     "season_gold_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
-      "autumn": 1.5,
-      "winter": 0.8
+      "spring": 0.0,
+      "summer": 0.0,
+      "autumn": 0.5,
+      "winter": -0.2
     },
     "season_wood_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
-      "autumn": 1.0,
-      "winter": 0.8
+      "spring": 0.0,
+      "summer": 0.0,
+      "autumn": 0.0,
+      "winter": -0.2
     },
     "season_craftsmen_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
-      "autumn": 1.2,
-      "winter": 0.8
+      "spring": 0.0,
+      "summer": 0.0,
+      "autumn": 0.2,
+      "winter": -0.2
     },
     "season_building_materials_mod": {
-      "spring": 1.2,
-      "summer": 1.0,
-      "autumn": 1.0,
-      "winter": 0.7
+      "spring": 0.2,
+      "summer": 0.0,
+      "autumn": 0.0,
+      "winter": -0.3
     },
     "special_resource_mod": {
       "wood": {
-        "wood_production": 1.3,
-        "wood_cost_reduction": 0.8
+        "wood_production": 0.3,
+        "wood_cost_reduction": -0.2
       },
       "horse": {
-        "cavalry_train_speed": 1.3
+        "horse_production": 0.3
       },
       "salt": {
-        "gold_production": 1.2
+        "gold_production": 0.2
       },
       "craftsmen": {
-        "craftsmen_production": 1.3
+        "craftsmen_production": 0.3
       },
       "building_materials": {
-        "building_materials_production": 1.3,
-        "building_materials_cost_reduction": 0.8
+        "building_materials_production": 0.3,
+        "building_materials_cost_reduction": -0.2
+      },
+      "silk": {
+        "gold_production": 0.2,
+        "stability_bonus": 10
+      },
+      "culture": {
+        "culture_production": 0.2,
+        "academy_effect_bonus": 0.5
       }
     },
     "special_resources": {
       "horse": {
-        "base_production": 5,
         "city_base_production": 2,
         "description": "马匹"
       },
       "refined_iron": {
-        "base_production": 3,
         "city_base_production": 2,
         "description": "精铁"
       },
       "craftsmen": {
-        "base_production": 3,
         "city_base_production": 2,
         "description": "工匠"
       },
       "building_materials": {
-        "base_production": 3,
         "city_base_production": 2,
         "description": "建材"
+      },
+      "wood": {
+        "city_base_production": 0,
+        "description": "木材（特产城通过 special_resource_mod 加成，无特产基础产出）"
+      },
+      "salt": {
+        "city_base_production": 0,
+        "description": "盐（特产城通过 special_resource_mod 加成，无特产基础产出）"
       }
     }
   },
@@ -117,7 +191,8 @@
       "autumn": 1.2,
       "winter": 0.7
     },
-    "growth_stability_formula": "0.5 + stability / 100.0",
+    "growth_stability_base": 0.5,
+    "growth_stability_per_point": 0.01,
     "famine_pop_loss": 1,
     "famine_stability_loss": 10,
     "grain_shortage_morale_loss": 5,
@@ -145,16 +220,17 @@
       "0.4": -10,
       "0.5": -20
     },
+    "tax_change_cooldown": 10,
     "threshold_high": 80,
     "threshold_mid": 50,
     "threshold_low": 30,
     "high_tax_bonus": 0.2,
     "high_recruit_bonus": 0.3,
     "high_stability_bonus": 1,
-    "mid_tax_penalty": -0.2,
-    "mid_recruit_penalty": -0.2,
-    "low_tax_penalty": -0.5,
-    "low_recruit_penalty": -0.5,
+    "low_tax_penalty": -0.2,
+    "mid_recruit_penalty": 0,
+    "critical_tax_penalty": -0.5,
+    "low_recruit_penalty": -0.2,
     "low_desertion_rate": 0.1,
     "low_riot_chance": 0.15,
     "low_stability_penalty": -3,
@@ -176,25 +252,33 @@
     "capital_recapture_clear_all": true,
     "school_base_morale": {
       "confucianism": 2,
-      "legalism": -1
+      "legalism": -1,
+      "mohism": 0,
+      "daoism": 0,
+      "military": 0,
+      "diplomacy": 0
     }
   },
   "stability": {
     "initial": 50,
     "threshold_high": 80,
     "threshold_mid": 50,
-    "threshold_low": 30,
+    "threshold_unstable": 30,
+    "threshold_low": 10,
     "threshold_critical": 10,
     "high_output_bonus": 0.2,
     "mid_output_penalty": 0,
+    "unstable_output_penalty": -0.2,
     "low_output_penalty": -0.2,
     "critical_output_penalty": -0.5,
     "low_revolt_chance": 0.15,
-    "critical_uprising_chance": 0.2,
+    "critical_uprising_chance": 0.3,
     "building_effect": {
       "shrine": 9,
       "academy": 6,
-      "palace": 15
+      "palace": 15,
+      "altar": 5,
+      "prison": 3
     },
     "garrison_effect_per_unit": 6,
     "culture_mismatch_penalty": -15,
@@ -207,17 +291,36 @@
     "min_rate": 0.1,
     "max_rate": 0.5,
     "default_rate": 0.3,
-    "current_efficiency": 1.0,
-    "efficiency_formula_reserved": "rate / 0.3"
+    "current_efficiency": 1.0
+  },
+  "corruption": {
+    "growth": {
+      "C_cities": 12,
+      "C_pop": 8,
+      "C_border": 5,
+      "border_distance_threshold": 8,
+      "formula": "C_cities * log2(city_count + 1) + C_pop * log2(total_pop + 1) + C_border * border_city_count"
+    },
+    "tech_reduction_max": 0.2,
+    "threshold_clean": 20,
+    "threshold_normal": 50,
+    "threshold_corrupt": 80,
+    "clean_tax_bonus_max": 0.1,
+    "clean_morale_bonus_max": 5,
+    "corrupt_tax_penalty_rate": 0.00333,
+    "corrupt_morale_penalty_rate": 0.5,
+    "severe_tax_penalty_rate": 0.015,
+    "severe_morale_penalty_rate": 0.8,
+    "censor": {
+      "corruption_reduction_per_level": 3,
+      "max_levels": 2,
+      "national_limit": 2
+    },
+    "description": "腐败值 = 固定值（每回合由帝国规模决定），非累加。清廉提供正面效果，腐败/严重腐败施加负面效果（决策#169）"
   },
   "supply": {
     "morale_loss_per_turn": 10,
     "hp_loss_per_turn": 0.05
-  },
-  "recruitment": {
-    "base_recruit_turns": 1,
-    "barracks_speed_bonus_per_level": 0.25,
-    "barracks_discount_per_level": 0.05
   },
   "season_cycle": {
     "turns_per_year": 4,
@@ -238,7 +341,59 @@
     },
     "flip_threshold": 0.5,
     "victory_ratio": 0.7,
-    "victory_turns": 10
+    "victory_turns": 10,
+    "culture_mismatch_garrison_atk_penalty": -0.2,
+    "culture_mismatch_garrison_def_penalty": -0.2,
+    "culture_mismatch_capital_morale_penalty": -10,
+    "base_culture_per_level": 5,
+    "decay": {
+      "base_decay_rate": 0.3,
+      "decay_reduction": 0.1,
+      "radiation_input_max": 1.0
+    },
+    "trade_route": {
+      "establish_cost": 100,
+      "maintenance_per_turn": 10,
+      "duration_multiplier": 2,
+      "distance_limit": 8,
+      "resource_exchange_rate": 0.1,
+      "culture_spread_multiplier": 1.5,
+      "max_routes_default": 2
+    },
+    "military_occupation": {
+      "forced_culture_amount": 50,
+      "culture_reduction_amount": 50
+    },
+    "scholar": {
+      "cost_gold": 100,
+      "culture_effect_amount": 30,
+      "cooldown_turns": 5,
+      "target_restriction": "any_city",
+      "ai_use_threshold": 0.3,
+      "ai_cooldown_randomness": 2
+    },
+    "school_culture_effects": {
+      "legalism": {
+        "foreign_culture_resistance": 0.5,
+        "foreign_culture_suppression_per_turn": 5
+      },
+      "mohism": {
+        "culture_defense_bonus": 0.3
+      },
+      "daoism": {
+        "culture_incoming_reduction": 0.25,
+        "self_culture_decay_reduction": 0.5
+      },
+      "military": {
+        "occupation_culture_bonus": 0.5,
+        "conquest_culture_spread_range": 2
+      },
+      "diplomacy": {
+        "trade_route_culture_bonus": 0.5,
+        "scholar_cost_reduction": 0.3,
+        "diplomacy_culture_opinion_bonus": 5
+      }
+    }
   },
   "game_settings": {
     "map_width": 30,
@@ -252,7 +407,7 @@
   },
   "defeat": {
     "lose_all_cities": true,
-    "capital_lost": false,
+    "capital_lost": true,
     "morale_collapse": true,
     "time_limit_exceeded": true,
     "_comment": "lose_all_cities: 失去所有城市判定败北；capital_lost: 首都陷落+无法迁都时败北；morale_collapse: 民心归零判定败北；time_limit_exceeded: 超过max_turns未胜利则按分数判定"
@@ -298,43 +453,28 @@
     "score": {
       "name": "分数胜利",
       "enabled": false,
-      "description": "达到目标分数或超时后分数最高者获胜",
-      "target_score": 1000,
+      "description": "回合限制到达后，未取得军事/文化胜利时，按分数最高者判定为胜者，最低者判定为败者",
       "overtime_winner": true,
       "score_weights": {
-        "_comment": "分数计算权重，接口预留，具体公式待设计",
-        "city_count": 0,
-        "city_population": 0,
-        "tech_count": 0,
-        "military_power": 0,
-        "culture_coverage": 0,
-        "diplomacy_reputation": 0,
-        "wonders_built": 0
+        "_comment": "分数计算权重，均衡分配",
+        "city_count": 8,
+        "city_population": 2,
+        "tech_count": 3,
+        "military_power": 5,
+        "culture_coverage": 3,
+        "diplomacy_reputation": 2,
+        "wonders_built": 50
       }
     },
     "_reserved": {
       "_comment": "后续阶段扩展：外交胜利、经济胜利等，每条路径结构与上述一致"
     }
   },
-  "general": {
-    "exp_per_level": 100,
-    "max_level": 5,
-    "base_exp_per_battle": 15,
-    "exp_result_mod": {
-      "great_victory": 1.5,
-      "victory": 1.0,
-      "draw": 0.5,
-      "defeat": 0.3
-    },
-    "death_chance": 0.5,
-    "capture_chance": 0.3,
-    "escape_chance": 0.2
-  },
   "event_cooldown_turns": 3,
   "naval_combat": {
     "navy_vs_land_attack_mod": 0.5,
     "land_vs_navy_attack_mod": 0.5,
-    "land_on_water_vs_navy_attack_mod": 0.5,
+    "land_on_water_attack_mod": 0.5,
     "land_on_water_defense_mod": 0.5,
     "navy_on_water_defense_mod": 1.0
   },
@@ -380,6 +520,18 @@
     "special_condition_check_on_unlock": true,
     "era_gate_enabled": false
   },
+  "development": {
+    "base_per_level": 10,
+    "building_bonus": 3,
+    "population_bonus": 1,
+    "city_type_ranges": {
+      "capital": {"min": 55, "max": 75},
+      "major": {"min": 30, "max": 50},
+      "medium": {"min": 15, "max": 30},
+      "minor": {"min": 5, "max": 15},
+      "neutral": {"min": 10, "max": 45}
+    }
+  },
   "capital": {
     "player_max_relocations": 2
   },
@@ -404,7 +556,9 @@
     "morale_recovery_in_city": 8,
     "natural_recovery_cap": 100,
     "low_morale_threshold": 50,
-    "low_morale_atk_penalty": -0.1
+    "low_morale_atk_penalty": -0.1,
+    "flanking_morale_loss": -20,
+    "encirclement_morale_loss": -50
   },
   "category_counter_matrix": {
     "infantry": {
@@ -569,17 +723,35 @@
     },
     "capital_bonus": {
       "hp": 500,
-      "attack": 5
+      "attack": 5,
+      "stability": 20,
+      "garrison_atk_bonus": 0.2,
+      "garrison_def_bonus": 0.2
     }
   },
   "city_combat": {
     "damage_split_garrison": 0.5,
     "damage_split_wall": 0.5,
     "no_garrison_wall_ratio": 1.0,
+    "no_wall_hp_damage_split_garrison": 1.0,
     "siege_damage_multiplier": 3.0,
     "capture_restore_ratio": 0.3,
     "natural_recovery_ratio": 0.05,
     "natural_recovery_requires_no_attack": true,
-    "building_occupy_turns": 1
+    "building_occupy_turns": 1,
+    "demolish_turns": 1,
+    "wall_defense_hp_scaling": true,
+    "wall_defense_min_ratio": 0.5
+  },
+  "building_effects": {
+    "revolt_suppression_per_level": {
+      "prison": 0.15
+    },
+    "garrison_atk_bonus_per_level": {
+      "training_ground": 0.10
+    },
+    "garrison_def_bonus_per_level": {
+      "training_ground": 0.10
+    }
   }
 }

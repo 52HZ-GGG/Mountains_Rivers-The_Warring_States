@@ -318,6 +318,42 @@
       }
     },
     {
+      "id": "zoc_expansion",
+      "name": "控地之术",
+      "description": "善战者，致人而不致于人。扩展控制范围，使敌军进退维谷。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 250,
+      "prerequisites": [
+        "formation_tactics",
+        "iron_forging"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "zoc_range_bonus",
+        "target": "all",
+        "value": 1
+      }
+    },
+    {
+      "id": "zoc_freedom",
+      "name": "轻兵疾行",
+      "description": "兵贵神速，出其不意。善行者不随人之控制，如入无人之境。",
+      "category": "military",
+      "era": "late",
+      "cost_gold": 300,
+      "prerequisites": [
+        "zoc_expansion",
+        "stratagem_warfare"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "zoc_cost_immunity",
+        "target": "all",
+        "value": true
+      }
+    },
+    {
       "id": "distant_alliance",
       "name": "远交近攻",
       "description": "远交以孤敌，近攻以拓土。范雎之策，秦之所以帝也。",
@@ -417,6 +453,26 @@
       }
     },
     {
+      "id": "market_prosperity",
+      "name": "市贸繁荣",
+      "description": "繁荣市场贸易，提升商路容量和资源交换效率。",
+      "category": "economy",
+      "era": "early",
+      "cost_gold": 100,
+      "prerequisites": [],
+      "special_conditions": [],
+      "effects": [
+        {
+          "type": "trade_route_capacity",
+          "value": 1
+        },
+        {
+          "type": "trade_route_exchange_bonus",
+          "value": 0.05
+        }
+      ]
+    },
+    {
       "id": "dujiangyan_irrigation",
       "name": "都江之堰",
       "description": "李冰凿离堆，分江流以灌沃野。水旱从人，不知饥馑。",
@@ -429,7 +485,7 @@
       "special_conditions": [
         {
           "type": "city_control",
-          "city_id": "chengdu"
+          "city_id": "shujun"
         }
       ],
       "effects": {
@@ -511,6 +567,22 @@
         "bonus_value": 0.2,
         "malus_resource": "gold",
         "malus_value": -0.1
+      }
+    },
+    {
+      "id": "censor_system",
+      "name": "御史之制",
+      "description": "设御史以察百官，风宪肃然，贪墨者惧。上下相维，内外相制。",
+      "category": "economy",
+      "era": "mid",
+      "cost_gold": 200,
+      "prerequisites": [
+        "agriculture_priority"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "corruption_reduction",
+        "value": 0.2
       }
     },
     {
@@ -692,8 +764,8 @@
       ],
       "special_conditions": [
         {
-          "type": "building",
-          "building_id": "jixia_academy"
+          "type": "wonder",
+          "wonder_id": "jixia_academy"
         }
       ],
       "effects": {

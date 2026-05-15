@@ -1,298 +1,733 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.1",
   "buildings": [
     {
       "id": "farm",
       "name": "农田",
       "description": "开垦荒地，增产粮食",
       "category": "economic",
-      "cost_gold": 100,
-      "cost_wood": 0,
-      "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 5,
-      "effects": {
-        "food_production_bonus": 0.1
-      },
-      "upgrade_cost_multiplier": 1.5
+      "levels": [
+        {
+          "cost_gold": 100,
+          "cost_wood": 0,
+          "build_turns": 1,
+          "effects": { "food_production_bonus": 0.10 }
+        },
+        {
+          "cost_gold": 150,
+          "cost_wood": 0,
+          "build_turns": 1,
+          "effects": { "food_production_bonus": 0.25 }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 0,
+          "build_turns": 2,
+          "effects": { "food_production_bonus": 0.45 }
+        }
+      ]
     },
     {
       "id": "market",
       "name": "市集",
       "description": "招徕商贾，增课赋税",
       "category": "economic",
-      "cost_gold": 120,
-      "cost_wood": 0,
-      "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 8,
-      "effects": {
-        "gold_production_bonus": 0.1
-      },
-      "upgrade_cost_multiplier": 1.5
+      "levels": [
+        {
+          "cost_gold": 120,
+          "cost_wood": 0,
+          "build_turns": 1,
+          "effects": { "gold_production_bonus": 0.10 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 0,
+          "build_turns": 1,
+          "effects": { "gold_production_bonus": 0.25 }
+        },
+        {
+          "cost_gold": 270,
+          "cost_wood": 0,
+          "build_turns": 2,
+          "effects": { "gold_production_bonus": 0.45 }
+        }
+      ]
     },
     {
       "id": "lumbermill",
       "name": "伐木场",
       "description": "伐木取材，营造之基",
       "category": "economic",
-      "cost_gold": 80,
-      "cost_wood": 20,
-      "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 10,
-      "effects": {
-        "wood_production": 20
-      },
-      "upgrade_cost_multiplier": 1.5
+      "levels": [
+        {
+          "cost_gold": 80,
+          "cost_wood": 20,
+          "build_turns": 1,
+          "effects": { "wood_production": 20 }
+        },
+        {
+          "cost_gold": 120,
+          "cost_wood": 30,
+          "build_turns": 1,
+          "effects": { "wood_production": 40 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 45,
+          "build_turns": 2,
+          "effects": { "wood_production": 65 }
+        }
+      ]
     },
     {
       "id": "craftsmen_workshop",
       "name": "工匠坊",
       "description": "聚百工之巧，造器制物",
       "category": "economic",
-      "cost_gold": 80,
-      "cost_wood": 20,
-      "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 10,
-      "effects": {
-        "craftsmen_production": 3
-      },
-      "upgrade_cost_multiplier": 1.5
+      "levels": [
+        {
+          "cost_gold": 80,
+          "cost_wood": 20,
+          "build_turns": 1,
+          "effects": { "craftsmen_production": 3 }
+        },
+        {
+          "cost_gold": 120,
+          "cost_wood": 30,
+          "build_turns": 1,
+          "effects": { "craftsmen_production": 6 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 45,
+          "build_turns": 2,
+          "effects": { "craftsmen_production": 10 }
+        }
+      ]
     },
     {
       "id": "building_materials_workshop",
       "name": "建材坊",
       "description": "伐木烧砖，采石备料",
       "category": "economic",
-      "cost_gold": 100,
-      "cost_wood": 30,
-      "build_turns": 1,
       "max_level": 3,
       "upkeep_gold": 10,
-      "effects": {
-        "building_materials_production": 3
-      },
-      "upgrade_cost_multiplier": 1.5
-    },
-    {
-      "id": "barracks",
-      "name": "兵营",
-      "description": "募兵练卒，整军经武。可生产步兵类兵种。",
-      "category": "military",
-      "cost_gold": 150,
-      "cost_wood": 30,
-      "build_turns": 2,
-      "max_level": 3,
-      "upkeep_gold": 15,
-      "effects": {
-        "recruit_speed_bonus": 0.25
-      },
-      "produces_category": "infantry",
-      "upgrade_cost_multiplier": 1.5
-    },
-    {
-      "id": "wall",
-      "name": "城墙",
-      "description": "高筑城垣，固守疆圉。建于辖区格子上，可重复建造。",
-      "category": "military",
-      "cost_gold": 200,
-      "cost_wood": 50,
-      "build_turns": 2,
-      "max_level": 3,
-      "upkeep_gold": 10,
-      "effects": {
-        "defense_bonus": 0.15,
-        "structure_hp": 200
-      },
-      "upgrade_cost_multiplier": 1.5,
-      "upgrade_building_materials": {
-        "3": 30
-      },
-      "is_repeatable": true,
-      "is_defense_building": true
-    },
-    {
-      "id": "shrine",
-      "name": "祠堂",
-      "description": "祭祀先祖，安抚百姓，民心归附",
-      "category": "political",
-      "cost_gold": 150,
-      "cost_wood": 10,
-      "build_turns": 2,
-      "max_level": 2,
-      "upkeep_gold": 8,
-      "effects": {
-        "morale_bonus": 3
-      },
-      "upgrade_cost_multiplier": 1.5,
-      "max_national_count": 2
-    },
-    {
-      "id": "academy",
-      "name": "学宫",
-      "description": "延请名师，教化一方，文风鼎盛",
-      "category": "political",
-      "cost_gold": 200,
-      "cost_wood": 20,
-      "build_turns": 2,
-      "max_level": 2,
-      "upkeep_gold": 12,
-      "effects": {
-        "morale_bonus": 2,
-        "culture_production": 10
-      },
-      "upgrade_cost_multiplier": 1.5,
-      "max_national_count": 2
-    },
-    {
-      "id": "post_station",
-      "name": "驿站",
-      "description": "通达四方，传递消息，结交诸侯",
-      "category": "political",
-      "cost_gold": 120,
-      "cost_wood": 15,
-      "build_turns": 2,
-      "max_level": 1,
-      "upkeep_gold": 10,
-      "effects": {
-        "diplomacy_bonus": 0.1,
-        "intelligence_range": 1
-      },
-      "upgrade_cost_multiplier": 1.5,
-      "max_national_count": 2
+      "levels": [
+        {
+          "cost_gold": 100,
+          "cost_wood": 30,
+          "build_turns": 1,
+          "effects": { "building_materials_production": 3 }
+        },
+        {
+          "cost_gold": 150,
+          "cost_wood": 45,
+          "build_turns": 1,
+          "effects": { "building_materials_production": 6 }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 68,
+          "build_turns": 2,
+          "effects": { "building_materials_production": 10 }
+        }
+      ]
     },
     {
       "id": "granary",
       "name": "粮仓",
       "description": "广积粮谷，以备荒年，仓廪充实",
       "category": "economic",
-      "cost_gold": 100,
-      "cost_wood": 0,
-      "build_turns": 1,
       "max_level": 2,
       "upkeep_gold": 5,
-      "effects": {
-        "max_food_production": 5,
-        "national_grain_cap": 50
-      },
-      "upgrade_cost_multiplier": 1.5,
-      "max_national_count": 2
-    },
-    {
-      "id": "palace",
-      "name": "王宫",
-      "description": "营建宫室，威加海内，四方来朝",
-      "category": "special",
-      "cost_gold": 400,
-      "cost_wood": 100,
-      "build_turns": 3,
-      "max_level": 3,
-      "upkeep_gold": 20,
-      "effects": {
-        "morale_bonus": 5,
-        "tax_bonus": 0.1,
-        "diplomacy_reputation": 5
-      },
-      "upgrade_cost_multiplier": 1.5,
-      "upgrade_building_materials": {
-        "2": 20,
-        "3": 40
-      },
-      "max_national_count": 1
-    },
-    {
-      "id": "stable",
-      "name": "马厩",
-      "description": "蓄养战马，以备骑兵之用。可生产骑兵类兵种。仅产马之地可建。",
-      "category": "military",
-      "cost_gold": 150,
-      "cost_wood": 20,
-      "build_turns": 2,
-      "max_level": 2,
-      "upkeep_gold": 10,
-      "effects": {
-        "horse_production": 5
-      },
-      "produces_category": "cavalry",
-      "upgrade_cost_multiplier": 1.5,
-      "max_national_count": 3,
-      "build_requires": {
-        "special_resource": "horse"
-      }
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 100,
+          "cost_wood": 0,
+          "build_turns": 1,
+          "effects": { "max_food_production": 5, "national_grain_cap": 50 }
+        },
+        {
+          "cost_gold": 150,
+          "cost_wood": 0,
+          "build_turns": 2,
+          "effects": { "max_food_production": 10, "national_grain_cap": 100 }
+        }
+      ]
     },
     {
       "id": "ironworks",
       "name": "精铁坊",
       "description": "百炼精铁，铸兵利器。仅产木之地可建。",
       "category": "economic",
-      "cost_gold": 200,
-      "cost_wood": 30,
-      "build_turns": 2,
       "max_level": 1,
       "upkeep_gold": 12,
-      "effects": {
-        "refined_iron_production": 3
-      },
-      "upgrade_cost_multiplier": 1.5,
       "max_national_count": 3,
-      "build_requires": {
-        "special_resource": "wood"
-      }
+      "build_requires": { "special_resource": "wood" },
+      "levels": [
+        {
+          "cost_gold": 200,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": { "refined_iron_production": 3 }
+        }
+      ]
+    },
+    {
+      "id": "warehouse",
+      "name": "仓库",
+      "description": "扩建仓廪，广蓄物资，以备不时之需",
+      "category": "economic",
+      "max_level": 2,
+      "upkeep_gold": 5,
+      "max_national_count": 3,
+      "levels": [
+        {
+          "cost_gold": 80,
+          "cost_wood": 15,
+          "build_turns": 1,
+          "effects": { "max_food_production": 8, "national_grain_cap": 30 }
+        },
+        {
+          "cost_gold": 120,
+          "cost_wood": 23,
+          "build_turns": 1,
+          "effects": { "max_food_production": 18, "national_grain_cap": 80 }
+        }
+      ]
+    },
+    {
+      "id": "trade_office",
+      "name": "市舶司",
+      "description": "掌海外通商，招徕远客，岁入倍增。须邻水而建。",
+      "category": "economic",
+      "max_level": 2,
+      "upkeep_gold": 12,
+      "max_national_count": 2,
+      "build_requires": { "terrain": ["river", "ford"] },
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 20,
+          "build_turns": 2,
+          "effects": { "gold_production_bonus": 0.15 }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": { "gold_production_bonus": 0.35 }
+        }
+      ]
+    },
+    {
+      "id": "horse_farm",
+      "name": "养马场",
+      "description": "牧马繁驹，蓄养战马，以供军需",
+      "category": "economic",
+      "max_level": 3,
+      "upkeep_gold": 8,
+      "max_national_count": 3,
+      "build_requires": { "special_resource": "horse" },
+      "levels": [
+        {
+          "cost_gold": 120,
+          "cost_wood": 15,
+          "build_turns": 1,
+          "effects": { "horse_production": 5 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 23,
+          "build_turns": 2,
+          "effects": { "horse_production": 12 }
+        },
+        {
+          "cost_gold": 270,
+          "cost_wood": 35,
+          "build_turns": 2,
+          "effects": { "horse_production": 20 }
+        }
+      ]
+    },
+    {
+      "id": "fishery",
+      "name": "渔场",
+      "description": "临水设网，捕鱼收虾，兼得粮钱之利",
+      "category": "economic",
+      "max_level": 3,
+      "upkeep_gold": 5,
+      "build_requires": { "terrain": ["river", "ford", "deep_ocean", "shallow_ocean"] },
+      "levels": [
+        {
+          "cost_gold": 80,
+          "cost_wood": 15,
+          "build_turns": 1,
+          "effects": { "food_production_bonus": 0.05, "gold_production_bonus": 0.05 }
+        },
+        {
+          "cost_gold": 120,
+          "cost_wood": 23,
+          "build_turns": 1,
+          "effects": { "food_production_bonus": 0.12, "gold_production_bonus": 0.10 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 35,
+          "build_turns": 2,
+          "effects": { "food_production_bonus": 0.20, "gold_production_bonus": 0.15 }
+        }
+      ]
+    },
+    {
+      "id": "barracks",
+      "name": "兵营",
+      "description": "募兵练卒，整军经武。等级越高可训练越精锐的步兵。",
+      "category": "military",
+      "max_level": 3,
+      "upkeep_gold": 15,
+      "produces_category": "infantry",
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": { "unlock_infantry": ["militia", "infantry"] }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 45,
+          "build_turns": 2,
+          "effects": { "unlock_infantry": ["militia", "infantry", "spear", "scout_team"] }
+        },
+        {
+          "cost_gold": 338,
+          "cost_wood": 68,
+          "build_turns": 3,
+          "effects": { "unlock_infantry": ["militia", "infantry", "spear", "scout_team", "iron_armored"] }
+        }
+      ]
+    },
+    {
+      "id": "stable",
+      "name": "马厩",
+      "description": "驯马练骑，组建骑兵。等级越高可训练越精锐的骑兵。仅产马之地可建。",
+      "category": "military",
+      "max_level": 3,
+      "upkeep_gold": 12,
+      "produces_category": "cavalry",
+      "build_requires": { "special_resource": "horse" },
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 20,
+          "build_turns": 2,
+          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot"] }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot", "cavalry"] }
+        },
+        {
+          "cost_gold": 338,
+          "cost_wood": 45,
+          "build_turns": 3,
+          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot", "cavalry", "shock_cavalry"] }
+        }
+      ]
+    },
+    {
+      "id": "workshop",
+      "name": "工坊",
+      "description": "造攻城之器，备冲车投石。等级越高可造越精良的攻城器械。",
+      "category": "military",
+      "max_level": 3,
+      "upkeep_gold": 12,
+      "produces_category": "siege",
+      "levels": [
+        {
+          "cost_gold": 200,
+          "cost_wood": 40,
+          "build_turns": 2,
+          "effects": { "unlock_siege": ["battering_ram"] }
+        },
+        {
+          "cost_gold": 300,
+          "cost_wood": 60,
+          "build_turns": 3,
+          "effects": { "unlock_siege": ["battering_ram", "siege"] }
+        },
+        {
+          "cost_gold": 450,
+          "cost_wood": 90,
+          "build_turns": 3,
+          "effects": { "unlock_siege": ["battering_ram", "siege", "ballista"] }
+        }
+      ]
+    },
+    {
+      "id": "dock",
+      "name": "船坞",
+      "description": "临水造船，以备水战。等级越高可造越大的战船。须建于水上。",
+      "category": "military",
+      "max_level": 3,
+      "upkeep_gold": 10,
+      "produces_category": "navy",
+      "build_requires": { "terrain": ["river", "deep_ocean", "shallow_ocean", "ford"] },
+      "levels": [
+        {
+          "cost_gold": 180,
+          "cost_wood": 35,
+          "build_turns": 2,
+          "effects": { "unlock_navy": ["mengchong"] }
+        },
+        {
+          "cost_gold": 270,
+          "cost_wood": 53,
+          "build_turns": 3,
+          "effects": { "unlock_navy": ["mengchong", "great_wing"] }
+        },
+        {
+          "cost_gold": 405,
+          "cost_wood": 80,
+          "build_turns": 3,
+          "effects": { "unlock_navy": ["mengchong", "great_wing", "tower_ship"] }
+        }
+      ]
+    },
+    {
+      "id": "archery_camp",
+      "name": "射营",
+      "description": "张弓引弩，训练射术。等级越高可训练越精锐的远程兵种。",
+      "category": "military",
+      "max_level": 3,
+      "upkeep_gold": 10,
+      "produces_category": "ranged",
+      "levels": [
+        {
+          "cost_gold": 120,
+          "cost_wood": 25,
+          "build_turns": 2,
+          "effects": { "unlock_ranged": ["archer"] }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 38,
+          "build_turns": 2,
+          "effects": { "unlock_ranged": ["archer", "crossbow"] }
+        },
+        {
+          "cost_gold": 270,
+          "cost_wood": 57,
+          "build_turns": 3,
+          "effects": { "unlock_ranged": ["archer", "crossbow", "horse_archer"] }
+        }
+      ]
+    },
+    {
+      "id": "training_ground",
+      "name": "练兵场",
+      "description": "演武操练，提升驻军战力",
+      "category": "military",
+      "max_level": 2,
+      "upkeep_gold": 10,
+      "levels": [
+        {
+          "cost_gold": 120,
+          "cost_wood": 25,
+          "build_turns": 2,
+          "effects": { "garrison_atk_bonus": 0.10, "garrison_def_bonus": 0.10 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 38,
+          "build_turns": 2,
+          "effects": { "garrison_atk_bonus": 0.20, "garrison_def_bonus": 0.20 }
+        }
+      ]
+    },
+    {
+      "id": "beacon_tower",
+      "name": "烽火台",
+      "description": "举烽报警，远近相闻，敌来有备",
+      "category": "military",
+      "max_level": 2,
+      "upkeep_gold": 6,
+      "max_national_count": 3,
+      "levels": [
+        {
+          "cost_gold": 100,
+          "cost_wood": 20,
+          "build_turns": 1,
+          "effects": { "base_vision": 3, "morale_bonus": 2 }
+        },
+        {
+          "cost_gold": 150,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": { "base_vision": 5, "morale_bonus": 4 }
+        }
+      ]
+    },
+    {
+      "id": "wall",
+      "name": "城墙",
+      "description": "高筑城垣，固守疆圉。建于辖区格子上，可重复建造。",
+      "category": "defense",
+      "max_level": 3,
+      "upkeep_gold": 10,
+      "is_repeatable": true,
+      "is_defense_building": true,
+      "levels": [
+        {
+          "cost_gold": 200,
+          "cost_wood": 50,
+          "build_turns": 2,
+          "effects": { "defense_bonus": 0.15, "structure_hp": 200 }
+        },
+        {
+          "cost_gold": 300,
+          "cost_wood": 75,
+          "build_turns": 2,
+          "effects": { "defense_bonus": 0.30, "structure_hp": 350 }
+        },
+        {
+          "cost_gold": 450,
+          "cost_wood": 113,
+          "build_turns": 3,
+          "cost_building_materials": 30,
+          "effects": { "defense_bonus": 0.45, "structure_hp": 550 }
+        }
+      ]
     },
     {
       "id": "arrow_tower",
       "name": "箭塔",
       "description": "居高临下，矢如雨发。建于辖区格子上，可重复建造。",
-      "category": "military",
-      "cost_gold": 150,
-      "cost_wood": 30,
-      "build_turns": 2,
+      "category": "defense",
       "max_level": 3,
       "upkeep_gold": 8,
-      "effects": {
-        "structure_hp": 150,
-        "tower_attack": 8
-      },
-      "produces_category": "archer",
-      "upgrade_cost_multiplier": 1.5,
-      "upgrade_building_materials": {
-        "3": 25
-      },
       "is_repeatable": true,
-      "is_defense_building": true
+      "is_defense_building": true,
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": { "structure_hp": 150, "tower_attack": 8 }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 45,
+          "build_turns": 2,
+          "effects": { "structure_hp": 250, "tower_attack": 13 }
+        },
+        {
+          "cost_gold": 338,
+          "cost_wood": 68,
+          "build_turns": 3,
+          "cost_building_materials": 25,
+          "effects": { "structure_hp": 350, "tower_attack": 18 }
+        }
+      ]
     },
     {
-      "id": "workshop",
-      "name": "工坊",
-      "description": "造攻城之器，备冲车投石。可生产攻城类兵种。",
-      "category": "military",
-      "cost_gold": 200,
-      "cost_wood": 40,
-      "build_turns": 2,
+      "id": "inner_gate",
+      "name": "瓮城",
+      "description": "城门重关，层层设防，攻者难入",
+      "category": "defense",
+      "max_level": 2,
+      "upkeep_gold": 8,
+      "is_repeatable": true,
+      "is_defense_building": true,
+      "levels": [
+        {
+          "cost_gold": 180,
+          "cost_wood": 40,
+          "build_turns": 2,
+          "effects": { "structure_hp": 300, "city_attack_bonus": 0.10 }
+        },
+        {
+          "cost_gold": 270,
+          "cost_wood": 60,
+          "build_turns": 3,
+          "effects": { "structure_hp": 500, "city_attack_bonus": 0.20 }
+        }
+      ]
+    },
+    {
+      "id": "shrine",
+      "name": "祠堂",
+      "description": "祭祀先祖，安抚百姓，民心归附",
+      "category": "political",
+      "max_level": 2,
+      "upkeep_gold": 8,
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 10,
+          "build_turns": 2,
+          "effects": { "morale_bonus": 3, "stability_bonus": 9 }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 15,
+          "build_turns": 2,
+          "effects": { "morale_bonus": 6, "stability_bonus": 9 }
+        }
+      ]
+    },
+    {
+      "id": "academy",
+      "name": "学宫",
+      "description": "延请名师，教化一方，文风鼎盛",
+      "category": "political",
       "max_level": 2,
       "upkeep_gold": 12,
-      "effects": {},
-      "produces_category": "siege",
-      "upgrade_cost_multiplier": 1.5
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 200,
+          "cost_wood": 20,
+          "build_turns": 2,
+          "effects": { "morale_bonus": 2, "culture_production": 10, "stability_bonus": 6 }
+        },
+        {
+          "cost_gold": 300,
+          "cost_wood": 30,
+          "build_turns": 3,
+          "effects": { "morale_bonus": 4, "culture_production": 25, "stability_bonus": 6 }
+        }
+      ]
     },
     {
-      "id": "dock",
-      "name": "船坞",
-      "description": "临水造船，以备水战。可生产水军类兵种。须建于水上。",
-      "category": "military",
-      "cost_gold": 180,
-      "cost_wood": 35,
-      "build_turns": 2,
+      "id": "post_station",
+      "name": "驿站",
+      "description": "通达四方，传递消息，结交诸侯",
+      "category": "political",
+      "max_level": 1,
+      "upkeep_gold": 10,
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 120,
+          "cost_wood": 15,
+          "build_turns": 2,
+          "effects": { "diplomacy_bonus": 0.10, "intelligence_range": 1 }
+        }
+      ]
+    },
+    {
+      "id": "censor_office",
+      "name": "御史台",
+      "description": "监察百官，肃贪倡廉，澄清吏治",
+      "category": "political",
+      "max_level": 2,
+      "upkeep_gold": 15,
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 200,
+          "cost_wood": 20,
+          "build_turns": 2,
+          "effects": { "corruption_reduction": 3 }
+        },
+        {
+          "cost_gold": 300,
+          "cost_wood": 30,
+          "build_turns": 3,
+          "effects": { "corruption_reduction": 6 }
+        }
+      ]
+    },
+    {
+      "id": "prison",
+      "name": "监狱",
+      "description": "关押囚犯，震慑宵小，境内安靖",
+      "category": "political",
+      "max_level": 2,
+      "upkeep_gold": 8,
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 120,
+          "cost_wood": 15,
+          "build_turns": 2,
+          "effects": { "revolt_suppression": 0.15, "stability_bonus": 3 }
+        },
+        {
+          "cost_gold": 180,
+          "cost_wood": 23,
+          "build_turns": 2,
+          "effects": { "revolt_suppression": 0.30, "stability_bonus": 3 }
+        }
+      ]
+    },
+    {
+      "id": "altar",
+      "name": "祭坛",
+      "description": "祭天祀地，祈福禳灾，民心安定",
+      "category": "political",
       "max_level": 2,
       "upkeep_gold": 10,
-      "effects": {},
-      "produces_category": "navy",
-      "upgrade_cost_multiplier": 1.5,
-      "build_requires": {
-        "terrain": "water"
-      }
+      "max_national_count": 2,
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 20,
+          "build_turns": 2,
+          "effects": { "morale_bonus": 2, "stability_bonus": 5 }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 30,
+          "build_turns": 3,
+          "effects": { "morale_bonus": 5, "stability_bonus": 5 }
+        }
+      ]
+    },
+    {
+      "id": "palace",
+      "name": "王宫",
+      "description": "营建宫室，威加海内，四方来朝",
+      "category": "special",
+      "max_level": 3,
+      "upkeep_gold": 20,
+      "max_national_count": 1,
+      "levels": [
+        {
+          "cost_gold": 400,
+          "cost_wood": 100,
+          "build_turns": 3,
+          "effects": { "morale_bonus": 5, "tax_bonus": 0.10, "diplomacy_reputation": 5, "stability_bonus": 15 }
+        },
+        {
+          "cost_gold": 600,
+          "cost_wood": 150,
+          "build_turns": 3,
+          "cost_building_materials": 20,
+          "effects": { "morale_bonus": 8, "tax_bonus": 0.15, "diplomacy_reputation": 10, "stability_bonus": 15 }
+        },
+        {
+          "cost_gold": 900,
+          "cost_wood": 225,
+          "build_turns": 4,
+          "cost_building_materials": 40,
+          "effects": { "morale_bonus": 12, "tax_bonus": 0.20, "diplomacy_reputation": 15, "stability_bonus": 15 }
+        }
+      ]
     }
   ]
 }

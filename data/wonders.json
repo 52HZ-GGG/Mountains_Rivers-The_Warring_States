@@ -1,96 +1,252 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "wonders": [
     {
       "id": "terracotta_army",
       "name": "兵马俑",
       "description": "千军万马，拱卫陵寝。国之重器，威震四方。",
+      "wonder_type": "single_city",
       "cost_gold": 800,
-      "build_turns": 5,
+      "cost_wood": 200,
+      "cost_building_materials": 50,
+      "build_turns": 20,
       "upkeep_gold": 15,
       "effects": {
         "morale_national": 10,
-        "recruit_speed_bonus": 0.2
+        "recruit_discount_national": 0.2
       },
-      "flavor_text": "秦王扫六合，虎视何雄哉。",
-      "cost_wood": 200,
-      "cost_building_materials": 50
+      "build_requires": {
+        "min_cities": 3,
+        "building": "barracks",
+        "building_level": "max",
+        "min_building_count": 2,
+        "min_turn": 15
+      },
+      "flavor_text": "秦王扫六合，虎视何雄哉。"
     },
     {
       "id": "great_wall",
       "name": "万里长城",
       "description": "筑城万里，拒胡于外。然劳民伤财，民心浮动。",
+      "wonder_type": "map",
       "cost_gold": 1000,
-      "build_turns": 6,
+      "cost_wood": 300,
+      "cost_building_materials": 80,
+      "map_length": 10,
+      "build_turns": 20,
       "upkeep_gold": 25,
       "effects": {
         "defense_national": 0.3,
-        "diplomacy_opinion_neighbor": -5
+        "diplomacy_reputation": -5
       },
-      "flavor_text": "但使龙城飞将在，不教胡马度阴山。",
-      "cost_wood": 300,
-      "cost_building_materials": 80
+      "placement_rules": {
+        "no_loops": true,
+        "no_river_connection": true,
+        "territory": ["own", "neutral"]
+      },
+      "build_requires": {
+        "min_cities": 4,
+        "building": "wall",
+        "building_level": "max",
+        "min_building_count": 2,
+        "min_turn": 20
+      },
+      "flavor_text": "但使龙城飞将在，不教胡马度阴山。"
     },
     {
       "id": "dujiangyan",
       "name": "都江堰",
       "description": "因势利导，化水为利。沃野千里，天府之国。",
+      "wonder_type": "single_city",
       "cost_gold": 600,
-      "build_turns": 4,
+      "cost_wood": 100,
+      "cost_building_materials": 40,
+      "build_turns": 20,
       "upkeep_gold": 10,
       "effects": {
         "food_production_national": 0.25,
-        "drought_immune": true
+        "drought_mitigation": 0.5
       },
-      "flavor_text": "深淘滩，低作堰。",
-      "cost_wood": 100,
-      "cost_building_materials": 40
+      "build_requires": {
+        "terrain": "river",
+        "building": "farm",
+        "building_level": "max",
+        "min_building_count": 3,
+        "min_turn": 10
+      },
+      "flavor_text": "深淘滩，低作堰。"
     },
     {
       "id": "zhengguo_qu",
       "name": "郑国渠",
       "description": "引泾入洛，灌溉关中。疲秦之计，反成强秦之基。",
+      "wonder_type": "single_city",
       "cost_gold": 500,
-      "build_turns": 4,
+      "cost_wood": 80,
+      "cost_building_materials": 30,
+      "build_turns": 20,
       "upkeep_gold": 8,
       "effects": {
         "food_production_national": 0.2,
         "wood_production_national": 0.1
       },
-      "flavor_text": "韩遣郑国间秦，秦用其策而益强。",
-      "cost_wood": 80,
-      "cost_building_materials": 30
+      "build_requires": {
+        "terrain": "river",
+        "building": "farm",
+        "building_level": "max",
+        "min_building_count": 3,
+        "min_turn": 10
+      },
+      "flavor_text": "韩遣郑国间秦，秦用其策而益强。"
     },
     {
       "id": "zhanghuatai",
       "name": "章华台",
       "description": "高台凌云，歌舞升平。文治之盛，四方景仰。",
+      "wonder_type": "single_city",
       "cost_gold": 700,
-      "build_turns": 5,
+      "cost_wood": 50,
+      "cost_building_materials": 40,
+      "build_turns": 20,
       "upkeep_gold": 12,
       "effects": {
         "morale_national": 15,
         "culture_production_national": 0.3
       },
-      "flavor_text": "楚灵王为章华之台，与民休息。",
-      "cost_wood": 50,
-      "cost_building_materials": 40
+      "build_requires": {
+        "building": "academy",
+        "building_level": "max",
+        "min_culture": 30,
+        "min_turn": 12
+      },
+      "flavor_text": "楚灵王为章华之台，与民休息。"
     },
     {
       "id": "jixia_academy",
       "name": "稷下学宫",
       "description": "齐国稷下学宫，百家云集之地。孟子、荀子、邹衍皆曾讲学于此。",
+      "wonder_type": "single_city",
       "cost_gold": 600,
-      "build_turns": 4,
+      "cost_wood": 50,
+      "cost_building_materials": 30,
+      "build_turns": 20,
       "upkeep_gold": 10,
       "effects": {
         "culture_production_national": 0.2,
-        "research_speed_bonus": 0.15,
+        "corruption_reduction_national": 5,
         "morale_national": 5
       },
-      "flavor_text": "稷下学宫，百家争鸣。道儒墨法，各展所长。",
-      "cost_wood": 50,
-      "cost_building_materials": 30
+      "build_requires": {
+        "min_cities": 2,
+        "building": "academy",
+        "building_level": "max",
+        "min_turn": 10
+      },
+      "flavor_text": "稷下学宫，百家争鸣。道儒墨法，各展所长。"
+    },
+    {
+      "id": "lingqu_canal",
+      "name": "灵渠",
+      "description": "秦凿灵渠，连通湘漓。舟楫往来，百越归心。",
+      "wonder_type": "single_city",
+      "cost_gold": 550,
+      "cost_wood": 120,
+      "cost_building_materials": 35,
+      "build_turns": 20,
+      "upkeep_gold": 10,
+      "effects": {
+        "food_production_national": 0.15,
+        "gold_production_national": 0.1
+      },
+      "build_requires": {
+        "min_cities": 3,
+        "terrain": "river",
+        "building": "market",
+        "building_level": "max",
+        "min_building_count": 3,
+        "min_turn": 15
+      },
+      "flavor_text": "秦始皇南征百越，凿渠运粮，渠成而越地定。"
+    },
+    {
+      "id": "zhidao",
+      "name": "直道",
+      "description": "秦直道，自咸阳直达九原。堑山堙谷，千八百里。",
+      "wonder_type": "map",
+      "cost_gold": 800,
+      "cost_wood": 200,
+      "cost_building_materials": 60,
+      "map_length": 10,
+      "build_turns": 20,
+      "upkeep_gold": 18,
+      "effects": {
+        "movement_cost_override": 1
+      },
+      "placement_rules": {
+        "no_loops": true,
+        "territory": ["own", "neutral"]
+      },
+      "build_requires": {
+        "min_cities": 4,
+        "building": "barracks",
+        "building_level": "max",
+        "min_building_count": 2,
+        "min_turn": 20
+      },
+      "flavor_text": "始皇命蒙恬修直道，自九原抵甘泉，堑山堙谷千八百里。"
+    },
+    {
+      "id": "quebei",
+      "name": "芍陂",
+      "description": "楚相孙叔敖作芍陂，灌田万顷，楚以富强。",
+      "wonder_type": "single_city",
+      "cost_gold": 500,
+      "cost_wood": 80,
+      "cost_building_materials": 30,
+      "build_turns": 20,
+      "upkeep_gold": 8,
+      "effects": {
+        "food_production_national": 0.2,
+        "drought_mitigation": 0.5
+      },
+      "build_requires": {
+        "terrain": "river",
+        "building": "farm",
+        "building_level": "max",
+        "min_building_count": 3,
+        "min_turn": 10
+      },
+      "flavor_text": "孙叔敖为楚相，决期思之水，灌雩娄之野。"
+    },
+    {
+      "id": "honggou",
+      "name": "鸿沟",
+      "description": "魏惠王开鸿沟，连通黄淮。舟楫之利，泽被千里。",
+      "wonder_type": "map",
+      "cost_gold": 600,
+      "cost_wood": 100,
+      "cost_building_materials": 40,
+      "map_length": 6,
+      "build_turns": 12,
+      "upkeep_gold": 12,
+      "effects": {
+        "gold_production_national": 0.15,
+        "tax_bonus_national": 0.1,
+        "terrain_change": "river"
+      },
+      "placement_rules": {
+        "no_loops": true,
+        "must_connect_water": true,
+        "territory": ["own", "neutral"]
+      },
+      "build_requires": {
+        "min_cities": 3,
+        "building": "market",
+        "building_level": "max",
+        "min_building_count": 3,
+        "min_turn": 15
+      },
+      "flavor_text": "魏惠王三十一年，为大沟于北郛，以行圃田之水。"
     }
   ]
 }
