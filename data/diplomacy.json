@@ -104,6 +104,27 @@
     "failure_penalty_tribute": -5,
     "max_per_type_per_game": 1
   },
+  "intelligence": {
+    "points_per_opinion": 1,
+    "level_thresholds": {
+      "blackout_max": 19,
+      "basic_min": 20,
+      "basic_max": 49,
+      "detailed_min": 50,
+      "detailed_max": 99,
+      "complete_min": 100
+    },
+    "modifiers": {
+      "post_station": 15,
+      "guest_house": 30,
+      "trade_route": 10,
+      "hostage_held": 10,
+      "diplomat_in_border": 10
+    },
+    "war_forced_points": 0,
+    "surprise_war_penalty_points": -10,
+    "surprise_war_penalty_duration": 10
+  },
   "opinion_decay": {
     "decay_interval_turns": 5,
     "decay_amount": 1
