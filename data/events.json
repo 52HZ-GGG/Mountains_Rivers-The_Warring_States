@@ -66,7 +66,9 @@
         {
           "id": "A",
           "text": "开仓赈济",
-          "cost": {},
+          "cost": {
+            "food": 150
+          },
           "outcomes": {
             "food_delta": -150,
             "gold_delta": 0,
@@ -108,7 +110,9 @@
         {
           "id": "A",
           "text": "拨款开采",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -151,7 +155,9 @@
         {
           "id": "A",
           "text": "发兵剿匪",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -164,7 +170,9 @@
         {
           "id": "B",
           "text": "招安收编",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -206,7 +214,9 @@
         {
           "id": "B",
           "text": "安抚军心",
-          "cost": {},
+          "cost": {
+            "gold": 60
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
@@ -235,7 +245,9 @@
         {
           "id": "A",
           "text": "加强巡防",
-          "cost": {},
+          "cost": {
+            "gold": 40
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
@@ -248,7 +260,9 @@
         {
           "id": "B",
           "text": "反间之计",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -301,7 +315,9 @@
         {
           "id": "A",
           "text": "大祭天地",
-          "cost": {},
+          "cost": {
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
@@ -314,7 +330,9 @@
         {
           "id": "B",
           "text": "小祭社稷",
-          "cost": {},
+          "cost": {
+            "gold": 30
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
@@ -346,7 +364,9 @@
         {
           "id": "A",
           "text": "延医问药",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -389,7 +409,9 @@
         {
           "id": "A",
           "text": "拜为客卿",
-          "cost": {},
+          "cost": {
+            "gold": 40
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
@@ -431,7 +453,9 @@
         {
           "id": "A",
           "text": "减税安民",
-          "cost": {},
+          "cost": {
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
@@ -499,7 +523,9 @@
         {
           "id": "A",
           "text": "开仓放粮",
-          "cost": {},
+          "cost": {
+            "food": 200
+          },
           "outcomes": {
             "food_delta": -200,
             "gold_delta": 0,
@@ -593,7 +619,9 @@
         {
           "id": "A",
           "text": "(历史) 减灶诱敌，伏击马陵道",
-          "cost": {},
+          "cost": {
+            "gold": 30
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
@@ -606,7 +634,9 @@
         {
           "id": "B",
           "text": "正面迎战，以力破之",
-          "cost": {},
+          "cost": {
+            "gold": 60
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
@@ -643,7 +673,9 @@
         {
           "id": "A",
           "text": "(历史) 围魏救赵，攻敌必救",
-          "cost": {},
+          "cost": {
+            "gold": 40
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
@@ -656,7 +688,9 @@
         {
           "id": "B",
           "text": "直赴邯郸，与魏决战",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -693,7 +727,10 @@
         {
           "id": "A",
           "text": "(历史) 坚持用廉颇，以守代攻",
-          "cost": {},
+          "cost": {
+            "food": 100,
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -50,
@@ -706,7 +743,9 @@
         {
           "id": "B",
           "text": "换将出击，速战速决",
-          "cost": {},
+          "cost": {
+            "gold": 30
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
@@ -743,7 +782,10 @@
         {
           "id": "A",
           "text": "(历史) 据城死守，等待援军",
-          "cost": {},
+          "cost": {
+            "food": 150,
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": -150,
             "gold_delta": -80,
@@ -793,7 +835,10 @@
         {
           "id": "A",
           "text": "(历史) 田单火牛阵奇袭",
-          "cost": {},
+          "cost": {
+            "food": 50,
+            "gold": 60
+          },
           "outcomes": {
             "food_delta": -50,
             "gold_delta": -60,
@@ -806,7 +851,10 @@
         {
           "id": "B",
           "text": "遣使求和，割地赔款",
-          "cost": {},
+          "cost": {
+            "food": 200,
+            "gold": 150
+          },
           "outcomes": {
             "food_delta": -200,
             "gold_delta": -150,
@@ -843,7 +891,9 @@
         {
           "id": "A",
           "text": "(历史) 各个击破，先弱后强",
-          "cost": {},
+          "cost": {
+            "gold": 40
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
@@ -856,7 +906,9 @@
         {
           "id": "B",
           "text": "集中兵力，正面强攻",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -893,7 +945,10 @@
         {
           "id": "A",
           "text": "(历史) 王翦六十万大军，稳扎稳打",
-          "cost": {},
+          "cost": {
+            "food": 300,
+            "gold": 200
+          },
           "outcomes": {
             "food_delta": -300,
             "gold_delta": -200,
@@ -906,7 +961,10 @@
         {
           "id": "B",
           "text": "李信轻兵疾进，速战速决",
-          "cost": {},
+          "cost": {
+            "food": 100,
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -80,
@@ -943,7 +1001,10 @@
         {
           "id": "A",
           "text": "(历史) 联合五国，分兵伐齐",
-          "cost": {},
+          "cost": {
+            "food": 200,
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": -200,
             "gold_delta": -100,
@@ -956,7 +1017,10 @@
         {
           "id": "B",
           "text": "单独出兵，独吞战果",
-          "cost": {},
+          "cost": {
+            "food": 150,
+            "gold": 120
+          },
           "outcomes": {
             "food_delta": -150,
             "gold_delta": -120,
@@ -1029,7 +1093,9 @@
         {
           "id": "A",
           "text": "(历史) 全面推行胡服骑射",
-          "cost": {},
+          "cost": {
+            "gold": 60
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
@@ -1042,7 +1108,9 @@
         {
           "id": "B",
           "text": "仅在边军试行",
-          "cost": {},
+          "cost": {
+            "gold": 20
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -20,
@@ -1094,7 +1162,9 @@
         {
           "id": "A",
           "text": "(历史) 六国合纵，联合封锁秦国",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -1107,7 +1177,9 @@
         {
           "id": "B",
           "text": "连横事秦，远交近攻",
-          "cost": {},
+          "cost": {
+            "gold": 40
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -40,
@@ -1137,7 +1209,9 @@
         {
           "id": "A",
           "text": "(历史) 采纳远交近攻",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -1150,7 +1224,10 @@
         {
           "id": "B",
           "text": "四面出击，全面扩张",
-          "cost": {},
+          "cost": {
+            "food": 100,
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -100,
@@ -1193,7 +1270,9 @@
         {
           "id": "B",
           "text": "识破张仪之计，将计就计",
-          "cost": {},
+          "cost": {
+            "gold": 60
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
@@ -1266,7 +1345,9 @@
         {
           "id": "A",
           "text": "(历史) 顺势平叛，拥立新君",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -1279,7 +1360,9 @@
         {
           "id": "B",
           "text": "营救武灵王，拨乱反正",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -1309,7 +1392,9 @@
         {
           "id": "A",
           "text": "(历史) 遣荆轲刺秦",
-          "cost": {},
+          "cost": {
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
@@ -1352,7 +1437,9 @@
         {
           "id": "A",
           "text": "(历史) 窃符救赵",
-          "cost": {},
+          "cost": {
+            "gold": 60
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -60,
@@ -1395,7 +1482,9 @@
         {
           "id": "A",
           "text": "(历史) 投资政治，扶植亲秦势力",
-          "cost": {},
+          "cost": {
+            "gold": 120
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -120,
@@ -1438,7 +1527,10 @@
         {
           "id": "A",
           "text": "(历史) 兴修水利工程",
-          "cost": {},
+          "cost": {
+            "gold": 100,
+            "wood": 30
+          },
           "outcomes": {
             "food_delta": 200,
             "gold_delta": -100,
@@ -1481,7 +1573,10 @@
         {
           "id": "A",
           "text": "(历史) 知其为计仍继续修建",
-          "cost": {},
+          "cost": {
+            "gold": 80,
+            "wood": 20
+          },
           "outcomes": {
             "food_delta": 150,
             "gold_delta": -80,
@@ -1526,7 +1621,10 @@
         {
           "id": "A",
           "text": "(历史) 征发民夫，全力治水",
-          "cost": {},
+          "cost": {
+            "food": 100,
+            "gold": 120
+          },
           "outcomes": {
             "food_delta": -100,
             "gold_delta": -120,
@@ -1572,7 +1670,10 @@
         {
           "id": "A",
           "text": "(历史) 开仓赈济，以工代赈",
-          "cost": {},
+          "cost": {
+            "food": 200,
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": -200,
             "gold_delta": -80,
@@ -1617,7 +1718,10 @@
         {
           "id": "A",
           "text": "(历史) 组织百姓扑蝗",
-          "cost": {},
+          "cost": {
+            "food": 80,
+            "gold": 30
+          },
           "outcomes": {
             "food_delta": -80,
             "gold_delta": -30,
@@ -1659,7 +1763,10 @@
         {
           "id": "A",
           "text": "(历史) 紧急赈灾修城",
-          "cost": {},
+          "cost": {
+            "food": 50,
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": -50,
             "gold_delta": -100,
@@ -1702,7 +1809,9 @@
         {
           "id": "A",
           "text": "(历史) 大力资助稷下学宫",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -1715,7 +1824,9 @@
         {
           "id": "B",
           "text": "量入为出，适度资助",
-          "cost": {},
+          "cost": {
+            "gold": 30
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
@@ -1745,7 +1856,9 @@
         {
           "id": "A",
           "text": "(历史) 百花齐放，兼容并蓄",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -1758,7 +1871,9 @@
         {
           "id": "B",
           "text": "独尊一家，统一思想",
-          "cost": {},
+          "cost": {
+            "gold": 20
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -20,
@@ -1788,7 +1903,9 @@
         {
           "id": "A",
           "text": "(历史) 采纳孟子仁政",
-          "cost": {},
+          "cost": {
+            "gold": 40
+          },
           "outcomes": {
             "food_delta": 50,
             "gold_delta": -40,
@@ -1831,7 +1948,9 @@
         {
           "id": "A",
           "text": "(历史) 尊重庄子意愿，厚赐而遣之",
-          "cost": {},
+          "cost": {
+            "gold": 30
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -30,
@@ -1874,7 +1993,9 @@
         {
           "id": "A",
           "text": "支持礼治派，重修礼乐",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -1887,7 +2008,9 @@
         {
           "id": "B",
           "text": "支持仁政派，开仓济民",
-          "cost": {},
+          "cost": {
+            "food": 100
+          },
           "outcomes": {
             "food_delta": -100,
             "gold_delta": 0,
@@ -1897,7 +2020,8 @@
             "wood_delta": 0
           }
         }
-      ]
+      ],
+      "one_time": true
     },
     {
       "id": "school_confucian_ritual",
@@ -1922,7 +2046,8 @@
         "troops_delta": 0,
         "wood_delta": 0
       },
-      "options": null
+      "options": null,
+      "one_time": true
     },
     {
       "id": "school_legalist_reform",
@@ -1955,7 +2080,9 @@
         {
           "id": "B",
           "text": "适度妥协，安抚旧族",
-          "cost": {},
+          "cost": {
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
@@ -1965,7 +2092,8 @@
             "wood_delta": 0
           }
         }
-      ]
+      ],
+      "one_time": true
     },
     {
       "id": "school_legalist_informant",
@@ -1988,7 +2116,8 @@
         "troops_delta": 0,
         "wood_delta": 0
       },
-      "options": null
+      "options": null,
+      "one_time": true
     },
     {
       "id": "school_mohist_siege",
@@ -2008,7 +2137,9 @@
         {
           "id": "A",
           "text": "墨者助守，坚守城垣",
-          "cost": {},
+          "cost": {
+            "food": 50
+          },
           "outcomes": {
             "food_delta": -50,
             "gold_delta": 0,
@@ -2031,7 +2162,8 @@
             "wood_delta": 0
           }
         }
-      ]
+      ],
+      "one_time": true
     },
     {
       "id": "school_daoist_hermit",
@@ -2064,7 +2196,9 @@
         {
           "id": "B",
           "text": "赠金遣之，不受其策",
-          "cost": {},
+          "cost": {
+            "gold": 50
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
@@ -2074,7 +2208,8 @@
             "wood_delta": 0
           }
         }
-      ]
+      ],
+      "one_time": true
     },
     {
       "id": "school_military_spy",
@@ -2097,7 +2232,8 @@
         "troops_delta": 0,
         "wood_delta": 0
       },
-      "options": null
+      "options": null,
+      "one_time": true
     },
     {
       "id": "school_diplomat_betray",
@@ -2117,7 +2253,9 @@
         {
           "id": "A",
           "text": "遣使质问，花钱化解",
-          "cost": {},
+          "cost": {
+            "gold": 150
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -150,
@@ -2130,7 +2268,9 @@
         {
           "id": "B",
           "text": "反施离间，削弱其盟",
-          "cost": {},
+          "cost": {
+            "gold": 80
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -80,
@@ -2140,7 +2280,8 @@
             "wood_delta": 0
           }
         }
-      ]
+      ],
+      "one_time": true
     },
     {
       "id": "school_hundred_schools",
@@ -2159,7 +2300,9 @@
         {
           "id": "A",
           "text": "兼容并蓄，博采众长",
-          "cost": {},
+          "cost": {
+            "gold": 100
+          },
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
@@ -2182,7 +2325,8 @@
             "wood_delta": 0
           }
         }
-      ]
+      ],
+      "one_time": true
     },
     {
       "id": "school_traveling_scholar",
@@ -2202,7 +2346,1345 @@
         "troops_delta": 0,
         "wood_delta": 0
       },
+      "options": null,
+      "one_time": true
+    },
+    {
+      "id": "school_mohist_craft",
+      "title": "墨家机关",
+      "description": "墨家弟子精研守城器械，可否拨款支持其研制新式防御器具？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "school": "mohism",
+          "at_war": true
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款研制，增强城防",
+          "cost": {
+            "gold": 200
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -200,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 15
+          }
+        },
+        {
+          "id": "B",
+          "text": "节省开支，以备军需",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 50,
+            "morale_delta": -3,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_daoist_nature",
+      "title": "天人感应",
+      "description": "有道家隐士进言：顺应天时，无为而治，则五谷丰登。可否试行？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "school": "daoism",
+          "season": "spring"
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "试行无为，减税轻徭",
+          "cost": {
+            "gold": 100
+          },
+          "outcomes": {
+            "food_delta": 100,
+            "gold_delta": -100,
+            "morale_delta": 10,
+            "population_delta": 30,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 10
+          }
+        },
+        {
+          "id": "B",
+          "text": "维持现状，按律治国",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": -2,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_military_drill",
+      "title": "大阅三军",
+      "description": "将军奏请举行大规模军事演练，以振军心。可否拨款支持？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "school": "military",
+          "at_war": false
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款大阅，振奋军心",
+          "cost": {
+            "food": 50,
+            "gold": 150
+          },
+          "outcomes": {
+            "food_delta": -50,
+            "gold_delta": -150,
+            "morale_delta": 8,
+            "population_delta": 0,
+            "troops_delta": 50,
+            "wood_delta": 0,
+            "school_exp": 12
+          }
+        },
+        {
+          "id": "B",
+          "text": "小规模操练即可",
+          "cost": {
+            "gold": 50
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -50,
+            "morale_delta": 3,
+            "population_delta": 0,
+            "troops_delta": 20,
+            "wood_delta": 0,
+            "school_exp": 5
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_diplomat_alliance",
+      "title": "合纵之议",
+      "description": "纵横家献策：趁邻国疲弊，可联合数国共讨之。可否采纳？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "school": "diplomacy",
+          "allies_min": 1
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "采纳合纵，联合讨伐",
+          "cost": {
+            "gold": 200
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -200,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 15
+          }
+        },
+        {
+          "id": "B",
+          "text": "暂不动兵，静观其变",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": -2,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 5
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_general_merchant",
+      "title": "商人逐利",
+      "description": "有大商贾请求在境内开设集市，愿缴纳重税。可否允准？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.1,
+        "conditions": {}
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "允准开市，收取商税",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 150,
+            "morale_delta": -3,
+            "population_delta": 20,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "重农抑商，不予理会",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 50,
+            "gold_delta": 0,
+            "morale_delta": 3,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_general_omen",
+      "title": "天降异象",
+      "description": "夜观天象，有流星坠于境内。百姓议论纷纷，主吉主凶？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {}
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "昭告天下，此为吉兆",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "祭天祈福，安抚民心",
+          "cost": {
+            "gold": 100
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 8
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_general_rumor",
+      "title": "民间谣谚",
+      "description": "市井流传一首新谣谚，暗含对朝政的不满。如何应对？",
+      "category": "school",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.1,
+        "conditions": {
+          "morale_max": 50
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "严查谣言，杀一儆百",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": -5,
+            "population_delta": -20,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 3
+          }
+        },
+        {
+          "id": "B",
+          "text": "倾听民声，改善政务",
+          "cost": {
+            "gold": 80
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -80,
+            "morale_delta": 10,
+            "population_delta": 10,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 8
+          }
+        }
+      ],
+      "one_time": true
+    },
+    {
+      "id": "school_general_refugee",
+      "title": "流民归附",
+      "description": "邻国战乱，大批流民涌入境内。接纳可增人口，拒绝则保安定。",
+      "category": "school",
+      "one_time": true,
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.1,
+        "conditions": {
+          "turn_min": 8
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "开境接纳，编户齐民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -80,
+            "gold_delta": 0,
+            "morale_delta": -5,
+            "population_delta": 200,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "闭境拒之，保境安民",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_general_festival",
+      "title": "民间庆典",
+      "description": "百姓自发举行庆典，歌舞升平。拨款赞助可收民心，听之任之则节省开支。",
+      "category": "school",
+      "one_time": true,
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "season": [
+            "autumn"
+          ],
+          "morale_min": 50
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款赞助，与民同乐",
+          "cost": {},
+          "outcomes": {
+            "food_delta": -50,
+            "gold_delta": -100,
+            "morale_delta": 15,
+            "population_delta": 30,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 8
+          }
+        },
+        {
+          "id": "B",
+          "text": "听之任之，不耗国帑",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_general_ancient_scroll",
+      "title": "古籍现世",
+      "description": "农夫耕地时掘出竹简，上载先贤治国之道。献于学宫可兴文教，卖于商贾可换金帛。",
+      "category": "school",
+      "one_time": true,
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 12
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "献于学宫，研习先贤之道",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 8,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 15
+          }
+        },
+        {
+          "id": "B",
+          "text": "卖于商贾，换取金帛",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 200,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_general_drought_relief",
+      "title": "义仓施粥",
+      "description": "灾年歉收，有乡绅开义仓施粥。官府可褒奖以彰善行，或征用义仓充公。",
+      "category": "school",
+      "one_time": true,
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.1,
+        "conditions": {
+          "season": [
+            "summer",
+            "winter"
+          ],
+          "morale_max": 60
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "褒奖善行，弘扬仁风",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 50,
+            "gold_delta": -30,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "school_exp": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "征用义仓，充实国库",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 100,
+            "gold_delta": 0,
+            "morale_delta": -10,
+            "population_delta": -20,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "school_general_enemy_defector",
+      "title": "敌将来投",
+      "description": "敌国将领不堪暴政，率部来投。纳之可得兵将，拒之可免嫌疑。",
+      "category": "school",
+      "one_time": true,
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 15,
+          "at_war": true
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "纳其归降，编入麾下",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -100,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 50,
+            "wood_delta": 0,
+            "school_exp": 8
+          }
+        },
+        {
+          "id": "B",
+          "text": "婉言拒之，免生嫌疑",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 3,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_master_craftsman",
+      "title": "名匠来访",
+      "description": "远方名匠慕名而来，善造攻城利器。厚赐留之，则工匠日增。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 5
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "厚赐留用",
+          "cost": {
+            "gold": 60
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 8,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "赠金遣之",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 3,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_craftsman_accident",
+      "title": "工匠坊事故",
+      "description": "工匠坊炉火失控，器具损毁，工匠伤亡。损失惨重，不得不修。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.06,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": -5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "craftsmen_delta": -5,
+        "building_materials_delta": 0,
+        "horse_delta": 0,
+        "refined_iron_delta": 0
+      },
       "options": null
+    },
+    {
+      "id": "evt_timber_discovery",
+      "title": "良材发现",
+      "description": "探子来报，深山中有千年巨木，可作栋梁之材。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 3
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "征发民夫采伐",
+          "cost": {
+            "gold": 30
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 50,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 5,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "封存备用",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_quarry_open",
+      "title": "采石场开辟",
+      "description": "境内发现优质石料，可供建筑之用。开辟采石场需费金帛。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.07,
+        "conditions": {
+          "turn_min": 5
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款开矿",
+          "cost": {
+            "gold": 50
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 10,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "暂缓工程",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_horse_trade",
+      "title": "胡马市集",
+      "description": "北方游牧部落遣使通商，愿以良马易粮帛。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 5
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "以粮易马",
+          "cost": {
+            "food": 100
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 10,
+            "refined_iron_delta": 0
+          }
+        },
+        {
+          "id": "B",
+          "text": "以金购马",
+          "cost": {
+            "gold": 80
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 8,
+            "refined_iron_delta": 0
+          }
+        },
+        {
+          "id": "C",
+          "text": "婉拒交易",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_horse_plague",
+      "title": "马瘟",
+      "description": "马厩突发瘟疫，战马倒毙者众。骑兵战力大损。",
+      "category": "military",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.06,
+        "conditions": {
+          "season": [
+            "summer",
+            "autumn"
+          ]
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": -5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "craftsmen_delta": 0,
+        "building_materials_delta": 0,
+        "horse_delta": -8,
+        "refined_iron_delta": 0
+      },
+      "options": null
+    },
+    {
+      "id": "evt_iron_vein",
+      "title": "铁矿脉发现",
+      "description": "探子来报，山中有铁矿脉露。开采需费金帛，然利在长远。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.07,
+        "conditions": {
+          "turn_min": 4
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款开采",
+          "cost": {
+            "gold": 50
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 8
+          }
+        },
+        {
+          "id": "B",
+          "text": "暂且封存",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 0,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "craftsmen_delta": 0,
+            "building_materials_delta": 0,
+            "horse_delta": 0,
+            "refined_iron_delta": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_forge_breakthrough",
+      "title": "铸铁改良",
+      "description": "工匠改良冶铁之法，精铁产量大增。",
+      "category": "economy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.06,
+        "conditions": {
+          "turn_min": 6
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 3,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "craftsmen_delta": 0,
+        "building_materials_delta": 0,
+        "horse_delta": 0,
+        "refined_iron_delta": 6
+      },
+      "options": null
+    },
+    {
+      "id": "evt_tribute",
+      "title": "藩属进贡",
+      "description": "边境部落遣使来朝，献上良马、精铁等特产。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.06,
+        "conditions": {
+          "turn_min": 8
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 30,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "craftsmen_delta": 3,
+        "building_materials_delta": 3,
+        "horse_delta": 5,
+        "refined_iron_delta": 3
+      },
+      "options": null
+    },
+    {
+      "_comment": "纵横家事件链 — 合纵系列。条件使用 turn_min 占位，实际触发需新增条件：reputation_min_any_faction、expanding_fast、hezong_active、hezong_turns_min，见决策文档待办事项",
+      "id": "dip_hezong_proposal",
+      "title": "合纵之议",
+      "description": "某国声威日盛，连下数城，诸侯震恐。纵横家奔走各国，倡议合纵抗之。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 10
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_hezong_trigger": true
+      },
+      "options": null
+    },
+    {
+      "id": "dip_hezong_collapse",
+      "title": "合纵瓦解",
+      "description": "合纵联盟日久，各国利益分歧，盟约名存实亡。纵横家叹息离去。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.15,
+        "conditions": {
+          "turn_min": 20
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": -5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_hezong_dissolve": true,
+        "opinion_change_all_hezong_members": -10
+      },
+      "options": null
+    },
+    {
+      "id": "dip_hezong_conflict",
+      "title": "合纵内讧",
+      "description": "合纵联盟中，各国争夺战利品，分赃不均，联盟岌岌可危。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 18
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": -8,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_hezong_defection": true,
+        "opinion_change_defector_all": -20
+      },
+      "options": null
+    },
+    {
+      "_comment": "纵横家事件链 — 连横系列。条件使用 turn_min 占位，实际触发需新增条件：reputation_min_any_faction、has_strong_enemy、lianheng_active、lianheng_turns_min，见决策文档待办事项",
+      "id": "dip_lianheng_plan",
+      "title": "连横之策",
+      "description": "强敌环伺，有纵横家献策：远交近攻，联合远邦共伐近邻。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 8
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 3,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_lianheng_trigger": true
+      },
+      "options": null
+    },
+    {
+      "id": "dip_lianheng_break",
+      "title": "连横破裂",
+      "description": "连横联盟中，盟友各怀异心，盟约形同虚设。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.12,
+        "conditions": {
+          "turn_min": 16
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": -3,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_lianheng_dissolve": true,
+        "opinion_change_all_lianheng_members": -5
+      },
+      "options": null
+    },
+    {
+      "id": "dip_lianheng_backlash",
+      "title": "连横反噬",
+      "description": "连横联盟中，盟友获利过多，引发其他盟友不满，联盟内部裂痕加深。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 14
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": -5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_lianheng_backlash": true,
+        "opinion_change_lianheng_allies": -15
+      },
+      "options": null
+    },
+    {
+      "_comment": "纵横家个人事件。条件使用 turn_min+faction 占位，实际触发需新增条件：faction_exists（检查任意国家是否存在）、faction_reputation_min（检查任意国家声望），见决策文档待办事项",
+      "id": "dip_suqin_emerge",
+      "title": "苏秦出山",
+      "description": "纵横家苏秦学成出山，游说诸侯合纵抗秦。其辩才无碍，诸侯为之动容。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 10,
+          "faction": "qi"
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "grant_ability": {"faction": "qi", "ability": "initiate_hezong"}
+      },
+      "options": null
+    },
+    {
+      "id": "dip_zhangyi_enter_qin",
+      "title": "张仪入秦",
+      "description": "纵横家张仪入秦，献连横之策。秦王大喜，拜为客卿。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.10,
+        "conditions": {
+          "turn_min": 8,
+          "faction": "qin"
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "grant_ability": {"faction": "qin", "ability": "initiate_lianheng"}
+      },
+      "options": null
+    },
+    {
+      "id": "dip_gongsun_persuade",
+      "title": "公孙衍游说",
+      "description": "纵横家公孙衍游说诸国，言辞犀利，或合纵或连横，各国关系为之大变。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 15
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 0,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_random_opinion_shift": {"min": -20, "max": 20}
+      },
+      "options": null
+    },
+    {
+      "_comment": "朝贡事件。条件使用 turn_min+at_war_with 占位，实际触发需新增条件：tribute_min、reputation_min，见决策文档待办事项",
+      "id": "dip_zhou_aid_request",
+      "title": "天子求援",
+      "description": "周天子遣使告急：强邻犯境，社稷危殆。望忠臣义士起兵勤王。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.08,
+        "conditions": {
+          "turn_min": 12
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 5,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_zhou_aid": true,
+        "opinion_change_aid_factions": 10
+      },
+      "options": null
+    },
+    {
+      "_comment": "条件使用 turn_min 占位，实际触发需新增条件：tribute_min(>=80)、reputation_min(>=80)，见决策文档待办事项",
+      "id": "dip_nine_tripods",
+      "title": "九鼎迁徙",
+      "description": "周室衰微，九鼎迁徙之事传遍天下。有诸侯上表请求迎鼎入国，以承天命。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.05,
+        "conditions": {
+          "turn_min": 20
+        }
+      },
+      "effects": {
+        "food_delta": 0,
+        "gold_delta": 0,
+        "morale_delta": 10,
+        "population_delta": 0,
+        "troops_delta": 0,
+        "wood_delta": 0,
+        "diplomacy_nine_tripods": true,
+        "reputation_change": 30
+      },
+      "options": [
+        {
+          "id": "A",
+          "text": "恭迎九鼎，承继天命",
+          "cost": {
+            "gold": 500
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -500,
+            "morale_delta": 15,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "reputation_change": 30,
+            "special_victory": "nine_tripods"
+          }
+        },
+        {
+          "id": "B",
+          "text": "辞让不受，以示谦德",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 5,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "reputation_change": 10
+          }
+        }
+      ]
+    },
+    {
+      "_comment": "条件使用 turn_min+morale_min 占位，实际触发需新增条件：tribute_max(<=20)，见决策文档待办事项",
+      "id": "dip_usurp_title",
+      "title": "僭越称王",
+      "description": "国君自觉势大，欲效楚国旧例，僭越称王。此举虽彰显国威，然必招致天下非议。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.06,
+        "conditions": {
+          "turn_min": 15,
+          "morale_min": 60
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "称王以示独立",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "tribute_change": -30,
+            "reputation_change": -10,
+            "diplomacy_independence_bonus": true
+          }
+        },
+        {
+          "id": "B",
+          "text": "维持诸侯之名",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": -3,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "tribute_change": 5,
+            "reputation_change": 5
+          }
+        }
+      ]
+    },
+    {
+      "_comment": "条件使用 turn_min 占位，实际触发需新增条件：tribute_min(>=90)、reputation_min(>=90)，见决策文档待办事项",
+      "id": "dip_mandate_transfer",
+      "title": "天子禅让",
+      "description": "周天子以天命将尽，欲禅让天下于有德之诸侯。此乃千载难逢之机。",
+      "category": "diplomacy",
+      "trigger": {
+        "type": "turn_start",
+        "probability": 0.03,
+        "conditions": {
+          "turn_min": 30
+        }
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "接受禅让，承继大统",
+          "cost": {
+            "gold": 1000
+          },
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": -1000,
+            "morale_delta": 20,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "reputation_change": 50,
+            "special_victory": "mandate_of_heaven"
+          }
+        },
+        {
+          "id": "B",
+          "text": "辞让不受，以全臣节",
+          "cost": {},
+          "outcomes": {
+            "food_delta": 0,
+            "gold_delta": 0,
+            "morale_delta": 10,
+            "population_delta": 0,
+            "troops_delta": 0,
+            "wood_delta": 0,
+            "reputation_change": 20,
+            "tribute_change": 20
+          }
+        }
+      ]
     }
   ]
 }

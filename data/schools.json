@@ -1,177 +1,733 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.1",
   "schools": [
     {
       "id": "confucianism",
       "name": "儒家",
       "core_idea": "仁政、礼治",
       "description": "以仁德教化百姓，以礼乐规范秩序，追求天下归心",
-      "global_effects": {
-        "morale_cap_bonus": 20,
-        "culture_spread_rate": 0.3,
-        "school_base_morale": 2
-      },
-      "special_policy": {
-        "id": "grand_ceremony",
-        "name": "祭祀大典",
-        "cost_gold": 500,
-        "duration_turns": 3,
-        "effects": {
-          "morale": 15
+      "level_effects": {
+        "1": {
+          "name": "儒生",
+          "effects": {
+            "morale_cap_bonus": 10,
+            "morale_hard_cap_bonus": 10,
+            "culture_spread_rate": 0.15,
+            "stability_bonus": 3
+          }
+        },
+        "2": {
+          "name": "儒师",
+          "effects": {
+            "morale_cap_bonus": 20,
+            "morale_hard_cap_bonus": 15,
+            "culture_spread_rate": 0.30,
+            "morale_bonus": 1,
+            "stability_bonus": 5,
+            "season_bonus": {
+              "spring": { "culture_spread_rate": 0.10 },
+              "autumn": { "culture_spread_rate": 0.10 }
+            }
+          }
+        },
+        "3": {
+          "name": "大儒",
+          "effects": {
+            "morale_cap_bonus": 30,
+            "morale_hard_cap_bonus": 20,
+            "morale_prosperity_enabled": true,
+            "culture_spread_rate": 0.50,
+            "morale_bonus": 2,
+            "stability_bonus": 8,
+            "diplomacy_same_school_bonus": 10,
+            "season_bonus": {
+              "spring": { "culture_spread_rate": 0.15 },
+              "autumn": { "culture_spread_rate": 0.15 }
+            }
+          }
         }
       },
-      "diplomacy_modifiers": null,
-      "season_bonus": [
+      "exclusive_policies": [
         {
-          "season": ["spring", "autumn"],
-          "effect": "culture_spread",
-          "value": 0.1
+          "id": "conf_ceremony",
+          "name": "祭祀大典",
+          "exp_cost": 30,
+          "unlock_level": 1,
+          "duration_turns": 3,
+          "effects": {
+            "morale_delta": 15,
+            "description": "民心即时 +15"
+          }
+        },
+        {
+          "id": "conf_education",
+          "name": "有教无类",
+          "exp_cost": 40,
+          "unlock_level": 2,
+          "duration_turns": 5,
+          "effects": {
+            "culture_spread_rate": 0.50,
+            "description": "文化传播率 +50%，持续 5 回合"
+          }
         }
       ],
-      "general_bonus": null
+      "quest_pool": [
+        {
+          "id": "conf_q1",
+          "type": "general",
+          "name": "仁政之始",
+          "description": "治下民心达到 70",
+          "condition_type": "threshold",
+          "condition": { "target": "national_morale", "operator": ">=", "value": 70 },
+          "reward_exp": 20
+        },
+        {
+          "id": "conf_q2",
+          "type": "missionary",
+          "name": "礼乐教化",
+          "description": "由儒家大夫治理的城市达到 3 座",
+          "condition_type": "threshold",
+          "condition": { "target": "confucian_governed_cities", "operator": ">=", "value": 3 },
+          "reward_exp": 30,
+          "requires_minister_school": "confucianism"
+        },
+        {
+          "id": "conf_q3",
+          "type": "general",
+          "name": "文教兴邦",
+          "description": "建造 2 座学宫类建筑",
+          "condition_type": "possession",
+          "condition": { "target": "building", "building_category": "culture", "count": 2 },
+          "reward_exp": 25
+        }
+      ],
+      "leader_skill": {
+        "name": "礼乐教化",
+        "effects": {
+          "culture_production_bonus": 0.10,
+          "morale_cap_bonus": 5
+        }
+      },
+      "ai_behavior_weight": {
+        "aggression": -0.2,
+        "culture_focus": 0.3,
+        "diplomacy_focus": 0.1,
+        "economy_focus": 0.0,
+        "defense_focus": 0.0,
+        "expansion_focus": -0.1
+      },
+      "event_ids": ["school_confucian_debate", "school_confucian_ritual"]
     },
     {
       "id": "legalism",
       "name": "法家",
       "core_idea": "法治、耕战",
       "description": "以严刑峻法治国，以耕战强国富民，追求富国强兵",
-      "global_effects": {
-        "tech_speed": 0.2,
-        "recruit_efficiency": 0.2,
-        "school_base_morale": -1,
-        "foreign_culture_resistance": 0.5,
-        "foreign_culture_suppression_per_turn": 5
-      },
-      "special_policy": {
-        "id": "mutual_surveillance",
-        "name": "什伍连坐",
-        "cost_gold": 300,
-        "duration_turns": 5,
-        "effects": {
-          "revolt_chance": -0.5
+      "level_effects": {
+        "1": {
+          "name": "法吏",
+          "effects": {
+            "research_speed_bonus": 0.10,
+            "recruit_efficiency": 0.10,
+            "stability_bonus": 5
+          }
+        },
+        "2": {
+          "name": "法师",
+          "effects": {
+            "research_speed_bonus": 0.20,
+            "recruit_efficiency": 0.20,
+            "stability_bonus": 8,
+            "foreign_culture_resistance": 0.30,
+            "diplomacy_same_school_bonus": 5,
+            "diplomacy_penalty": -10
+          }
+        },
+        "3": {
+          "name": "法圣",
+          "effects": {
+            "research_speed_bonus": 0.30,
+            "recruit_efficiency": 0.30,
+            "stability_bonus": 12,
+            "foreign_culture_resistance": 0.50,
+            "foreign_culture_suppression_per_turn": 8,
+            "foreign_culture_suppression_cap": 30,
+            "diplomacy_same_school_bonus": 10,
+            "diplomacy_penalty": -15
+          }
         }
       },
-      "diplomacy_modifiers": {
-        "initial_opinion": -10
+      "exclusive_policies": [
+        {
+          "id": "leg_surveillance",
+          "name": "什伍连坐",
+          "exp_cost": 20,
+          "unlock_level": 1,
+          "duration_turns": 5,
+          "effects": {
+            "revolt_suppression": 0.50,
+            "description": "民变概率 -50%，持续 5 回合"
+          }
+        },
+        {
+          "id": "leg_reform",
+          "name": "变法图强",
+          "exp_cost": 50,
+          "unlock_level": 3,
+          "duration_turns": 3,
+          "effects": {
+            "all_output_bonus": 0.20,
+            "description": "全产出 +20%，持续 3 回合"
+          }
+        }
+      ],
+      "quest_pool": [
+        {
+          "id": "leg_q1",
+          "type": "general",
+          "name": "奖励耕战",
+          "description": "征兵人数达到 200",
+          "condition_type": "threshold",
+          "condition": { "target": "total_recruits", "operator": ">=", "value": 200 },
+          "reward_exp": 20
+        },
+        {
+          "id": "leg_q2",
+          "type": "missionary",
+          "name": "以法为教",
+          "description": "由法家大夫治理的城市安定度均 ≥ 60",
+          "condition_type": "threshold",
+          "condition": { "target": "legalist_governed_stability", "operator": ">=", "value": 60 },
+          "reward_exp": 30,
+          "requires_minister_school": "legalism"
+        },
+        {
+          "id": "leg_q3",
+          "type": "general",
+          "name": "富国强兵",
+          "description": "金钱储备达到 2000",
+          "condition_type": "threshold",
+          "condition": { "target": "gold", "operator": ">=", "value": 2000 },
+          "reward_exp": 25
+        }
+      ],
+      "leader_skill": {
+        "name": "以法为教",
+        "effects": {
+          "stability_bonus": 5,
+          "recruit_efficiency": 0.10
+        }
       },
-      "season_bonus": null,
-      "general_bonus": null
+      "ai_behavior_weight": {
+        "aggression": 0.1,
+        "culture_focus": -0.1,
+        "diplomacy_focus": -0.1,
+        "economy_focus": 0.2,
+        "defense_focus": 0.0,
+        "expansion_focus": 0.2
+      },
+      "event_ids": ["school_legalist_reform", "school_legalist_informant"]
     },
     {
       "id": "mohism",
       "name": "墨家",
       "core_idea": "兼爱、非攻",
       "description": "主张兼爱非攻，善守城之术，追求和平止战",
-      "global_effects": {
-        "def_combat_bonus": 0.25,
-        "siege_cost_multiplier": 0.5,
-        "school_base_morale": 0,
-        "culture_defense_bonus": 0.3
-      },
-      "special_policy": {
-        "id": "forced_ceasefire",
-        "name": "止战之殇",
-        "cost_gold": 800,
-        "duration_turns": 3,
-        "effects": {
-          "force_ceasefire": true
+      "level_effects": {
+        "1": {
+          "name": "墨者",
+          "effects": {
+            "defense_bonus": 0.10,
+            "culture_defense_bonus": 0.15,
+            "building_upkeep_reduction": 0.10
+          }
+        },
+        "2": {
+          "name": "墨师",
+          "effects": {
+            "defense_bonus": 0.25,
+            "siege_cost_multiplier": 0.5,
+            "culture_defense_bonus": 0.30,
+            "building_upkeep_reduction": 0.15,
+            "stability_bonus": 3
+          }
+        },
+        "3": {
+          "name": "钜子",
+          "effects": {
+            "defense_bonus": 0.35,
+            "siege_cost_multiplier": 0.3,
+            "culture_defense_bonus": 0.50,
+            "building_upkeep_reduction": 0.20,
+            "stability_bonus": 5,
+            "city_defense_hp": 100
+          }
         }
       },
-      "diplomacy_modifiers": null,
-      "season_bonus": null,
-      "general_bonus": null
+      "exclusive_policies": [
+        {
+          "id": "moh_fortify",
+          "name": "墨守成规",
+          "exp_cost": 30,
+          "unlock_level": 1,
+          "duration_turns": 5,
+          "effects": {
+            "defense_bonus": 0.30,
+            "description": "全城防御 +30%，持续 5 回合"
+          }
+        },
+        {
+          "id": "moh_ceasefire",
+          "name": "止战之殇",
+          "exp_cost": 50,
+          "unlock_level": 2,
+          "duration_turns": 3,
+          "effects": {
+            "force_ceasefire": true,
+            "description": "强制停战 3 回合"
+          }
+        }
+      ],
+      "quest_pool": [
+        {
+          "id": "moh_q1",
+          "type": "general",
+          "name": "守城有术",
+          "description": "成功防御 2 次进攻",
+          "condition_type": "action",
+          "condition": { "target": "successful_defenses", "count": 2 },
+          "reward_exp": 25
+        },
+        {
+          "id": "moh_q2",
+          "type": "missionary",
+          "name": "兼爱天下",
+          "description": "由墨家大夫治理的城市防御值均 ≥ 100",
+          "condition_type": "threshold",
+          "condition": { "target": "mohist_governed_defense", "operator": ">=", "value": 100 },
+          "reward_exp": 30,
+          "requires_minister_school": "mohism"
+        },
+        {
+          "id": "moh_q3",
+          "type": "general",
+          "name": "非攻之道",
+          "description": "连续 10 回合未发动战争",
+          "condition_type": "threshold",
+          "condition": { "target": "turns_without_war", "operator": ">=", "value": 10 },
+          "reward_exp": 20
+        }
+      ],
+      "leader_skill": {
+        "name": "兼爱非攻",
+        "effects": {
+          "defense_bonus": 0.10,
+          "building_upkeep_reduction": 0.10
+        }
+      },
+      "ai_behavior_weight": {
+        "aggression": -0.3,
+        "culture_focus": 0.1,
+        "diplomacy_focus": 0.1,
+        "economy_focus": 0.1,
+        "defense_focus": 0.3,
+        "expansion_focus": -0.2
+      },
+      "event_ids": ["school_mohist_siege", "school_mohist_craft"]
     },
     {
       "id": "daoism",
       "name": "道家",
       "core_idea": "无为而治",
       "description": "顺应自然，无为而治，追求小国寡民的恬淡之境",
-      "global_effects": {
-        "building_upkeep_multiplier": 0.5,
-        "pop_growth_bonus": 0.3,
-        "school_base_morale": 0,
-        "culture_incoming_reduction": 0.25,
-        "self_culture_decay_reduction": 0.5
-      },
-      "special_policy": {
-        "id": "small_state",
-        "name": "小国寡民",
-        "cost_gold": 0,
-        "duration_turns": 0,
-        "condition": "city_count <= 3",
-        "effects": {
-          "all_output": 0.5
+      "level_effects": {
+        "1": {
+          "name": "道徒",
+          "effects": {
+            "building_upkeep_reduction": 0.15,
+            "pop_growth_bonus": 0.10,
+            "food_consumption_reduction": 0.05
+          }
+        },
+        "2": {
+          "name": "道士",
+          "effects": {
+            "building_upkeep_reduction": 0.30,
+            "pop_growth_bonus": 0.25,
+            "food_consumption_reduction": 0.10,
+            "culture_incoming_reduction": 0.25,
+            "morale_bonus": 1,
+            "season_bonus": {
+              "winter": { "food_consumption_reduction": 0.25 }
+            }
+          }
+        },
+        "3": {
+          "name": "道尊",
+          "effects": {
+            "building_upkeep_reduction": 0.50,
+            "pop_growth_bonus": 0.40,
+            "food_consumption_reduction": 0.15,
+            "culture_incoming_reduction": 0.40,
+            "self_culture_decay_reduction": 0.50,
+            "morale_bonus": 2,
+            "stability_bonus": 5,
+            "season_bonus": {
+              "winter": { "food_consumption_reduction": 0.50 }
+            }
+          }
         }
       },
-      "diplomacy_modifiers": null,
-      "season_bonus": [
+      "exclusive_policies": [
         {
-          "season": ["winter"],
-          "effect": "food_consumption_penalty",
-          "value": -0.5
+          "id": "dao_hermit",
+          "name": "小国寡民",
+          "exp_cost": 0,
+          "unlock_level": 1,
+          "duration_turns": 0,
+          "condition": "city_count <= 3",
+          "effects": {
+            "all_output_bonus": 0.50,
+            "description": "全产出 +50%（条件：城市 ≤ 3）"
+          }
+        },
+        {
+          "id": "dao_nature",
+          "name": "道法自然",
+          "exp_cost": 40,
+          "unlock_level": 2,
+          "duration_turns": 5,
+          "effects": {
+            "pop_growth_bonus": 0.50,
+            "food_consumption_reduction": 0.20,
+            "description": "人口增长 +50%，粮耗 -20%，持续 5 回合"
+          }
         }
       ],
-      "general_bonus": null
+      "quest_pool": [
+        {
+          "id": "dao_q1",
+          "type": "general",
+          "name": "无为而治",
+          "description": "连续 5 回合不更改税率",
+          "condition_type": "threshold",
+          "condition": { "target": "turns_without_tax_change", "operator": ">=", "value": 5 },
+          "reward_exp": 15
+        },
+        {
+          "id": "dao_q2",
+          "type": "missionary",
+          "name": "道法自然",
+          "description": "由道家大夫治理的城市人口增长 ≥ 100",
+          "condition_type": "threshold",
+          "condition": { "target": "daoist_governed_pop_growth", "operator": ">=", "value": 100 },
+          "reward_exp": 30,
+          "requires_minister_school": "daoism"
+        },
+        {
+          "id": "dao_q3",
+          "type": "general",
+          "name": "清静为天下正",
+          "description": "民心达到 80",
+          "condition_type": "threshold",
+          "condition": { "target": "national_morale", "operator": ">=", "value": 80 },
+          "reward_exp": 25
+        }
+      ],
+      "leader_skill": {
+        "name": "道法自然",
+        "effects": {
+          "pop_growth_bonus": 0.10,
+          "food_consumption_reduction": 0.10
+        }
+      },
+      "ai_behavior_weight": {
+        "aggression": -0.1,
+        "culture_focus": 0.1,
+        "diplomacy_focus": 0.0,
+        "economy_focus": 0.2,
+        "defense_focus": 0.1,
+        "expansion_focus": -0.2
+      },
+      "event_ids": ["school_daoist_hermit", "school_daoist_nature"]
     },
     {
       "id": "military",
       "name": "兵家",
       "core_idea": "出奇制胜",
       "description": "兵者诡道也，以奇制胜，追求战场上的绝对优势",
-      "global_effects": {
-        "general_xp_bonus": 0.5,
-        "ambush_damage_bonus": 0.5,
-        "school_base_morale": 0,
-        "occupation_culture_bonus": 0.5,
-        "conquest_culture_spread_range": 2
-      },
-      "special_policy": {
-        "id": "elite_selection",
-        "name": "精锐选拔",
-        "cost_gold": 600,
-        "duration_turns": 2,
-        "effects": {
-          "recruit_elite_unit": true
+      "level_effects": {
+        "1": {
+          "name": "兵卒",
+          "effects": {
+            "general_xp_bonus": 0.20,
+            "wu_minister_xp_bonus": 0.20,
+            "attack_bonus": 0.05
+          }
+        },
+        "2": {
+          "name": "兵师",
+          "effects": {
+            "general_xp_bonus": 0.40,
+            "wu_minister_xp_bonus": 0.40,
+            "wu_minister_capacity_bonus": 1,
+            "attack_bonus": 0.10,
+            "ambush_damage_bonus": 0.30,
+            "recruit_efficiency": 0.10,
+            "season_bonus": {
+              "summer": { "fire_attack_bonus": 0.20 },
+              "autumn": { "fire_attack_bonus": 0.20 }
+            }
+          }
+        },
+        "3": {
+          "name": "兵圣",
+          "effects": {
+            "general_xp_bonus": 0.60,
+            "wu_minister_xp_bonus": 0.60,
+            "wu_minister_capacity_bonus": 2,
+            "attack_bonus": 0.15,
+            "ambush_damage_bonus": 0.50,
+            "recruit_efficiency": 0.15,
+            "occupation_culture_bonus": 0.50,
+            "conquest_culture_spread_range": 2,
+            "season_bonus": {
+              "summer": { "fire_attack_bonus": 0.30 },
+              "autumn": { "fire_attack_bonus": 0.30 }
+            }
+          }
         }
       },
-      "diplomacy_modifiers": null,
-      "season_bonus": [
+      "exclusive_policies": [
         {
-          "season": ["summer", "autumn"],
-          "effect": "fire_attack_bonus",
-          "value": 0.2
+          "id": "mil_fire",
+          "name": "火攻之策",
+          "exp_cost": 30,
+          "unlock_level": 1,
+          "duration_turns": 3,
+          "effects": {
+            "fire_attack_bonus": 0.50,
+            "description": "火攻伤害 +50%，持续 3 回合"
+          }
+        },
+        {
+          "id": "mil_elite",
+          "name": "精锐选拔",
+          "exp_cost": 40,
+          "unlock_level": 2,
+          "duration_turns": 2,
+          "effects": {
+            "recruit_elite_unit": true,
+            "description": "征募精锐单位"
+          }
         }
       ],
+      "quest_pool": [
+        {
+          "id": "mil_q1",
+          "type": "general",
+          "name": "攻城略地",
+          "description": "攻下 1 座敌方城池",
+          "condition_type": "action",
+          "condition": { "target": "capture_city", "count": 1 },
+          "reward_exp": 25
+        },
+        {
+          "id": "mil_q2",
+          "type": "missionary",
+          "name": "练兵之道",
+          "description": "由兵家大夫领军赢得 3 场战斗",
+          "condition_type": "action",
+          "condition": { "target": "win_battle_with_minister", "count": 3 },
+          "reward_exp": 30,
+          "requires_minister_school": "military"
+        },
+        {
+          "id": "mil_q3",
+          "type": "general",
+          "name": "兵强马壮",
+          "description": "总兵力达到 500",
+          "condition_type": "threshold",
+          "condition": { "target": "total_troops", "operator": ">=", "value": 500 },
+          "reward_exp": 20
+        }
+      ],
+      "leader_skill": {
+        "name": "运筹帷幄",
+        "effects": {
+          "general_xp_bonus": 0.15,
+          "attack_bonus": 0.05
+        }
+      },
+      "ai_behavior_weight": {
+        "aggression": 0.3,
+        "culture_focus": -0.1,
+        "diplomacy_focus": -0.1,
+        "economy_focus": -0.1,
+        "defense_focus": 0.0,
+        "expansion_focus": 0.3
+      },
       "general_bonus": {
         "initial_skill_level": 1,
         "recruit_with_skill": true
-      }
+      },
+      "event_ids": ["school_military_spy", "school_military_drill"]
     },
     {
       "id": "diplomacy",
       "name": "纵横家",
       "core_idea": "合纵连横",
       "description": "以口舌为剑，以谋略为盾，追求不战而屈人之兵",
-      "global_effects": {
-        "diplomacy_opinion_multiplier": 0.5,
-        "alliance_cost_multiplier": 0.7,
-        "school_base_morale": 0,
-        "trade_route_culture_bonus": 0.5,
-        "scholar_cost_reduction": 0.3,
-        "diplomacy_culture_opinion_bonus": 5
-      },
-      "special_policy": {
-        "id": "sow_discord",
-        "name": "离间计",
-        "cost_gold": 400,
-        "duration_turns": 0,
-        "effects": {
-          "target_relation": -20
+      "level_effects": {
+        "1": {
+          "name": "说客",
+          "effects": {
+            "diplomacy_opinion_multiplier": 0.20,
+            "alliance_cost_multiplier": 0.85,
+            "trade_route_culture_bonus": 0.20
+          }
+        },
+        "2": {
+          "name": "纵横士",
+          "effects": {
+            "diplomacy_opinion_multiplier": 0.40,
+            "alliance_cost_multiplier": 0.70,
+            "trade_route_culture_bonus": 0.40,
+            "scholar_cost_reduction": 0.20,
+            "intelligence_range": 1,
+            "diplomacy_same_school_bonus": 10
+          }
+        },
+        "3": {
+          "name": "纵横家",
+          "effects": {
+            "diplomacy_opinion_multiplier": 0.60,
+            "alliance_cost_multiplier": 0.50,
+            "trade_route_culture_bonus": 0.60,
+            "scholar_cost_reduction": 0.40,
+            "intelligence_range": 2,
+            "diplomacy_same_school_bonus": 15,
+            "diplomacy_culture_opinion_bonus": 5
+          }
         }
       },
-      "diplomacy_modifiers": null,
-      "season_bonus": null,
-      "general_bonus": null
+      "exclusive_policies": [
+        {
+          "id": "dip_discord",
+          "name": "离间计",
+          "exp_cost": 30,
+          "unlock_level": 1,
+          "duration_turns": 0,
+          "effects": {
+            "target_relation_delta": -20,
+            "description": "目标两国关系 -20"
+          }
+        },
+        {
+          "id": "dip_alliance",
+          "name": "合纵之约",
+          "exp_cost": 50,
+          "unlock_level": 2,
+          "duration_turns": 5,
+          "effects": {
+            "alliance_cost_multiplier": 0.50,
+            "diplomacy_opinion_multiplier": 0.20,
+            "description": "同盟成本 -50%，外交好感 +20%，持续 5 回合"
+          }
+        }
+      ],
+      "quest_pool": [
+        {
+          "id": "dip_q1",
+          "type": "general",
+          "name": "远交近攻",
+          "description": "签订 1 份条约",
+          "condition_type": "action",
+          "condition": { "target": "sign_treaty", "count": 1 },
+          "reward_exp": 20
+        },
+        {
+          "id": "dip_q2",
+          "type": "missionary",
+          "name": "合纵连横",
+          "description": "由纵横家大夫执行 2 次外交行动",
+          "condition_type": "action",
+          "condition": { "target": "diplomacy_action_with_minister", "count": 2 },
+          "reward_exp": 30,
+          "requires_minister_school": "diplomacy"
+        },
+        {
+          "id": "dip_q3",
+          "type": "general",
+          "name": "不战而屈人之兵",
+          "description": "通过外交手段获得 1 座城池（附庸/合并）",
+          "condition_type": "action",
+          "condition": { "target": "diplomatic_city_gain", "count": 1 },
+          "reward_exp": 35
+        }
+      ],
+      "leader_skill": {
+        "name": "合纵连横",
+        "effects": {
+          "diplomacy_cost_reduction": 0.10,
+          "intelligence_range": 1
+        }
+      },
+      "ai_behavior_weight": {
+        "aggression": 0.0,
+        "culture_focus": 0.0,
+        "diplomacy_focus": 0.3,
+        "economy_focus": 0.1,
+        "defense_focus": 0.0,
+        "expansion_focus": 0.0
+      },
+      "event_ids": ["school_diplomat_betray", "school_diplomat_alliance"]
+    }
+  ],
+  "general_policies": [
+    {
+      "id": "gp_research",
+      "name": "奖励学术",
+      "exp_cost": 20,
+      "unlock_level": 1,
+      "duration_turns": 5,
+      "effects": {
+        "research_speed_bonus": 0.10,
+        "description": "科研速度 +10%，持续 5 回合"
+      }
+    },
+    {
+      "id": "gp_recruit",
+      "name": "奖励耕战",
+      "exp_cost": 20,
+      "unlock_level": 1,
+      "duration_turns": 5,
+      "effects": {
+        "recruit_efficiency": 0.15,
+        "description": "征兵效率 +15%，持续 5 回合"
+      }
+    },
+    {
+      "id": "gp_trade",
+      "name": "奖励通商",
+      "exp_cost": 20,
+      "unlock_level": 1,
+      "duration_turns": 5,
+      "effects": {
+        "trade_bonus": 0.20,
+        "description": "贸易收入 +20%，持续 5 回合"
+      }
+    },
+    {
+      "id": "gp_build",
+      "name": "奖励营建",
+      "exp_cost": 25,
+      "unlock_level": 2,
+      "duration_turns": 5,
+      "effects": {
+        "build_cost_reduction": 0.15,
+        "description": "建造资源成本 -15%，持续 5 回合"
+      }
     }
   ]
 }

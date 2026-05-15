@@ -168,7 +168,7 @@
 
 ## 数据表约定
 - 国家 ID：`qin, chu, qi, zhao, wei, yan, han`
-- 学派 ID：`ru, fa, mo, dao, bing, zongheng`
+- 学派 ID：`confucianism, legalism, mohism, daoism, military, diplomacy`
 - 地形 ID：`plains, forest, mountain, river, marsh, pass, ford, desert, frozen`
 - 兵种分类：`infantry, cavalry, archer, siege, navy`
 - 数据文件：`balance_params.json`（全局参数）、`units.json`（兵种）、`cities.json`（城市）、`buildings.json`（建筑）、`terrain.json`（地形）、`tech_tree.json`（科技）、`events.json`（事件）、`factions.json`（势力）、`schools.json`（学派）、`diplomacy.json`（外交）、`wonders.json`（奇观）、`ministers.json`（大夫）

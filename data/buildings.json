@@ -13,19 +13,25 @@
           "cost_gold": 100,
           "cost_wood": 0,
           "build_turns": 1,
-          "effects": { "food_production_bonus": 0.10 }
+          "effects": {
+            "food_production_bonus": 0.1
+          }
         },
         {
           "cost_gold": 150,
           "cost_wood": 0,
           "build_turns": 1,
-          "effects": { "food_production_bonus": 0.25 }
+          "effects": {
+            "food_production_bonus": 0.25
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 0,
           "build_turns": 2,
-          "effects": { "food_production_bonus": 0.45 }
+          "effects": {
+            "food_production_bonus": 0.45
+          }
         }
       ]
     },
@@ -41,19 +47,25 @@
           "cost_gold": 120,
           "cost_wood": 0,
           "build_turns": 1,
-          "effects": { "gold_production_bonus": 0.10 }
+          "effects": {
+            "gold_production_bonus": 0.1
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 0,
           "build_turns": 1,
-          "effects": { "gold_production_bonus": 0.25 }
+          "effects": {
+            "gold_production_bonus": 0.25
+          }
         },
         {
           "cost_gold": 270,
           "cost_wood": 0,
           "build_turns": 2,
-          "effects": { "gold_production_bonus": 0.45 }
+          "effects": {
+            "gold_production_bonus": 0.45
+          }
         }
       ]
     },
@@ -69,19 +81,25 @@
           "cost_gold": 80,
           "cost_wood": 20,
           "build_turns": 1,
-          "effects": { "wood_production": 20 }
+          "effects": {
+            "wood_production": 20
+          }
         },
         {
           "cost_gold": 120,
           "cost_wood": 30,
           "build_turns": 1,
-          "effects": { "wood_production": 40 }
+          "effects": {
+            "wood_production": 40
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 45,
           "build_turns": 2,
-          "effects": { "wood_production": 65 }
+          "effects": {
+            "wood_production": 65
+          }
         }
       ]
     },
@@ -97,19 +115,25 @@
           "cost_gold": 80,
           "cost_wood": 20,
           "build_turns": 1,
-          "effects": { "craftsmen_production": 3 }
+          "effects": {
+            "craftsmen_production": 3
+          }
         },
         {
           "cost_gold": 120,
           "cost_wood": 30,
           "build_turns": 1,
-          "effects": { "craftsmen_production": 6 }
+          "effects": {
+            "craftsmen_production": 6
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 45,
           "build_turns": 2,
-          "effects": { "craftsmen_production": 10 }
+          "effects": {
+            "craftsmen_production": 10
+          }
         }
       ]
     },
@@ -125,19 +149,25 @@
           "cost_gold": 100,
           "cost_wood": 30,
           "build_turns": 1,
-          "effects": { "building_materials_production": 3 }
+          "effects": {
+            "building_materials_production": 3
+          }
         },
         {
           "cost_gold": 150,
           "cost_wood": 45,
           "build_turns": 1,
-          "effects": { "building_materials_production": 6 }
+          "effects": {
+            "building_materials_production": 6
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 68,
           "build_turns": 2,
-          "effects": { "building_materials_production": 10 }
+          "effects": {
+            "building_materials_production": 10
+          }
         }
       ]
     },
@@ -154,13 +184,19 @@
           "cost_gold": 100,
           "cost_wood": 0,
           "build_turns": 1,
-          "effects": { "max_food_production": 5, "national_grain_cap": 50 }
+          "effects": {
+            "max_food_production": 5,
+            "national_grain_cap": 50
+          }
         },
         {
           "cost_gold": 150,
           "cost_wood": 0,
           "build_turns": 2,
-          "effects": { "max_food_production": 10, "national_grain_cap": 100 }
+          "effects": {
+            "max_food_production": 10,
+            "national_grain_cap": 100
+          }
         }
       ]
     },
@@ -172,13 +208,17 @@
       "max_level": 1,
       "upkeep_gold": 12,
       "max_national_count": 3,
-      "build_requires": { "special_resource": "wood" },
+      "build_requires": {
+        "special_resource": "wood"
+      },
       "levels": [
         {
           "cost_gold": 200,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "refined_iron_production": 3 }
+          "effects": {
+            "refined_iron_production": 3
+          }
         }
       ]
     },
@@ -195,13 +235,19 @@
           "cost_gold": 80,
           "cost_wood": 15,
           "build_turns": 1,
-          "effects": { "max_food_production": 8, "national_grain_cap": 30 }
+          "effects": {
+            "max_food_production": 8,
+            "national_grain_cap": 30
+          }
         },
         {
           "cost_gold": 120,
           "cost_wood": 23,
           "build_turns": 1,
-          "effects": { "max_food_production": 18, "national_grain_cap": 80 }
+          "effects": {
+            "max_food_production": 18,
+            "national_grain_cap": 80
+          }
         }
       ]
     },
@@ -213,19 +259,28 @@
       "max_level": 2,
       "upkeep_gold": 12,
       "max_national_count": 2,
-      "build_requires": { "terrain": ["river", "ford"] },
+      "build_requires": {
+        "terrain": [
+          "river",
+          "ford"
+        ]
+      },
       "levels": [
         {
           "cost_gold": 150,
           "cost_wood": 20,
           "build_turns": 2,
-          "effects": { "gold_production_bonus": 0.15 }
+          "effects": {
+            "gold_production_bonus": 0.15
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "gold_production_bonus": 0.35 }
+          "effects": {
+            "gold_production_bonus": 0.35
+          }
         }
       ]
     },
@@ -237,25 +292,33 @@
       "max_level": 3,
       "upkeep_gold": 8,
       "max_national_count": 3,
-      "build_requires": { "special_resource": "horse" },
+      "build_requires": {
+        "special_resource": "horse"
+      },
       "levels": [
         {
           "cost_gold": 120,
           "cost_wood": 15,
           "build_turns": 1,
-          "effects": { "horse_production": 5 }
+          "effects": {
+            "horse_production": 5
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 23,
           "build_turns": 2,
-          "effects": { "horse_production": 12 }
+          "effects": {
+            "horse_production": 12
+          }
         },
         {
           "cost_gold": 270,
           "cost_wood": 35,
           "build_turns": 2,
-          "effects": { "horse_production": 20 }
+          "effects": {
+            "horse_production": 20
+          }
         }
       ]
     },
@@ -266,25 +329,41 @@
       "category": "economic",
       "max_level": 3,
       "upkeep_gold": 5,
-      "build_requires": { "terrain": ["river", "ford", "deep_ocean", "shallow_ocean"] },
+      "build_requires": {
+        "terrain": [
+          "river",
+          "ford",
+          "deep_ocean",
+          "shallow_ocean"
+        ]
+      },
       "levels": [
         {
           "cost_gold": 80,
           "cost_wood": 15,
           "build_turns": 1,
-          "effects": { "food_production_bonus": 0.05, "gold_production_bonus": 0.05 }
+          "effects": {
+            "food_production_bonus": 0.05,
+            "gold_production_bonus": 0.05
+          }
         },
         {
           "cost_gold": 120,
           "cost_wood": 23,
           "build_turns": 1,
-          "effects": { "food_production_bonus": 0.12, "gold_production_bonus": 0.10 }
+          "effects": {
+            "food_production_bonus": 0.12,
+            "gold_production_bonus": 0.1
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 35,
           "build_turns": 2,
-          "effects": { "food_production_bonus": 0.20, "gold_production_bonus": 0.15 }
+          "effects": {
+            "food_production_bonus": 0.2,
+            "gold_production_bonus": 0.15
+          }
         }
       ]
     },
@@ -301,19 +380,39 @@
           "cost_gold": 150,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "unlock_infantry": ["militia", "infantry"] }
+          "effects": {
+            "unlock_infantry": [
+              "militia",
+              "infantry"
+            ]
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 45,
           "build_turns": 2,
-          "effects": { "unlock_infantry": ["militia", "infantry", "spear", "scout_team"] }
+          "effects": {
+            "unlock_infantry": [
+              "militia",
+              "infantry",
+              "spear",
+              "scout_team"
+            ]
+          }
         },
         {
           "cost_gold": 338,
           "cost_wood": 68,
           "build_turns": 3,
-          "effects": { "unlock_infantry": ["militia", "infantry", "spear", "scout_team", "iron_armored"] }
+          "effects": {
+            "unlock_infantry": [
+              "militia",
+              "infantry",
+              "spear",
+              "scout_team",
+              "iron_armored"
+            ]
+          }
         }
       ]
     },
@@ -325,25 +424,45 @@
       "max_level": 3,
       "upkeep_gold": 12,
       "produces_category": "cavalry",
-      "build_requires": { "special_resource": "horse" },
+      "build_requires": {
+        "special_resource": "horse"
+      },
       "levels": [
         {
           "cost_gold": 150,
           "cost_wood": 20,
           "build_turns": 2,
-          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot"] }
+          "effects": {
+            "unlock_cavalry": [
+              "scout_cavalry",
+              "chariot"
+            ]
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot", "cavalry"] }
+          "effects": {
+            "unlock_cavalry": [
+              "scout_cavalry",
+              "chariot",
+              "cavalry"
+            ]
+          }
         },
         {
           "cost_gold": 338,
           "cost_wood": 45,
           "build_turns": 3,
-          "effects": { "unlock_cavalry": ["scout_cavalry", "chariot", "cavalry", "shock_cavalry"] }
+          "effects": {
+            "unlock_cavalry": [
+              "scout_cavalry",
+              "chariot",
+              "cavalry",
+              "shock_cavalry"
+            ]
+          }
         }
       ]
     },
@@ -360,19 +479,34 @@
           "cost_gold": 200,
           "cost_wood": 40,
           "build_turns": 2,
-          "effects": { "unlock_siege": ["battering_ram"] }
+          "effects": {
+            "unlock_siege": [
+              "battering_ram"
+            ]
+          }
         },
         {
           "cost_gold": 300,
           "cost_wood": 60,
           "build_turns": 3,
-          "effects": { "unlock_siege": ["battering_ram", "siege"] }
+          "effects": {
+            "unlock_siege": [
+              "battering_ram",
+              "siege"
+            ]
+          }
         },
         {
           "cost_gold": 450,
           "cost_wood": 90,
           "build_turns": 3,
-          "effects": { "unlock_siege": ["battering_ram", "siege", "ballista"] }
+          "effects": {
+            "unlock_siege": [
+              "battering_ram",
+              "siege",
+              "ballista"
+            ]
+          }
         }
       ]
     },
@@ -384,25 +518,47 @@
       "max_level": 3,
       "upkeep_gold": 10,
       "produces_category": "navy",
-      "build_requires": { "terrain": ["river", "deep_ocean", "shallow_ocean", "ford"] },
+      "build_requires": {
+        "terrain": [
+          "river",
+          "deep_ocean",
+          "shallow_ocean",
+          "ford"
+        ]
+      },
       "levels": [
         {
           "cost_gold": 180,
           "cost_wood": 35,
           "build_turns": 2,
-          "effects": { "unlock_navy": ["mengchong"] }
+          "effects": {
+            "unlock_navy": [
+              "mengchong"
+            ]
+          }
         },
         {
           "cost_gold": 270,
           "cost_wood": 53,
           "build_turns": 3,
-          "effects": { "unlock_navy": ["mengchong", "great_wing"] }
+          "effects": {
+            "unlock_navy": [
+              "mengchong",
+              "great_wing"
+            ]
+          }
         },
         {
           "cost_gold": 405,
           "cost_wood": 80,
           "build_turns": 3,
-          "effects": { "unlock_navy": ["mengchong", "great_wing", "tower_ship"] }
+          "effects": {
+            "unlock_navy": [
+              "mengchong",
+              "great_wing",
+              "tower_ship"
+            ]
+          }
         }
       ]
     },
@@ -419,19 +575,34 @@
           "cost_gold": 120,
           "cost_wood": 25,
           "build_turns": 2,
-          "effects": { "unlock_ranged": ["archer"] }
+          "effects": {
+            "unlock_ranged": [
+              "archer"
+            ]
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 38,
           "build_turns": 2,
-          "effects": { "unlock_ranged": ["archer", "crossbow"] }
+          "effects": {
+            "unlock_ranged": [
+              "archer",
+              "crossbow"
+            ]
+          }
         },
         {
           "cost_gold": 270,
           "cost_wood": 57,
           "build_turns": 3,
-          "effects": { "unlock_ranged": ["archer", "crossbow", "horse_archer"] }
+          "effects": {
+            "unlock_ranged": [
+              "archer",
+              "crossbow",
+              "horse_archer"
+            ]
+          }
         }
       ]
     },
@@ -447,13 +618,19 @@
           "cost_gold": 120,
           "cost_wood": 25,
           "build_turns": 2,
-          "effects": { "garrison_atk_bonus": 0.10, "garrison_def_bonus": 0.10 }
+          "effects": {
+            "garrison_atk_bonus": 0.1,
+            "garrison_def_bonus": 0.1
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 38,
           "build_turns": 2,
-          "effects": { "garrison_atk_bonus": 0.20, "garrison_def_bonus": 0.20 }
+          "effects": {
+            "garrison_atk_bonus": 0.2,
+            "garrison_def_bonus": 0.2
+          }
         }
       ]
     },
@@ -470,13 +647,19 @@
           "cost_gold": 100,
           "cost_wood": 20,
           "build_turns": 1,
-          "effects": { "base_vision": 3, "morale_bonus": 2 }
+          "effects": {
+            "base_vision": 3,
+            "morale_bonus": 2
+          }
         },
         {
           "cost_gold": 150,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "base_vision": 5, "morale_bonus": 4 }
+          "effects": {
+            "base_vision": 5,
+            "morale_bonus": 4
+          }
         }
       ]
     },
@@ -494,20 +677,29 @@
           "cost_gold": 200,
           "cost_wood": 50,
           "build_turns": 2,
-          "effects": { "defense_bonus": 0.15, "structure_hp": 200 }
+          "effects": {
+            "defense_bonus": 0.15,
+            "structure_hp": 200
+          }
         },
         {
           "cost_gold": 300,
           "cost_wood": 75,
           "build_turns": 2,
-          "effects": { "defense_bonus": 0.30, "structure_hp": 350 }
+          "effects": {
+            "defense_bonus": 0.3,
+            "structure_hp": 350
+          }
         },
         {
           "cost_gold": 450,
           "cost_wood": 113,
           "build_turns": 3,
           "cost_building_materials": 30,
-          "effects": { "defense_bonus": 0.45, "structure_hp": 550 }
+          "effects": {
+            "defense_bonus": 0.45,
+            "structure_hp": 550
+          }
         }
       ]
     },
@@ -525,20 +717,29 @@
           "cost_gold": 150,
           "cost_wood": 30,
           "build_turns": 2,
-          "effects": { "structure_hp": 150, "tower_attack": 8 }
+          "effects": {
+            "structure_hp": 150,
+            "tower_attack": 8
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 45,
           "build_turns": 2,
-          "effects": { "structure_hp": 250, "tower_attack": 13 }
+          "effects": {
+            "structure_hp": 250,
+            "tower_attack": 13
+          }
         },
         {
           "cost_gold": 338,
           "cost_wood": 68,
           "build_turns": 3,
           "cost_building_materials": 25,
-          "effects": { "structure_hp": 350, "tower_attack": 18 }
+          "effects": {
+            "structure_hp": 350,
+            "tower_attack": 18
+          }
         }
       ]
     },
@@ -556,13 +757,19 @@
           "cost_gold": 180,
           "cost_wood": 40,
           "build_turns": 2,
-          "effects": { "structure_hp": 300, "city_attack_bonus": 0.10 }
+          "effects": {
+            "structure_hp": 300,
+            "city_attack_bonus": 0.1
+          }
         },
         {
           "cost_gold": 270,
           "cost_wood": 60,
           "build_turns": 3,
-          "effects": { "structure_hp": 500, "city_attack_bonus": 0.20 }
+          "effects": {
+            "structure_hp": 500,
+            "city_attack_bonus": 0.2
+          }
         }
       ]
     },
@@ -579,13 +786,19 @@
           "cost_gold": 150,
           "cost_wood": 10,
           "build_turns": 2,
-          "effects": { "morale_bonus": 3, "stability_bonus": 9 }
+          "effects": {
+            "morale_bonus": 3,
+            "stability_bonus": 9
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 15,
           "build_turns": 2,
-          "effects": { "morale_bonus": 6, "stability_bonus": 9 }
+          "effects": {
+            "morale_bonus": 6,
+            "stability_bonus": 9
+          }
         }
       ]
     },
@@ -602,13 +815,21 @@
           "cost_gold": 200,
           "cost_wood": 20,
           "build_turns": 2,
-          "effects": { "morale_bonus": 2, "culture_production": 10, "stability_bonus": 6 }
+          "effects": {
+            "morale_bonus": 2,
+            "culture_production": 10,
+            "stability_bonus": 6
+          }
         },
         {
           "cost_gold": 300,
           "cost_wood": 30,
           "build_turns": 3,
-          "effects": { "morale_bonus": 4, "culture_production": 25, "stability_bonus": 6 }
+          "effects": {
+            "morale_bonus": 4,
+            "culture_production": 25,
+            "stability_bonus": 6
+          }
         }
       ]
     },
@@ -625,7 +846,10 @@
           "cost_gold": 120,
           "cost_wood": 15,
           "build_turns": 2,
-          "effects": { "diplomacy_bonus": 0.10, "intelligence_range": 1 }
+          "effects": {
+            "diplomacy_bonus": 0.1,
+            "intelligence_range": 1
+          }
         }
       ]
     },
@@ -642,13 +866,17 @@
           "cost_gold": 200,
           "cost_wood": 20,
           "build_turns": 2,
-          "effects": { "corruption_reduction": 3 }
+          "effects": {
+            "corruption_reduction": 3
+          }
         },
         {
           "cost_gold": 300,
           "cost_wood": 30,
           "build_turns": 3,
-          "effects": { "corruption_reduction": 6 }
+          "effects": {
+            "corruption_reduction": 6
+          }
         }
       ]
     },
@@ -665,13 +893,19 @@
           "cost_gold": 120,
           "cost_wood": 15,
           "build_turns": 2,
-          "effects": { "revolt_suppression": 0.15, "stability_bonus": 3 }
+          "effects": {
+            "revolt_suppression": 0.15,
+            "stability_bonus": 3
+          }
         },
         {
           "cost_gold": 180,
           "cost_wood": 23,
           "build_turns": 2,
-          "effects": { "revolt_suppression": 0.30, "stability_bonus": 3 }
+          "effects": {
+            "revolt_suppression": 0.3,
+            "stability_bonus": 3
+          }
         }
       ]
     },
@@ -688,13 +922,19 @@
           "cost_gold": 150,
           "cost_wood": 20,
           "build_turns": 2,
-          "effects": { "morale_bonus": 2, "stability_bonus": 5 }
+          "effects": {
+            "morale_bonus": 2,
+            "stability_bonus": 5
+          }
         },
         {
           "cost_gold": 225,
           "cost_wood": 30,
           "build_turns": 3,
-          "effects": { "morale_bonus": 5, "stability_bonus": 5 }
+          "effects": {
+            "morale_bonus": 5,
+            "stability_bonus": 5
+          }
         }
       ]
     },
@@ -711,21 +951,174 @@
           "cost_gold": 400,
           "cost_wood": 100,
           "build_turns": 3,
-          "effects": { "morale_bonus": 5, "tax_bonus": 0.10, "diplomacy_reputation": 5, "stability_bonus": 15 }
+          "effects": {
+            "morale_bonus": 5,
+            "tax_bonus": 0.1,
+            "diplomacy_reputation": 5,
+            "stability_bonus": 15
+          }
         },
         {
           "cost_gold": 600,
           "cost_wood": 150,
           "build_turns": 3,
           "cost_building_materials": 20,
-          "effects": { "morale_bonus": 8, "tax_bonus": 0.15, "diplomacy_reputation": 10, "stability_bonus": 15 }
+          "effects": {
+            "morale_bonus": 8,
+            "tax_bonus": 0.15,
+            "diplomacy_reputation": 10,
+            "stability_bonus": 15
+          }
         },
         {
           "cost_gold": 900,
           "cost_wood": 225,
           "build_turns": 4,
           "cost_building_materials": 40,
-          "effects": { "morale_bonus": 12, "tax_bonus": 0.20, "diplomacy_reputation": 15, "stability_bonus": 15 }
+          "effects": {
+            "morale_bonus": 12,
+            "tax_bonus": 0.2,
+            "diplomacy_reputation": 15,
+            "stability_bonus": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "hall_benevolence",
+      "name": "仁政堂",
+      "description": "推行仁政教化之所，孟子曾言\"以德服人\"",
+      "category": "school",
+      "school_requirement": {
+        "school_id": "confucianism",
+        "level": 2
+      },
+      "max_level": 1,
+      "upkeep_gold": 30,
+      "levels": [
+        {
+          "cost_gold": 500,
+          "cost_wood": 200,
+          "build_turns": 3,
+          "effects": {
+            "culture_production_bonus": 0.5,
+            "morale_per_turn": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "court_legalist",
+      "name": "廷尉府",
+      "description": "执法严明之所，以刑去刑",
+      "category": "school",
+      "school_requirement": {
+        "school_id": "legalism",
+        "level": 2
+      },
+      "max_level": 1,
+      "upkeep_gold": 20,
+      "levels": [
+        {
+          "cost_gold": 400,
+          "cost_wood": 100,
+          "build_turns": 2,
+          "effects": {
+            "stability_bonus": 10,
+            "morale_per_turn": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "fortress_mohist",
+      "name": "墨堡",
+      "description": "墨家精工打造的守城要塞",
+      "category": "school",
+      "school_requirement": {
+        "school_id": "mohism",
+        "level": 1
+      },
+      "max_level": 1,
+      "upkeep_gold": 15,
+      "levels": [
+        {
+          "cost_gold": 350,
+          "cost_wood": 150,
+          "build_turns": 2,
+          "effects": {
+            "city_defense_hp": 200,
+            "defense_bonus": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "temple_daoist",
+      "name": "道观",
+      "description": "清修之地，顺应自然",
+      "category": "school",
+      "school_requirement": {
+        "school_id": "daoism",
+        "level": 1
+      },
+      "max_level": 1,
+      "upkeep_gold": 10,
+      "levels": [
+        {
+          "cost_gold": 250,
+          "cost_wood": 80,
+          "build_turns": 2,
+          "effects": {
+            "food_consumption_reduction": 0.15,
+            "pop_growth_bonus": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "training_ground",
+      "name": "讲武堂",
+      "description": "操练兵马、研讨兵法之所",
+      "category": "school",
+      "school_requirement": {
+        "school_id": "military",
+        "level": 2
+      },
+      "max_level": 1,
+      "upkeep_gold": 25,
+      "levels": [
+        {
+          "cost_gold": 450,
+          "cost_wood": 150,
+          "build_turns": 2,
+          "effects": {
+            "general_xp_bonus": 0.25,
+            "recruit_efficiency": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "guest_house",
+      "name": "驿馆",
+      "description": "接待四方来客，收集天下情报",
+      "category": "school",
+      "school_requirement": {
+        "school_id": "diplomacy",
+        "level": 1
+      },
+      "max_level": 1,
+      "upkeep_gold": 15,
+      "levels": [
+        {
+          "cost_gold": 300,
+          "cost_wood": 100,
+          "build_turns": 2,
+          "effects": {
+            "intel_range": 2,
+            "diplomacy_cost_reduction": 0.1
+          }
         }
       ]
     }

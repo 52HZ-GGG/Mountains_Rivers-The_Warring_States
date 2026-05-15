@@ -9,6 +9,7 @@
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
     "fire_burn_dot_ratio": 0.3,
+    "fire_seasons": ["summer", "autumn"],
     "base_random_spread_lo": 0.9,
     "base_random_spread_hi": 1.1,
     "accuracy_spread_factor": 0.001,
@@ -23,29 +24,55 @@
         "description": "被动常驻效果，读取 value 字段累加到公式",
         "formula_integration": "atk_buff += skill.value（累加到 unit_ability_bonus）",
         "instances": [
-          { "id": "enhanced_siege", "unit": "jinnu", "value": 1.5, "note": "攻城加法层+1.5" }
+          {
+            "id": "enhanced_siege",
+            "unit": "jinnu",
+            "value": 1.5,
+            "note": "攻城加法层+1.5"
+          }
         ]
       },
       "terrain_move_modifier": {
         "description": "地形移动力修正，读取 terrain_move_modifier 字典按地形类型覆盖",
         "formula_integration": "move_cost = max(1, base_move_cost + skill.terrain_move_modifier[terrain])",
         "instances": [
-          { "id": "forest_march", "unit": "hufu_qibing", "modifier": { "forest": -1 } },
-          { "id": "mountain_march", "unit": "shenxi_zhishi", "modifier": { "mountain": -2 } }
+          {
+            "id": "forest_march",
+            "unit": "hufu_qibing",
+            "modifier": {
+              "forest": -1
+            }
+          },
+          {
+            "id": "mountain_march",
+            "unit": "shenxi_zhishi",
+            "modifier": {
+              "mountain": -2
+            }
+          }
         ]
       },
       "combat_on_kill": {
         "description": "击杀时触发效果，读取 recover_ratio 字段",
         "formula_integration": "on_kill: hp += max_hp × skill.recover_ratio",
         "instances": [
-          { "id": "wuzu_recover", "unit": "wuzu", "recover_ratio": 0.05 }
+          {
+            "id": "wuzu_recover",
+            "unit": "wuzu",
+            "recover_ratio": 0.05
+          }
         ]
       },
       "move_after_attack": {
         "description": "攻击后可继续移动，读取 attack_move_cost 和 per_turn_limit",
         "formula_integration": "on_attack: remaining_mp -= skill.attack_move_cost; if remaining_mp > 0 and attacks_this_turn < skill.per_turn_limit: can_continue_move",
         "instances": [
-          { "id": "hit_and_run", "unit": "liaodong_gongqi", "attack_move_cost": 2, "per_turn_limit": 1 }
+          {
+            "id": "hit_and_run",
+            "unit": "liaodong_gongqi",
+            "attack_move_cost": 2,
+            "per_turn_limit": 1
+          }
         ]
       }
     }
@@ -257,7 +284,10 @@
       "daoism": 0,
       "military": 0,
       "diplomacy": 0
-    }
+    },
+    "hard_cap_base": 100,
+    "confucian_prosperity_threshold": 100,
+    "confucian_prosperity_per_point": 0.005
   },
   "stability": {
     "initial": 50,
@@ -331,6 +361,17 @@
       "winter"
     ]
   },
+  "drought": {
+    "trigger_season": "spring",
+    "base_chance_min": 0.03,
+    "base_chance_max": 0.05,
+    "food_debuff": -0.70,
+    "stability_penalty": -10,
+    "granary_chance_reduction": 0.01,
+    "censor_stability_reduction": 0.5,
+    "wonder_chance_modifier": 0.5,
+    "wonder_effect_modifier": 0.5
+  },
   "culture": {
     "spread_rate": 0.05,
     "distance_decay": {
@@ -375,7 +416,8 @@
     "school_culture_effects": {
       "legalism": {
         "foreign_culture_resistance": 0.5,
-        "foreign_culture_suppression_per_turn": 5
+        "foreign_culture_suppression_per_turn": 8,
+        "foreign_culture_suppression_cap": 30
       },
       "mohism": {
         "culture_defense_bonus": 0.3
@@ -525,11 +567,26 @@
     "building_bonus": 3,
     "population_bonus": 1,
     "city_type_ranges": {
-      "capital": {"min": 55, "max": 75},
-      "major": {"min": 30, "max": 50},
-      "medium": {"min": 15, "max": 30},
-      "minor": {"min": 5, "max": 15},
-      "neutral": {"min": 10, "max": 45}
+      "capital": {
+        "min": 55,
+        "max": 75
+      },
+      "major": {
+        "min": 30,
+        "max": 50
+      },
+      "medium": {
+        "min": 15,
+        "max": 30
+      },
+      "minor": {
+        "min": 5,
+        "max": 15
+      },
+      "neutral": {
+        "min": 10,
+        "max": 45
+      }
     }
   },
   "capital": {
@@ -618,7 +675,6 @@
     "acquisition": {
       "building_interval_turns": 8,
       "battle_win_chance": 0.15,
-      "battle_great_victory_chance": 0.25,
       "base_probabilities": {
         "common": 0.6,
         "rare": 0.3,
@@ -748,10 +804,52 @@
       "prison": 0.15
     },
     "garrison_atk_bonus_per_level": {
-      "training_ground": 0.10
+      "training_ground": 0.1
     },
     "garrison_def_bonus_per_level": {
-      "training_ground": 0.10
+      "training_ground": 0.1
+    }
+  },
+  "school": {
+    "exp_to_level_2": 50,
+    "exp_to_level_3": 120,
+    "quest_refresh_interval": 10,
+    "quest_refresh_count_min": 2,
+    "quest_refresh_count_max": 3,
+    "quest_exp_base": 15,
+    "quest_exp_missionary_multiplier": 1.5,
+    "event_exp_base": 5,
+    "auto_exp_per_action": 5,
+    "mentor_exp_common": 1,
+    "mentor_exp_famous": 2,
+    "mentor_exp_sage": 3,
+    "leader_exp_per_turn": 2,
+    "leader_unlock_level": 2,
+    "leader_cooldown_turns": 3,
+    "switch_morale_penalty_per_level": 5,
+    "switch_transition_turns": 3,
+    "switch_level_reset": true,
+    "max_policy_slots": 3,
+    "policy_unlock_per_level": 1,
+    "max_mentors_per_school": 2,
+    "wu_minister_base_capacity": 5,
+    "switch_transition_effect_multiplier": 0.0,
+    "switch_transition_quest_lock": true,
+    "auto_exp_triggers": {
+      "confucianism": { "type": "morale_threshold", "thresholds": [70, 80, 90, 100, 110, 120], "exp": 5 },
+      "legalism": { "type": "tech_complete", "exp": 2 },
+      "mohism": { "type": "build_defense", "building_categories": ["wall", "arrow_tower", "inner_gate"], "exp": 3 },
+      "daoism": { "type": "pop_reach", "pop_threshold": 15, "exp": 5 },
+      "military": { "type": "siege_victory", "exp": 5 },
+      "diplomacy": { "type": "sign_treaty", "exp": 5 }
+    },
+    "policy_effects": {
+      "build_cost_reduction": { "description": "建造资源成本百分比减少", "formula": "cost = base_cost × (1 - build_cost_reduction)" },
+      "all_output_bonus": { "description": "全产出百分比加成", "formula": "output = base_output × (1 + all_output_bonus)" },
+      "trade_bonus": { "description": "贸易收入百分比加成", "formula": "trade_income = base_income × (1 + trade_bonus)" },
+      "force_ceasefire": { "description": "强制停战", "effect": "所有进行中的战争强制进入停战状态" },
+      "recruit_elite_unit": { "description": "征募精锐单位", "effect": "解锁精锐兵种招募，属性提升20%", "elite_bonus": 0.20 },
+      "target_relation_delta": { "description": "目标两国关系加法修正", "effect": "选择两个目标国家，其相互关系变化指定值" }
     }
   }
 }

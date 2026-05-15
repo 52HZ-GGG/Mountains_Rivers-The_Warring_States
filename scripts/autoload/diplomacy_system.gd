@@ -180,6 +180,47 @@ func get_all_opinions_for(faction_id: String) -> Dictionary:
 	return _opinions.get(faction_id, {})
 
 
+# ============= 公共操作接口（供事件系统调用） =============
+
+var _event_chain_flags: Dictionary = {}
+
+
+func get_all_faction_ids() -> Array:
+	return _opinions.keys()
+
+
+## 公共好感度修改（供事件系统调用）
+func change_opinion(faction_a: String, faction_b: String, delta: int) -> void:
+	_change_opinion(faction_a, faction_b, delta)
+
+
+## 公共声望修改（供事件系统调用）
+func change_reputation(faction_id: String, delta: int) -> void:
+	_change_reputation(faction_id, delta)
+
+
+## 所有势力对 target 的好感变化
+func change_opinion_all_toward(target: String, delta: int) -> void:
+	for fid in _opinions:
+		if fid != target:
+			_change_opinion(fid, target, delta)
+
+
+## 存储事件链标记
+func set_event_chain_flag(flag_name: String, value: Variant = true) -> void:
+	_event_chain_flags[flag_name] = value
+
+
+## 读取事件链标记
+func get_event_chain_flag(flag_name: String) -> Variant:
+	return _event_chain_flags.get(flag_name, null)
+
+
+## 获取所有事件链标记
+func get_event_chain_flags() -> Dictionary:
+	return _event_chain_flags.duplicate()
+
+
 # ============= 外交动作 =============
 
 func declare_war(attacker: String, defender: String) -> Dictionary:

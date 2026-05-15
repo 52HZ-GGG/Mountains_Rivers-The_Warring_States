@@ -425,7 +425,7 @@
     {
       "id": "salt_wood_debate",
       "name": "盐木之议",
-      "description": "讨论盐铁专营之利弊，木材产出+15%",
+      "description": "盐铁之议，利弊相权。木植之利，亦当考量。",
       "category": "economy",
       "era": "early",
       "cost_gold": 90,
