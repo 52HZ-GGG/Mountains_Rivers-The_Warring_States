@@ -1999,7 +1999,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -50,
-            "morale_delta": 10,
+            "morale_delta": 5,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2014,10 +2014,11 @@
           "outcomes": {
             "food_delta": -100,
             "gold_delta": 0,
-            "morale_delta": 15,
-            "population_delta": 50,
+            "morale_delta": 8,
+            "population_delta": 0,
             "troops_delta": 0,
-            "wood_delta": 0
+            "wood_delta": 0,
+            "school_exp": 5
           }
         }
       ],
@@ -2041,7 +2042,7 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": -30,
-        "morale_delta": 12,
+        "morale_delta": 6,
         "population_delta": 0,
         "troops_delta": 0,
         "wood_delta": 0
@@ -2071,8 +2072,9 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": -8,
-            "population_delta": -30,
+            "morale_delta": -4,
+            "stability_delta": -3,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
           }
@@ -2086,7 +2088,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": -100,
-            "morale_delta": 5,
+            "morale_delta": 3,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2110,9 +2112,10 @@
       },
       "effects": {
         "food_delta": 0,
-        "gold_delta": 20,
-        "morale_delta": -5,
-        "population_delta": -20,
+        "gold_delta": 10,
+        "morale_delta": -3,
+        "stability_delta": -2,
+        "population_delta": 0,
         "troops_delta": 0,
         "wood_delta": 0
       },
@@ -2143,9 +2146,10 @@
           "outcomes": {
             "food_delta": -50,
             "gold_delta": 0,
-            "morale_delta": 10,
+            "morale_delta": 5,
+            "stability_delta": 3,
             "population_delta": 0,
-            "troops_delta": 20,
+            "troops_delta": 0,
             "wood_delta": 0
           }
         },
@@ -2156,9 +2160,9 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": 5,
+            "morale_delta": 3,
             "population_delta": 0,
-            "troops_delta": -10,
+            "troops_delta": 0,
             "wood_delta": 0
           }
         }
@@ -2185,10 +2189,11 @@
           "text": "虚心求教，纳其策",
           "cost": {},
           "outcomes": {
-            "food_delta": 80,
+            "food_delta": 30,
             "gold_delta": 0,
-            "morale_delta": 8,
-            "population_delta": 30,
+            "morale_delta": 5,
+            "reputation_delta": 2,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
           }
@@ -2201,8 +2206,8 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -50,
-            "morale_delta": 3,
+            "gold_delta": -30,
+            "morale_delta": 2,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2227,7 +2232,7 @@
       "effects": {
         "food_delta": 0,
         "gold_delta": 0,
-        "morale_delta": 5,
+        "morale_delta": 3,
         "population_delta": 0,
         "troops_delta": 0,
         "wood_delta": 0
@@ -2258,8 +2263,8 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -150,
-            "morale_delta": 5,
+            "gold_delta": -80,
+            "morale_delta": 3,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2273,8 +2278,8 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -80,
-            "morale_delta": -3,
+            "gold_delta": -40,
+            "morale_delta": -2,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2305,9 +2310,10 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -100,
-            "morale_delta": 10,
-            "population_delta": 50,
+            "gold_delta": -50,
+            "morale_delta": 5,
+            "reputation_delta": 3,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
           }
@@ -2319,8 +2325,8 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": -5,
-            "population_delta": -30,
+            "morale_delta": -3,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
           }
@@ -2339,9 +2345,9 @@
         "conditions": {}
       },
       "effects": {
-        "food_delta": 30,
+        "food_delta": 20,
         "gold_delta": 0,
-        "morale_delta": 5,
+        "morale_delta": 3,
         "population_delta": 0,
         "troops_delta": 0,
         "wood_delta": 0
@@ -2372,8 +2378,8 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -200,
-            "morale_delta": 5,
+            "gold_delta": -100,
+            "morale_delta": 3,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2386,8 +2392,8 @@
           "cost": {},
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": 50,
-            "morale_delta": -3,
+            "gold_delta": 30,
+            "morale_delta": -2,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2418,10 +2424,10 @@
             "gold": 100
           },
           "outcomes": {
-            "food_delta": 100,
-            "gold_delta": -100,
-            "morale_delta": 10,
-            "population_delta": 30,
+            "food_delta": 40,
+            "gold_delta": -50,
+            "morale_delta": 5,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 10
@@ -2434,7 +2440,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": -2,
+            "morale_delta": -1,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2466,11 +2472,12 @@
             "gold": 150
           },
           "outcomes": {
-            "food_delta": -50,
-            "gold_delta": -150,
-            "morale_delta": 8,
+            "food_delta": -30,
+            "gold_delta": -80,
+            "morale_delta": 5,
+            "stability_delta": 5,
             "population_delta": 0,
-            "troops_delta": 50,
+            "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 12
           }
@@ -2483,10 +2490,11 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -50,
-            "morale_delta": 3,
+            "gold_delta": -30,
+            "morale_delta": 2,
+            "stability_delta": 3,
             "population_delta": 0,
-            "troops_delta": 20,
+            "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 5
           }
@@ -2517,8 +2525,8 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -200,
-            "morale_delta": 5,
+            "gold_delta": -100,
+            "morale_delta": 3,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2532,7 +2540,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": -2,
+            "morale_delta": -1,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2560,9 +2568,9 @@
           "cost": {},
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": 150,
-            "morale_delta": -3,
-            "population_delta": 20,
+            "gold_delta": 50,
+            "morale_delta": -2,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 5
@@ -2573,9 +2581,9 @@
           "text": "重农抑商，不予理会",
           "cost": {},
           "outcomes": {
-            "food_delta": 50,
+            "food_delta": 20,
             "gold_delta": 0,
-            "morale_delta": 3,
+            "morale_delta": 2,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2603,7 +2611,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": 10,
+            "morale_delta": 5,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2618,8 +2626,8 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -100,
-            "morale_delta": 15,
+            "gold_delta": -50,
+            "morale_delta": 8,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2650,8 +2658,8 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": -5,
-            "population_delta": -20,
+            "morale_delta": -3,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 3
@@ -2665,9 +2673,9 @@
           },
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -80,
-            "morale_delta": 10,
-            "population_delta": 10,
+            "gold_delta": -40,
+            "morale_delta": 5,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 8
@@ -2696,10 +2704,11 @@
           "text": "开境接纳，编户齐民",
           "cost": {},
           "outcomes": {
-            "food_delta": -80,
+            "food_delta": -40,
             "gold_delta": 0,
-            "morale_delta": -5,
-            "population_delta": 200,
+            "morale_delta": -3,
+            "stability_delta": 5,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 5
@@ -2712,7 +2721,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": 5,
+            "morale_delta": 3,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2743,10 +2752,11 @@
           "text": "拨款赞助，与民同乐",
           "cost": {},
           "outcomes": {
-            "food_delta": -50,
-            "gold_delta": -100,
-            "morale_delta": 15,
-            "population_delta": 30,
+            "food_delta": -25,
+            "gold_delta": -50,
+            "morale_delta": 5,
+            "reputation_delta": 2,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 8
@@ -2759,7 +2769,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": 5,
+            "morale_delta": 3,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
@@ -2789,7 +2799,7 @@
           "outcomes": {
             "food_delta": 0,
             "gold_delta": 0,
-            "morale_delta": 8,
+            "morale_delta": 5,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2802,7 +2812,7 @@
           "cost": {},
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": 200,
+            "gold_delta": 80,
             "morale_delta": 0,
             "population_delta": 0,
             "troops_delta": 0,
@@ -2835,9 +2845,9 @@
           "text": "褒奖善行，弘扬仁风",
           "cost": {},
           "outcomes": {
-            "food_delta": 50,
-            "gold_delta": -30,
-            "morale_delta": 10,
+            "food_delta": 20,
+            "gold_delta": -15,
+            "morale_delta": 5,
             "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0,
@@ -2849,10 +2859,10 @@
           "text": "征用义仓，充实国库",
           "cost": {},
           "outcomes": {
-            "food_delta": 100,
+            "food_delta": 40,
             "gold_delta": 0,
-            "morale_delta": -10,
-            "population_delta": -20,
+            "morale_delta": -5,
+            "population_delta": 0,
             "troops_delta": 0,
             "wood_delta": 0
           }
@@ -2881,10 +2891,11 @@
           "cost": {},
           "outcomes": {
             "food_delta": 0,
-            "gold_delta": -100,
-            "morale_delta": 5,
+            "gold_delta": -50,
+            "morale_delta": 3,
+            "stability_delta": 5,
             "population_delta": 0,
-            "troops_delta": 50,
+            "troops_delta": 0,
             "wood_delta": 0,
             "school_exp": 8
           }
