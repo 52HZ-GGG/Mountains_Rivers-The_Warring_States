@@ -165,8 +165,9 @@
           "unlock_level": 1,
           "duration_turns": 5,
           "effects": {
-            "revolt_suppression": 0.50,
-            "description": "民变概率 -50%，持续 5 回合"
+            "revolt_suppression": 0.90,
+            "uprising_suppression": 0.60,
+            "description": "民变概率 -90%、起义概率 -60%，持续 5 回合"
           }
         },
         {
@@ -186,9 +187,9 @@
           "id": "leg_q1",
           "type": "general",
           "name": "奖励耕战",
-          "description": "征兵人数达到 200",
+          "description": "征兵人数达到 10",
           "condition_type": "threshold",
-          "condition": { "target": "total_recruits", "operator": ">=", "value": 200 },
+          "condition": { "target": "total_recruits", "operator": ">=", "value": 10 },
           "reward_exp": 20
         },
         {
@@ -272,8 +273,8 @@
           "unlock_level": 1,
           "duration_turns": 5,
           "effects": {
-            "defense_bonus": 0.30,
-            "description": "全城防御 +30%，持续 5 回合"
+            "wall_hp_bonus": 100,
+            "description": "全城城防 HP +100，持续 5 回合"
           }
         },
         {
@@ -283,8 +284,8 @@
           "unlock_level": 2,
           "duration_turns": 3,
           "effects": {
-            "force_ceasefire": true,
-            "description": "强制停战 3 回合"
+            "peace_negotiation_bonus": 0.20,
+            "description": "和谈己方分数 +20%，持续 3 回合"
           }
         }
       ],
@@ -292,10 +293,10 @@
         {
           "id": "moh_q1",
           "type": "general",
-          "name": "守城有术",
-          "description": "成功防御 2 次进攻",
+          "name": "墨守成规",
+          "description": "建造 2 座防御建筑（城墙/箭塔/瓮城）",
           "condition_type": "action",
-          "condition": { "target": "successful_defenses", "count": 2 },
+          "condition": { "target": "build_defense", "count": 2 },
           "reward_exp": 25
         },
         {
@@ -517,8 +518,8 @@
           "unlock_level": 2,
           "duration_turns": 2,
           "effects": {
-            "recruit_elite_unit": true,
-            "description": "征募精锐单位"
+            "special_unit_recruit": true,
+            "description": "征募特殊兵种（重甲步兵、铁骑兵等）"
           }
         }
       ],
@@ -536,7 +537,7 @@
           "id": "mil_q2",
           "type": "missionary",
           "name": "练兵之道",
-          "description": "由兵家大夫领军赢得 3 场战斗",
+          "description": "由兵家大夫领军赢得 3 场任意战斗胜利",
           "condition_type": "action",
           "condition": { "target": "win_battle_with_minister", "count": 3 },
           "reward_exp": 30,
@@ -546,9 +547,9 @@
           "id": "mil_q3",
           "type": "general",
           "name": "兵强马壮",
-          "description": "总兵力达到 500",
+          "description": "总兵力达到 15",
           "condition_type": "threshold",
-          "condition": { "target": "total_troops", "operator": ">=", "value": 500 },
+          "condition": { "target": "total_troops", "operator": ">=", "value": 15 },
           "reward_exp": 20
         }
       ],
@@ -632,7 +633,7 @@
           "effects": {
             "alliance_cost_multiplier": 0.50,
             "diplomacy_opinion_multiplier": 0.20,
-            "description": "同盟成本 -50%，外交好感 +20%，持续 5 回合"
+            "description": "同盟资源消耗 -50%，外交好感 +20%，持续 5 回合"
           }
         }
       ],
@@ -670,7 +671,7 @@
         "name": "合纵连横",
         "effects": {
           "diplomacy_cost_reduction": 0.10,
-          "intelligence_range": 1
+          "intelligence_score": 5
         }
       },
       "ai_behavior_weight": {

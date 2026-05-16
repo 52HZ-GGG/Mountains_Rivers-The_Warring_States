@@ -32,18 +32,12 @@
           "school": "legalism",
           "description": "助秦统一六国，废分封行郡县",
           "base_stats": {
-            "理财": [
-              30,
-              65
-            ],
-            "安民": [
-              20,
-              55
-            ]
+            "理财": 55,
+            "安民": 40
           },
           "skills": [
             "兴商",
-            "教化"
+            "肃贪"
           ],
           "is_historical": true
         },
@@ -54,18 +48,12 @@
           "school": "military",
           "description": "在楚变法，强兵富国",
           "base_stats": {
-            "理财": [
-              25,
-              60
-            ],
-            "安民": [
-              25,
-              60
-            ]
+            "理财": 45,
+            "安民": 45
           },
           "skills": [
-            "劝农",
-            "练兵"
+            "教化",
+            "劝农"
           ],
           "is_historical": true
         },
@@ -99,19 +87,13 @@
           "school": "legalism",
           "description": "在秦变法，废井田开阡陌，强秦之基",
           "base_stats": {
-            "理财": [
-              60,
-              95
-            ],
-            "安民": [
-              55,
-              90
-            ]
+            "理财": 85,
+            "安民": 80
           },
           "skills": [
             "变法",
             "兴商",
-            "教化"
+            "肃贪"
           ],
           "is_historical": true,
           "unique_skill": "变法"
@@ -123,14 +105,8 @@
           "school": "confucianism",
           "description": "周游列国推行仁政，儒家亚圣",
           "base_stats": {
-            "理财": [
-              40,
-              75
-            ],
-            "安民": [
-              60,
-              95
-            ]
+            "理财": 50,
+            "安民": 85
           },
           "skills": [
             "教化",
@@ -147,18 +123,12 @@
           "school": "mohism",
           "description": "墨家创始人，兼爱非攻，善守城之术",
           "base_stats": {
-            "理财": [
-              45,
-              80
-            ],
-            "安民": [
-              55,
-              90
-            ]
+            "理财": 65,
+            "安民": 75
           },
           "skills": [
             "坚守",
-            "教化",
+            "名望",
             "劝农"
           ],
           "is_historical": true,
@@ -171,22 +141,16 @@
           "school": "daoism",
           "description": "道家代表人物，逍遥无为，顺应自然",
           "base_stats": {
-            "理财": [
-              35,
-              70
-            ],
-            "安民": [
-              50,
-              85
-            ]
+            "理财": 50,
+            "安民": 70
           },
           "skills": [
+            "逍遥",
             "教化",
-            "名望",
-            "识人"
+            "名望"
           ],
           "is_historical": true,
-          "unique_skill": "名望"
+          "unique_skill": "逍遥"
         }
       ]
     },
@@ -221,18 +185,12 @@
           "school": "military",
           "description": "熟读兵书，长平之战败于白起",
           "base_stats": {
-            "勇武": [
-              25,
-              55
-            ],
-            "韬略": [
-              20,
-              50
-            ]
+            "勇武": 40,
+            "韬略": 35
           },
           "skills": [
             "坚守",
-            "先见"
+            "突击"
           ],
           "is_historical": true
         },
@@ -243,18 +201,12 @@
           "school": "military",
           "description": "魏国上将军，败于马陵之战",
           "base_stats": {
-            "勇武": [
-              35,
-              65
-            ],
-            "韬略": [
-              25,
-              55
-            ]
+            "勇武": 50,
+            "韬略": 40
           },
           "skills": [
             "突击",
-            "地利"
+            "铁壁"
           ],
           "is_historical": true
         },
@@ -288,22 +240,16 @@
           "school": "military",
           "description": "战国四大名将之首，长平坑赵卒四十万",
           "base_stats": {
-            "勇武": [
-              85,
-              100
-            ],
-            "韬略": [
-              75,
-              100
-            ]
+            "勇武": 95,
+            "韬略": 90
           },
           "skills": [
-            "人屠",
+            "杀神",
             "突击",
-            "地利"
+            "铁壁"
           ],
           "is_historical": true,
-          "unique_skill": "人屠"
+          "unique_skill": "杀神"
         },
         {
           "id": "wang_jian",
@@ -312,19 +258,13 @@
           "school": "military",
           "description": "助秦灭赵、燕、楚，战国四大名将之一",
           "base_stats": {
-            "勇武": [
-              70,
-              95
-            ],
-            "韬略": [
-              75,
-              100
-            ]
+            "勇武": 80,
+            "韬略": 90
           },
           "skills": [
-            "坚守",
             "先见",
-            "连击"
+            "突击",
+            "铁壁"
           ],
           "is_historical": true,
           "unique_skill": "先见"
@@ -336,19 +276,13 @@
           "school": "military",
           "description": "负荆请罪，战国四大名将之一",
           "base_stats": {
-            "勇武": [
-              70,
-              95
-            ],
-            "韬略": [
-              65,
-              90
-            ]
+            "勇武": 85,
+            "韬略": 75
           },
           "skills": [
-            "坚守",
             "铁壁",
-            "地利"
+            "突击",
+            "隘战"
           ],
           "is_historical": true,
           "unique_skill": "铁壁"
@@ -360,19 +294,13 @@
           "school": "military",
           "description": "北击匈奴，战国四大名将之一",
           "base_stats": {
-            "勇武": [
-              70,
-              95
-            ],
-            "韬略": [
-              70,
-              95
-            ]
+            "勇武": 82,
+            "韬略": 82
           },
           "skills": [
-            "突击",
-            "先见",
-            "连击"
+            "连击",
+            "铁壁",
+            "山战"
           ],
           "is_historical": true,
           "unique_skill": "连击"
@@ -410,18 +338,12 @@
           "school": "diplomacy",
           "description": "苏秦之弟，合纵连横之术",
           "base_stats": {
-            "辩才": [
-              30,
-              60
-            ],
-            "亲和": [
-              25,
-              55
-            ]
+            "辩才": 48,
+            "亲和": 40
           },
           "skills": [
             "巧舌",
-            "结交"
+            "离间"
           ],
           "is_historical": true
         },
@@ -441,8 +363,7 @@
             ]
           },
           "skills": [
-            "巧舌",
-            "结交"
+            "巧舌"
           ],
           "is_historical": false
         }
@@ -455,22 +376,16 @@
           "school": "diplomacy",
           "description": "以连横之策破六国合纵",
           "base_stats": {
-            "辩才": [
-              80,
-              100
-            ],
-            "亲和": [
-              60,
-              90
-            ]
+            "辩才": 95,
+            "亲和": 75
           },
           "skills": [
-            "连横",
+            "破纵",
             "巧舌",
-            "结交"
+            "离间"
           ],
           "is_historical": true,
-          "unique_skill": "连横"
+          "unique_skill": "破纵"
         },
         {
           "id": "su_qin",
@@ -479,19 +394,13 @@
           "school": "diplomacy",
           "description": "佩六国相印，合纵抗秦",
           "base_stats": {
-            "辩才": [
-              75,
-              100
-            ],
-            "亲和": [
-              65,
-              95
-            ]
+            "辩才": 88,
+            "亲和": 80
           },
           "skills": [
             "合纵",
             "巧舌",
-            "名望"
+            "离间"
           ],
           "is_historical": true,
           "unique_skill": "合纵"
@@ -503,19 +412,13 @@
           "school": "diplomacy",
           "description": "献远交近攻之策，助秦蚕食六国",
           "base_stats": {
-            "辩才": [
-              70,
-              95
-            ],
-            "亲和": [
-              55,
-              85
-            ]
+            "辩才": 82,
+            "亲和": 68
           },
           "skills": [
-            "连横",
             "离间",
-            "巧舌"
+            "巧舌",
+            "破纵"
           ],
           "is_historical": true,
           "unique_skill": "离间"
@@ -527,22 +430,16 @@
           "school": "diplomacy",
           "description": "完璧归赵、渑池之会，以口舌折秦王",
           "base_stats": {
-            "辩才": [
-              65,
-              90
-            ],
-            "亲和": [
-              70,
-              100
-            ]
+            "辩才": 72,
+            "亲和": 90
           },
           "skills": [
+            "名相",
             "巧舌",
-            "名望",
-            "结交"
+            "离间"
           ],
           "is_historical": true,
-          "unique_skill": "名望"
+          "unique_skill": "名相"
         }
       ]
     }
@@ -638,14 +535,14 @@
       {
         "id": "劝农",
         "name": "劝农",
-        "description": "城市粮食产出+N%",
+        "description": "城市粮食固定+N/回合",
         "type": "passive",
         "max_level": 3
       },
       {
         "id": "兴商",
         "name": "兴商",
-        "description": "城市金钱产出+N%",
+        "description": "城市金钱固定+N/回合",
         "type": "passive",
         "max_level": 3
       },
@@ -666,8 +563,15 @@
       {
         "id": "肃贪",
         "name": "肃贪",
-        "description": "全国腐败值每回合-N/级",
+        "description": "全国腐败值每回合-N",
         "type": "passive",
+        "max_level": 3
+      },
+      {
+        "id": "逍遥",
+        "name": "逍遥",
+        "description": "派驻城市民心下降效果-50%",
+        "type": "unique",
         "max_level": 3
       }
     ],
@@ -675,14 +579,14 @@
       {
         "id": "坚守",
         "name": "坚守",
-        "description": "部队防御+N%",
+        "description": "概率免疫敌军伤害",
         "type": "passive",
         "max_level": 3
       },
       {
         "id": "突击",
         "name": "突击",
-        "description": "部队攻击+N%",
+        "description": "概率一击致命",
         "type": "passive",
         "max_level": 3
       },
@@ -708,23 +612,37 @@
         "max_level": 3
       },
       {
-        "id": "地利",
-        "name": "地利",
-        "description": "特定地形战斗时攻防+N%",
+        "id": "山战",
+        "name": "山战",
+        "description": "山地战斗时防御+N%",
         "type": "conditional",
         "max_level": 3
       },
       {
-        "id": "练兵",
-        "name": "练兵",
-        "description": "部队获得经验+N%",
-        "type": "passive",
+        "id": "隘战",
+        "name": "隘战",
+        "description": "关隘战斗时防御+N%",
+        "type": "conditional",
         "max_level": 3
       },
       {
-        "id": "人屠",
-        "name": "人屠",
-        "description": "击败敌军时额外俘获部队",
+        "id": "林战",
+        "name": "林战",
+        "description": "森林战斗时攻击+N%",
+        "type": "conditional",
+        "max_level": 3
+      },
+      {
+        "id": "泽战",
+        "name": "泽战",
+        "description": "沼泽战斗时攻击+N%",
+        "type": "conditional",
+        "max_level": 3
+      },
+      {
+        "id": "杀神",
+        "name": "杀神",
+        "description": "每击败一支部队，本场战斗攻击力永久+N%",
         "type": "unique",
         "max_level": 3
       }
@@ -738,30 +656,30 @@
         "max_level": 3
       },
       {
-        "id": "结交",
-        "name": "结交",
-        "description": "目标国友好度每回合额外+N",
+        "id": "离间",
+        "name": "离间",
+        "description": "目标国与第三国好感度每回合-N",
         "type": "passive",
         "max_level": 3
       },
       {
-        "id": "离间",
-        "name": "离间",
-        "description": "降低目标国与第三国的关系",
-        "type": "active",
-        "max_level": 3
-      },
-      {
-        "id": "连横",
-        "name": "连横",
-        "description": "外交行动成功率+N%",
+        "id": "破纵",
+        "name": "破纵",
+        "description": "其他两国好感度每回合-N",
         "type": "unique",
         "max_level": 3
       },
       {
         "id": "合纵",
         "name": "合纵",
-        "description": "同盟关系维持更久，不易破裂",
+        "description": "目标国好感度每回合+N",
+        "type": "unique",
+        "max_level": 3
+      },
+      {
+        "id": "名相",
+        "name": "名相",
+        "description": "外交行动时N%概率额外+5声望",
         "type": "unique",
         "max_level": 3
       }
@@ -770,7 +688,7 @@
       {
         "id": "名望",
         "name": "名望",
-        "description": "全国士气每回合+N",
+        "description": "派驻城市稳定度每回合+N",
         "type": "passive",
         "max_level": 3
       },

@@ -1116,7 +1116,7 @@
           "cost_wood": 100,
           "build_turns": 2,
           "effects": {
-            "intel_range": 2,
+            "intelligence_score": 10,
             "diplomacy_cost_reduction": 0.1
           }
         }
