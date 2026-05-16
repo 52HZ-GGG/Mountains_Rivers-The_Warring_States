@@ -26,12 +26,17 @@
     "debuff_duration": 3,
     "debuff_attack_mod": 0.9
   },
+  "non_aggression_betrayal": {
+    "reputation_change": -15,
+    "opinion_change_target": -30,
+    "opinion_change_all": -10
+  },
   "alliance": {
     "min_opinion": 30,
     "min_reputation": 40
   },
   "treaty_params": {
-    "non_aggression_durations": [3, 5, 10],
+    "non_aggression_durations": [20, 30, 50],
     "ceasefire_durations": [3, 5, 10],
     "war_cooldown": 5,
     "military_access_cost_per_unit": 10,
@@ -50,6 +55,9 @@
   },
   "vassal": {
     "tribute_rate": 0.15,
+    "request_min_opinion": 50,
+    "request_reputation_gap": 20,
+    "request_power_ratio": 2.5,
     "escape_methods": ["third_party_lobby", "reputation_escape", "wartime_escape"],
     "reputation_escape_threshold": 30,
     "escape_penalty_reputation": -10,
@@ -60,9 +68,9 @@
     "opinion_penalty_on_recall": -15,
     "reputation_penalty_on_recall": -5,
     "opinion_boost_on_return": 10,
-    "opinion_per_turn_bonus": 1,
-    "escape_chance_per_turn": 0.05,
-    "death_chance_per_turn": 0.02,
+    "opinion_per_turn_bonus": {"common": 1, "rare": 2, "legendary": 3},
+    "escape_chance_per_turn": {"common": 0.05, "rare": 0.03, "legendary": 0.01},
+    "death_chance_per_turn": {"common": 0.02, "rare": 0.01, "legendary": 0.005},
     "opinion_penalty_on_escape": -25,
     "reputation_penalty_on_escape": -10,
     "opinion_penalty_on_death": -40,
@@ -78,6 +86,10 @@
     "decay_amount": -5,
     "attack_zhou_penalty": -50,
     "usurp_title_penalty": -30,
+    "usurp_title_morale_bonus": 10,
+    "usurp_title_reputation_penalty": -10,
+    "usurp_title_maintain_morale_penalty": -10,
+    "usurp_title_maintain_reputation_bonus": 10,
     "tribute_to_reputation_ratio": 10,
     "tribute_low_threshold": 20,
     "tribute_low_reputation_penalty": -5,
@@ -99,10 +111,28 @@
       "tribute_threshold": 80,
       "reputation_boost": 20,
       "alliance_cost_reduction": 0.3,
-      "can_command_allies": true
+      "global_opinion_bonus": 5
     },
     "failure_penalty_tribute": -5,
     "max_per_type_per_game": 1
+  },
+  "strategist_abilities": {
+    "vertical_alliance": {
+      "cost_gold": 300,
+      "cost_reputation": 20,
+      "ally_count": 2,
+      "forced_alliance_duration": 20,
+      "war_notification": true,
+      "usage_limit": 1
+    },
+    "horizontal_alliance": {
+      "cost_gold": 200,
+      "cost_reputation": 15,
+      "ally_count": 1,
+      "forced_alliance_duration": 20,
+      "war_notification": true,
+      "usage_limit": 1
+    }
   },
   "intelligence": {
     "points_per_opinion": 1,
@@ -124,6 +154,18 @@
     "war_forced_points": 0,
     "surprise_war_penalty_points": -10,
     "surprise_war_penalty_duration": 10
+  },
+  "declare_war_params": {
+    "notification_turns": 3,
+    "_comment": "宣战后需等待N回合才正式开战，期间为和平备战期"
+  },
+  "zhou_faction": {
+    "is_passive": true,
+    "can_be_annexed": false,
+    "war_opinion_penalty_all": -50,
+    "war_reputation_penalty": -40,
+    "destruction_locks_tribute": true,
+    "_comment": "宣战周天子即触发严重外交debuff，灭亡后朝贡系统永久锁定"
   },
   "opinion_decay": {
     "decay_interval_turns": 5,
@@ -151,8 +193,9 @@
   },
   "ceasefire_conditions": {
     "min_war_turns": 5,
-    "player_city_loss_for_ai_offer": 3,
-    "ai_troop_loss_threshold": 0.5
+    "ai_troop_loss_threshold": 0.5,
+    "ai_city_loss_threshold": 2,
+    "ai_war_weariness_turns": 25
   },
   "neutral_city": {
     "lobby_opinion_threshold": 80,

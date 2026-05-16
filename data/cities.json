@@ -617,12 +617,12 @@
     {
       "id": "luoyi",
       "name": "洛邑",
-      "faction_id": "neutral",
+      "faction_id": "zhou",
       "hex_q": 15,
       "hex_r": 11,
       "jurisdiction_radius": 1,
       "special_resource": "building_materials",
-      "is_capital": false,
+      "is_capital": true,
       "development": 45,
       "city_level": 3,
       "initial_population": 7
