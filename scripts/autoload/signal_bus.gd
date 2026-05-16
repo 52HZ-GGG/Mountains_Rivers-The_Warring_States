@@ -28,6 +28,12 @@ signal event_triggered(event_data: Dictionary)
 ## 事件结算后发出（效果已应用）。choice_id 为空串表示无选项事件
 signal event_resolved(event_id: String, choice_id: String)
 
+## 事件链推进时发出
+signal chain_advanced(chain_id: String, event_id: String)
+
+## 事件链完结时发出
+signal chain_completed(chain_id: String)
+
 # ============= 外交系统 =============
 
 signal war_declared(attacker: String, defender: String)

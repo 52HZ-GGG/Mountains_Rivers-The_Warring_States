@@ -202,6 +202,18 @@ func get_event(event_id: String) -> Dictionary:
 	return {}
 
 
+func get_event_chains() -> Array:
+	return _events.get("event_chains", [])
+
+
+func get_event_chain(chain_id: String) -> Dictionary:
+	for chain in get_event_chains():
+		if chain["id"] == chain_id:
+			return chain
+	push_warning("DataManager: 未找到事件链 %s" % chain_id)
+	return {}
+
+
 # ============= 建筑接口 =============
 
 func get_building(building_id: String) -> Dictionary:

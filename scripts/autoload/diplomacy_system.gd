@@ -715,3 +715,30 @@ func get_trade_routes() -> Dictionary:
 
 func get_military_access() -> Dictionary:
 	return _military_access.duplicate(true)
+
+
+## 检查指定势力是否处于战争状态
+func is_at_war(faction_id: String) -> bool:
+	for key in _at_war:
+		if _at_war[key].has(faction_id):
+			return true
+	return false
+
+
+## 检查指定势力是否有同盟
+func has_alliance(faction_id: String) -> bool:
+	for key in _treaties:
+		if key.begins_with("alliance_") and key.ends_with("_" + faction_id):
+			return true
+		if key.begins_with("alliance_" + faction_id + "_"):
+			return true
+	return false
+
+
+## 获取指定势力的同盟数量
+func get_allies_count(faction_id: String) -> int:
+	var count: int = 0
+	for key in _treaties:
+		if key.begins_with("alliance_") and (key.ends_with("_" + faction_id) or key.begins_with("alliance_" + faction_id + "_")):
+			count += 1
+	return count

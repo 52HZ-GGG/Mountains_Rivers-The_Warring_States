@@ -9,7 +9,10 @@
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
     "fire_burn_dot_ratio": 0.3,
-    "fire_seasons": ["summer", "autumn"],
+    "fire_seasons": [
+      "summer",
+      "autumn"
+    ],
     "base_random_spread_lo": 0.9,
     "base_random_spread_hi": 1.1,
     "accuracy_spread_factor": 0.001,
@@ -204,6 +207,12 @@
       "salt": {
         "city_base_production": 0,
         "description": "盐（特产城通过 special_resource_mod 加成，无特产基础产出）"
+      },
+      "silk_books": {
+        "city_base_production": 0,
+        "cap_base": 100,
+        "cap_per_building_level": 30,
+        "description": "帛书（通过藏书阁产出，用于科技研究和精通升级）"
       }
     }
   },
@@ -365,7 +374,7 @@
     "trigger_season": "spring",
     "base_chance_min": 0.03,
     "base_chance_max": 0.05,
-    "food_debuff": -0.70,
+    "food_debuff": -0.7,
     "stability_penalty": -10,
     "granary_chance_reduction": 0.01,
     "censor_stability_reduction": 0.5,
@@ -374,6 +383,7 @@
   },
   "culture": {
     "spread_rate": 0.05,
+    "winter_spread_mod": 0.5,
     "distance_decay": {
       "1": 1.0,
       "2": 0.7,
@@ -521,7 +531,6 @@
     "navy_on_water_defense_mod": 1.0
   },
   "naval_freeze": {
-    "river_frozen_season": "winter",
     "stranded_attack_mod": 0.3,
     "stranded_can_move": false,
     "stranded_can_initiate_attack": false,
@@ -560,7 +569,17 @@
     "research_speed_base": 1.0,
     "research_speed_per_turn": 1,
     "special_condition_check_on_unlock": true,
-    "era_gate_enabled": false
+    "era_gate_enabled": false,
+    "mastery_enabled": true,
+    "mastery_cost_multiplier_per_level": 1.5,
+    "mastery_max_global_level_sum": 50,
+    "research_event_base_chance": 0.15,
+    "research_event_cooldown_turns": 2,
+    "mutual_exclusion_hard_lock": true,
+    "cost_resources_enabled": true,
+    "cost_gold_fallback": true,
+    "knowledge_card_unlock_on_research": true,
+    "malus_display_warning": true
   },
   "development": {
     "base_per_level": 10,
@@ -718,37 +737,194 @@
     },
     "skills": {
       "civil": {
-        "劝农": {"values": [3, 5, 8], "type": "food_per_turn"},
-        "兴商": {"values": [3, 5, 8], "type": "gold_per_turn"},
-        "教化": {"values": [1, 2, 3], "type": "stability_regen"},
-        "肃贪": {"values": [-1, -2, -3], "type": "corruption_per_turn"},
-        "变法": {"values": [0.05, 0.10, 0.15], "type": "city_output_percent"}
+        "劝农": {
+          "values": [
+            3,
+            5,
+            8
+          ],
+          "type": "food_per_turn"
+        },
+        "兴商": {
+          "values": [
+            3,
+            5,
+            8
+          ],
+          "type": "gold_per_turn"
+        },
+        "教化": {
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "type": "stability_regen"
+        },
+        "肃贪": {
+          "values": [
+            -1,
+            -2,
+            -3
+          ],
+          "type": "corruption_per_turn"
+        },
+        "变法": {
+          "values": [
+            0.05,
+            0.1,
+            0.15
+          ],
+          "type": "city_output_percent"
+        }
       },
       "military": {
-        "坚守": {"values": [0.01, 0.02, 0.04], "type": "immune_chance"},
-        "突击": {"values": [0.01, 0.02, 0.04], "type": "instant_kill_chance"},
-        "铁壁": {"values": [0.05, 0.08, 0.12], "type": "defense_percent_conditional"},
-        "先见": {"values": [0.05, 0.08, 0.12], "type": "ambush_mod"},
-        "连击": {"values": [0.15, 0.20, 0.25], "type": "pursuit_chance"},
-        "山战": {"values": [0.08, 0.12, 0.18], "type": "terrain_defense_mountain"},
-        "隘战": {"values": [0.08, 0.12, 0.18], "type": "terrain_defense_pass"},
-        "林战": {"values": [0.08, 0.12, 0.18], "type": "terrain_attack_forest"},
-        "泽战": {"values": [0.08, 0.12, 0.18], "type": "terrain_attack_marsh"},
-        "杀神": {"values": [0.03, 0.05, 0.08], "type": "attack_buff_on_kill"}
+        "坚守": {
+          "values": [
+            0.01,
+            0.02,
+            0.04
+          ],
+          "type": "immune_chance"
+        },
+        "突击": {
+          "values": [
+            0.01,
+            0.02,
+            0.04
+          ],
+          "type": "instant_kill_chance"
+        },
+        "铁壁": {
+          "values": [
+            0.05,
+            0.08,
+            0.12
+          ],
+          "type": "defense_percent_conditional"
+        },
+        "先见": {
+          "values": [
+            0.05,
+            0.08,
+            0.12
+          ],
+          "type": "ambush_mod"
+        },
+        "连击": {
+          "values": [
+            0.15,
+            0.2,
+            0.25
+          ],
+          "type": "pursuit_chance"
+        },
+        "山战": {
+          "values": [
+            0.08,
+            0.12,
+            0.18
+          ],
+          "type": "terrain_defense_mountain"
+        },
+        "隘战": {
+          "values": [
+            0.08,
+            0.12,
+            0.18
+          ],
+          "type": "terrain_defense_pass"
+        },
+        "林战": {
+          "values": [
+            0.08,
+            0.12,
+            0.18
+          ],
+          "type": "terrain_attack_forest"
+        },
+        "泽战": {
+          "values": [
+            0.08,
+            0.12,
+            0.18
+          ],
+          "type": "terrain_attack_marsh"
+        },
+        "杀神": {
+          "values": [
+            0.03,
+            0.05,
+            0.08
+          ],
+          "type": "attack_buff_on_kill"
+        }
       },
       "diplomat": {
-        "巧舌": {"values": [-0.10, -0.15, -0.20], "type": "action_cost_percent"},
-        "离间": {"values": [-0.5, -1, -1.5], "type": "third_party_opinion_per_turn"},
-        "破纵": {"values": [-1, -2, -3], "type": "other_two_opinion_per_turn"},
-        "合纵": {"values": [1, 2, 3], "type": "target_opinion_per_turn"},
-        "名相": {"values": [0.30, 0.50, 0.70], "type": "bonus_reputation_chance"}
+        "巧舌": {
+          "values": [
+            -0.1,
+            -0.15,
+            -0.2
+          ],
+          "type": "action_cost_percent"
+        },
+        "离间": {
+          "values": [
+            -0.5,
+            -1,
+            -1.5
+          ],
+          "type": "third_party_opinion_per_turn"
+        },
+        "破纵": {
+          "values": [
+            -1,
+            -2,
+            -3
+          ],
+          "type": "other_two_opinion_per_turn"
+        },
+        "合纵": {
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "type": "target_opinion_per_turn"
+        },
+        "名相": {
+          "values": [
+            0.3,
+            0.5,
+            0.7
+          ],
+          "type": "bonus_reputation_chance"
+        }
       },
       "universal": {
-        "名望": {"values": [1, 2, 3], "type": "stability_regen"},
-        "识人": {"values": [0.05, 0.10, 0.15], "type": "acquisition_chance"}
+        "名望": {
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "type": "stability_regen"
+        },
+        "识人": {
+          "values": [
+            0.05,
+            0.1,
+            0.15
+          ],
+          "type": "acquisition_chance"
+        }
       },
       "unique": {
-        "逍遥": {"value": 0.50, "type": "morale_loss_reduction"}
+        "逍遥": {
+          "value": 0.5,
+          "type": "morale_loss_reduction"
+        }
       }
     }
   },
@@ -872,26 +1048,103 @@
     "switch_transition_effect_multiplier": 0.0,
     "switch_transition_quest_lock": true,
     "auto_exp_triggers": {
-      "confucianism": { "type": "morale_threshold", "thresholds": [70, 80, 90, 100, 110, 120], "exp": 5 },
-      "legalism": { "type": "tech_complete", "exp": 2 },
-      "mohism": { "type": "build_defense", "building_categories": ["wall", "arrow_tower", "inner_gate"], "exp": 3 },
-      "daoism": { "type": "pop_reach", "pop_threshold": 15, "exp": 5 },
-      "military": { "type": "siege_victory", "exp": 5 },
+      "confucianism": {
+        "type": "morale_threshold",
+        "thresholds": [
+          70,
+          80,
+          90,
+          100,
+          110,
+          120
+        ],
+        "exp": 5
+      },
+      "legalism": {
+        "type": "tech_complete",
+        "exp": 2
+      },
+      "mohism": {
+        "type": "build_defense",
+        "building_categories": [
+          "wall",
+          "arrow_tower",
+          "inner_gate"
+        ],
+        "exp": 3
+      },
+      "daoism": {
+        "type": "pop_reach",
+        "pop_threshold": 15,
+        "exp": 5
+      },
+      "military": {
+        "type": "siege_victory",
+        "exp": 5
+      },
       "diplomacy": [
-        { "type": "sign_alliance", "exp": 5 },
-        { "type": "sign_non_aggression", "exp_by_duration": { "20": 1, "30": 2, "50": 3 } }
+        {
+          "type": "sign_alliance",
+          "exp": 5
+        },
+        {
+          "type": "sign_non_aggression",
+          "exp_by_duration": {
+            "20": 1,
+            "30": 2,
+            "50": 3
+          }
+        }
       ]
     },
     "policy_effects": {
-      "build_cost_reduction": { "description": "建造资源成本百分比减少", "formula": "cost = base_cost × (1 - build_cost_reduction)" },
-      "all_output_bonus": { "description": "全产出百分比加成", "formula": "output = base_output × (1 + all_output_bonus)" },
-      "trade_bonus": { "description": "贸易收入百分比加成", "formula": "trade_income = base_income × (1 + trade_bonus)" },
-      "revolt_suppression": { "description": "民变概率百分比减少", "formula": "revolt_chance = base_chance × (1 - revolt_suppression)" },
-      "uprising_suppression": { "description": "起义概率百分比减少", "formula": "uprising_chance = base_chance × (1 - uprising_suppression)" },
-      "peace_negotiation_bonus": { "description": "和谈己方分数百分比加成", "formula": "peace_score = base_score × (1 + peace_negotiation_bonus)" },
-      "wall_hp_bonus": { "description": "全城城防 HP 固定加成", "effect": "所有城池城防 HP 增加指定值" },
-      "special_unit_recruit": { "description": "解锁特殊兵种招募", "effect": "解锁重甲步兵、铁骑兵等特殊兵种" },
-      "target_relation_delta": { "description": "目标两国关系加法修正", "effect": "选择两个目标国家，其相互关系变化指定值" }
+      "build_cost_reduction": {
+        "description": "建造资源成本百分比减少",
+        "formula": "cost = base_cost × (1 - build_cost_reduction)"
+      },
+      "all_output_bonus": {
+        "description": "全产出百分比加成",
+        "formula": "output = base_output × (1 + all_output_bonus)"
+      },
+      "trade_bonus": {
+        "description": "贸易收入百分比加成",
+        "formula": "trade_income = base_income × (1 + trade_bonus)"
+      },
+      "revolt_suppression": {
+        "description": "民变概率百分比减少",
+        "formula": "revolt_chance = base_chance × (1 - revolt_suppression)"
+      },
+      "uprising_suppression": {
+        "description": "起义概率百分比减少",
+        "formula": "uprising_chance = base_chance × (1 - uprising_suppression)"
+      },
+      "peace_negotiation_bonus": {
+        "description": "和谈己方分数百分比加成",
+        "formula": "peace_score = base_score × (1 + peace_negotiation_bonus)"
+      },
+      "wall_hp_bonus": {
+        "description": "全城城防 HP 固定加成",
+        "effect": "所有城池城防 HP 增加指定值"
+      },
+      "special_unit_recruit": {
+        "description": "解锁特殊兵种招募",
+        "effect": "解锁重甲步兵、铁骑兵等特殊兵种"
+      },
+      "target_relation_delta": {
+        "description": "目标两国关系加法修正",
+        "effect": "选择两个目标国家，其相互关系变化指定值"
+      }
     }
+  },
+  "event_cooldown_by_type": {
+    "economy": 3,
+    "military": 3,
+    "morale": 3,
+    "school": 3,
+    "diplomacy": 3,
+    "special": 999,
+    "politics": 999,
+    "season": 0,
+    "event_chain": 0
   }
 }

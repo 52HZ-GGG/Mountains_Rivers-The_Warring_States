@@ -350,6 +350,11 @@ func apply_building_materials_delta(delta: int) -> void:
 	_player_building_materials = max(0, _player_building_materials + delta)
 
 
+## 获取当前采用的学派 ID（空串表示未选择）。待学派系统实现后连接。
+func get_current_school() -> String:
+	return ""
+
+
 # ============= 测试与重开 =============
 
 ## 重置到初始状态。供单元测试与「重新开局」使用。

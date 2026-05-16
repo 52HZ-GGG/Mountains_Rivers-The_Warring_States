@@ -18,7 +18,11 @@
       "tech_overrides": null,
       "buildable_structures": null,
       "elevation": 0,
-      "vision_cost": 1
+      "vision_cost": 1,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "forest",
@@ -37,7 +41,11 @@
       "tech_overrides": null,
       "buildable_structures": null,
       "elevation": 1,
-      "vision_cost": 2
+      "vision_cost": 2,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "mountain",
@@ -61,7 +69,11 @@
       ],
       "buildable_structures": null,
       "elevation": 1,
-      "vision_cost": 3
+      "vision_cost": 3,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "river",
@@ -73,7 +85,6 @@
       "ranged_accuracy_mod": 0,
       "cavalry_allowed": false,
       "is_navigable": true,
-      "frozen_season": "winter",
       "special": null,
       "is_barrier": true,
       "barrier_type": "river",
@@ -86,7 +97,11 @@
       ],
       "buildable_structures": null,
       "elevation": -1,
-      "vision_cost": 1
+      "vision_cost": 1,
+      "winter_effects": {
+        "is_northern": true,
+        "frozen_season": "winter"
+      }
     },
     {
       "id": "marsh",
@@ -105,7 +120,11 @@
       "tech_overrides": null,
       "buildable_structures": null,
       "elevation": 1,
-      "vision_cost": 2
+      "vision_cost": 2,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "pass",
@@ -132,7 +151,11 @@
       "structure_hp": 500,
       "hp_type": "fortification",
       "elevation": 1,
-      "vision_cost": 3
+      "vision_cost": 3,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "ford",
@@ -151,7 +174,11 @@
       "tech_overrides": null,
       "buildable_structures": null,
       "elevation": 1,
-      "vision_cost": 1
+      "vision_cost": 1,
+      "winter_effects": {
+        "is_northern": false,
+        "frozen_season": "winter"
+      }
     },
     {
       "id": "desert",
@@ -171,7 +198,11 @@
       "buildable_structures": null,
       "supply_cost_modifier": 1.2,
       "elevation": 0,
-      "vision_cost": 1
+      "vision_cost": 1,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "tundra",
@@ -191,7 +222,11 @@
       "buildable_structures": null,
       "supply_cost_modifier": 1.2,
       "elevation": 0,
-      "vision_cost": 2
+      "vision_cost": 2,
+      "winter_effects": {
+        "is_northern": false,
+        "move_cost_add": 1
+      }
     },
     {
       "id": "deep_ocean",
@@ -210,7 +245,11 @@
       "tech_overrides": null,
       "buildable_structures": null,
       "elevation": -1,
-      "vision_cost": 1
+      "vision_cost": 1,
+      "winter_effects": {
+        "is_northern": false,
+        "frozen_season": "winter"
+      }
     },
     {
       "id": "shallow_ocean",
@@ -229,7 +268,11 @@
       "tech_overrides": null,
       "buildable_structures": null,
       "elevation": 0,
-      "vision_cost": 1
+      "vision_cost": 1,
+      "winter_effects": {
+        "is_northern": false,
+        "frozen_season": "winter"
+      }
     }
   ]
 }
