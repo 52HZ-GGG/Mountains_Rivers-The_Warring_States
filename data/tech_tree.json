@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "techs": [
     {
       "id": "formation_tactics",
@@ -14,6 +14,55 @@
         "type": "defense_bonus",
         "target": "infantry",
         "value": 0.1
+      },
+      "mastery": {
+        "max_level": 5,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03,
+          0.03,
+          0.05
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          },
+          {
+            "gold": 340,
+            "silk_books": 30
+          },
+          {
+            "gold": 500,
+            "silk_books": 50
+          }
+        ],
+        "effect_type": "defense_bonus",
+        "effect_target": "infantry"
+      },
+      "knowledge_card": {
+        "historical_background": "古之善战者，先立于不败之地。孙武著兵法十三篇，阵列为先，进退有度，此兵家之根基也。",
+        "key_figures": [
+          "孙武",
+          "吴起",
+          "孙膑"
+        ],
+        "related_artifacts": [
+          "孙子兵法竹简",
+          "银雀山汉墓兵书"
+        ],
+        "historical_period": "春秋末至战国初期",
+        "fun_fact": "银雀山汉墓同时出土了《孙子兵法》和《孙膑兵法》，解开了千年悬案。",
+        "illustration_id": "tech_formation_tactics"
       }
     },
     {
@@ -30,6 +79,26 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "chariot"
+      },
+      "cost_resources": {
+        "gold": 100,
+        "wood": 30,
+        "horse": 5
+      },
+      "knowledge_card": {
+        "historical_background": "驷马战车，王者之器。春秋之世，车战为重，千乘之国方为大国。至战国渐为骑射所代。",
+        "key_figures": [
+          "赵襄子",
+          "晋文公",
+          "楚庄王"
+        ],
+        "related_artifacts": [
+          "秦始皇陵铜车马",
+          "曾侯乙墓车马坑"
+        ],
+        "historical_period": "春秋时期",
+        "fun_fact": "一辆标准战车配甲士三人，一御一射一戈手，号称“一乘”。",
+        "illustration_id": "tech_chariot_warfare"
       }
     },
     {
@@ -46,6 +115,23 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "crossbow"
+      },
+      "research_events": [
+        "evt_tech_crossbow_innovation"
+      ],
+      "knowledge_card": {
+        "historical_background": "弩之为器，以机发矢，力强而及远。战国时楚韩之地多用弩兵，守城野战皆宜。",
+        "key_figures": [
+          "墨子",
+          "韩非子"
+        ],
+        "related_artifacts": [
+          "秦弩机构件",
+          "楚国弩机"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "秦弩的扳机部件可互换使用，已有标准化生产的雏形。",
+        "illustration_id": "tech_crossbow_basic"
       }
     },
     {
@@ -61,6 +147,53 @@
         "type": "attack_bonus",
         "target": "all",
         "value": 0.05
+      },
+      "cost_resources": {
+        "gold": 50,
+        "refined_iron": 5
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "attack_bonus",
+        "effect_target": "all"
+      },
+      "research_events": [
+        "evt_tech_iron_breakthrough",
+        "evt_tech_iron_accident"
+      ],
+      "knowledge_card": {
+        "historical_background": "铁之为兵，利逾铜锡。春秋之末渐有铁器，至战国大兴，锻以百炼，遂为天下利器。",
+        "key_figures": [
+          "欧冶子",
+          "干将",
+          "莫邪"
+        ],
+        "related_artifacts": [
+          "燕下都铁剑",
+          "河北易县战国铁器"
+        ],
+        "historical_period": "春秋末至战国",
+        "fun_fact": "战国时期的块炼渗碳钢技术，比欧洲早了近千年。",
+        "illustration_id": "tech_iron_forging"
       }
     },
     {
@@ -75,6 +208,54 @@
       "effects": {
         "type": "city_defense_bonus",
         "value": 0.15
+      },
+      "mastery": {
+        "max_level": 5,
+        "increment_per_level": [
+          0.02,
+          0.03,
+          0.03,
+          0.04,
+          0.05
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          },
+          {
+            "gold": 340,
+            "silk_books": 30
+          },
+          {
+            "gold": 500,
+            "silk_books": 50
+          }
+        ],
+        "effect_type": "city_defense_bonus",
+        "effect_target": "all"
+      },
+      "knowledge_card": {
+        "historical_background": "高城深池，守国之本。墨子善守，公输班之攻械不能胜。城守之术，代有精进。",
+        "key_figures": [
+          "墨子",
+          "公输班"
+        ],
+        "related_artifacts": [
+          "赵邯郸城遗址",
+          "齐临淄城城墙"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "墨子曾模拟攻防演练，九次击退公输班的攻城战术。",
+        "illustration_id": "tech_city_defense"
       }
     },
     {
@@ -92,6 +273,44 @@
         "type": "attack_bonus",
         "target": "crossbow",
         "value": 0.15
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.03,
+          0.03,
+          0.04
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "attack_bonus",
+        "effect_target": "crossbow"
+      },
+      "knowledge_card": {
+        "historical_background": "机巧益精，连发数矢。韩之劲弩天下闻名，射程远超他国。弩机改良，战场之利器也。",
+        "key_figures": [
+          "韩非子",
+          "李斯"
+        ],
+        "related_artifacts": [
+          "战国弩机复原件",
+          "秦兵马俑弩机"
+        ],
+        "historical_period": "战国中后期",
+        "fun_fact": "韩国以“强弓劲弩”著称，所谓“天下之强弓劲弩皆从韩出”。",
+        "illustration_id": "tech_crossbow_improved"
       }
     },
     {
@@ -108,6 +327,27 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "cavalry"
+      },
+      "cost_resources": {
+        "gold": 140,
+        "horse": 10
+      },
+      "research_events": [
+        "evt_tech_horse_training"
+      ],
+      "knowledge_card": {
+        "historical_background": "赵武灵王胡服骑射，废车战而用骑兵。自此中原始有骑射之术，军事为之一变。",
+        "key_figures": [
+          "赵武灵王",
+          "肥义"
+        ],
+        "related_artifacts": [
+          "赵国胡服骑射壁画",
+          "战国骑兵俑"
+        ],
+        "historical_period": "战国中期（约前307年）",
+        "fun_fact": "赵武灵王曾亲自穿胡服入朝，以身作则推行改革。",
+        "illustration_id": "tech_cavalry_archery"
       }
     },
     {
@@ -126,6 +366,45 @@
         "type": "attack_bonus",
         "target": "all",
         "value": 0.1
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "attack_bonus",
+        "effect_target": "all"
+      },
+      "knowledge_card": {
+        "historical_background": "凡战者，以正合，以奇胜。孙子曰奇正相生，如循环之无端。兵法之妙，存乎一心。",
+        "key_figures": [
+          "孙膑",
+          "白起",
+          "王翦"
+        ],
+        "related_artifacts": [
+          "孙膑兵法竹简",
+          "战国策帛书"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "马陵之战中孙膑用“减灶计”诱敌，堪称奇正结合的典范。",
+        "illustration_id": "tech_stratagem_warfare"
       }
     },
     {
@@ -142,6 +421,25 @@
       "effects": {
         "type": "siege_bonus",
         "value": 0.2
+      },
+      "cost_resources": {
+        "gold": 150,
+        "wood": 40,
+        "craftsmen": 5
+      },
+      "knowledge_card": {
+        "historical_background": "攻城为下，然不得已而为之。器械精良，破坚如摧枯拉朽。战国攻城之术日精。",
+        "key_figures": [
+          "公输班",
+          "白起"
+        ],
+        "related_artifacts": [
+          "云梯复原图",
+          "战国攻城器械模型"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "公输班发明了云梯，却被墨子以守城之术完克。",
+        "illustration_id": "tech_siege_warfare"
       }
     },
     {
@@ -158,6 +456,24 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "iron_armored"
+      },
+      "cost_resources": {
+        "gold": 120,
+        "refined_iron": 15
+      },
+      "knowledge_card": {
+        "historical_background": "甲坚兵利，士卒无伤。铁甲之制，较皮甲更为坚固，矢石不能害，此守身之要器也。",
+        "key_figures": [
+          "吴起",
+          "荀子"
+        ],
+        "related_artifacts": [
+          "战国铁甲片",
+          "燕下都铁胄残片"
+        ],
+        "historical_period": "战国中后期",
+        "fun_fact": "最早的铁甲出土于河北易县燕下都遗址，距今约2300年。",
+        "illustration_id": "tech_iron_armor"
       }
     },
     {
@@ -175,6 +491,20 @@
         "type": "terrain_traversal",
         "terrain": "mountain",
         "value": true
+      },
+      "knowledge_card": {
+        "historical_background": "凿石架木，以通蜀道。绝壁之上犹可行军，此栈道之术也。秦通蜀中，多赖此技。",
+        "key_figures": [
+          "司马错",
+          "张仪"
+        ],
+        "related_artifacts": [
+          "褒斜栈道遗迹",
+          "石门栈道"
+        ],
+        "historical_period": "战国至秦",
+        "fun_fact": "褒斜栈道全长约235公里，是古代最早的大型栈道之一。",
+        "illustration_id": "tech_plank_road"
       }
     },
     {
@@ -192,6 +522,25 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "ballista"
+      },
+      "cost_resources": {
+        "gold": 170,
+        "wood": 50,
+        "craftsmen": 8
+      },
+      "knowledge_card": {
+        "historical_background": "发机如雷，所中皆摧。弩炮之制，合弩机与抛石之长，攻坚破城，莫之能御。",
+        "key_figures": [
+          "公输班",
+          "墨子"
+        ],
+        "related_artifacts": [
+          "弩炮复原模型",
+          "秦代抛石机部件"
+        ],
+        "historical_period": "战国中后期",
+        "fun_fact": "弩炮可将数十斤石弹抛射数百步，威力远超人力投石。",
+        "illustration_id": "tech_ballista_tech"
       }
     },
     {
@@ -208,6 +557,25 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "heavy_cavalry"
+      },
+      "cost_resources": {
+        "gold": 150,
+        "horse": 12,
+        "refined_iron": 5
+      },
+      "knowledge_card": {
+        "historical_background": "铁骑如山，冲阵无前。重甲骑兵，人马俱甲，以冲力破敌阵，战国末世始见其形。",
+        "key_figures": [
+          "赵武灵王",
+          "李牧"
+        ],
+        "related_artifacts": [
+          "战国重骑兵俑",
+          "赵国骑兵装备残片"
+        ],
+        "historical_period": "战国后期",
+        "fun_fact": "重骑兵的马铠由数百片铁甲编缀而成，造价极为昂贵。",
+        "illustration_id": "tech_heavy_cavalry_tech"
       }
     },
     {
@@ -224,6 +592,21 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "shock_cavalry"
+      },
+      "knowledge_card": {
+        "historical_background": "轻骑如风，出其不意。千里奔袭，一击必杀。奇袭之骑兵，以速度为生命。",
+        "key_figures": [
+          "白起",
+          "李牧",
+          "蒙恬"
+        ],
+        "related_artifacts": [
+          "秦代骑兵俑",
+          "战国轻骑装备"
+        ],
+        "historical_period": "战国末期至秦",
+        "fun_fact": "白起长平之战中曾遣轻骑断赵军粮道，此即奇袭轻骑之用。",
+        "illustration_id": "tech_shock_cavalry_tech"
       }
     },
     {
@@ -241,6 +624,20 @@
         "type": "attack_bonus",
         "target": "crossbow",
         "value": 0.15
+      },
+      "knowledge_card": {
+        "historical_background": "一弩十矢俱发，势如骤雨。诸葛连弩之制，战国已见端倪，守城利器也。",
+        "key_figures": [
+          "诸葛亮",
+          "马钧"
+        ],
+        "related_artifacts": [
+          "连弩复原件",
+          "蜀汉弩机残件"
+        ],
+        "historical_period": "战国至三国",
+        "fun_fact": "诸葛连弩一次可装十矢，扣动扳机即连发，但射程较短。",
+        "illustration_id": "tech_repeating_crossbow"
       }
     },
     {
@@ -258,6 +655,25 @@
         "type": "terrain_traversal",
         "terrain": "river",
         "value": true
+      },
+      "cost_resources": {
+        "gold": 200,
+        "wood": 60,
+        "craftsmen": 5
+      },
+      "knowledge_card": {
+        "historical_background": "舟船为桥，横绝大江。千军万马瞬息可渡，此浮桥之制也。兵贵神速，桥为先驱。",
+        "key_figures": [
+          "秦昭王",
+          "李冰"
+        ],
+        "related_artifacts": [
+          "蒲津桥铁牛",
+          "战国浮桥遗址"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "秦灭楚时在长江上架设浮桥，是历史上最早的大型军用浮桥之一。",
+        "illustration_id": "tech_pontoon_bridge"
       }
     },
     {
@@ -275,6 +691,27 @@
       "effects": {
         "type": "siege_bonus",
         "value": 0.25
+      },
+      "malus_effects": [
+        {
+          "type": "morale_penalty",
+          "value": -3
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "一夫当关，万夫莫开。然以精兵利器，关隘亦可破。攻坚之术，不惧险阻。",
+        "key_figures": [
+          "白起",
+          "王翦",
+          "司马错"
+        ],
+        "related_artifacts": [
+          "函谷关遗址",
+          "战国关隘防御工事"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "秦灭六国时，函谷关之战是最著名的关隘攻坚战例。",
+        "illustration_id": "tech_fortress_assault"
       }
     },
     {
@@ -297,6 +734,27 @@
         "type": "attack_bonus",
         "target": "cavalry",
         "value": 0.2
+      },
+      "malus_effects": [
+        {
+          "type": "stability_penalty",
+          "value": -3
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "赵武灵王胡服骑射，师夷长技以制夷。废车战而用骑射，赵国遂强。千古一策也。",
+        "key_figures": [
+          "赵武灵王",
+          "肥义",
+          "楼缓"
+        ],
+        "related_artifacts": [
+          "赵国骑射纹饰铜镜",
+          "胡服骑射壁画"
+        ],
+        "historical_period": "公元前307年",
+        "fun_fact": "赵武灵王为推行胡服，亲自穿胡服接见群臣，反对者最终被说服。",
+        "illustration_id": "tech_hu_cavalry_reform"
       }
     },
     {
@@ -315,6 +773,27 @@
         "type": "defense_bonus",
         "target": "all",
         "value": 0.15
+      },
+      "malus_effects": [
+        {
+          "type": "recruit_cost_increase",
+          "value": 0.1
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "阵如俑列，森然不乱。秦始皇兵马俑，八千陶俑列阵地下，仿生前军阵之制。",
+        "key_figures": [
+          "秦始皇",
+          "白起",
+          "王翦"
+        ],
+        "related_artifacts": [
+          "秦始皇兵马俑",
+          "秦俑一号坑"
+        ],
+        "historical_period": "秦朝（前210年）",
+        "fun_fact": "兵马俑中每个陶俑的面部表情都不相同，据说是按真人塑造。",
+        "illustration_id": "tech_terracotta_array"
       }
     },
     {
@@ -333,6 +812,21 @@
         "type": "zoc_range_bonus",
         "target": "all",
         "value": 1
+      },
+      "knowledge_card": {
+        "historical_background": "善战者，致人而不致于人。扩展控制范围，使敌军进退维谷，此控地之要术也。",
+        "key_figures": [
+          "孙武",
+          "孙膑",
+          "白起"
+        ],
+        "related_artifacts": [
+          "孙子兵法竹简",
+          "战国地图帛书"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "长平之战中白起通过层层控地，将赵军四十余万围困于狭小区域。",
+        "illustration_id": "tech_zoc_expansion"
       }
     },
     {
@@ -351,6 +845,20 @@
         "type": "zoc_cost_immunity",
         "target": "all",
         "value": true
+      },
+      "knowledge_card": {
+        "historical_background": "兵贵神速，出其不意。善行者不随人之控制，如入无人之境。此轻兵疾行之道也。",
+        "key_figures": [
+          "白起",
+          "韩信"
+        ],
+        "related_artifacts": [
+          "战国军事地图",
+          "秦代行军路线图"
+        ],
+        "historical_period": "战国末期",
+        "fun_fact": "白起奔袭鄢郢，日行百里，完全绕过楚军防线，堪称疾行典范。",
+        "illustration_id": "tech_zoc_freedom"
       }
     },
     {
@@ -370,6 +878,22 @@
       "effects": {
         "type": "diplomacy_bonus",
         "value": 0.5
+      },
+      "mutual_exclusion_group": "policy_expansion_strategy",
+      "knowledge_card": {
+        "historical_background": "远交以孤敌，近攻以拓土。范雎献策于秦昭王，遂为秦之国策。六国由此渐弱。",
+        "key_figures": [
+          "范雎",
+          "秦昭王",
+          "张仪"
+        ],
+        "related_artifacts": [
+          "战国纵横家帛书",
+          "范雎上书残简"
+        ],
+        "historical_period": "战国后期",
+        "fun_fact": "范雎本是魏国人，遭人陷害后入秦，一策定天下大势。",
+        "illustration_id": "tech_distant_alliance"
       }
     },
     {
@@ -388,6 +912,32 @@
         "type": "attack_bonus",
         "target": "all",
         "value": 0.2
+      },
+      "malus_effects": [
+        {
+          "type": "diplomacy_penalty",
+          "value": -10
+        },
+        {
+          "type": "corruption_increase",
+          "value": 5
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "振长策而御宇内，吞二周而亡诸侯。秦王扫六合，虎视何雄哉。天下一统，万世之基。",
+        "key_figures": [
+          "秦始皇",
+          "王翦",
+          "李斯",
+          "蒙恬"
+        ],
+        "related_artifacts": [
+          "秦始皇诏版",
+          "统一量器"
+        ],
+        "historical_period": "前230年至前221年",
+        "fun_fact": "秦灭六国仅用了十年时间，是中国历史上最迅速的大一统。",
+        "illustration_id": "tech_unify_six_kingdoms"
       }
     },
     {
@@ -403,6 +953,44 @@
         "type": "resource_bonus",
         "resource": "food",
         "value": 0.1
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "resource_bonus",
+        "effect_target": "food"
+      },
+      "knowledge_card": {
+        "historical_background": "铁犁深耕，五谷丰登。利器在手，田畴日辟。铁耕之利，农事之大变革也。",
+        "key_figures": [
+          "许行",
+          "后稷"
+        ],
+        "related_artifacts": [
+          "战国铁犁铧",
+          "汉代铁犁范"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "铁犁的使用使耕地效率提升了三倍以上，是农业革命的关键。",
+        "illustration_id": "tech_iron_plow"
       }
     },
     {
@@ -420,6 +1008,45 @@
         "type": "resource_bonus",
         "resource": "gold",
         "value": 0.1
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "resource_bonus",
+        "effect_target": "gold"
+      },
+      "knowledge_card": {
+        "historical_background": "关梁通商，货殖往来。市廛林立，财用自足。商路初通，国富民强之始也。",
+        "key_figures": [
+          "子贡",
+          "白圭",
+          "范蠡"
+        ],
+        "related_artifacts": [
+          "战国货币",
+          "楚国蚁鼻钱"
+        ],
+        "historical_period": "春秋末至战国",
+        "fun_fact": "范蠡弃政从商，三致千金，被后世尊为“商圣”。",
+        "illustration_id": "tech_trade_route_basic"
       }
     },
     {
@@ -435,6 +1062,20 @@
         "type": "resource_bonus",
         "resource": "wood",
         "value": 0.15
+      },
+      "knowledge_card": {
+        "historical_background": "盐铁之议，利弊相权。盐木之利，关乎国计民生。此辩论之先声也。",
+        "key_figures": [
+          "管仲",
+          "桑弘羊"
+        ],
+        "related_artifacts": [
+          "盐铁论残简",
+          "海盐遗址"
+        ],
+        "historical_period": "战国至西汉",
+        "fun_fact": "管仲在齐国首创盐铁官营，使齐国成为春秋首霸。",
+        "illustration_id": "tech_salt_wood_debate"
       }
     },
     {
@@ -450,6 +1091,20 @@
         "type": "resource_bonus",
         "resource": "food",
         "value": 0.1
+      },
+      "knowledge_card": {
+        "historical_background": "辟草莱，任土地。田野既辟，仓廪自实。垦荒之策，富国之基也。",
+        "key_figures": [
+          "李悝",
+          "商鞅"
+        ],
+        "related_artifacts": [
+          "战国农具",
+          "魏国铁铲"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "商鞅变法鼓励垦荒，规定开垦荒地可免三年赋税。",
+        "illustration_id": "tech_land_reclamation"
       }
     },
     {
@@ -470,7 +1125,21 @@
           "type": "trade_route_exchange_bonus",
           "value": 0.05
         }
-      ]
+      ],
+      "knowledge_card": {
+        "historical_background": "市列珠玑，户盈罗绮。繁荣市场，货畅其流。市贸之兴，邦国之富也。",
+        "key_figures": [
+          "白圭",
+          "吕不韦"
+        ],
+        "related_artifacts": [
+          "战国市井陶俑",
+          "齐国刀币"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "齐国临淄是战国最大的商业都市，人口超过三十万。",
+        "illustration_id": "tech_market_prosperity"
+      }
     },
     {
       "id": "dujiangyan_irrigation",
@@ -493,6 +1162,28 @@
         "resource": "food",
         "value": 0.15,
         "disaster_resist": 0.3
+      },
+      "cost_resources": {
+        "gold": 150,
+        "building_materials": 15,
+        "craftsmen": 8
+      },
+      "research_events": [
+        "evt_tech_flood_risk"
+      ],
+      "knowledge_card": {
+        "historical_background": "李冰凿离堆，分岷江之流以灌沃野。水旱从人，不知饥馑。成都平原遂为天府之国。",
+        "key_figures": [
+          "李冰",
+          "李二郎"
+        ],
+        "related_artifacts": [
+          "都江堰水利遗址",
+          "李冰石像"
+        ],
+        "historical_period": "约前256年",
+        "fun_fact": "都江堰至今仍在使用，是世界上年代最久远的无坝引水工程。",
+        "illustration_id": "tech_dujiangyan_irrigation"
       }
     },
     {
@@ -516,6 +1207,25 @@
         "resource": "food",
         "value": 0.15,
         "disaster_resist": 0.3
+      },
+      "cost_resources": {
+        "gold": 150,
+        "building_materials": 15,
+        "craftsmen": 8
+      },
+      "knowledge_card": {
+        "historical_background": "韩遣郑国间秦，凿泾水以溉田。渠成，关中为沃野，秦以富强。疲秦之计反成秦之利。",
+        "key_figures": [
+          "郑国",
+          "秦始皇"
+        ],
+        "related_artifacts": [
+          "郑国渠遗址",
+          "泾阳渠首遗迹"
+        ],
+        "historical_period": "约前246年",
+        "fun_fact": "韩国本想用修渠消耗秦国国力，没想到反而使关中成为粮仓。",
+        "illustration_id": "tech_zhengguo_canal"
       }
     },
     {
@@ -532,6 +1242,23 @@
       "effects": {
         "type": "trade_bonus",
         "value": 0.2
+      },
+      "research_events": [
+        "evt_tech_merchant_resistance"
+      ],
+      "knowledge_card": {
+        "historical_background": "圜法既定，钱布通行。商贾无滞货，国无滞财。币制统一，商贸之大利也。",
+        "key_figures": [
+          "秦始皇",
+          "李斯"
+        ],
+        "related_artifacts": [
+          "秦半两钱",
+          "战国各国货币"
+        ],
+        "historical_period": "秦朝",
+        "fun_fact": "秦半两钱外圆内方的形制，影响了中国货币两千余年。",
+        "illustration_id": "tech_currency_unification"
       }
     },
     {
@@ -550,6 +1277,21 @@
         "type": "resource_bonus",
         "resource": "gold",
         "value": 0.25
+      },
+      "knowledge_card": {
+        "historical_background": "关讥而不征，则天下之旅皆悦。设关市之征，以佐国用。税赋之制，国之根本。",
+        "key_figures": [
+          "管仲",
+          "商鞅",
+          "李悝"
+        ],
+        "related_artifacts": [
+          "战国关市税简",
+          "楚国关税文书"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "孟子主张“关讥而不征”，即只检查不征税，与法家主张截然相反。",
+        "illustration_id": "tech_pass_taxation"
       }
     },
     {
@@ -567,6 +1309,29 @@
         "bonus_value": 0.2,
         "malus_resource": "gold",
         "malus_value": -0.1
+      },
+      "mutual_exclusion_group": "policy_governance",
+      "malus_effects": [
+        {
+          "type": "resource_penalty",
+          "resource": "gold",
+          "value": -0.1
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "农者天下之本，商者末业。重本抑末，仓廪实而知礼节。商鞅之策，秦之所以强也。",
+        "key_figures": [
+          "商鞅",
+          "李悝",
+          "韩非子"
+        ],
+        "related_artifacts": [
+          "商鞅方升",
+          "秦律农政简"
+        ],
+        "historical_period": "战国中期",
+        "fun_fact": "商鞅变法规定，努力耕织多产粮食的人可免除徭役。",
+        "illustration_id": "tech_agriculture_priority"
       }
     },
     {
@@ -583,6 +1348,21 @@
       "effects": {
         "type": "corruption_reduction",
         "value": 0.2
+      },
+      "knowledge_card": {
+        "historical_background": "设御史以察百官，风宪肃然，贪墨者惧。上下相维，内外相制。监察之制，吏治之要也。",
+        "key_figures": [
+          "商鞅",
+          "李斯",
+          "赵高"
+        ],
+        "related_artifacts": [
+          "秦代御史印",
+          "睡虎地秦简"
+        ],
+        "historical_period": "战国至秦",
+        "fun_fact": "秦御史不仅监察百官，还负责保管国家重要档案文书。",
+        "illustration_id": "tech_censor_system"
       }
     },
     {
@@ -600,6 +1380,20 @@
         "type": "resource_bonus",
         "resource": "gold",
         "value": 0.15
+      },
+      "knowledge_card": {
+        "historical_background": "一法度衡石丈尺，车同轨，书同文字。天下皆遵其式，秦之大一统也。",
+        "key_figures": [
+          "秦始皇",
+          "李斯"
+        ],
+        "related_artifacts": [
+          "秦权（标准砝码）",
+          "商鞅方升"
+        ],
+        "historical_period": "秦朝（前221年）",
+        "fun_fact": "出土的秦权上刻有秦始皇统一度量衡的诏书，是最早的标准化文件之一。",
+        "illustration_id": "tech_unified_weights"
       }
     },
     {
@@ -617,6 +1411,20 @@
         "type": "resource_bonus",
         "resource": "food",
         "value": 0.2
+      },
+      "knowledge_card": {
+        "historical_background": "三年一易田，肥饶共之。民无争心，地利尽出。均田之制，安民之策也。",
+        "key_figures": [
+          "商鞅",
+          "李悝"
+        ],
+        "related_artifacts": [
+          "秦律田律简",
+          "战国授田文书"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "商鞅“辕田制”打破了井田制，允许土地自由买卖。",
+        "illustration_id": "tech_equal_field_system"
       }
     },
     {
@@ -637,6 +1445,27 @@
           "wood": 0.2,
           "gold": 0.2
         }
+      },
+      "malus_effects": [
+        {
+          "type": "morale_penalty",
+          "value": -5
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "盐铁专营之策，始于管仲，盛于商鞅。盐木之利归于国，天下财富尽入府库。",
+        "key_figures": [
+          "管仲",
+          "商鞅",
+          "桑弘羊"
+        ],
+        "related_artifacts": [
+          "盐铁论",
+          "汉代盐铁官印"
+        ],
+        "historical_period": "战国至西汉",
+        "fun_fact": "汉代的盐铁之议留下了著名的《盐铁论》，记录了儒法两家的激烈辩论。",
+        "illustration_id": "tech_salt_wood_monopoly"
       }
     },
     {
@@ -659,6 +1488,20 @@
         "type": "resource_bonus",
         "resource": "gold",
         "value": 0.25
+      },
+      "knowledge_card": {
+        "historical_background": "半两之钱，重如其文。天下货币一统，商旅畅通。秦半两之制，后世钱币之祖也。",
+        "key_figures": [
+          "秦始皇",
+          "李斯"
+        ],
+        "related_artifacts": [
+          "秦半两钱范",
+          "秦半两铜钱"
+        ],
+        "historical_period": "秦朝",
+        "fun_fact": "秦半两重约8克，“半两”即12铢，约合今7.8克。",
+        "illustration_id": "tech_qin_half_liang"
       }
     },
     {
@@ -674,6 +1517,20 @@
         "type": "resource_bonus",
         "resource": "gold",
         "value": 0.05
+      },
+      "knowledge_card": {
+        "historical_background": "蚕月条桑，取彼斧斨。丝帛之利，衣被天下。养蚕缫丝，华夏之独有也。",
+        "key_figures": [
+          "嫘祖",
+          "马头娘"
+        ],
+        "related_artifacts": [
+          "战国丝织品残片",
+          "楚国丝绸"
+        ],
+        "historical_period": "远古至战国",
+        "fun_fact": "西方人称中国为“Seres”（丝国），丝绸是中国最早的世界级商品。",
+        "illustration_id": "tech_sericulture"
       }
     },
     {
@@ -688,6 +1545,45 @@
       "effects": {
         "type": "healing_bonus",
         "value": 0.15
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "healing_bonus",
+        "effect_target": "all"
+      },
+      "knowledge_card": {
+        "historical_background": "神农尝百草，岐伯论经脉。医者仁心，活人无数。民间医术，源于实践。",
+        "key_figures": [
+          "扁鹊",
+          "神农氏",
+          "岐伯"
+        ],
+        "related_artifacts": [
+          "马王堆医书",
+          "五十二病方"
+        ],
+        "historical_period": "远古至战国",
+        "fun_fact": "扁鹊是历史上第一个有明确记载的名医，精通望闻问切四诊。",
+        "illustration_id": "tech_folk_medicine"
       }
     },
     {
@@ -704,6 +1600,25 @@
       "effects": {
         "type": "culture_bonus",
         "value": 0.1
+      },
+      "cost_resources": {
+        "gold": 80,
+        "silk_books": 8
+      },
+      "knowledge_card": {
+        "historical_background": "孔子设教，有教无类。学在民间，文教大兴。私学之兴，百家争鸣之基也。",
+        "key_figures": [
+          "孔子",
+          "子夏",
+          "墨子"
+        ],
+        "related_artifacts": [
+          "杏坛遗址",
+          "孔子讲学图"
+        ],
+        "historical_period": "春秋末期",
+        "fun_fact": "孔子有弟子三千，其中精通六艺者七十二人，号称“七十二贤”。",
+        "illustration_id": "tech_private_academy"
       }
     },
     {
@@ -718,6 +1633,21 @@
       "effects": {
         "type": "morale_bonus",
         "value": 5
+      },
+      "knowledge_card": {
+        "historical_background": "礼以节人，乐以发和。礼乐不兴，则刑罚不中。礼乐之教，治国化民之本也。",
+        "key_figures": [
+          "周公",
+          "孔子",
+          "荀子"
+        ],
+        "related_artifacts": [
+          "曾侯乙编钟",
+          "战国礼器"
+        ],
+        "historical_period": "西周至战国",
+        "fun_fact": "曾侯乙编钟共65件，总重超过2500公斤，音域跨越五个半八度。",
+        "illustration_id": "tech_rites_music"
       }
     },
     {
@@ -735,6 +1665,25 @@
         "type": "morale_opinion_bonus",
         "morale_value": 10,
         "opinion_value": 5
+      },
+      "cost_resources": {
+        "gold": 140,
+        "silk_books": 12
+      },
+      "knowledge_card": {
+        "historical_background": "仁者爱人，克己复礼。儒术既行，天下归心。孔孟之道，万世师表。",
+        "key_figures": [
+          "孔子",
+          "孟子",
+          "荀子"
+        ],
+        "related_artifacts": [
+          "论语竹简",
+          "孟子帛书"
+        ],
+        "historical_period": "春秋至战国",
+        "fun_fact": "孟子提出'民为贵，社稷次之，君为轻'，是中国最早的民本思想。",
+        "illustration_id": "tech_confucian_teaching"
       }
     },
     {
@@ -749,6 +1698,22 @@
       "effects": {
         "type": "security_bonus",
         "value": 0.15
+      },
+      "mutual_exclusion_group": "policy_law_reform",
+      "knowledge_card": {
+        "historical_background": "法者天下之公器。不别亲疏，不殊贵贱，一断于法。法治之术，富国强兵之本。",
+        "key_figures": [
+          "商鞅",
+          "韩非子",
+          "李斯"
+        ],
+        "related_artifacts": [
+          "睡虎地秦简",
+          "商鞅方升"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "睡虎地秦简出土了大量秦律条文，是中国最早的成文法典实物。",
+        "illustration_id": "tech_legalist_governance"
       }
     },
     {
@@ -762,15 +1727,34 @@
         "private_academy",
         "rites_music"
       ],
-      "special_conditions": [
-        {
-          "type": "wonder",
-          "wonder_id": "jixia_academy"
-        }
-      ],
+      "special_conditions": [],
       "effects": {
         "type": "culture_bonus",
         "value": 0.3
+      },
+      "cost_resources": {
+        "gold": 180,
+        "silk_books": 20
+      },
+      "requires_wonder": "jixia_academy",
+      "research_events": [
+        "evt_tech_debate_outcome"
+      ],
+      "knowledge_card": {
+        "historical_background": "稷下学宫，百家云集。道儒墨法，各展所长。学术之盛，旷古未有。",
+        "key_figures": [
+          "孟子",
+          "荀子",
+          "邹衍",
+          "淳于髡"
+        ],
+        "related_artifacts": [
+          "稷下学宫遗址",
+          "战国百家典籍"
+        ],
+        "historical_period": "战国中期（约前374年起）",
+        "fun_fact": "稷下学宫存续约150年，是中国乃至世界最早的高等学府之一。",
+        "illustration_id": "tech_hundred_schools"
       }
     },
     {
@@ -787,6 +1771,25 @@
       "effects": {
         "type": "event_chance_bonus",
         "value": 0.15
+      },
+      "cost_resources": {
+        "gold": 90,
+        "silk_books": 10
+      },
+      "knowledge_card": {
+        "historical_background": "太史秉笔，直书不隐。前事不忘，后事之师。史官之记，国之镜鉴也。",
+        "key_figures": [
+          "左丘明",
+          "司马谈",
+          "董狐"
+        ],
+        "related_artifacts": [
+          "左传竹简",
+          "国语帛书"
+        ],
+        "historical_period": "春秋至战国",
+        "fun_fact": "齐国太史三兄弟因如实记载崔杼弑君而相继被杀，史官之刚烈如此。",
+        "illustration_id": "tech_court_historian"
       }
     },
     {
@@ -803,6 +1806,25 @@
       "effects": {
         "type": "research_speed_bonus",
         "value": 0.15
+      },
+      "cost_resources": {
+        "gold": 180,
+        "silk_books": 15
+      },
+      "knowledge_card": {
+        "historical_background": "竹帛所载，皆为至宝。传之子孙，以垂后世。典籍之传，文明之延续也。",
+        "key_figures": [
+          "孔子",
+          "左丘明",
+          "吕不韦"
+        ],
+        "related_artifacts": [
+          "郭店楚简",
+          "上博楚简"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "郭店楚简出土了最早的《老子》抄本，比通行本早了约一百年。",
+        "illustration_id": "tech_textual_legacy"
       }
     },
     {
@@ -821,6 +1843,27 @@
         "type": "security_morale_bonus",
         "security_value": 0.2,
         "morale_value": -5
+      },
+      "malus_effects": [
+        {
+          "type": "morale_penalty",
+          "value": -5
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "循名责实，赏罚分明。名实相符，则吏治清明。刑名之学，法家之精髓也。",
+        "key_figures": [
+          "韩非子",
+          "申不害",
+          "商鞅"
+        ],
+        "related_artifacts": [
+          "韩非子竹简",
+          "秦律简牍"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "韩非子将法、术、势三家合而为一，成为法家集大成者。",
+        "illustration_id": "tech_name_penalty_theory"
       }
     },
     {
@@ -842,6 +1885,27 @@
       "effects": {
         "type": "culture_bonus",
         "value": 0.25
+      },
+      "cost_resources": {
+        "gold": 220,
+        "silk_books": 25
+      },
+      "mutual_exclusion_group": "policy_cultural_identity",
+      "requires_wonder": "imperial_library",
+      "knowledge_card": {
+        "historical_background": "丞相李斯作小篆，罢其不与秦文合者。文字既同，教化大行。书同文者，天下一统之始也。",
+        "key_figures": [
+          "李斯",
+          "赵高",
+          "胡毋敬"
+        ],
+        "related_artifacts": [
+          "峄山石刻",
+          "秦代小篆碑文"
+        ],
+        "historical_period": "秦朝（前221年）",
+        "fun_fact": "李斯的《仓颉篇》、赵高的《爰历篇》、胡毋敬的《博学篇》是统一文字的范本。",
+        "illustration_id": "tech_unified_script"
       }
     },
     {
@@ -864,6 +1928,31 @@
         "type": "morale_reputation_bonus",
         "morale_value": 15,
         "reputation_value": 10
+      },
+      "cost_resources": {
+        "gold": 260,
+        "silk_books": 30
+      },
+      "malus_effects": [
+        {
+          "type": "resource_penalty",
+          "resource": "gold",
+          "value": -0.05
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "刻石颂秦德，明得意。威加海内，万民仰止。始皇巡游天下，刻石七处以记功。",
+        "key_figures": [
+          "秦始皇",
+          "李斯"
+        ],
+        "related_artifacts": [
+          "琅琊台刻石",
+          "泰山刻石残片"
+        ],
+        "historical_period": "秦朝",
+        "fun_fact": "秦始皇七次刻石中，琅琊台刻石保存最为完整，现存中国国家博物馆。",
+        "illustration_id": "tech_stone_inscriptions"
       }
     },
     {
@@ -878,6 +1967,48 @@
       "effects": {
         "type": "wall_durability_bonus",
         "value": 0.15
+      },
+      "cost_resources": {
+        "gold": 60,
+        "building_materials": 8
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.02,
+          0.02,
+          0.03
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "wall_durability_bonus",
+        "effect_target": "all"
+      },
+      "knowledge_card": {
+        "historical_background": "筑城以卫民，凿池以守国。夯土为墙，坚不可摧。版筑之法，古之大技也。",
+        "key_figures": [
+          "傅说",
+          "公输班"
+        ],
+        "related_artifacts": [
+          "郑州商城夯土墙",
+          "战国城墙遗址"
+        ],
+        "historical_period": "商代至战国",
+        "fun_fact": "傅说本是筑墙的奴隶，因版筑之术被商王武丁发现，后为宰相。",
+        "illustration_id": "tech_rammed_earth"
       }
     },
     {
@@ -894,6 +2025,20 @@
         "resource": "food",
         "value": 0.1,
         "disaster_resist": 0.2
+      },
+      "knowledge_card": {
+        "historical_background": "引水灌田，以时蓄泄。水利既兴，旱涝无虞。水渠之利，农事之命脉也。",
+        "key_figures": [
+          "西门豹",
+          "李冰"
+        ],
+        "related_artifacts": [
+          "漳水十二渠遗迹",
+          "战国水利设施"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "西门豹治理邺城时破除“河伯娶妇”迷信，修建了十二条引水渠。",
+        "illustration_id": "tech_irrigation_channel"
       }
     },
     {
@@ -908,6 +2053,20 @@
       "effects": {
         "type": "garrison_bonus",
         "value": 0.2
+      },
+      "knowledge_card": {
+        "historical_background": "广营屯戍，以备不虞。营垒既固，士卒安焉。军营之制，用武之本也。",
+        "key_figures": [
+          "吴起",
+          "白起"
+        ],
+        "related_artifacts": [
+          "战国军营遗址",
+          "秦代军营布局图"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "吴起驻守西河时与士卒同甘共苦，亲自为士兵吮脓疮。",
+        "illustration_id": "tech_military_camp_expand"
       }
     },
     {
@@ -924,6 +2083,24 @@
       "effects": {
         "type": "wall_durability_bonus",
         "value": 0.2
+      },
+      "cost_resources": {
+        "gold": 130,
+        "building_materials": 15
+      },
+      "knowledge_card": {
+        "historical_background": "崇墉浚隍，金城汤池。百雉之城，万夫莫开。城墙加固，守国之要务也。",
+        "key_figures": [
+          "公输班",
+          "墨子"
+        ],
+        "related_artifacts": [
+          "赵邯郸城墙遗址",
+          "齐临淄城墙"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "战国时城墙最厚处可达数十米，可并行数辆马车。",
+        "illustration_id": "tech_fortified_walls"
       }
     },
     {
@@ -940,6 +2117,20 @@
       "effects": {
         "type": "vision_bonus",
         "value": 2
+      },
+      "knowledge_card": {
+        "historical_background": "烽火连天，狼烟四起。一夕传警，千里皆知。烽火之制，边防之耳目也。",
+        "key_figures": [
+          "周幽王",
+          "蒙恬"
+        ],
+        "related_artifacts": [
+          "汉代烽燧遗址",
+          "居延汉简"
+        ],
+        "historical_period": "西周至秦",
+        "fun_fact": "烽火传讯速度极快，一夜之间可传递千里军情。",
+        "illustration_id": "tech_beacon_towers"
       }
     },
     {
@@ -958,6 +2149,26 @@
         "type": "resource_bonus",
         "resource": "gold",
         "value": 0.15
+      },
+      "cost_resources": {
+        "gold": 180,
+        "building_materials": 10,
+        "silk_books": 10
+      },
+      "knowledge_card": {
+        "historical_background": "分天下以为三十六郡，郡置守尉监。政令一统，如臂使指。郡县之制，千古不易之法也。",
+        "key_figures": [
+          "秦始皇",
+          "李斯",
+          "王绾"
+        ],
+        "related_artifacts": [
+          "秦代郡县印",
+          "里耶秦简"
+        ],
+        "historical_period": "秦朝（前221年）",
+        "fun_fact": "里耶秦简详细记录了迁陵县的行政运作，是郡县制的珍贵实证。",
+        "illustration_id": "tech_commandery_system"
       }
     },
     {
@@ -975,6 +2186,20 @@
         "type": "recruit_cost_reduction",
         "target": "cavalry",
         "value": 0.2
+      },
+      "knowledge_card": {
+        "historical_background": "北地畜牧，蕃息马匹。骑兵之本，不可不备。军马之制，强兵之基也。",
+        "key_figures": [
+          "秦非子",
+          "赵武灵王"
+        ],
+        "related_artifacts": [
+          "秦代马厩遗址",
+          "战国马具"
+        ],
+        "historical_period": "战国至秦",
+        "fun_fact": "秦人祖先非子因善养马被周孝王封于秦地，秦之国号由此而来。",
+        "illustration_id": "tech_horse_pastures"
       }
     },
     {
@@ -991,6 +2216,24 @@
       "effects": {
         "type": "movement_bonus",
         "value": 1
+      },
+      "cost_resources": {
+        "gold": 200,
+        "building_materials": 20
+      },
+      "knowledge_card": {
+        "historical_background": "为驰道于天下，东穷燕齐，南极吴楚。道广五十步，三丈而树。驰道之制，帝国之血脉也。",
+        "key_figures": [
+          "秦始皇",
+          "蒙恬"
+        ],
+        "related_artifacts": [
+          "秦直道遗址",
+          "秦驰道遗迹"
+        ],
+        "historical_period": "秦朝",
+        "fun_fact": "秦直道从咸阳到九原郡，全长约700公里，是世界上最早的“高速公路”。",
+        "illustration_id": "tech_imperial_roads"
       }
     },
     {
@@ -1015,6 +2258,38 @@
         "type": "border_defense_bonus",
         "region": "north",
         "value": 0.3
+      },
+      "cost_resources": {
+        "gold": 250,
+        "building_materials": 40
+      },
+      "malus_effects": [
+        {
+          "type": "population_growth_penalty",
+          "value": -0.05
+        },
+        {
+          "type": "stability_penalty",
+          "value": -5
+        }
+      ],
+      "research_events": [
+        "evt_tech_labor_unrest"
+      ],
+      "knowledge_card": {
+        "historical_background": "因地形，用制险塞。起临洮，至辽东，延袤万余里。长城之筑，御胡之大防也。",
+        "key_figures": [
+          "秦始皇",
+          "蒙恬",
+          "赵武灵王"
+        ],
+        "related_artifacts": [
+          "秦长城遗址",
+          "居延塞遗址"
+        ],
+        "historical_period": "秦朝（前214年）",
+        "fun_fact": "秦长城并非一条连续的墙，而是利用山川地势修筑的防御体系。",
+        "illustration_id": "tech_great_wall"
       }
     },
     {
@@ -1037,6 +2312,36 @@
         "type": "morale_culture_bonus",
         "morale_value": 10,
         "culture_value": 0.2
+      },
+      "cost_resources": {
+        "gold": 250,
+        "wood": 80,
+        "building_materials": 25
+      },
+      "malus_effects": [
+        {
+          "type": "resource_penalty",
+          "resource": "food",
+          "value": -0.1
+        },
+        {
+          "type": "upkeep_increase",
+          "value": 10
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "覆压三百余里，隔离天日。五步一楼，十步一阁。阿房之宫，穷奢极丽之至也。",
+        "key_figures": [
+          "秦始皇",
+          "项羽"
+        ],
+        "related_artifacts": [
+          "阿房宫前殿遗址",
+          "秦代瓦当"
+        ],
+        "historical_period": "秦朝（前212年）",
+        "fun_fact": "考古发现阿房宫实际上并未完工，项羽烧的可能是咸阳宫而非阿房宫。",
+        "illustration_id": "tech_epang_palace"
       }
     },
     {
@@ -1051,6 +2356,44 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "mengchong"
+      },
+      "mastery": {
+        "max_level": 3,
+        "increment_per_level": [
+          0.03,
+          0.03,
+          0.04
+        ],
+        "upgrade_cost": [
+          {
+            "gold": 100,
+            "silk_books": 10
+          },
+          {
+            "gold": 150,
+            "silk_books": 15
+          },
+          {
+            "gold": 225,
+            "silk_books": 20
+          }
+        ],
+        "effect_type": "attack_bonus",
+        "effect_target": "navy"
+      },
+      "knowledge_card": {
+        "historical_background": "习水战之术，制蒙冲快船，往来江湖如履平地。水战之法，南国之利器也。",
+        "key_figures": [
+          "伍子胥",
+          "范蠡"
+        ],
+        "related_artifacts": [
+          "战国铜器水战纹",
+          "吴越战船模型"
+        ],
+        "historical_period": "春秋至战国",
+        "fun_fact": "吴国拥有当时最强大的水军，战船可载百余人。",
+        "illustration_id": "tech_naval_warfare"
       }
     },
     {
@@ -1067,6 +2410,20 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "great_wing"
+      },
+      "knowledge_card": {
+        "historical_background": "大翼战船，攻守兼备。进可突阵，退可固守。水战之利器也，吴越争锋多赖此舟。",
+        "key_figures": [
+          "伍子胥",
+          "勾践"
+        ],
+        "related_artifacts": [
+          "吴国战船遗物",
+          "越国铜舟模型"
+        ],
+        "historical_period": "春秋至战国",
+        "fun_fact": "伍子胥将战船分为大翼、小翼、突冒等数种，各有不同用途。",
+        "illustration_id": "tech_great_wing_tech"
       }
     },
     {
@@ -1083,6 +2440,20 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "tower_ship"
+      },
+      "knowledge_card": {
+        "historical_background": "楼船高耸，势如城垣。箭矢如雨，横行江海，敌舟莫敢当也。水战之极制也。",
+        "key_figures": [
+          "秦始皇",
+          "任嚣"
+        ],
+        "related_artifacts": [
+          "汉代楼船模型",
+          "南越王墓船纹铜提筒"
+        ],
+        "historical_period": "秦朝至汉",
+        "fun_fact": "秦始皇派任嚣率楼船之师南征百越，是中国最早的大规模跨海作战。",
+        "illustration_id": "tech_tower_ship_tech"
       }
     },
     {
@@ -1097,6 +2468,20 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "scout_team"
+      },
+      "knowledge_card": {
+        "historical_background": "遣轻锐之士，远出侦察。知敌虚实，而后动焉。斥候之制，兵家之耳目也。",
+        "key_figures": [
+          "孙武",
+          "吴起"
+        ],
+        "related_artifacts": [
+          "战国斥候装备",
+          "秦代侦察兵简牍"
+        ],
+        "historical_period": "春秋至战国",
+        "fun_fact": "孙子兵法专门论述了间谍的五种分类，堪称情报学鼻祖。",
+        "illustration_id": "tech_scout_corps"
       }
     },
     {
@@ -1114,6 +2499,20 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "scout_cavalry"
+      },
+      "knowledge_card": {
+        "historical_background": "以骑代步，侦察千里。敌未动而我先知，此兵家之要也。骑斥候者，速于烽火。",
+        "key_figures": [
+          "赵武灵王",
+          "李牧"
+        ],
+        "related_artifacts": [
+          "战国骑兵斥候俑",
+          "秦代骑兵侦察简"
+        ],
+        "historical_period": "战国中后期",
+        "fun_fact": "李牧守边时每日派出大量骑兵斥候，对匈奴动向了如指掌。",
+        "illustration_id": "tech_mounted_scout"
       }
     },
     {
@@ -1130,7 +2529,366 @@
       "effects": {
         "type": "unlock_unit",
         "unit_id": "horse_archer"
+      },
+      "knowledge_card": {
+        "historical_background": "骑射之术，来去如风。马上张弓，百步穿杨，胡人之长技也。弓骑合壁，天下无敌。",
+        "key_figures": [
+          "赵武灵王",
+          "李牧",
+          "冒顿单于"
+        ],
+        "related_artifacts": [
+          "骑射纹铜饰",
+          "战国弓骑俑"
+        ],
+        "historical_period": "战国中后期",
+        "fun_fact": "骑射需要在马背上同时控制缰绳和张弓，难度远超步射。",
+        "illustration_id": "tech_horse_archery"
+      }
+    },
+    {
+      "id": "commerce_priority",
+      "name": "重商兴利",
+      "description": "通商惠工，以利天下。重商则货殖流通，国库充盈。",
+      "category": "economy",
+      "era": "mid",
+      "cost_gold": 150,
+      "cost_resources": {
+        "gold": 150
+      },
+      "prerequisites": [
+        "trade_route_basic"
+      ],
+      "special_conditions": [],
+      "effects": {
+        "type": "resource_bonus_multi",
+        "resources": {
+          "gold": 0.2
+        }
+      },
+      "mutual_exclusion_group": "policy_governance",
+      "malus_effects": [
+        {
+          "type": "resource_penalty",
+          "resource": "food",
+          "value": -0.1
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "通商惠工，以利天下。白圭乐观时变，吕不韦奇货可居。重商之策，富国强兵之另途也。",
+        "key_figures": [
+          "白圭",
+          "吕不韦",
+          "子贡",
+          "范蠡"
+        ],
+        "related_artifacts": [
+          "齐国刀币",
+          "楚国郢爰"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "白圭被后世尊为“治生祖师”，他提出商人应具备智、勇、仁、强四种品质。",
+        "illustration_id": "tech_commerce_priority"
+      }
+    },
+    {
+      "id": "military_merit_system",
+      "name": "军功授爵",
+      "description": "计功行赏，以爵授人。有军功者显荣，无军功者虽富无所芬华。",
+      "category": "military",
+      "era": "mid",
+      "cost_gold": 180,
+      "cost_resources": {
+        "gold": 180,
+        "refined_iron": 10
+      },
+      "prerequisites": [
+        "iron_forging"
+      ],
+      "special_conditions": [],
+      "effects": [
+        {
+          "type": "attack_bonus",
+          "target": "all",
+          "value": 0.15
+        },
+        {
+          "type": "recruit_cost_reduction",
+          "target": "all",
+          "value": 0.1
+        }
+      ],
+      "mutual_exclusion_group": "policy_meritocracy",
+      "malus_effects": [
+        {
+          "type": "morale_penalty",
+          "value": -5
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "商鞅变法，首重军功。斩首一级授爵一等，赐田赐宅。秦人闻战，顿足徒裼，此虎狼之师所由来也。",
+        "key_figures": [
+          "商鞅",
+          "秦孝公",
+          "白起"
+        ],
+        "related_artifacts": [
+          "睡虎地秦简·军爵律",
+          "商鞅方升"
+        ],
+        "historical_period": "战国中期（前356年起）",
+        "fun_fact": "秦国二十等爵制度规定，斩获敌人一个首级即可获得一级爵位和相应的田宅。",
+        "illustration_id": "tech_military_merit_system"
+      }
+    },
+    {
+      "id": "civil_examination",
+      "name": "察举征辟",
+      "description": "举贤才以治国，征能士以佐政。选贤任能，百官得其序。",
+      "category": "livelihood",
+      "era": "mid",
+      "cost_gold": 160,
+      "cost_resources": {
+        "gold": 160,
+        "silk_books": 12
+      },
+      "prerequisites": [
+        "confucian_teaching"
+      ],
+      "special_conditions": [],
+      "effects": [
+        {
+          "type": "research_speed_bonus",
+          "value": 0.2
+        },
+        {
+          "type": "culture_bonus",
+          "value": 0.1
+        }
+      ],
+      "mutual_exclusion_group": "policy_meritocracy",
+      "malus_effects": [
+        {
+          "type": "attack_bonus",
+          "target": "all",
+          "value": -0.05
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "乡举里选，征辟贤良。战国之时已有养士之风，稷下学宫广纳百家。至汉遂成察举之制，以德行取士。",
+        "key_figures": [
+          "孟子",
+          "荀子",
+          "董仲舒"
+        ],
+        "related_artifacts": [
+          "举孝廉画像砖",
+          "战国养士记录"
+        ],
+        "historical_period": "战国至西汉",
+        "fun_fact": "战国四公子各养士数千人，其中孟尝君门客竟有三千之众。",
+        "illustration_id": "tech_civil_examination"
+      }
+    },
+    {
+      "id": "confucian_governance",
+      "name": "仁政教化",
+      "description": "以仁德化民，以礼义治国。民之归仁也，犹水之就下。",
+      "category": "livelihood",
+      "era": "mid",
+      "cost_gold": 150,
+      "cost_resources": {
+        "gold": 150,
+        "silk_books": 10
+      },
+      "prerequisites": [
+        "confucian_teaching"
+      ],
+      "special_conditions": [],
+      "effects": [
+        {
+          "type": "morale_bonus",
+          "value": 15
+        },
+        {
+          "type": "security_bonus",
+          "value": 0.1
+        }
+      ],
+      "mutual_exclusion_group": "policy_law_reform",
+      "malus_effects": [
+        {
+          "type": "attack_bonus",
+          "target": "all",
+          "value": -0.05
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "孟子曰：以力服人者，非心服也；以德服人者，中心悦而诚服也。仁政之说，儒家治国之要旨也。",
+        "key_figures": [
+          "孟子",
+          "孔子",
+          "荀子"
+        ],
+        "related_artifacts": [
+          "孟子竹简",
+          "战国礼器"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "孟子曾当面劝说齐宣王行仁政，说'保民而王，莫之能御也'。",
+        "illustration_id": "tech_confucian_governance"
+      }
+    },
+    {
+      "id": "coalition_diplomacy",
+      "name": "合纵连横",
+      "description": "合纵者，合众弱以攻一强。连横者，事一强以攻众弱。纵横之术，天下之大势也。",
+      "category": "military",
+      "era": "late",
+      "cost_gold": 250,
+      "cost_resources": {
+        "gold": 250,
+        "silk_books": 15
+      },
+      "prerequisites": [],
+      "special_conditions": [],
+      "effects": {
+        "type": "diplomacy_bonus",
+        "value": 0.4
+      },
+      "mutual_exclusion_group": "policy_expansion_strategy",
+      "malus_effects": [
+        {
+          "type": "trade_bonus",
+          "value": -0.1
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "苏秦佩六国相印以合纵，张仪事秦以连横。一纵一横，天下为之震动。此外交博弈之极致也。",
+        "key_figures": [
+          "苏秦",
+          "张仪",
+          "公孙衍",
+          "犀首"
+        ],
+        "related_artifacts": [
+          "战国纵横家帛书",
+          "马王堆战国纵横家书"
+        ],
+        "historical_period": "战国中后期",
+        "fun_fact": "苏秦同时担任六国的相国，一人之力使强秦十五年不敢出函谷关。",
+        "illustration_id": "tech_coalition_diplomacy"
+      }
+    },
+    {
+      "id": "pluralistic_culture",
+      "name": "百花齐放",
+      "description": "百家争鸣，百花齐放。道法自然，儒行仁义，墨兼爱非攻，各得其所。",
+      "category": "livelihood",
+      "era": "late",
+      "cost_gold": 200,
+      "cost_resources": {
+        "gold": 200,
+        "silk_books": 15
+      },
+      "prerequisites": [
+        "hundred_schools"
+      ],
+      "special_conditions": [],
+      "effects": [
+        {
+          "type": "culture_bonus",
+          "value": 0.2
+        },
+        {
+          "type": "research_speed_bonus",
+          "value": 0.1
+        },
+        {
+          "type": "event_chance_bonus",
+          "value": 0.2
+        }
+      ],
+      "mutual_exclusion_group": "policy_cultural_identity",
+      "malus_effects": [
+        {
+          "type": "security_bonus",
+          "value": -0.05
+        }
+      ],
+      "knowledge_card": {
+        "historical_background": "战国之世，学术自由，百家并起。儒墨道法，各执一端。思想之多元，千古未有其匹也。",
+        "key_figures": [
+          "庄子",
+          "墨子",
+          "韩非子",
+          "惠施"
+        ],
+        "related_artifacts": [
+          "郭店楚简",
+          "战国百家典籍帛书"
+        ],
+        "historical_period": "战国时期",
+        "fun_fact": "庄子与惠施的“濠梁之辩”是中国最早的哲学论辩之一。",
+        "illustration_id": "tech_pluralistic_culture"
       }
     }
-  ]
+  ],
+  "mutual_exclusion_groups": [
+    {
+      "id": "policy_governance",
+      "name": "治国之道",
+      "description": "重农抑商以固本，或重商兴利以富国？两条路线不可兼得。",
+      "members": [
+        "agriculture_priority",
+        "commerce_priority"
+      ],
+      "policy_direction": "economic_focus"
+    },
+    {
+      "id": "policy_meritocracy",
+      "name": "选贤之制",
+      "description": "以军功授爵激励将士，或以察举征辟选拔文臣？取士之道，不可两全。",
+      "members": [
+        "military_merit_system",
+        "civil_examination"
+      ],
+      "policy_direction": "personnel"
+    },
+    {
+      "id": "policy_law_reform",
+      "name": "刑德之辩",
+      "description": "以严刑峻法治国，或以仁德教化安邦？治道之本，各有偏重。",
+      "members": [
+        "legalist_governance",
+        "confucian_governance"
+      ],
+      "policy_direction": "governance_philosophy"
+    },
+    {
+      "id": "policy_expansion_strategy",
+      "name": "拓土方略",
+      "description": "远交近攻以分化敌人，或合纵连横以结盟抗强？扩张之策，各有千秋。",
+      "members": [
+        "distant_alliance",
+        "coalition_diplomacy"
+      ],
+      "policy_direction": "diplomacy"
+    },
+    {
+      "id": "policy_cultural_identity",
+      "name": "文化方略",
+      "description": "书同文以统一天下文化，或百花齐放以容纳百家？文治之路，不可兼行。",
+      "members": [
+        "unified_script",
+        "pluralistic_culture"
+      ],
+      "policy_direction": "culture"
+    }
+  ],
+  "mastery_global_config": {
+    "enabled": true,
+    "silk_resource_name": "silk_books",
+    "mastery_bonus_display_format": "+{value}% per level"
+  }
 }

@@ -1,0 +1,326 @@
+{
+  "schema_version": "1.0",
+  "tech_events": [
+    {
+      "id": "evt_tech_iron_breakthrough",
+      "title": "铸铁之喜",
+      "description": "工匠偶然发现新的锻造法门，铁器质量大幅提升。是否拨款推广？",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "iron_forging",
+        "probability": 0.25
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "拨款推广新法",
+          "cost": {"gold": 50},
+          "outcomes": {
+            "gold_delta": -50,
+            "tech_progress_bonus": 0.3,
+            "morale_delta": 3
+          }
+        },
+        {
+          "id": "B",
+          "text": "按部就班，不冒风险",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_iron_accident",
+      "title": "炉膛崩裂",
+      "description": "锻造炉膛突然崩裂，工匠伤亡数人。是暂停研发还是继续推进？",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "iron_forging",
+        "probability": 0.15
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "暂停修整，安抚工匠",
+          "cost": {"gold": 30},
+          "outcomes": {
+            "gold_delta": -30,
+            "tech_progress_penalty": -0.1,
+            "morale_delta": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "强令继续，不得延误",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.15,
+            "morale_delta": -8
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_crossbow_innovation",
+      "title": "弩机巧思",
+      "description": "军中巧匠提出弩机改良方案，若采纳可加速研发。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "crossbow_basic",
+        "probability": 0.2
+      },
+      "effects": {
+        "tech_progress_bonus": 0.2
+      },
+      "options": null
+    },
+    {
+      "id": "evt_tech_horse_training",
+      "title": "良驹得主",
+      "description": "北方胡商携千里马至，若购入可加速骑射研发。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "cavalry_archery",
+        "probability": 0.2
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "重金购入",
+          "cost": {"gold": 80},
+          "outcomes": {
+            "gold_delta": -80,
+            "tech_progress_bonus": 0.25
+          }
+        },
+        {
+          "id": "B",
+          "text": "婉拒好意",
+          "cost": {},
+          "outcomes": {}
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_flood_risk",
+      "title": "洪水预警",
+      "description": "都江堰施工期间，岷江水位暴涨。是冒险赶工还是停工等待？",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "dujiangyan_irrigation",
+        "probability": 0.3,
+        "conditions": {"season": ["summer"]}
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "冒险赶工",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.2,
+            "food_delta": -100
+          }
+        },
+        {
+          "id": "B",
+          "text": "停工等待洪峰过去",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_penalty": -0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_labor_unrest",
+      "title": "民夫怨声",
+      "description": "长城修筑征发民夫数十万，怨声载道。是减轻劳役还是强推？",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "great_wall",
+        "probability": 0.35
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "减轻劳役，以安民心",
+          "cost": {"gold": 100},
+          "outcomes": {
+            "gold_delta": -100,
+            "tech_progress_penalty": -0.2,
+            "morale_delta": 10
+          }
+        },
+        {
+          "id": "B",
+          "text": "强征不辍，功成在即",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.15,
+            "morale_delta": -15,
+            "stability_delta": -5
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_debate_outcome",
+      "title": "学宫论辩",
+      "description": "稷下学宫中儒法两家激烈论辩，论题与当前研究相关。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "hundred_schools",
+        "probability": 0.3
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "支持儒家论点",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.1,
+            "morale_delta": 5,
+            "culture_delta": 10
+          }
+        },
+        {
+          "id": "B",
+          "text": "支持法家论点",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.1,
+            "stability_delta": 5,
+            "security_delta": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_merchant_resistance",
+      "title": "商贾抵制",
+      "description": "币制统一触动地方豪商利益，暗中抵制新币流通。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "currency_unification",
+        "probability": 0.25
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "铁腕推行，严惩私铸",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_bonus": 0.15,
+            "morale_delta": -5,
+            "stability_delta": -3
+          }
+        },
+        {
+          "id": "B",
+          "text": "怀柔安抚，许以利诱",
+          "cost": {"gold": 60},
+          "outcomes": {
+            "gold_delta": -60,
+            "tech_progress_bonus": 0.1,
+            "morale_delta": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_general_discovery",
+      "title": "触类旁通",
+      "description": "研究过程中，学者偶然领悟了相关领域的知识。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "*",
+        "probability": 0.05,
+        "conditions": {"turn_min": 10}
+      },
+      "effects": {
+        "tech_progress_bonus": 0.15
+      },
+      "options": null
+    },
+    {
+      "id": "evt_tech_resource_shortage",
+      "title": "物料短缺",
+      "description": "研发所需的关键材料供应不足，进度受阻。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "*",
+        "probability": 0.08
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "高价采购紧缺物资",
+          "cost": {"gold": 40},
+          "outcomes": {
+            "gold_delta": -40,
+            "tech_progress_bonus": 0.1
+          }
+        },
+        {
+          "id": "B",
+          "text": "等待供应恢复",
+          "cost": {},
+          "outcomes": {
+            "tech_progress_penalty": -0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_tech_scholar_visit",
+      "title": "学者来访",
+      "description": "他国学者闻讯来访，愿分享相关研究成果。",
+      "category": "technology",
+      "trigger": {
+        "type": "tech_researching",
+        "tech_id": "*",
+        "probability": 0.1,
+        "conditions": {"reputation_min": 40}
+      },
+      "effects": null,
+      "options": [
+        {
+          "id": "A",
+          "text": "盛情款待，交流学术",
+          "cost": {"gold": 30},
+          "outcomes": {
+            "gold_delta": -30,
+            "tech_progress_bonus": 0.2,
+            "reputation_delta": 3
+          }
+        },
+        {
+          "id": "B",
+          "text": "婉言谢绝，闭门研究",
+          "cost": {},
+          "outcomes": {}
+        }
+      ]
+    }
+  ]
+}

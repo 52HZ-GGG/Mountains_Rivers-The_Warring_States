@@ -247,6 +247,29 @@
         "min_turn": 15
       },
       "flavor_text": "魏惠王三十一年，为大沟于北郛，以行圃田之水。"
+    },
+    {
+      "id": "imperial_library",
+      "name": "石渠阁",
+      "description": "皇家藏书之所，集天下典籍于一处。帛书汇聚，文教大兴。",
+      "wonder_type": "single_city",
+      "cost_gold": 600,
+      "cost_wood": 150,
+      "cost_building_materials": 40,
+      "build_turns": 15,
+      "upkeep_gold": 12,
+      "effects": {
+        "silk_books_production_national": 15,
+        "research_speed_bonus_national": 0.15,
+        "culture_production_national": 10
+      },
+      "build_requires": {
+        "min_cities": 3,
+        "building": "scriptorium",
+        "building_level": "max",
+        "min_turn": 10
+      },
+      "flavor_text": "石渠天禄，藏书万卷。"
     }
   ]
 }

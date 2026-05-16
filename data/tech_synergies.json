@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0",
+  "synergies": [
+    {
+      "id": "synergy_infantry_master",
+      "name": "步战宗师",
+      "description": "列阵之法与铁甲锻造兼备，步兵攻防兼优。",
+      "required_techs": ["formation_tactics", "iron_armor"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "attack_bonus", "target": "infantry", "value": 0.1},
+        {"type": "defense_bonus", "target": "infantry", "value": 0.1}
+      ],
+      "flavor_text": "铁甲列阵，坚如磐石，攻守兼备，天下步战之冠。"
+    },
+    {
+      "id": "synergy_cavalry_domination",
+      "name": "铁骑纵横",
+      "description": "胡服骑射与重骑之制并行，骑兵所向无敌。",
+      "required_techs": ["hu_cavalry_reform", "heavy_cavalry_tech"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "attack_bonus", "target": "cavalry", "value": 0.15},
+        {"type": "movement_bonus", "target": "cavalry", "value": 1}
+      ],
+      "flavor_text": "胡服轻甲，重骑冲阵，纵横天下，莫之能御。"
+    },
+    {
+      "id": "synergy_siege_mastery",
+      "name": "攻坚利器",
+      "description": "弩炮之制与攻城之术结合，破城如摧枯拉朽。",
+      "required_techs": ["ballista_tech", "fortress_assault"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "siege_bonus", "value": 0.15}
+      ],
+      "flavor_text": "弩炮齐发，关隘为之崩摧。"
+    },
+    {
+      "id": "synergy_agricultural_revolution",
+      "name": "农政革新",
+      "description": "铁耕之利与水利灌溉相辅，五谷丰登。",
+      "required_techs": ["iron_plow", "irrigation_channel"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "resource_bonus", "resource": "food", "value": 0.1},
+        {"type": "disaster_resist", "value": 0.1}
+      ],
+      "flavor_text": "铁犁深耕，水渠灌溉，沃野千里，仓廪自实。"
+    },
+    {
+      "id": "synergy_trade_empire",
+      "name": "商贸帝国",
+      "description": "币制统一与统一度量衡双管齐下，天下商旅畅通。",
+      "required_techs": ["currency_unification", "unified_weights"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "resource_bonus", "resource": "gold", "value": 0.15},
+        {"type": "trade_bonus", "value": 0.1}
+      ],
+      "flavor_text": "币同衡一，天下之货皆可通流。"
+    },
+    {
+      "id": "synergy_cultural_hegemony",
+      "name": "文治天下",
+      "description": "书同文与百家争鸣并举，文化辐射四方。",
+      "required_techs": ["unified_script", "hundred_schools"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "culture_bonus", "value": 0.2},
+        {"type": "research_speed_bonus", "value": 0.1}
+      ],
+      "flavor_text": "文字既同，百家归一，文教大行，天下归心。"
+    },
+    {
+      "id": "synergy_defense_in_depth",
+      "name": "金城汤池",
+      "description": "城墙加固与烽火传讯结合，防御体系固若金汤。",
+      "required_techs": ["fortified_walls", "beacon_towers"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "city_defense_bonus", "value": 0.1},
+        {"type": "vision_bonus", "value": 1}
+      ],
+      "flavor_text": "高城深池，烽火相连，敌来有备，守如磐石。"
+    },
+    {
+      "id": "synergy_naval_supremacy",
+      "name": "水战称雄",
+      "description": "大翼之制与楼船之制并造，水上无敌。",
+      "required_techs": ["great_wing_tech", "tower_ship_tech"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "attack_bonus", "target": "navy", "value": 0.15},
+        {"type": "defense_bonus", "target": "navy", "value": 0.1}
+      ],
+      "flavor_text": "大翼楼船，横行江海，水战之利，天下莫敌。"
+    },
+    {
+      "id": "synergy_intelligence_network",
+      "name": "耳目灵通",
+      "description": "斥候骑与御史之制结合，情报网络遍布天下。",
+      "required_techs": ["mounted_scout", "censor_system"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "vision_bonus", "value": 2},
+        {"type": "corruption_reduction", "value": 0.1}
+      ],
+      "flavor_text": "耳目遍布，明察秋毫，内外通达，奸佞无所遁形。"
+    },
+    {
+      "id": "synergy_logistics_master",
+      "name": "兵马未动",
+      "description": "驰道之制与栈道之术兼备，后勤畅通无阻。",
+      "required_techs": ["imperial_roads", "plank_road"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "movement_bonus", "value": 1},
+        {"type": "terrain_traversal", "terrain": "mountain", "value": true}
+      ],
+      "flavor_text": "驰道坦途，栈道通幽，兵马未动，粮草先行。"
+    },
+    {
+      "id": "synergy_economic_foundation",
+      "name": "富国强兵",
+      "description": "盐木专营与辕田之制并行，国富民强。",
+      "required_techs": ["salt_wood_monopoly", "equal_field_system"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "resource_bonus", "resource": "gold", "value": 0.1},
+        {"type": "resource_bonus", "resource": "food", "value": 0.1}
+      ],
+      "flavor_text": "盐铁之利，田畴之实，国用充足，兵强马壮。"
+    },
+    {
+      "id": "synergy_rapid_deployment",
+      "name": "疾如雷电",
+      "description": "奇袭轻骑与轻兵疾行结合，机动力冠绝天下。",
+      "required_techs": ["shock_cavalry_tech", "zoc_freedom"],
+      "hidden_until_revealed": true,
+      "reveal_condition": "all_researched",
+      "effects": [
+        {"type": "movement_bonus", "target": "cavalry", "value": 2}
+      ],
+      "flavor_text": "轻骑如风，出其不意，攻其不备，疾如雷电。"
+    }
+  ]
+}

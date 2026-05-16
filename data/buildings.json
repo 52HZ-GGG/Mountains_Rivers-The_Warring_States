@@ -1121,6 +1121,40 @@
           }
         }
       ]
+    },
+    {
+      "id": "scriptorium",
+      "name": "藏书阁",
+      "description": "收藏典籍帛书，供学者研读，产出帛书以供科技研发。",
+      "category": "cultural",
+      "max_level": 3,
+      "upkeep_gold": 8,
+      "levels": [
+        {
+          "cost_gold": 150,
+          "cost_wood": 30,
+          "build_turns": 2,
+          "effects": {
+            "silk_books_production": 5
+          }
+        },
+        {
+          "cost_gold": 225,
+          "cost_wood": 45,
+          "build_turns": 2,
+          "effects": {
+            "silk_books_production": 10
+          }
+        },
+        {
+          "cost_gold": 340,
+          "cost_wood": 68,
+          "build_turns": 3,
+          "effects": {
+            "silk_books_production": 18
+          }
+        }
+      ]
     }
   ]
 }
