@@ -374,6 +374,7 @@
   },
   "culture": {
     "spread_rate": 0.05,
+    "winter_spread_mod": 0.5,
     "distance_decay": {
       "1": 1.0,
       "2": 0.7,
@@ -521,7 +522,6 @@
     "navy_on_water_defense_mod": 1.0
   },
   "naval_freeze": {
-    "river_frozen_season": "winter",
     "stranded_attack_mod": 0.3,
     "stranded_can_move": false,
     "stranded_can_initiate_attack": false,
