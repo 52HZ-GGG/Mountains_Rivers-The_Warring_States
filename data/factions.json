@@ -112,15 +112,33 @@
       "default_school": "diplomacy",
       "initial_tribute": 50,
       "ai_capital_relocation_weight": null
+    },
+    {
+      "id": "zhou",
+      "name": "周天子",
+      "color": "#DAA520",
+      "description": "天子守礼，权威衰微",
+      "ai_personality": {
+        "aggression": 0,
+        "greed": 0,
+        "honesty": 5,
+        "diplomacy": 5
+      },
+      "action_speed": 0,
+      "default_school": null,
+      "initial_tribute": 0,
+      "is_passive": true,
+      "ai_capital_relocation_weight": null
     }
   ],
   "initial_relations": {
-    "qin":  {"zhao": -15, "qi": 0,   "chu": -20, "wei": -10, "yan": -5,  "han": -10},
-    "zhao": {"qin": -15, "qi": 5,   "chu": 0,   "wei": -5,  "yan": 10,  "han": 5},
-    "qi":   {"qin": 0,   "zhao": 5, "chu": -10, "wei": 5,   "yan": -10, "han": 5},
-    "chu":  {"qin": -20, "zhao": 0, "qi": -10,  "wei": 0,   "yan": 5,   "han": 5},
-    "wei":  {"qin": -10, "zhao": -5,"qi": 5,    "chu": 0,   "yan": 0,   "han": 10},
-    "yan":  {"qin": -5,  "zhao": 10,"qi": -10,  "chu": 5,   "wei": 0,   "han": 0},
-    "han":  {"qin": -10, "zhao": 5, "qi": 5,    "chu": 5,   "wei": 10,  "yan": 0}
+    "qin":  {"zhao": -15, "qi": 0,   "chu": -20, "wei": -10, "yan": -5,  "han": -10, "zhou": 0},
+    "zhao": {"qin": -15, "qi": 5,   "chu": 0,   "wei": -5,  "yan": 10,  "han": 5,   "zhou": 0},
+    "qi":   {"qin": 0,   "zhao": 5, "chu": -10, "wei": 5,   "yan": -10, "han": 5,   "zhou": 5},
+    "chu":  {"qin": -20, "zhao": 0, "qi": -10,  "wei": 0,   "yan": 5,   "han": 5,   "zhou": -10},
+    "wei":  {"qin": -10, "zhao": -5,"qi": 5,    "chu": 0,   "yan": 0,   "han": 10,  "zhou": 0},
+    "yan":  {"qin": -5,  "zhao": 10,"qi": -10,  "chu": 5,   "wei": 0,   "han": 0,   "zhou": 5},
+    "han":  {"qin": -10, "zhao": 5, "qi": 5,    "chu": 5,   "wei": 10,  "yan": 0,   "zhou": 0},
+    "zhou": {"qin": 0,   "zhao": 0, "qi": 5,    "chu": -10, "wei": 0,   "yan": 5,   "han": 0}
   }
 }

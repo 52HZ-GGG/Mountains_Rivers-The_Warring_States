@@ -656,6 +656,7 @@
   },
   "minister": {
     "max_level": 5,
+    "lifespan_turns": 30,
     "exp_per_level": [
       0,
       100,
