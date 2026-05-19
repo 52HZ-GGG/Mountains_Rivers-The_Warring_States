@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.0",
+  "description": "战术演武场景集：7 个预设场景覆盖全部已实现战斗机制",
+  "scenarios": [
+    {
+      "id": "basic_plains",
+      "name": "基础平原战",
+      "description": "基本步骑对抗，熟悉移动、攻击、ZoC 和地形修正。",
+      "mechanics": ["基本战斗", "地形修正", "ZoC 区域控制", "士气系统"],
+      "map_width": 7,
+      "map_height": 7,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "zhao",
+      "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 6, "r": 3, "level": 3, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "forest", "plains", "forest", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+        ["plains", "plains", "plains", "mountain", "plains", "plains", "plains"],
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "forest", "plains", "forest", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "bp_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+        { "id": "bp_p2", "faction_id": "qin", "unit_type_id": "infantry", "q": 0, "r": 2 },
+        { "id": "bp_p3", "faction_id": "qin", "unit_type_id": "cavalry", "q": 1, "r": 4 },
+        { "id": "bp_e1", "faction_id": "zhao", "unit_type_id": "infantry", "q": 5, "r": 3 },
+        { "id": "bp_e2", "faction_id": "zhao", "unit_type_id": "infantry", "q": 6, "r": 4 },
+        { "id": "bp_e3", "faction_id": "zhao", "unit_type_id": "cavalry", "q": 5, "r": 2 }
+      ]
+    },
+    {
+      "id": "ranged_warfare",
+      "name": "弓弩射程战",
+      "description": "远程单位对抗，验证高程遮挡和兵种克制矩阵。",
+      "mechanics": ["远程遮挡", "克制矩阵", "射程计算", "高程差"],
+      "map_width": 9,
+      "map_height": 7,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "zhao",
+      "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 8, "r": 3, "level": 3, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "forest", "plains", "mountain", "plains", "forest", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "marsh", "plains", "marsh", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "marsh", "plains", "marsh", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "forest", "plains", "mountain", "plains", "forest", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "rw_p1", "faction_id": "qin", "unit_type_id": "archer", "q": 1, "r": 3 },
+        { "id": "rw_p2", "faction_id": "qin", "unit_type_id": "crossbow", "q": 0, "r": 2 },
+        { "id": "rw_p3", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 4 },
+        { "id": "rw_p4", "faction_id": "qin", "unit_type_id": "infantry", "q": 0, "r": 4 },
+        { "id": "rw_e1", "faction_id": "zhao", "unit_type_id": "archer", "q": 7, "r": 3 },
+        { "id": "rw_e2", "faction_id": "zhao", "unit_type_id": "crossbow", "q": 8, "r": 4 },
+        { "id": "rw_e3", "faction_id": "zhao", "unit_type_id": "infantry", "q": 6, "r": 3 },
+        { "id": "rw_e4", "faction_id": "zhao", "unit_type_id": "infantry", "q": 7, "r": 2 }
+      ]
+    },
+    {
+      "id": "naval_battle",
+      "name": "水战演兵",
+      "description": "水军与陆军在河流地形上的对抗，验证海军战斗修正。",
+      "mechanics": ["海军战斗修正", "水面移动", "水军 vs 陆军", "渡口通行"],
+      "map_width": 9,
+      "map_height": 7,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "chu",
+      "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 8, "r": 3, "level": 3, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "river", "plains", "forest", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "river", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "ford", "river", "ford", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "river", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "forest", "plains", "river", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "nb_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+        { "id": "nb_p2", "faction_id": "qin", "unit_type_id": "cavalry", "q": 0, "r": 2 },
+        { "id": "nb_p3", "faction_id": "qin", "unit_type_id": "mengchong", "q": 3, "r": 2 },
+        { "id": "nb_p4", "faction_id": "qin", "unit_type_id": "dayi", "q": 3, "r": 4 },
+        { "id": "nb_e1", "faction_id": "chu", "unit_type_id": "infantry", "q": 7, "r": 3 },
+        { "id": "nb_e2", "faction_id": "chu", "unit_type_id": "cavalry", "q": 8, "r": 4 },
+        { "id": "nb_e3", "faction_id": "chu", "unit_type_id": "mengchong", "q": 5, "r": 2 },
+        { "id": "nb_e4", "faction_id": "chu", "unit_type_id": "louchuan", "q": 5, "r": 4 }
+      ]
+    },
+    {
+      "id": "siege_warfare",
+      "name": "攻城战",
+      "description": "攻城器械对抗城墙，验证伤害分流、攻城倍率和箭塔。",
+      "mechanics": ["城墙 HP", "伤害分流", "攻城器械倍率", "箭塔攻击", "关隘通行", "占领判定"],
+      "map_width": 9,
+      "map_height": 9,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "zhao",
+      "player_city": { "q": 0, "r": 4, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 8, "r": 4, "level": 4, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "plains", "pass", "plains", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "plains", "pass", "plains", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "sw_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 2, "r": 4 },
+        { "id": "sw_p2", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+        { "id": "sw_p3", "faction_id": "qin", "unit_type_id": "battering_ram", "q": 2, "r": 5 },
+        { "id": "sw_p4", "faction_id": "qin", "unit_type_id": "catapult", "q": 1, "r": 5 },
+        { "id": "sw_p5", "faction_id": "qin", "unit_type_id": "archer", "q": 0, "r": 3 },
+        { "id": "sw_e1", "faction_id": "zhao", "unit_type_id": "infantry", "q": 6, "r": 4 },
+        { "id": "sw_e2", "faction_id": "zhao", "unit_type_id": "infantry", "q": 7, "r": 3 },
+        { "id": "sw_e3", "faction_id": "zhao", "unit_type_id": "crossbow", "q": 7, "r": 5 }
+      ]
+    },
+    {
+      "id": "supply_warfare",
+      "name": "补给线战",
+      "description": "沙漠和沼泽地形切断补给线，验证断粮、士气崩溃和溃退。",
+      "mechanics": ["断粮 BFS", "士气崩溃", "溃退/追击", "治疗回复"],
+      "map_width": 9,
+      "map_height": 7,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "zhao",
+      "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 8, "r": 3, "level": 3, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "plains", "desert", "desert", "desert", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "desert", "marsh", "desert", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "marsh", "desert", "marsh", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "marsh", "desert", "marsh", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "desert", "marsh", "desert", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "desert", "desert", "desert", "plains", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "sp_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+        { "id": "sp_p2", "faction_id": "qin", "unit_type_id": "infantry", "q": 0, "r": 2 },
+        { "id": "sp_p3", "faction_id": "qin", "unit_type_id": "cavalry", "q": 1, "r": 4 },
+        { "id": "sp_p4", "faction_id": "qin", "unit_type_id": "archer", "q": 0, "r": 4 },
+        { "id": "sp_e1", "faction_id": "zhao", "unit_type_id": "infantry", "q": 7, "r": 3 },
+        { "id": "sp_e2", "faction_id": "zhao", "unit_type_id": "infantry", "q": 8, "r": 4 },
+        { "id": "sp_e3", "faction_id": "zhao", "unit_type_id": "cavalry", "q": 7, "r": 2 },
+        { "id": "sp_e4", "faction_id": "zhao", "unit_type_id": "cavalry", "q": 6, "r": 3 }
+      ]
+    },
+    {
+      "id": "winter_naval",
+      "name": "冬季水战",
+      "description": "冬季河流冻结，水军搁浅无法行动，验证冻结和搁浅机制。",
+      "mechanics": ["河流冻结", "搁浅状态", "搁浅攻击限制", "冬季火攻禁用"],
+      "map_width": 9,
+      "map_height": 7,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "chu",
+      "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 8, "r": 3, "level": 3, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "river", "plains", "forest", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "river", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "ford", "river", "ford", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "river", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "forest", "plains", "river", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "wn_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+        { "id": "wn_p2", "faction_id": "qin", "unit_type_id": "cavalry", "q": 0, "r": 2 },
+        { "id": "wn_p3", "faction_id": "qin", "unit_type_id": "mengchong", "q": 3, "r": 2 },
+        { "id": "wn_p4", "faction_id": "qin", "unit_type_id": "dayi", "q": 3, "r": 4 },
+        { "id": "wn_e1", "faction_id": "chu", "unit_type_id": "infantry", "q": 7, "r": 3 },
+        { "id": "wn_e2", "faction_id": "chu", "unit_type_id": "cavalry", "q": 8, "r": 4 },
+        { "id": "wn_e3", "faction_id": "chu", "unit_type_id": "mengchong", "q": 5, "r": 2 },
+        { "id": "wn_e4", "faction_id": "chu", "unit_type_id": "louchuan", "q": 5, "r": 4 }
+      ]
+    },
+    {
+      "id": "fire_attack",
+      "name": "火攻演兵",
+      "description": "夏季森林火攻，验证烧伤 DOT、夹击包围和伏击机制。",
+      "mechanics": ["火攻触发", "烧伤 DOT", "夹击/包围", "伏击判定", "季节限制"],
+      "map_width": 7,
+      "map_height": 7,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "zhao",
+      "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 6, "r": 3, "level": 3, "is_capital": true },
+      "rows": [
+        ["forest", "forest", "plains", "plains", "plains", "forest", "forest"],
+        ["forest", "plains", "forest", "plains", "forest", "plains", "forest"],
+        ["plains", "forest", "plains", "forest", "plains", "forest", "plains"],
+        ["plains", "plains", "forest", "plains", "forest", "plains", "plains"],
+        ["plains", "forest", "plains", "forest", "plains", "forest", "plains"],
+        ["forest", "plains", "forest", "plains", "forest", "plains", "forest"],
+        ["forest", "forest", "plains", "plains", "plains", "forest", "forest"]
+      ],
+      "initial_units": [
+        { "id": "fa_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 1, "r": 3 },
+        { "id": "fa_p2", "faction_id": "qin", "unit_type_id": "infantry", "q": 0, "r": 2 },
+        { "id": "fa_p3", "faction_id": "qin", "unit_type_id": "archer", "q": 1, "r": 2 },
+        { "id": "fa_p4", "faction_id": "qin", "unit_type_id": "infantry", "q": 0, "r": 4 },
+        { "id": "fa_e1", "faction_id": "zhao", "unit_type_id": "infantry", "q": 5, "r": 3 },
+        { "id": "fa_e2", "faction_id": "zhao", "unit_type_id": "infantry", "q": 6, "r": 4 },
+        { "id": "fa_e3", "faction_id": "zhao", "unit_type_id": "cavalry", "q": 5, "r": 2 },
+        { "id": "fa_e4", "faction_id": "zhao", "unit_type_id": "infantry", "q": 6, "r": 2 }
+      ]
+    }
+  ]
+}

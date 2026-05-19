@@ -12,6 +12,8 @@ var _event_popup_scene: PackedScene = preload("res://scenes/ui/event_popup/event
 var _event_popup: Panel = null
 var _event_test_scene: PackedScene = preload("res://scenes/ui/event_test/event_test_panel.tscn")
 var _event_test_panel: Panel = null
+var _scenario_panel_scene: PackedScene = preload("res://scenes/ui/skirmish/skirmish_scenario_panel.tscn")
+var _scenario_panel: CanvasLayer = null
 var _resource_bar: HBoxContainer = null
 
 
@@ -123,7 +125,11 @@ func _on_tech_button_pressed() -> void:
 
 
 func _on_skirmish_button_pressed() -> void:
-	$SkirmishPanel.open_panel()
+	if not is_instance_valid(_scenario_panel):
+		_scenario_panel = _scenario_panel_scene.instantiate() as CanvasLayer
+		add_child(_scenario_panel)
+		_scenario_panel.skirmish_started.connect(_on_scenario_skirmish_started)
+	_scenario_panel.open_panel()
 
 
 func _on_big_map_button_pressed() -> void:
@@ -165,3 +171,12 @@ func _on_event_test_button_pressed() -> void:
 		_event_test_panel = _event_test_scene.instantiate() as Panel
 		add_child(_event_test_panel)
 	_event_test_panel.open()
+
+
+func _on_scenario_skirmish_started(scenario_id: String, season: String) -> void:
+	var cfg: Dictionary = DataManager.get_skirmish_scenario(scenario_id)
+	if cfg.is_empty():
+		push_error("Main: 未找到场景 %s" % scenario_id)
+		return
+	TacticalSkirmishManager.start_skirmish_with_config(cfg.duplicate(true), season)
+	$SkirmishPanel.open_panel()

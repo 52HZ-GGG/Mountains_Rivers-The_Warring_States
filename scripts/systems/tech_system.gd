@@ -36,6 +36,7 @@ var _border_defense_bonus: Dictionary = {}   # {region: float}
 var _diplomacy_bonus: float = 0.0
 var _recruit_cost_reduction: Dictionary = {} # {target: float}
 var _disaster_resist_bonus: float = 0.0
+var _action_speed_bonus: float = 0.0
 
 # ============= 生命周期 =============
 
@@ -425,6 +426,10 @@ func get_disaster_resist_bonus() -> float:
 	return _disaster_resist_bonus
 
 
+func get_faction_action_speed_bonus(_faction_id: String) -> float:
+	return _action_speed_bonus
+
+
 # ============= 重置 =============
 
 func reset() -> void:
@@ -455,4 +460,5 @@ func reset() -> void:
 	_diplomacy_bonus = 0.0
 	_recruit_cost_reduction.clear()
 	_disaster_resist_bonus = 0.0
+	_action_speed_bonus = 0.0
 	_ai_researched_techs.clear()

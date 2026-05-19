@@ -1,0 +1,153 @@
+[gd_scene load_steps=2 format=3 uid="uid://skirmishscenario01"]
+
+[ext_resource type="Script" path="res://scenes/ui/skirmish/skirmish_scenario_panel.gd" id="1"]
+
+[node name="SkirmishScenarioPanel" type="CanvasLayer"]
+layer = 55
+script = ExtResource("1")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14, 0.11, 0.08, 0.58)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 30
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "战术演武 — 选择演武场景"
+
+[node name="Spacer1" type="Control" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+
+[node name="ContentHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/MainVBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(220, 0)
+
+[node name="ListLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/LeftPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "场景列表"
+
+[node name="ScenarioList" type="ItemList" parent="MarginContainer/MainVBox/ContentHBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(200, 200)
+allow_reselect = true
+theme_override_font_sizes/font_size = 14
+
+[node name="RightPanel" type="VBoxContainer" parent="MarginContainer/MainVBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DetailName" type="Label" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="DetailDesc" type="RichTextLabel" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+size_flags_vertical = 0
+bbcode_enabled = true
+fit_content = true
+theme_override_font_sizes/font_size = 14
+
+[node name="MechanicsLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "测试机制："
+
+[node name="DetailMechanics" type="RichTextLabel" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
+size_flags_vertical = 0
+bbcode_enabled = true
+fit_content = true
+theme_override_font_sizes/font_size = 13
+
+[node name="DetailInfo" type="Label" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+
+[node name="Spacer2" type="Control" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+
+[node name="SeasonRow" type="HBoxContainer" parent="MarginContainer/MainVBox/ContentHBox/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SeasonLabel" type="Label" parent="MarginContainer/MainVBox/ContentHBox/RightPanel/SeasonRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "季节："
+
+[node name="SeasonOption" type="OptionButton" parent="MarginContainer/MainVBox/ContentHBox/RightPanel/SeasonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 4
+popup/item_0/text = "春季"
+popup/item_1/text = "夏季"
+popup/item_2/text = "秋季"
+popup/item_3/text = "冬季"
+popup/item_1/id = 1
+popup/item_2/id = 2
+popup/item_3/id = 3
+selected = 1
+
+[node name="Spacer3" type="Control" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+
+[node name="ButtonRow" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BackBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "返回"
+
+[node name="GuideBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "测试指南"
+
+[node name="SpacerBtn" type="Control" parent="MarginContainer/MainVBox/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StartBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "开始演武"

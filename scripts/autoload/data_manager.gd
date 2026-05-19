@@ -17,6 +17,8 @@ const FACTIONS_PATH := "res://data/factions.json"
 const DIPLOMACY_PATH := "res://data/diplomacy.json"
 const TECH_TREE_PATH := "res://data/tech_tree.json"
 const TACTICAL_SKIRMISH_MVP_PATH := "res://data/tactical_skirmish_mvp.json"
+const SCHOOLS_PATH := "res://data/schools.json"
+const SKIRMISH_SCENARIOS_PATH := "res://data/skirmish_scenarios.json"
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
@@ -29,6 +31,8 @@ var _factions: Dictionary = {}
 var _diplomacy: Dictionary = {}
 var _tech_tree: Dictionary = {}
 var _tactical_skirmish_mvp: Dictionary = {}
+var _schools: Dictionary = {}
+var _skirmish_scenarios: Dictionary = {}
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
@@ -38,6 +42,8 @@ var _building_index: Dictionary = {}
 var _wonder_index: Dictionary = {}
 var _faction_index: Dictionary = {}
 var _tech_index: Dictionary = {}
+var _school_index: Dictionary = {}
+var _skirmish_scenario_index: Dictionary = {}
 
 
 func _ready() -> void:
@@ -58,6 +64,8 @@ func _load_all_data() -> void:
 	_diplomacy = _load_json(DIPLOMACY_PATH)
 	_tech_tree = _load_json(TECH_TREE_PATH)
 	_tactical_skirmish_mvp = _load_json(TACTICAL_SKIRMISH_MVP_PATH)
+	_schools = _load_json(SCHOOLS_PATH)
+	_skirmish_scenarios = _load_json(SKIRMISH_SCENARIOS_PATH)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -103,6 +111,14 @@ func _build_indices() -> void:
 	for t in _tech_tree.get("techs", []):
 		_tech_index[t["id"]] = t
 
+	_school_index.clear()
+	for s in _schools.get("schools", []):
+		_school_index[s["id"]] = s
+
+	_skirmish_scenario_index.clear()
+	for s in _skirmish_scenarios.get("scenarios", []):
+		_skirmish_scenario_index[s["id"]] = s
+
 
 # ============= 地形接口 =============
 
@@ -141,6 +157,15 @@ func get_faction_variant(faction_id: String, base_unit_id: String) -> Dictionary
 				base["special_description"] = v["special_description"]
 				return base
 	return get_unit_type(base_unit_id)
+
+
+## 返回阵营变体的技能列表；无变体或无技能时返回空数组
+func get_unit_skills(faction_id: String, base_unit_id: String) -> Array:
+	if _units.has("faction_variants"):
+		for v in _units["faction_variants"]:
+			if v["faction_id"] == faction_id and v["base_unit"] == base_unit_id:
+				return v.get("skills", [])
+	return []
 
 
 func get_faction_variants(faction_id: String) -> Array:
@@ -251,9 +276,13 @@ func get_balance_param(path: String) -> Variant:
 
 
 func get_counter_multiplier(attacker_id: String, defender_id: String) -> float:
-	var matrix: Dictionary = _balance_params.get("counter_matrix", {})
-	if matrix.has(attacker_id) and matrix[attacker_id] is Dictionary:
-		return matrix[attacker_id].get(defender_id, 1.0)
+	var atk_unit: Dictionary = get_unit_type(attacker_id)
+	var def_unit: Dictionary = get_unit_type(defender_id)
+	var atk_cat: String = atk_unit.get("category", attacker_id)
+	var def_cat: String = def_unit.get("category", defender_id)
+	var matrix: Dictionary = _balance_params.get("category_counter_matrix", {})
+	if matrix.has(atk_cat) and matrix[atk_cat] is Dictionary:
+		return float(matrix[atk_cat].get(def_cat, 1.0))
 	return 1.0
 
 
@@ -315,15 +344,17 @@ func get_difficulty_settings(difficulty: String) -> Dictionary:
 	return _diplomacy.get("difficulty", {}).get(difficulty, {"resource_mod": 0.0, "initial_gold_bonus": 0})
 
 
-# ============= 学派占位（阶段 3 实现）=============
+# ============= 学派接口 =============
 
 func get_school(school_id: String) -> Dictionary:
-	push_warning("DataManager: 学派数据尚未实现 (school_id=%s)" % school_id)
+	if _school_index.has(school_id):
+		return _school_index[school_id]
+	push_warning("DataManager: 未找到学派 %s" % school_id)
 	return {}
 
 
 func get_all_schools() -> Array:
-	return []
+	return _schools.get("schools", [])
 
 
 # ============= 科技接口 =============
@@ -359,6 +390,19 @@ func get_tactical_skirmish_mvp() -> Dictionary:
 	return _tactical_skirmish_mvp
 
 
+# ============= 演武场景接口 =============
+
+func get_skirmish_scenarios() -> Array:
+	return _skirmish_scenarios.get("scenarios", [])
+
+
+func get_skirmish_scenario(scenario_id: String) -> Dictionary:
+	if _skirmish_scenario_index.has(scenario_id):
+		return _skirmish_scenario_index[scenario_id]
+	push_warning("DataManager: 未找到演武场景 %s" % scenario_id)
+	return {}
+
+
 func get_tech_cost(tech_id: String) -> int:
 	var tech := get_tech(tech_id)
 	return tech.get("cost_gold", 0)
@@ -386,8 +430,11 @@ func validate_data() -> bool:
 			push_error("DataManager: 城市数据缺少必要字段: %s" % c)
 			valid = false
 	for b in get_all_buildings():
-		if not b.has("id") or not b.has("cost_gold"):
+		if not b.has("id"):
 			push_error("DataManager: 建筑数据缺少必要字段: %s" % b)
+			valid = false
+		elif not b.has("cost_gold") and not b.has("levels"):
+			push_error("DataManager: 建筑数据缺少 cost_gold 或 levels: %s" % b)
 			valid = false
 	for e in get_all_events():
 		if not e.has("id") or not e.has("trigger"):
@@ -411,8 +458,14 @@ func validate_data() -> bool:
 		if not t.has("id") or not t.has("name") or not t.has("category"):
 			push_error("DataManager: 科技数据缺少必要字段: %s" % t)
 			valid = false
-		if not t.has("effects") or not t["effects"].has("type"):
+		if not t.has("effects"):
 			push_error("DataManager: 科技数据缺少effects: %s" % t)
+			valid = false
+		elif t["effects"] is Dictionary and not (t["effects"] as Dictionary).has("type"):
+			push_error("DataManager: 科技数据effects缺少type: %s" % t)
+			valid = false
+		elif t["effects"] is Array and (t["effects"] as Array).is_empty():
+			push_error("DataManager: 科技数据effects数组为空: %s" % t)
 			valid = false
 	if not _tactical_skirmish_mvp.is_empty():
 		if not _validate_tactical_skirmish_mvp():

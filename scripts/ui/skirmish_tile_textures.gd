@@ -58,14 +58,40 @@ const _EVENT_CATEGORY_PATHS: Dictionary = {
 }
 
 const _UNIT_PATHS: Dictionary = {
+	# 基础步兵
+	"militia": "res://photos/unit/unit_militia.png",
 	"infantry": "res://photos/unit/unit_infantry.png",
-	"archer": "res://photos/unit/unit_archer.png",
-	"crossbow": "res://photos/unit/unit_archer.png",
+	"spear": "res://photos/unit/unit_spear.png",
+	"iron_armored": "res://photos/unit/unit_heavy_infantry.png",
+	# 基础骑兵
+	"scout_team": "res://photos/unit/unit_scout.png",
+	"scout_cavalry": "res://photos/unit/unit_scout_cavalry.png",
 	"cavalry": "res://photos/unit/unit_cavalry.png",
+	"shock_cavalry": "res://photos/unit/unit_shock_cavalry.png",
+	"heavy_cavalry": "res://photos/unit/unit_heavy_cavalry.png",
 	"chariot": "res://photos/unit/unit_chariot.png",
+	"horse_archer": "res://photos/unit/unit_horse_archer.png",
+	# 基础远程
+	"archer": "res://photos/unit/unit_archer.png",
+	"crossbow": "res://photos/unit/unit_crossbow.png",
+	# 攻城器械
+	"battering_ram": "res://photos/unit/unit_battering_ram.png",
+	"catapult": "res://photos/unit/unit_catapult.png",
 	"siege": "res://photos/unit/unit_siege.png",
-	"navy": "res://photos/unit/unit_infantry.png",
-	"spear": "res://photos/unit/unit_wei_wuzu.png",
+	"ballista": "res://photos/unit/unit_siege_crossbow.png",
+	# 水军
+	"mengchong": "res://photos/unit/unit_mengchong.png",
+	"great_wing": "res://photos/unit/unit_dayi.png",
+	"tower_ship": "res://photos/unit/unit_louchuan.png",
+	"navy": "res://photos/unit/unit_mengchong.png",
+	# 国家变体
+	"rushi": "res://photos/unit/unit_qin_ruishi.png",
+	"hufu_qibing": "res://photos/unit/unit_zhao_hufu.png",
+	"jijishou": "res://photos/unit/unit_qi_jiji.png",
+	"shenxi_zhishi": "res://photos/unit/unit_chu_shenxi.png",
+	"wuzu": "res://photos/unit/unit_wei_wuzu.png",
+	"liaodong_gongqi": "res://photos/unit/unit_yan_liaodong.png",
+	"jinnu": "res://photos/unit/unit_han_jingnu.png",
 }
 
 static var _cache: Dictionary = {}

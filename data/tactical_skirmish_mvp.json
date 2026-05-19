@@ -5,8 +5,8 @@
   "map_height": 7,
   "player_faction_id": "qin",
   "enemy_faction_id": "zhao",
-  "player_city": { "q": 0, "r": 3 },
-  "enemy_city": { "q": 6, "r": 3 },
+  "player_city": { "q": 0, "r": 3, "level": 3, "is_capital": true },
+  "enemy_city": { "q": 6, "r": 3, "level": 3, "is_capital": true },
   "rows": [
     ["plains", "plains", "forest", "plains", "forest", "plains", "mountain"],
     ["plains", "forest", "plains", "plains", "plains", "pass", "plains"],

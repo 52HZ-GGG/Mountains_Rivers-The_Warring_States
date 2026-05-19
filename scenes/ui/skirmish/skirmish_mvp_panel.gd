@@ -24,6 +24,8 @@ const _CLR_ENEMY_CITY: Color = Color(1.0, 0.9, 0.9)
 @onready var _log_view: RichTextLabel = %SkirmishLog
 @onready var _hint: Label = %HintLabel
 @onready var _hover_info: Label = %HexHoverInfo
+@onready var _retreat_btn: Button = %RetreatBtn
+@onready var _season_label: Label = %SeasonLabel
 
 var _selected_unit_id: String = ""
 var _reachable: Dictionary = {}
@@ -34,6 +36,7 @@ func _ready() -> void:
 	visible = false
 	$MarginContainer/MainVBox/ButtonRow/EndTurnBtn.pressed.connect(_on_end_turn_pressed)
 	$MarginContainer/MainVBox/ButtonRow/RestartBtn.pressed.connect(_on_restart_pressed)
+	_retreat_btn.pressed.connect(_on_retreat_pressed)
 	$MarginContainer/MainVBox/ButtonRow/CloseBtn.pressed.connect(_on_close_pressed)
 	TacticalSkirmishManager.skirmish_ended.connect(_on_skirmish_ended_unified)
 	TacticalSkirmishManager.state_changed.connect(_refresh_display)
@@ -41,9 +44,11 @@ func _ready() -> void:
 
 
 func open_panel() -> void:
+	print("[SkirmishPanel] open_panel 开始")
 	show()
 	_hex_board.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_ensure_hex_buttons()
+	print("[SkirmishPanel] hex buttons 创建完成")
 	_ensure_board_backdrop()
 	if not TacticalSkirmishManager.is_active():
 		TacticalSkirmishManager.start_skirmish()
@@ -52,8 +57,10 @@ func open_panel() -> void:
 	_log_view.clear()
 	var atk_hint: int = TacticalSkirmishManager.get_attack_move_cost()
 	_hint.text = "点选己方单位：绿格可移动；攻击需额外移动力 %d。移动后若仍可攻击会保持选中，再点本单位可待命结束。" % atk_hint
+	_update_season_label()
 	_hover_info.text = _default_hover_text()
 	_refresh_display()
+	print("[SkirmishPanel] open_panel 完成")
 	_hex_refit_pending = true
 	call_deferred("_deferred_refit_hex_radius_if_needed")
 
@@ -69,6 +76,28 @@ func _default_hover_text() -> String:
 
 func _on_close_pressed() -> void:
 	close_panel()
+
+
+func _on_retreat_pressed() -> void:
+	if not TacticalSkirmishManager.is_active():
+		return
+	if _selected_unit_id.is_empty():
+		_hint.text = "请先选中一个己方单位再撤退。"
+		return
+	var res: Dictionary = TacticalSkirmishManager.try_retreat(_selected_unit_id)
+	if bool(res.get("ok", false)):
+		_hint.text = "%s 已撤退。" % _selected_unit_id
+	else:
+		_hint.text = "撤退失败：%s" % str(res.get("reason", "未知原因"))
+	_selected_unit_id = ""
+	_reachable.clear()
+	_refresh_display()
+
+
+func _update_season_label() -> void:
+	var season: String = TacticalSkirmishManager.get_current_season()
+	var names: Dictionary = {"spring": "春", "summer": "夏", "autumn": "秋", "winter": "冬"}
+	_season_label.text = "季节：%s" % names.get(season, season)
 
 
 func _on_restart_pressed() -> void:
@@ -88,7 +117,7 @@ func _on_end_turn_pressed() -> void:
 
 
 func _ensure_hex_buttons() -> void:
-	var cfg: Dictionary = DataManager.get_tactical_skirmish_mvp()
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
 	var w: int = int(cfg.get("map_width", 7))
 	var h: int = int(cfg.get("map_height", 7))
 	var expected_cells: int = w * h
@@ -186,7 +215,7 @@ func _deferred_refit_hex_radius_if_needed() -> void:
 	if not visible or not _hex_refit_pending:
 		return
 	_hex_refit_pending = false
-	var cfg: Dictionary = DataManager.get_tactical_skirmish_mvp()
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
 	var w: int = int(cfg.get("map_width", 7))
 	var h: int = int(cfg.get("map_height", 7))
 	var pad: float = _HEX_BOARD_PAD_PX
@@ -307,6 +336,17 @@ func _build_hover_text(cell: Vector2i) -> String:
 		lines.append("单位：%s · %s ｜ HP %d/%d ｜ 射程%d ｜ 移动力 %d/%d（攻击额外 %d）｜ %s" % [
 			fac_name, ut_name, int(uu["hp"]), int(uu["max_hp"]), rng, rem, spd, atk_mp, act_str
 		])
+		var uid: String = str(uu["id"])
+		var morale_val: int = TacticalSkirmishManager.get_unit_morale(uid)
+		var burn_val: int = TacticalSkirmishManager.get_unit_burn(uid)
+		var supplied: bool = TacticalSkirmishManager.get_unit_supply(uid)
+		var status_parts: PackedStringArray = []
+		status_parts.append("士气 %d" % morale_val)
+		if not supplied:
+			status_parts.append("断粮")
+		if burn_val > 0:
+			status_parts.append("烧伤(%d回合)" % burn_val)
+		lines.append("状态：%s" % " | ".join(status_parts))
 		if _selected_unit_id != "" and fid == TacticalSkirmishManager.get_enemy_faction():
 			var can_atk: bool = TacticalSkirmishManager.list_attack_targets(_selected_unit_id).has(str(uu["id"]))
 			lines.append("（当前选中己方单位）%s" % ("可攻击此目标" if can_atk else "不可攻击（射程或移动力不足）"))
@@ -399,14 +439,18 @@ func _is_attackable_enemy_cell(cell: Vector2i) -> bool:
 
 
 func _refresh_display() -> void:
-	var cfg: Dictionary = DataManager.get_tactical_skirmish_mvp()
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
 	var w: int = int(cfg.get("map_width", 7))
 	var h: int = int(cfg.get("map_height", 7))
+	print("[SkirmishPanel] _refresh_display: w=%d h=%d active=%s" % [w, h, str(TacticalSkirmishManager.is_active())])
 	var by_axial: Dictionary = {}
+	var hex_count: int = 0
 	for ch: Node in _hex_board.get_children():
 		if ch is SkirmishHexCell:
 			var hc: SkirmishHexCell = ch as SkirmishHexCell
 			by_axial[Vector2i(hc.cell_q, hc.cell_r)] = hc
+			hex_count += 1
+	print("[SkirmishPanel] _refresh_display: hex_count=%d expected=%d" % [hex_count, w * h])
 	var row_var: int = 0
 	while row_var < h:
 		var col_var: int = 0
@@ -414,7 +458,7 @@ func _refresh_display() -> void:
 			var cell_axial: Vector2i = _HexAxial.offset_odd_r_to_axial(col_var, row_var)
 			var hex_cell: SkirmishHexCell = by_axial.get(cell_axial, null) as SkirmishHexCell
 			if hex_cell == null:
-				push_error("SkirmishMVP: 缺少轴向格 (%d,%d)" % [cell_axial.x, cell_axial.y])
+				push_error("SkirmishMVP: 缺少轴向格 (%d,%d) col=%d row=%d" % [cell_axial.x, cell_axial.y, col_var, row_var])
 				return
 			var t_id: String = TacticalSkirmishManager.terrain_at(cell_axial)
 			var uu: Dictionary = _unit_at_cell(cell_axial)

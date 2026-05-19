@@ -29,7 +29,7 @@ func test_runtime_fields_initial_values() -> void:
 	assert_eq(xianyang.get("current_faction_id"), "qin", "current_faction_id 初始 = faction_id")
 	assert_eq(xianyang.get("buildings"), [], "buildings 初始为空数组")
 	assert_eq(xianyang.get("build_queue"), [], "build_queue 初始为空数组")
-	assert_eq(int(xianyang.get("current_population")), 12000, "current_population 初始 = base_population")
+	assert_eq(int(xianyang.get("current_population")), 10, "current_population 初始 = initial_population")
 
 
 func test_static_fields_preserved() -> void:
@@ -38,7 +38,7 @@ func test_static_fields_preserved() -> void:
 	assert_eq(xianyang.get("name"), "咸阳")
 	assert_eq(xianyang.get("faction_id"), "qin")
 	assert_true(xianyang.get("is_capital"), "咸阳应为首都")
-	assert_eq(int(xianyang.get("max_building_slots")), 6)
+	assert_eq(int(xianyang.get("max_building_slots")), 5)
 
 
 # ============= get_city_state =============
@@ -139,13 +139,13 @@ func test_can_build_rejects_already_queued() -> void:
 
 
 func test_can_build_rejects_slots_full() -> void:
-	# 咸阳 max_building_slots = 6，强制塞 6 个进 buildings
+	# 咸阳 max_building_slots = 5，强制塞 5 个进 buildings
 	var xianyang := CityManager.get_city_state("xianyang")
 	var buildings: Array = xianyang["buildings"]
-	for bid in ["farm", "market", "lumbermill", "barracks", "wall", "shrine"]:
+	for bid in ["farm", "market", "lumbermill", "barracks", "wall"]:
 		buildings.append({"building_id": bid, "level": 1})
-	# 再尝试建第 7 个应被拒（不与上述 6 种重名）
-	var result := CityManager.can_build("xianyang", "academy")
+	# 再尝试建第 6 个应被拒（不与上述 5 种重名）
+	var result := CityManager.can_build("xianyang", "shrine")
 	assert_false(result["allowed"])
 	assert_eq(result["reason"], CityManager.REASON_SLOTS_FULL)
 
@@ -358,15 +358,15 @@ func test_demolish_easy_refunds_three_quarters() -> void:
 # ============= can_build 槽位回归（升级中的项不占新槽位） =============
 
 func test_can_build_slots_excludes_upgrades_in_queue() -> void:
-	# buildings=5 + 1 个已建项的升级正在队列中（占 5 槽，不是 6）
-	# 应能再建第 6 个（max=6），证明 _count_new_build_in_queue 排除了升级项
+	# buildings=4 + 1 个已建项的升级正在队列中（占 4 槽，不是 5）
+	# 应能再建第 5 个（max=5），证明 _count_new_build_in_queue 排除了升级项
 	var xianyang := CityManager.get_city_state("xianyang")
 	var buildings: Array = xianyang["buildings"]
-	for bid in ["farm", "market", "lumbermill", "barracks", "wall"]:
+	for bid in ["farm", "market", "lumbermill", "barracks"]:
 		buildings.append({"building_id": bid, "level": 1})
 	CityManager.start_upgrade("xianyang", "farm")  # farm 入升级队列
 	var result := CityManager.can_build("xianyang", "shrine")
-	assert_true(result["allowed"], "升级中的不应占新槽位，应允许建第 6 个")
+	assert_true(result["allowed"], "升级中的不应占新槽位，应允许建第 5 个")
 
 
 # ============= 子任务 4：归属变更 change_ownership =============

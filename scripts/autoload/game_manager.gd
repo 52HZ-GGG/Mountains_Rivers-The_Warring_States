@@ -19,18 +19,28 @@ enum Phase {
 
 const FACTION_IDS: Array[String] = ["qin", "zhao", "qi", "chu", "wei", "yan", "han"]
 
+## 回合内子状态：标记当前势力行动阶段
+enum TurnState {
+	WAITING,      ## 等待当前势力行动
+	EXECUTING,    ## 势力正在执行操作
+	COMPLETED,    ## 所有势力行动完毕
+}
+
 # ============= 私有状态 =============
 
 var _phase: Phase = Phase.GAME_INIT
+var _turn_state: TurnState = TurnState.WAITING
 var _turn_number: int = 0
 var _active_factions: Array[String] = []
 var _faction_index: int = 0
 var _player_faction: String = ""
+var _faction_order: Array[String] = []  ## 按行动速度排序后的势力列表
 
 # 玩家资源状态（阶段1简化：单一资源池）
 var _player_food: int = 0
 var _player_gold: int = 0
 var _player_iron: int = 0
+var _player_wood: int = 0
 var _player_morale: int = 50
 var _player_population: int = 0
 var _player_troops: int = 0
@@ -77,9 +87,10 @@ func get_current_turn() -> int:
 
 
 func get_current_faction() -> String:
-	if _active_factions.is_empty():
+	var source: Array[String] = _faction_order if not _faction_order.is_empty() else _active_factions
+	if source.is_empty():
 		return ""
-	return _active_factions[_faction_index]
+	return source[_faction_index]
 
 
 func is_player_faction(faction_id: String) -> bool:
@@ -107,6 +118,7 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_turn_number = 1
 	_init_player_resources()
 	_init_ai_factions()
+	_sort_factions_by_speed()
 	DiplomacySystem.initialize(active_factions)
 	TechSystem.reset()
 	_change_phase(Phase.TURN_START)
@@ -141,6 +153,7 @@ func end_current_turn() -> void:
 	if _faction_index >= _active_factions.size():
 		_faction_index = 0
 		_turn_number += 1
+		_sort_factions_by_speed()
 
 	_change_phase(Phase.TURN_START)
 	var new_faction := get_current_faction()
@@ -214,7 +227,7 @@ func _process_production(faction_id: String) -> void:
 	var total: Dictionary = CityManager.get_faction_total_production(faction_id)
 	apply_faction_resource_delta(faction_id, "food", total["food"])
 	apply_faction_resource_delta(faction_id, "gold", total["gold"])
-	apply_faction_resource_delta(faction_id, "iron", total["iron"])
+	apply_faction_resource_delta(faction_id, "wood", total["wood"])
 	apply_faction_resource_delta(faction_id, "horse", total.get("horse", 0))
 	apply_faction_resource_delta(faction_id, "refined_iron", total.get("refined_iron", 0))
 	SignalBus.resources_produced.emit(faction_id, total)
@@ -298,6 +311,14 @@ func apply_iron_delta(delta: int) -> void:
 	_player_iron = max(0, _player_iron + delta)
 
 
+func get_player_wood() -> int:
+	return _player_wood
+
+
+func apply_wood_delta(delta: int) -> void:
+	_player_wood = max(0, _player_wood + delta)
+
+
 func apply_morale_delta(delta: int) -> void:
 	_player_morale = clampi(_player_morale + delta, 0, 100)
 
@@ -331,13 +352,16 @@ func apply_refined_iron_delta(delta: int) -> void:
 ## 重置到初始状态。供单元测试与「重新开局」使用。
 func reset() -> void:
 	_phase = Phase.GAME_INIT
+	_turn_state = TurnState.WAITING
 	_turn_number = 0
 	_active_factions = []
+	_faction_order = []
 	_faction_index = 0
 	_player_faction = ""
 	_player_food = 0
 	_player_gold = 0
 	_player_iron = 0
+	_player_wood = 0
 	_player_morale = 50
 	_player_population = 0
 	_player_troops = 0
@@ -351,7 +375,7 @@ func reset() -> void:
 
 func get_faction_resources(faction_id: String) -> Dictionary:
 	if faction_id == _player_faction:
-		return {"food": _player_food, "gold": _player_gold, "iron": _player_iron,
+		return {"food": _player_food, "gold": _player_gold, "iron": _player_iron, "wood": _player_wood,
 				"morale": _player_morale, "population": _player_population, "troops": _player_troops,
 				"horse": _player_horse, "refined_iron": _player_refined_iron}
 	return _faction_resources.get(faction_id, {})
@@ -368,6 +392,7 @@ func apply_faction_resource_delta(faction_id: String, resource: String, delta: i
 			"food": apply_food_delta(delta)
 			"gold": apply_gold_delta(delta)
 			"iron": apply_iron_delta(delta)
+			"wood": apply_wood_delta(delta)
 			"morale": apply_morale_delta(delta)
 			"population": apply_population_delta(delta)
 			"troops": apply_troops_delta(delta)
@@ -401,17 +426,17 @@ func _init_player_resources() -> void:
 		push_warning("GameManager: 未找到玩家首都，使用默认资源")
 		_player_food = 500
 		_player_gold = 300
-		_player_iron = 100
+		_player_wood = 100
 		_player_population = 10000
 		_player_troops = 0
 		_player_horse = 0
 		_player_refined_iron = 0
 		return
-	_player_population = capital.get("base_population", 10000)
+	_player_population = capital.get("initial_population", 10)
 	# 初始资源基于城市人口和基础产出
-	_player_food = int(_player_population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
-	_player_gold = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
-	_player_iron = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
+	_player_food = int(_player_population * float(DataManager.get_balance_param("resources.pop_food_rate")) * 10)
+	_player_gold = int(float(DataManager.get_balance_param("resources.city_base_gold")) * 5)
+	_player_wood = int(float(DataManager.get_balance_param("resources.city_base_wood")) * 3)
 	_player_troops = 0
 	_player_horse = 0
 	_player_refined_iron = 0
@@ -427,15 +452,15 @@ func _init_ai_factions() -> void:
 		if fid == _player_faction:
 			continue
 		var capital: Dictionary = DataManager.get_capital(fid)
-		var population: int = capital.get("base_population", 10000) if not capital.is_empty() else 10000
-		var base_food: int = int(population * DataManager.get_balance_param("resources.pop_food_rate") * 10)
-		var base_gold: int = int(DataManager.get_balance_param("resources.city_base_gold") * 5)
-		var base_iron: int = int(DataManager.get_balance_param("resources.city_base_iron") * 3)
+		var population: int = capital.get("initial_population", 10) if not capital.is_empty() else 10
+		var base_food: int = int(population * float(DataManager.get_balance_param("resources.pop_food_rate")) * 10)
+		var base_gold: int = int(float(DataManager.get_balance_param("resources.city_base_gold")) * 5)
+		var base_wood: int = int(float(DataManager.get_balance_param("resources.city_base_wood")) * 3)
 		# 应用难度修正
 		_faction_resources[fid] = {
 			"food": int(base_food * (1.0 + res_mod)),
 			"gold": int(base_gold * (1.0 + res_mod)) + gold_bonus,
-			"iron": int(base_iron * (1.0 + res_mod)),
+			"wood": int(base_wood * (1.0 + res_mod)),
 			"morale": 50,
 			"population": population,
 			"troops": 0,
@@ -448,3 +473,31 @@ func _change_phase(new_phase: Phase) -> void:
 	var old_phase := _phase
 	_phase = new_phase
 	SignalBus.phase_changed.emit(old_phase, new_phase)
+
+
+func _sort_factions_by_speed() -> void:
+	## 按行动速度排序势力：科技提供行动速度加成
+	_faction_order = _active_factions.duplicate()
+	_faction_order.sort_custom(func(a: String, b: String) -> bool:
+		var sa: float = _get_faction_action_speed(a)
+		var sb: float = _get_faction_action_speed(b)
+		if sa != sb:
+			return sa > sb
+		return a < b  # 速度相同时按 ID 字典序
+	)
+
+
+func _get_faction_action_speed(faction_id: String) -> float:
+	## 势力行动速度 = 基础 1.0 + 科技加成
+	var speed: float = 1.0
+	var tech_bonus: float = TechSystem.get_faction_action_speed_bonus(faction_id)
+	speed += tech_bonus
+	return speed
+
+
+func get_turn_state() -> TurnState:
+	return _turn_state
+
+
+func get_faction_order() -> Array[String]:
+	return _faction_order.duplicate()
