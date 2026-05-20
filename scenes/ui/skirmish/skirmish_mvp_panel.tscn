@@ -46,6 +46,18 @@ text = "结束战术回合"
 layout_mode = 2
 text = "重置演武"
 
+[node name="RetreatBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "撤退"
+
+[node name="SeasonLabel" type="Label" parent="MarginContainer/MainVBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.9, 0.7, 1)
+text = ""
+
 [node name="CloseBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
 layout_mode = 2
 text = "关闭"

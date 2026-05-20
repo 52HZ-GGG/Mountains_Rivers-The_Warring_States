@@ -3,6 +3,21 @@ class_name HexMapCanvas
 
 ## 在 HexBoard 上一次性绘制全部六角地形贴图，避免逐格 Control._draw 叠加误差造成「假缝隙」。
 
+const _EXTRA_BLEED_SCALE: float = 1.2
+
+func _scale_poly_outward(poly: PackedVector2Array, cell_pos: Vector2, cell: SkirmishHexCell) -> PackedVector2Array:
+	var half_w: float = cell.custom_minimum_size.x * 0.5
+	var half_h: float = cell.custom_minimum_size.y * 0.5
+	var lc: Vector2 = Vector2(half_w, half_h)
+	var cc: Vector2 = Vector2(cell_pos.x + half_w, cell_pos.y + half_h)
+	var out: PackedVector2Array = PackedVector2Array()
+	var i: int = 0
+	while i < poly.size():
+		var d: Vector2 = poly[i] - lc
+		out.append(cc + d * _EXTRA_BLEED_SCALE)
+		i += 1
+	return out
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = -40
@@ -44,11 +59,7 @@ func _draw() -> void:
 		var lp: PackedVector2Array = cell.get_bleed_polygon_local()
 		if lp.size() < 3:
 			continue
-		var bp: PackedVector2Array = PackedVector2Array()
-		var k: int = 0
-		while k < lp.size():
-			bp.append(cell.position + lp[k])
-			k += 1
+		var bp: PackedVector2Array = _scale_poly_outward(lp, cell.position, cell)
 		var tex: Texture2D = cell.get_terrain_texture_for_map()
 		var uvs: PackedVector2Array = cell.get_uvs_for_bleed_polygon(lp)
 		if tex != null and bp.size() == uvs.size():
@@ -62,9 +73,5 @@ func _draw() -> void:
 		var lp2: PackedVector2Array = cell2.get_bleed_polygon_local()
 		if lp2.size() < 3:
 			continue
-		var bp2: PackedVector2Array = PackedVector2Array()
-		var j: int = 0
-		while j < lp2.size():
-			bp2.append(cell2.position + lp2[j])
-			j += 1
+		var bp2: PackedVector2Array = _scale_poly_outward(lp2, cell2.position, cell2)
 		draw_colored_polygon(bp2, tc)

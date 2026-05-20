@@ -8,6 +8,12 @@ var _big_map_scene: PackedScene = preload("res://scenes/ui/big_map/big_map_panel
 var _big_map_panel: CanvasLayer = null
 var _city_panel_scene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
 var _city_panel: Panel = null
+var _event_popup_scene: PackedScene = preload("res://scenes/ui/event_popup/event_popup.tscn")
+var _event_popup: Panel = null
+var _event_test_scene: PackedScene = preload("res://scenes/ui/event_test/event_test_panel.tscn")
+var _event_test_panel: Panel = null
+var _scenario_panel_scene: PackedScene = preload("res://scenes/ui/skirmish/skirmish_scenario_panel.tscn")
+var _scenario_panel: CanvasLayer = null
 var _resource_bar: HBoxContainer = null
 
 
@@ -32,6 +38,19 @@ func _ready() -> void:
 
 	# 初始化游戏（默认7国，玩家为秦）
 	_init_game()
+
+	# 事件弹窗（自管理，监听 SignalBus.event_triggered）
+	_event_popup = _event_popup_scene.instantiate() as Panel
+	add_child(_event_popup)
+
+	# 事件测试按钮（开发用）
+	var event_test_btn := Button.new()
+	event_test_btn.text = "事件测试"
+	event_test_btn.pressed.connect(_on_event_test_button_pressed)
+	# 放在 BigMapButton 旁边
+	var big_map_btn := $BigMapButton
+	big_map_btn.get_parent().add_child(event_test_btn)
+	big_map_btn.get_parent().move_child(event_test_btn, big_map_btn.get_index() + 1)
 
 
 func _close_big_map() -> void:
@@ -106,7 +125,11 @@ func _on_tech_button_pressed() -> void:
 
 
 func _on_skirmish_button_pressed() -> void:
-	$SkirmishPanel.open_panel()
+	if not is_instance_valid(_scenario_panel):
+		_scenario_panel = _scenario_panel_scene.instantiate() as CanvasLayer
+		add_child(_scenario_panel)
+		_scenario_panel.skirmish_started.connect(_on_scenario_skirmish_started)
+	_scenario_panel.open_panel()
 
 
 func _on_big_map_button_pressed() -> void:
@@ -141,3 +164,19 @@ func _on_city_panel_back() -> void:
 
 func _on_city_panel_closed() -> void:
 	_close_city_panel()
+
+
+func _on_event_test_button_pressed() -> void:
+	if not is_instance_valid(_event_test_panel):
+		_event_test_panel = _event_test_scene.instantiate() as Panel
+		add_child(_event_test_panel)
+	_event_test_panel.open()
+
+
+func _on_scenario_skirmish_started(scenario_id: String, season: String) -> void:
+	var cfg: Dictionary = DataManager.get_skirmish_scenario(scenario_id)
+	if cfg.is_empty():
+		push_error("Main: 未找到场景 %s" % scenario_id)
+		return
+	TacticalSkirmishManager.start_skirmish_with_config(cfg.duplicate(true), season)
+	$SkirmishPanel.open_panel()

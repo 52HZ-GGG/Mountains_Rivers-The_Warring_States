@@ -1,4 +1,5 @@
 extends RefCounted
+class_name HexAxial
 
 ## 轴坐标六角格工具（对齐 docs/六角网格规范.md）
 

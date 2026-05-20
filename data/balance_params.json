@@ -636,6 +636,13 @@
     "flanking_morale_loss": -20,
     "encirclement_morale_loss": -50
   },
+  "retreat": {
+    "safe_distance": 3,
+    "pursuit_damage_ratio": 0.3,
+    "rout_recovery_morale": 30,
+    "encircled_hp_loss_per_turn": 10,
+    "_comment": "撤退/溃退/追击参数"
+  },
   "category_counter_matrix": {
     "infantry": {
       "infantry": 1.0,

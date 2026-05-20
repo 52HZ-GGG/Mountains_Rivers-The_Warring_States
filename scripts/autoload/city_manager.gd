@@ -621,7 +621,13 @@ func _initialize_states() -> void:
 		state["current_faction_id"] = city_data["faction_id"]
 		state["buildings"] = []
 		state["build_queue"] = []
-		state["current_population"] = int(city_data.get("base_population", 0))
+		state["current_population"] = int(city_data.get("initial_population", 0))
+		var city_level: int = int(city_data.get("city_level", 1))
+		var level_data: Dictionary = DataManager.get_balance_param("city_levels.%d" % city_level)
+		if level_data is Dictionary:
+			state["max_building_slots"] = int(level_data.get("building_slots", 1))
+		else:
+			state["max_building_slots"] = 1
 		_city_states[city_data["id"]] = state
 
 

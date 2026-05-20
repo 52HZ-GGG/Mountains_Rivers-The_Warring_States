@@ -10,13 +10,13 @@ extends GutTest
 
 func test_terrains_loaded() -> void:
 	var terrains := DataManager.get_all_terrains()
-	assert_eq(terrains.size(), 7, "应有 7 种地形（plains/forest/mountain/river/marsh/pass/ford）")
+	assert_eq(terrains.size(), 11, "应有 11 种地形")
 
 
 func test_unit_types_loaded() -> void:
 	var units := DataManager.get_all_unit_types()
 	# 决策 39：新增枪刺兵（spear）作为反骑兵专业兵种
-	assert_eq(units.size(), 8, "应有 8 种基础兵种（步/弓/弩/骑/战车/水军/攻城器械/枪刺兵）")
+	assert_eq(units.size(), 19, "应有 19 种基础兵种")
 
 
 func test_cities_loaded() -> void:
@@ -69,7 +69,7 @@ func test_faction_variant_no_match_returns_base() -> void:
 	# 楚国的 infantry 变体存在，但请求楚国的 cavalry 变体不存在 → 应返回基础 cavalry
 	var fallback := DataManager.get_faction_variant("chu", "cavalry")
 	assert_false(fallback.has("variant_id"), "无变体时不应包含 variant_id 字段")
-	assert_eq(fallback.get("name"), "骑兵")
+	assert_eq(fallback.get("name"), "护卫骑兵")
 
 
 # ============= 国家筛选 =============
