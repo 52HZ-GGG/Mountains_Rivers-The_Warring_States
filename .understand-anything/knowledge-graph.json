@@ -1,0 +1,6142 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "山河策",
+    "languages": [
+      "gdscript",
+      "json",
+      "markdown",
+      "python",
+      "glsl",
+      "shader"
+    ],
+    "frameworks": [
+      "Godot",
+      "GUT"
+    ],
+    "description": "战国回合制策略游戏（4X类），玩家扮演一国之主，在战争、内政、文化、科技、民心、地理、外交七重维度中博弈，最终称霸中原。",
+    "analyzedAt": "2026-05-26T14:30:26.118905+00:00",
+    "gitCommitHash": "75a1bb97e8d4793288d2e3706ec74803435c5e91"
+  },
+  "nodes": [
+    {
+      "id": "document:.claude/commands/audit.md",
+      "type": "document",
+      "name": "audit",
+      "filePath": ".claude/commands/audit.md",
+      "summary": "自定义斜杠命令，用于对 scripts/ 目录下所有 GDScript 文件执行代码审计，检测硬编码数值、字符串国家 ID、跨系统直接调用等违规模式。",
+      "tags": [
+        "slash-command",
+        "code-audit",
+        "data-driven",
+        "signal-bus",
+        "gdscript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/commands/balance.md",
+      "type": "document",
+      "name": "balance",
+      "filePath": ".claude/commands/balance.md",
+      "summary": "自定义斜杠命令，作为数值平衡助手，读取 units.json 和 factions.json 数据，模拟 200 场 1v1 战斗并输出兵种胜率分布与调整建议。",
+      "tags": [
+        "slash-command",
+        "balance",
+        "simulation",
+        "units",
+        "combat"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/commands/event.md",
+      "type": "document",
+      "name": "event",
+      "filePath": ".claude/commands/event.md",
+      "summary": "自定义斜杠命令，作为半文言事件生成器，根据游戏上下文生成 3 个符合战国语境的随机事件，输出包含标题、条件、描述和选项的 JSON 片段。",
+      "tags": [
+        "slash-command",
+        "event-generation",
+        "json-output",
+        "narrative",
+        "warring-states"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/commands/save.md",
+      "type": "document",
+      "name": "save",
+      "filePath": ".claude/commands/save.md",
+      "summary": "自定义斜杠命令，用于生成 GDScript 存档函数，将所有 Autoload 单例的关键变量序列化为 JSON 并保存到 user://save.json。",
+      "tags": [
+        "slash-command",
+        "save-system",
+        "serialization",
+        "autoload",
+        "gdscript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/commands/tilegen.md",
+      "type": "document",
+      "name": "tilegen",
+      "filePath": ".claude/commands/tilegen.md",
+      "summary": "自定义斜杠命令，基于 art-pipeline.md 规范为指定地形图块生成 32x32 像素绘制指南，包含主色调、轮廓、阴影和特殊元素的文字描述。",
+      "tags": [
+        "slash-command",
+        "art-pipeline",
+        "pixel-art",
+        "terrain",
+        "tile-generation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/art-pipeline.md",
+      "type": "document",
+      "name": "art-pipeline",
+      "filePath": ".claude/skills/art-pipeline.md",
+      "summary": "《山河策》美术资产管线规范，定义 32x32 像素图块基础规格、地形/单位/UI 文件命名规则、Aseprite 创作流程、文化覆盖层着色方案、字体选型及音频素材规范。",
+      "tags": [
+        "美术",
+        "像素图块",
+        "命名规范",
+        "文化覆盖层",
+        "TileSet"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/godot-guidelines.md",
+      "type": "document",
+      "name": "godot-guidelines",
+      "filePath": ".claude/skills/godot-guidelines.md",
+      "summary": "《山河策》Godot 4.3 架构与编码规范，涵盖项目目录结构、全局 Autoload 单例（GameManager/DataManager/EventManager/SignalBus）、信号驱动架构、六角网格寻路、数据驱动铁律、Git LFS 版本控制及 GUT 测试要求。",
+      "tags": [
+        "Godot 架构",
+        "Autoload",
+        "信号驱动",
+        "六角网格",
+        "数据驱动"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/shanhece-world.md",
+      "type": "document",
+      "name": "shanhece-world",
+      "filePath": ".claude/skills/shanhece-world.md",
+      "summary": "《山河策》核心游戏世界知识文档，详述十三大核心系统（战斗/经营/文化/外交/民心/科技/城市/征兵/季节/学派/地理/事件/大夫）、胜利失败条件、七雄国家特色及数据表约定。",
+      "tags": [
+        "游戏设计",
+        "核心系统",
+        "七雄势力",
+        "游戏规则",
+        "数据表约定"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:.understand-anything/config.json",
+      "type": "config",
+      "name": "config",
+      "filePath": ".understand-anything/config.json",
+      "summary": "understand-anything 工具的项目级配置文件，当前仅设置输出语言为中文（zh）。",
+      "tags": [
+        "config",
+        "understand-anything",
+        "i18n",
+        "language"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/fingerprints.json",
+      "type": "config",
+      "name": "fingerprints",
+      "filePath": ".understand-anything/fingerprints.json",
+      "summary": "项目文件的结构指纹索引，记录每个源文件的内容哈希、行数、函数/类/导入/导出等结构分析元数据，用于增量更新检测。涵盖 132 个项目文件。",
+      "tags": [
+        "config",
+        "understand-anything",
+        "fingerprint",
+        "index",
+        "cache"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/knowledge-graph.json",
+      "type": "config",
+      "name": "knowledge-graph",
+      "filePath": ".understand-anything/knowledge-graph.json",
+      "summary": "understand-anything 生成的知识图谱数据文件，包含项目所有节点（GraphNode）和关系边（GraphEdge），用于代码可视化和导航。",
+      "tags": [
+        "config",
+        "understand-anything",
+        "knowledge-graph",
+        "data",
+        "visualization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/meta.json",
+      "type": "config",
+      "name": "meta",
+      "filePath": ".understand-anything/meta.json",
+      "summary": "understand-anything 工具的元数据文件，记录最后一次分析时间、关联的 Git 提交哈希、工具版本号和已分析文件数量。",
+      "tags": [
+        "config",
+        "understand-anything",
+        "metadata",
+        "version"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.understand-anything/tmp/gut-baseline-failing.txt",
+      "type": "document",
+      "name": "gut-baseline-failing",
+      "filePath": ".understand-anything/tmp/gut-baseline-failing.txt",
+      "summary": "GUT 基线阶段失败测试清单，记录 15 个未通过的单元测试名称，涵盖火攻、城池建造/拆除、海军战斗、势力变体和学派效果等领域。",
+      "tags": [
+        "GUT",
+        "测试",
+        "失败清单",
+        "基线测试",
+        "质量保证"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.understand-anything/tmp/gut-p1-failing.txt",
+      "type": "document",
+      "name": "gut-p1-failing",
+      "filePath": ".understand-anything/tmp/gut-p1-failing.txt",
+      "summary": "GUT 第一阶段失败测试清单，记录 15 个未通过的单元测试名称，与基线清单内容相同，表明这些测试在 P1 阶段仍未修复。",
+      "tags": [
+        "GUT",
+        "测试",
+        "失败清单",
+        "P1阶段",
+        "质量保证"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.understand-anything/tmp/gut-p2-failing.txt",
+      "type": "document",
+      "name": "gut-p2-failing",
+      "filePath": ".understand-anything/tmp/gut-p2-failing.txt",
+      "summary": "GUT 第二阶段失败测试清单，记录 15 个未通过的单元测试名称，与基线和 P1 清单内容相同，表明这些测试在 P2 阶段仍未修复。",
+      "tags": [
+        "GUT",
+        "测试",
+        "失败清单",
+        "P2阶段",
+        "质量保证"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:data/balance_params.json",
+      "type": "config",
+      "name": "balance_params",
+      "filePath": "data/balance_params.json",
+      "summary": "全局平衡参数配置文件，涵盖战斗公式（伏击/火攻/随机方差）、兵种技能系统、移动力、治疗恢复、控制区（ZoC）、资源产出上限与季节修正、人口增长、士气系统、稳定性、内政事件概率等所有核心数值平衡。是游戏数值体系的中枢配置。",
+      "tags": [
+        "game-data",
+        "balance",
+        "combat",
+        "resources",
+        "morale"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:data/big_map_terrain.json",
+      "type": "config",
+      "name": "big_map_terrain",
+      "filePath": "data/big_map_terrain.json",
+      "summary": "大地图 30x20 odd-R 偏移格地形布局数据，以二维数组定义每个六角格的地形类型（平原、森林、山地、河流、渡口、沼泽、关隘），模拟战国七雄地理格局。",
+      "tags": [
+        "game-data",
+        "terrain",
+        "map",
+        "hex-grid"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:data/buildings.json",
+      "type": "config",
+      "name": "buildings",
+      "filePath": "data/buildings.json",
+      "summary": "建筑定义数据，包含经济类（农田/市集/伐木场/工匠坊/建材坊）、军事类（兵营/马厩/箭塔/城墙）、文化类（学宫/祭坛）等建筑的多级升级成本、效果和前置条件。每栋建筑支持最多3级升级。",
+      "tags": [
+        "game-data",
+        "buildings",
+        "economy",
+        "military",
+        "city-management"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:data/cities.json",
+      "type": "config",
+      "name": "cities",
+      "filePath": "data/cities.json",
+      "summary": "50座城池定义数据，覆盖战国七雄（秦/赵/齐/楚/魏/燕/韩）各约7城加3座中立城。每座城包含六角格坐标、辖区半径、特殊资源、是否为都城、开发度、城池等级和初始人口。",
+      "tags": [
+        "game-data",
+        "cities",
+        "map-placement",
+        "factions"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/diplomacy.json",
+      "type": "config",
+      "name": "diplomacy",
+      "filePath": "data/diplomacy.json",
+      "summary": "外交系统参数配置，包含礼物层级、外交行动效果（宣战/停战/结盟/商路等对声望好感的影响）、条约参数、附庸制度、人质系统、朝贡体系、册封等级、纵横家能力、情报系统和行宫机制等完整外交数值。",
+      "tags": [
+        "game-data",
+        "diplomacy",
+        "factions",
+        "treaties",
+        "vassal"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:data/events.json",
+      "type": "config",
+      "name": "events",
+      "filePath": "data/events.json",
+      "summary": "随机事件池数据，包含经济/军事/外交/文化/灾难等多类别事件。每个事件定义触发条件（回合/季节/概率/士气等）、直接效果或玩家选项及对应后果。事件支持连锁触发和冷却机制。",
+      "tags": [
+        "game-data",
+        "events",
+        "random-events",
+        "economy",
+        "military"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:data/factions.json",
+      "type": "config",
+      "name": "factions",
+      "filePath": "data/factions.json",
+      "summary": "7个战国势力（秦/赵/齐/楚/魏/燕/韩）加周天子的定义数据。每个势力包含AI性格四维（侵略/贪婪/诚信/外交）、行动速度、默认学派、初始朝贡值和势力间初始好感度矩阵。",
+      "tags": [
+        "game-data",
+        "factions",
+        "ai-personality",
+        "diplomacy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/ministers.json",
+      "type": "config",
+      "name": "ministers",
+      "filePath": "data/ministers.json",
+      "summary": "官员（大夫）池数据，分文官/武官两大类，每类按稀有度分为普通/稀有/传奇三档。包含历史人物（商鞅/李斯/吴起/孟子/墨子/庄子等）和随机模板。每位官员有学派归属、基础属性（理财/安民或统御/武力）和技能列表。",
+      "tags": [
+        "game-data",
+        "ministers",
+        "characters",
+        "schools",
+        "historical"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/schools.json",
+      "type": "config",
+      "name": "schools",
+      "filePath": "data/schools.json",
+      "summary": "诸子百家学派定义数据，包含儒家/法家/墨家/道家/兵家/纵横家/阴阳家7大学派。每个学派有3级升级效果、专属政策、任务池、领袖技能和AI行为权重。学派系统是内政和文化竞争的核心机制。",
+      "tags": [
+        "game-data",
+        "schools",
+        "philosophy",
+        "culture",
+        "policies"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:data/skirmish_scenarios.json",
+      "type": "config",
+      "name": "skirmish_scenarios",
+      "filePath": "data/skirmish_scenarios.json",
+      "summary": "战术演武场景集，包含7个预设场景（基础平原战/弓弩射程战/水战演兵/攻城战/补给线战/火攻战/关隘争夺战），覆盖全部已实现战斗机制。每个场景定义地图尺寸、地形布局、双方势力和初始单位部署。",
+      "tags": [
+        "game-data",
+        "skirmish",
+        "tactical-combat",
+        "scenarios",
+        "testing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/tactical_skirmish_mvp.json",
+      "type": "config",
+      "name": "tactical_skirmish_mvp",
+      "filePath": "data/tactical_skirmish_mvp.json",
+      "summary": "战术演武MVP场景数据，7x7 odd-R偏移格，秦军对阵赵国。定义地形布局（含平原/森林/山地/河流/渡口/沼泽/关隘）和初始单位部署，攻占对方城格即胜。",
+      "tags": [
+        "game-data",
+        "skirmish",
+        "tactical-combat",
+        "mvp",
+        "hex-grid"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:data/tech_events.json",
+      "type": "config",
+      "name": "tech_events",
+      "filePath": "data/tech_events.json",
+      "summary": "科技研究过程中触发的随机事件数据。当玩家研究特定科技时，有概率触发相关事件（如铸铁之喜/弩机巧思/洪水预警/民夫怨声等），提供玩家选项影响研发进度和资源。",
+      "tags": [
+        "game-data",
+        "tech-events",
+        "technology",
+        "random-events"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/tech_synergies.json",
+      "type": "config",
+      "name": "tech_synergies",
+      "filePath": "data/tech_synergies.json",
+      "summary": "科技联动（Synergy）数据，定义当玩家同时研究特定科技组合后解锁的额外加成。包含步战宗师/铁骑纵横/攻坚利器/农政革新/商贸帝国/文治天下/金城汤池等联动效果，隐藏至条件满足后揭示。",
+      "tags": [
+        "game-data",
+        "tech-synergies",
+        "technology",
+        "combo-bonuses"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/tech_tree.json",
+      "type": "config",
+      "name": "tech_tree",
+      "filePath": "data/tech_tree.json",
+      "summary": "科技树完整定义数据，包含54项科技，按军事/经济/文化/建筑4大类和早/中/晚3个时代组织。每项科技有前置条件、研究成本、效果（兵种解锁/攻防加成/资源加成等）、精通等级系统和知识卡片（历史背景/关键人物/文物/趣味史实）。",
+      "tags": [
+        "game-data",
+        "tech-tree",
+        "technology",
+        "research",
+        "knowledge-cards"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:data/terrain.json",
+      "type": "config",
+      "name": "terrain",
+      "filePath": "data/terrain.json",
+      "summary": "地形类型定义数据，包含11种地形（平原/森林/山地/河流/沼泽/关隘/渡口/沙漠/水面/城墙/村落）。每种地形定义移动力消耗、攻防修正、伏击概率、远程精度修正、骑兵通行、屏障属性、视野消耗和冬季效果。",
+      "tags": [
+        "game-data",
+        "terrain",
+        "hex-grid",
+        "combat-modifiers"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/units.json",
+      "type": "config",
+      "name": "units",
+      "filePath": "data/units.json",
+      "summary": "兵种定义数据，包含19种兵种（步兵系/骑兵系/弓弩系/攻城系/水军系/斥候系），每种兵种定义攻防HP/移动力/射程/成本/维护费/特殊技能和兵种分类。支持反骑兵/重甲/侦察/冲撞等特殊能力。",
+      "tags": [
+        "game-data",
+        "units",
+        "military",
+        "combat",
+        "recruitment"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:data/wonders.json",
+      "type": "config",
+      "name": "wonders",
+      "filePath": "data/wonders.json",
+      "summary": "奇观定义数据，包含兵马俑/万里长城/都江堰/郑国渠/章华台/稷下学宫/灵渠等战国时期著名工程。每座奇观有建造成本/前置条件/持续效果和历史风味文本。分单城型和地图型两类。",
+      "tags": [
+        "game-data",
+        "wonders",
+        "buildings",
+        "historical",
+        "national-effects"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.claude/mcp.json.template",
+      "type": "config",
+      "path": ".claude/mcp.json.template",
+      "name": "mcp.json.template",
+      "summary": "MCP 服务器配置模板，定义 godot-mcp（Godot 编辑器连接）、gamecodex（游戏设计模式参考）、filesystem（文件读写）三个服务器。开发者需复制为 mcp.json 并替换路径占位符。",
+      "tags": [
+        "config",
+        "mcp",
+        "claude-code",
+        "template"
+      ],
+      "language": "JSON",
+      "linesOfCode": 19,
+      "metadata": {
+        "serverCount": 3,
+        "servers": [
+          "godot-mcp",
+          "gamecodex",
+          "filesystem"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/README.md",
+      "type": "document",
+      "path": ".claude/README.md",
+      "name": "Claude Code 配置说明",
+      "summary": ".claude/ 目录的使用说明文档，描述首次克隆后的本机化步骤（复制 mcp.json.template 并替换路径占位符）、三个 MCP 服务器的用途和启用阶段、以及验证方法。",
+      "tags": [
+        "docs",
+        "claude-code",
+        "mcp",
+        "setup"
+      ],
+      "language": "Markdown",
+      "linesOfCode": 29,
+      "metadata": {
+        "sections": [
+          ".claude/ 配置说明",
+          "首次拉取后的本机化步骤",
+          "MCP 服务器一览",
+          "验证"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.claudeignore",
+      "type": "config",
+      "path": ".claudeignore",
+      "name": "Claude Code 忽略清单",
+      "summary": "Claude Code 读取项目时的文件排除规则，避免读取大量二进制/缓存文件导致请求过大。排除 .godot/、.import/、addons/、photos/、图片/音频/字体/视频/构建产物/Python 缓存等，但保留 project.godot、CLAUDE.md、data/**/*.json 等必要文件。",
+      "tags": [
+        "config",
+        "claude-code",
+        "ignore",
+        "gitignore-style"
+      ],
+      "language": "gitignore",
+      "linesOfCode": 162,
+      "metadata": {
+        "excludedCategories": [
+          "godot-cache",
+          "addons",
+          "photos",
+          "images",
+          "audio",
+          "video",
+          "fonts",
+          "build",
+          "python-cache",
+          "os-noise",
+          "secrets"
+        ],
+        "exceptions": [
+          "project.godot",
+          "CLAUDE.md",
+          "data/**/*.json",
+          ".claude/skills/**"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.gitattributes",
+      "type": "config",
+      "path": ".gitattributes",
+      "name": "Git 行尾规范化配置",
+      "summary": "Git 行尾规范化配置，仓库内所有文本文件统一存为 LF（跨 Windows/macOS/Linux 协作）。显式声明 .gd、.tscn、.tres、.json、.md 等为 text eol=lf，图片/音频/字体/3D 模型/压缩包为 binary。",
+      "tags": [
+        "config",
+        "git",
+        "line-endings",
+        "cross-platform"
+      ],
+      "language": "gitattributes",
+      "linesOfCode": 70,
+      "metadata": {
+        "textFormats": [
+          ".gd",
+          ".gdshader",
+          ".tscn",
+          ".tres",
+          ".escn",
+          ".import",
+          ".cfg",
+          ".godot",
+          ".json",
+          ".md",
+          ".txt",
+          ".csv",
+          ".yml",
+          ".yaml",
+          ".sh",
+          ".py"
+        ],
+        "binaryFormats": [
+          ".png",
+          ".jpg",
+          ".ogg",
+          ".wav",
+          ".ttf",
+          ".otf",
+          ".glb",
+          ".fbx",
+          ".zip",
+          ".exe",
+          ".dll",
+          ".pck",
+          ".scn",
+          ".res"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.githooks/pre-commit",
+      "type": "config",
+      "path": ".githooks/pre-commit",
+      "name": "Git pre-commit 钩子",
+      "summary": "Git 提交前钩子脚本（Python），扫描 scripts/systems/ 和 scripts/ai/ 目录下的 .gd 文件检查硬编码（属性赋值、字符串国家比较、DataManager+魔法数字），并校验 data/ 下所有 .json 文件的格式和必填字段。",
+      "tags": [
+        "config",
+        "git",
+        "hook",
+        "pre-commit",
+        "validation",
+        "python"
+      ],
+      "language": "Python",
+      "linesOfCode": 65,
+      "metadata": {
+        "checks": [
+          "hardcode-scan",
+          "json-validation"
+        ],
+        "scanDirs": [
+          "scripts/systems",
+          "scripts/ai"
+        ],
+        "patterns": [
+          "attack|defense|speed = digit+",
+          "faction == string",
+          "DataManager.get_*() +/- digit"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.githooks/pre-push",
+      "type": "config",
+      "path": ".githooks/pre-push",
+      "name": "Git pre-push 钩子",
+      "summary": "Git 推送前钩子脚本（Python），检查 assets/sprites/ 下 PNG 文件是否符合命名规范（tile/unit/ui_ 前缀 + 小写蛇形命名）。",
+      "tags": [
+        "config",
+        "git",
+        "hook",
+        "pre-push",
+        "asset-naming",
+        "python"
+      ],
+      "language": "Python",
+      "linesOfCode": 21,
+      "metadata": {
+        "checks": [
+          "asset-naming"
+        ],
+        "pattern": "tile|unit|ui_[a-z]+(_[a-z0-9]+)*.png"
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.understand-anything/.understandignore",
+      "type": "config",
+      "path": ".understand-anything/.understandignore",
+      "name": "Understand 分析忽略清单",
+      "summary": "understand-anything 工具的文件排除规则，与 .claudeignore 类似但更严格。排除 assets/、addons/gut/、.tres/.res/.scn 等 Godot 二进制资源，强制保留 project.godot 和 data/**/*.json。",
+      "tags": [
+        "config",
+        "understand-anything",
+        "ignore"
+      ],
+      "language": "gitignore",
+      "linesOfCode": 76,
+      "metadata": {
+        "excludedCategories": [
+          "assets",
+          "addons",
+          "godot-binary",
+          "editor-noise",
+          "secrets",
+          "python-cache",
+          "logs"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.understand-anything/tmp/extract-attack-pipeline.cjs",
+      "type": "file",
+      "path": ".understand-anything/tmp/extract-attack-pipeline.cjs",
+      "name": "extract-attack-pipeline.cjs",
+      "summary": "一次性重构脚本（Node.js），从 tactical_skirmish_manager.gd 提取 try_player_attack、try_attack_city_wall、compute_attack_preview 三个超长函数到新建的 skirmish_attack_pipeline.gd，自动为 manager 私有/公有符号添加 m. 前缀引用，并将原函数体替换为委托桩。",
+      "tags": [
+        "tool",
+        "refactor",
+        "javascript",
+        "one-shot"
+      ],
+      "language": "JavaScript",
+      "linesOfCode": 142,
+      "metadata": {
+        "functions": [
+          "prefixSymbols"
+        ],
+        "extractedFunctions": [
+          "try_player_attack",
+          "try_attack_city_wall",
+          "compute_attack_preview"
+        ],
+        "sourceFile": "scripts/autoload/tactical_skirmish_manager.gd",
+        "targetFile": "scripts/systems/skirmish_attack_pipeline.gd",
+        "memberSymbolCount": 53
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/CODEMAP.md",
+      "type": "document",
+      "path": "docs/CODEMAP.md",
+      "name": "CODEMAP 项目代码导航索引",
+      "summary": "项目代码导航索引，自动生成于 2026-05-20。列出 8 个 Autoload 单例、4 个系统模块、1 个 AI 模块、4 个 UI 脚本、1 个单位脚本的职责和关键函数，以及 17 个数据文件和 18 个场景文件的用途。",
+      "tags": [
+        "docs",
+        "codemap",
+        "navigation",
+        "index"
+      ],
+      "language": "Markdown",
+      "linesOfCode": 177,
+      "metadata": {
+        "sections": [
+          "Autoload 单例",
+          "系统模块",
+          "AI 模块",
+          "UI 脚本",
+          "单位脚本",
+          "场景文件",
+          "数据文件",
+          "设计文档"
+        ],
+        "autoloadCount": 8,
+        "systemModuleCount": 4,
+        "dataFileCount": 17,
+        "sceneFileCount": 18
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-05-16-event-system-redesign.md",
+      "type": "document",
+      "path": "docs/superpowers/plans/2026-05-16-event-system-redesign.md",
+      "name": "随机事件系统重设计实施计划",
+      "summary": "随机事件系统重构的详细实施计划（852行），包含 11 个 Task：更新 events.json Schema（priority/one_shot/event_chains）、更新 balance_params.json、更新 signal_bus.gd 和 data_manager.gd、创建测试骨架、实现差异化冷却/缺失条件/三阶段流水线核心、状态持久化和文档更新。附带完整代码片段和验证步骤。",
+      "tags": [
+        "docs",
+        "plan",
+        "event-system",
+        "refactor",
+        "superpowers"
+      ],
+      "language": "Markdown",
+      "linesOfCode": 852,
+      "metadata": {
+        "taskCount": 11,
+        "modifiedFiles": [
+          "data/events.json",
+          "data/balance_params.json",
+          "scripts/autoload/data_manager.gd",
+          "scripts/autoload/signal_bus.gd",
+          "scripts/autoload/event_manager.gd",
+          "docs/机制概览/随机事件系统.md"
+        ],
+        "createdFiles": [
+          "tests/unit/test_event_manager.gd"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/specs/2026-05-16-event-system-redesign.md",
+      "type": "document",
+      "path": "docs/superpowers/specs/2026-05-16-event-system-redesign.md",
+      "name": "随机事件系统重设计规格书",
+      "summary": "随机事件系统 v2.0 设计规格书（307行），定义三阶段触发流程（链式事件→季节事件→分池竞争）、类型优先级系统（政治90→外交70→军事60→特殊50→学派40→经济30→民心20）、差异化冷却规则、纵横家事件链机制（苏秦合纵/张仪连横）、Schema 变更和接口变更。",
+      "tags": [
+        "docs",
+        "spec",
+        "event-system",
+        "design",
+        "v2.0"
+      ],
+      "language": "Markdown",
+      "linesOfCode": 307,
+      "metadata": {
+        "version": "v2.0",
+        "priorityLevels": {
+          "politics": 90,
+          "season": 80,
+          "diplomacy": 70,
+          "military": 60,
+          "special": 50,
+          "school": 40,
+          "economy": 30,
+          "morale": 20
+        },
+        "eventChains": [
+          "chain_suqin_hezong",
+          "chain_zhangyi_lianheng"
+        ],
+        "newSignals": [
+          "chain_advanced",
+          "chain_completed"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/unit-movement-animation-guide.md",
+      "type": "document",
+      "path": "docs/unit-movement-animation-guide.md",
+      "name": "单位移动动画系统使用指南",
+      "summary": "单位移动动画系统的使用指南（160行），描述六角网格平滑移动、动画状态机（idle/move/attack/hurt/death）、UnitMovementManager 的 BFS 可达范围计算和寻路功能、测试场景使用方法、以及集成到主场景的示例代码。",
+      "tags": [
+        "docs",
+        "guide",
+        "unit",
+        "movement",
+        "animation",
+        "hex-grid"
+      ],
+      "language": "Markdown",
+      "linesOfCode": 160,
+      "metadata": {
+        "animationStates": [
+          "idle",
+          "move",
+          "attack",
+          "hurt",
+          "death"
+        ],
+        "fileStructure": [
+          "scenes/units/unit.tscn",
+          "scripts/units/unit.gd",
+          "scripts/systems/unit_movement_manager.gd"
+        ],
+        "keyMethods": [
+          "request_move",
+          "get_reachable_hexes",
+          "find_path"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:project.godot",
+      "type": "config",
+      "path": "project.godot",
+      "name": "山河策 Godot 项目配置",
+      "summary": "Godot 4.3 项目配置文件。定义游戏名称「山河策」、主场景 scenes/main/main.tscn、9 个 Autoload 单例（SignalBus/DataManager/StartupFlow/EventManager/GameManager/CityManager/DiplomacySystem/TechSystem/TacticalSkirmishManager）、1280x720 视口、GL Compatibility 渲染器、像素隶书默认字体。",
+      "tags": [
+        "config",
+        "godot",
+        "project",
+        "autoload"
+      ],
+      "language": "Godot",
+      "linesOfCode": 48,
+      "metadata": {
+        "gameName": "山河策",
+        "engine": "Godot 4.3",
+        "renderer": "gl_compatibility",
+        "viewport": "1280x720",
+        "mainScene": "scenes/main/main.tscn",
+        "autoloads": [
+          "SignalBus",
+          "DataManager",
+          "StartupFlow",
+          "EventManager",
+          "GameManager",
+          "CityManager",
+          "DiplomacySystem",
+          "TechSystem",
+          "TacticalSkirmishManager"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/main/main.gd",
+      "type": "file",
+      "path": "scenes/main/main.gd",
+      "name": "main.gd",
+      "summary": "主场景脚本，连接 UI 和游戏系统。preload 外交/大地图/城市面板/事件弹窗/事件测试/演武场景选择 6 个场景，_ready 中连接外交/科技/演武/大地图 4 个按钮，初始化 7 势力游戏（默认玩家为秦），管理 ResourceBar 的嵌入/取回，处理城市点击→城市面板→返回大地图的导航流。",
+      "tags": [
+        "scene",
+        "main",
+        "ui",
+        "navigation",
+        "gdscript"
+      ],
+      "language": "GDScript",
+      "linesOfCode": 181,
+      "metadata": {
+        "extends": "Node",
+        "preloadedScenes": [
+          "diplomacy_panel.tscn",
+          "big_map_panel.tscn",
+          "city_panel.tscn",
+          "event_popup.tscn",
+          "event_test_panel.tscn",
+          "skirmish_scenario_panel.tscn"
+        ],
+        "functions": [
+          "_ready",
+          "_init_game",
+          "_embed_resource_bar",
+          "_reclaim_resource_bar",
+          "_ensure_big_map",
+          "_close_big_map",
+          "_close_diplomacy",
+          "_close_city_panel",
+          "_on_diplomacy_button_pressed",
+          "_on_tech_button_pressed",
+          "_on_skirmish_button_pressed",
+          "_on_big_map_button_pressed",
+          "_on_city_clicked",
+          "_on_scenario_skirmish_started"
+        ],
+        "signalsConnected": [
+          "city_clicked",
+          "map_closed",
+          "return_to_map",
+          "panel_closed",
+          "skirmish_started"
+        ],
+        "autoloadsUsed": [
+          "GameManager",
+          "DataManager",
+          "TacticalSkirmishManager",
+          "SkirmishTileTextures"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/main/main.tscn",
+      "type": "file",
+      "path": "scenes/main/main.tscn",
+      "name": "main.tscn",
+      "summary": "主场景场景文件，根节点 Main (Node) 挂载 main.gd 脚本。包含 Label（标题）、ResourceBar (HBoxContainer + resource_bar.gd)、DiplomacyButton/TechButton/SkirmishButton/BigMapButton 4 个按钮、SkirmishPanel (skirmish_mvp_panel.tscn 实例)、TechTreePanel (tech_tree_panel.gd)。",
+      "tags": [
+        "scene",
+        "tscn",
+        "main",
+        "ui"
+      ],
+      "language": "TSCN",
+      "linesOfCode": 63,
+      "metadata": {
+        "scriptRefs": [
+          "scenes/main/main.gd",
+          "scenes/ui/tech/tech_tree_panel.gd",
+          "scenes/ui/resource_bar/resource_bar.gd"
+        ],
+        "sceneRefs": [
+          "scenes/ui/skirmish/skirmish_mvp_panel.tscn"
+        ],
+        "nodes": [
+          "Main",
+          "Label",
+          "ResourceBar",
+          "DiplomacyButton",
+          "TechButton",
+          "SkirmishButton",
+          "SkirmishPanel",
+          "BigMapButton",
+          "TechTreePanel"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/big_map/big_map_panel.gd",
+      "type": "file",
+      "path": "scenes/ui/big_map/big_map_panel.gd",
+      "name": "big_map_panel.gd",
+      "summary": "大地图面板脚本（CanvasLayer），30x20 六角密铺地图。从 big_map_terrain.json 加载地形、从 DataManager 获取 50 城数据，动态创建 SkirmishHexCell 六角格按钮。支持缩放（Ctrl+滚轮/按钮）、政治模式切换（势力着色）、首都标记、悬停信息显示、城市点击信号。复用 HexAxial 坐标工具和 SkirmishTileTextures 纹理缓存。",
+      "tags": [
+        "scene",
+        "ui",
+        "big-map",
+        "hex-grid",
+        "gdscript"
+      ],
+      "language": "GDScript",
+      "linesOfCode": 554,
+      "metadata": {
+        "extends": "CanvasLayer",
+        "signals": [
+          "city_clicked(city_id: String)",
+          "map_closed"
+        ],
+        "constants": [
+          "_HEX_RADIUS_BASE_PX",
+          "_HEX_BOARD_PAD_PX",
+          "_HEX_BOARD_LAYOUT_VERSION",
+          "_ZOOM_STEP",
+          "_ZOOM_MIN",
+          "_ZOOM_MAX"
+        ],
+        "functions": [
+          "open",
+          "close",
+          "get_resource_bar_slot",
+          "_ready",
+          "_build_terrain_lookup",
+          "_build_city_lookup",
+          "_ensure_hex_buttons",
+          "_ensure_board_backdrop",
+          "_ensure_hex_map_canvas",
+          "_refresh_display",
+          "_apply_zoom",
+          "_on_political_toggle",
+          "_update_political_legend",
+          "_apply_capital_badge",
+          "_remove_capital_badge",
+          "_on_hex_pressed",
+          "_build_hover_text",
+          "_city_tint_color",
+          "_apply_political_cell",
+          "_compute_hex_radius_px",
+          "_map_bbox_unit",
+          "_hex_play_area_avail_px",
+          "_deferred_refit_hex_radius_if_needed"
+        ],
+        "autoloadsUsed": [
+          "DataManager",
+          "GameManager",
+          "SkirmishTileTextures",
+          "HexAxial",
+          "HexMapCanvas",
+          "SkirmishHexCell"
+        ],
+        "preloads": [
+          "hex_axial.gd"
+        ],
+        "dataFiles": [
+          "data/big_map_terrain.json"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/big_map/big_map_panel.tscn",
+      "type": "file",
+      "path": "scenes/ui/big_map/big_map_panel.tscn",
+      "name": "big_map_panel.tscn",
+      "summary": "大地图面板场景文件，根节点 BigMapPanel (CanvasLayer, layer=50) 挂载 big_map_panel.gd。包含 Dim 遮罩、MarginContainer 下的 MainVBox（TitleBar 含标题/缩放按钮/政治模式按钮/关闭按钮、HoverInfo 标签、PoliticalLegend 图例、Scroll 滚动容器含 HexBoard 六角格画布）。",
+      "tags": [
+        "scene",
+        "tscn",
+        "big-map",
+        "ui"
+      ],
+      "language": "TSCN",
+      "linesOfCode": 91,
+      "metadata": {
+        "scriptRefs": [
+          "scenes/ui/big_map/big_map_panel.gd"
+        ],
+        "uniqueNodes": [
+          "HexBoard",
+          "HoverInfo"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/buff/buff_panel.gd",
+      "type": "file",
+      "path": "scenes/ui/buff/buff_panel.gd",
+      "name": "buff_panel.gd",
+      "summary": "Buff/Debuff 介绍面板脚本（PanelContainer），点击状态栏 Buff 图标后弹出。接收 buff 数组数据，分别为增益/减益创建图标按钮（支持浮动动画和减益闪烁），点击查看详情（名称/效果/持续/来源/描述），弹出/关闭有缩放+淡入淡出动画。",
+      "tags": [
+        "scene",
+        "ui",
+        "buff",
+        "debuff",
+        "animation",
+        "gdscript"
+      ],
+      "language": "GDScript",
+      "linesOfCode": 123,
+      "metadata": {
+        "extends": "PanelContainer",
+        "signals": [
+          "buff_selected(buff_data: Dictionary)",
+          "panel_closed"
+        ],
+        "constants": [
+          "ICON_SIZE",
+          "POP_DURATION",
+          "CLOSE_DURATION"
+        ],
+        "functions": [
+          "show_buffs",
+          "_clear_icons",
+          "_populate_icons",
+          "_create_icon_button",
+          "_start_debuff_blink",
+          "_show_detail",
+          "_popup_animate",
+          "_close"
+        ],
+        "autoloadsUsed": [
+          "SkirmishTileTextures"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/buff/buff_panel.tscn",
+      "type": "file",
+      "path": "scenes/ui/buff/buff_panel.tscn",
+      "name": "buff_panel.tscn",
+      "summary": "Buff 面板场景文件，根节点 BuffPanel (PanelContainer) 挂载 buff_panel.gd。包含 VBox 下的 Title（标题+关闭按钮）、BuffArea/BuffContainer（增益区）、DebuffArea/DebuffContainer（减益区）、DetailPanel（详情：Name/Effect/Duration/Source/Desc 5 个标签）。",
+      "tags": [
+        "scene",
+        "tscn",
+        "buff",
+        "ui"
+      ],
+      "language": "TSCN",
+      "linesOfCode": 105,
+      "metadata": {
+        "scriptRefs": [
+          "scenes/ui/buff/buff_panel.gd"
+        ],
+        "nodes": [
+          "BuffPanel",
+          "VBox",
+          "Title",
+          "CloseButton",
+          "BuffArea",
+          "BuffContainer",
+          "DebuffArea",
+          "DebuffContainer",
+          "DetailPanel",
+          "Name",
+          "Effect",
+          "Duration",
+          "Source",
+          "Desc"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/city_panel/city_panel.gd",
+      "type": "file",
+      "path": "scenes/ui/city_panel/city_panel.gd",
+      "name": "city_panel.gd",
+      "summary": "城市管理面板脚本（Panel），显示城市信息/已建建筑/建造队列/可建造列表。动态构建 UI（标题栏/左右分栏），左侧显示城市属性和已建建筑（含升级/拆除按钮），右侧显示可建造列表（含详情按钮）和建筑详情。通过 CityManager 执行建造/升级/拆除操作，监听 building_completed 信号刷新。",
+      "tags": [
+        "scene",
+        "ui",
+        "city",
+        "building",
+        "management",
+        "gdscript"
+      ],
+      "language": "GDScript",
+      "linesOfCode": 556,
+      "metadata": {
+        "extends": "Panel",
+        "signals": [
+          "return_to_map",
+          "panel_closed"
+        ],
+        "functions": [
+          "open",
+          "close",
+          "get_resource_bar_slot",
+          "_build_ui",
+          "_refresh_all",
+          "_refresh_info",
+          "_refresh_buildings",
+          "_refresh_queue",
+          "_refresh_build_list",
+          "_show_building_detail",
+          "_on_build_pressed",
+          "_on_upgrade_pressed",
+          "_on_demolish_pressed",
+          "_on_cancel_build_pressed",
+          "_on_building_completed",
+          "_faction_display_name",
+          "_special_resource_name",
+          "_category_name",
+          "_effects_summary",
+          "_effect_display_name",
+          "_format_pop",
+          "_reason_text"
+        ],
+        "autoloadsUsed": [
+          "CityManager",
+          "DataManager",
+          "SignalBus",
+          "SkirmishTileTextures"
+        ],
+        "buildingIconMap": {
+          "farm": "icon_building_farm",
+          "market": "icon_building_market",
+          "granary": "icon_building_granary",
+          "barracks": "icon_building_barracks",
+          "stable": "icon_building_stable",
+          "wall": "icon_building_wall",
+          "academy": "icon_building_academy",
+          "ironworks": "icon_building_forge",
+          "shrine": "icon_building_temple"
+        }
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/city_panel/city_panel.tscn",
+      "type": "file",
+      "path": "scenes/ui/city_panel/city_panel.tscn",
+      "name": "city_panel.tscn",
+      "summary": "城市面板场景文件，根节点 CityPanel (Panel, 全屏锚点) 挂载 city_panel.gd。仅包含 Dim 遮罩（深色半透明背景），UI 由脚本动态构建。",
+      "tags": [
+        "scene",
+        "tscn",
+        "city",
+        "ui"
+      ],
+      "language": "TSCN",
+      "linesOfCode": 20,
+      "metadata": {
+        "scriptRefs": [
+          "scenes/ui/city_panel/city_panel.gd"
+        ],
+        "nodes": [
+          "CityPanel",
+          "Dim"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/diplomacy/diplomacy_panel.gd",
+      "type": "file",
+      "path": "scenes/ui/diplomacy/diplomacy_panel.gd",
+      "name": "diplomacy_panel.gd",
+      "summary": "外交面板脚本（Panel），左侧国家列表（显示声望等级/好感度/战争/盟友状态），右侧选中国家的外交详情（好感度/声望/关系状态/边境/附庸/商路/通行权），底部 7 个外交动作按钮（赠礼/宣战/停战/互不侵犯/结盟/通行权/商路）。调用 DiplomacySystem 执行外交操作。",
+      "tags": [
+        "scene",
+        "ui",
+        "diplomacy",
+        "factions",
+        "gdscript"
+      ],
+      "language": "GDScript",
+      "linesOfCode": 310,
+      "metadata": {
+        "extends": "Panel",
+        "signals": [
+          "diplomacy_panel_closed"
+        ],
+        "functions": [
+          "open",
+          "_build_ui",
+          "_populate_faction_list",
+          "_update_detail_panel",
+          "_on_faction_selected",
+          "_on_gift_pressed",
+          "_on_declare_war_pressed",
+          "_on_ceasefire_pressed",
+          "_on_non_aggression_pressed",
+          "_on_alliance_pressed",
+          "_on_military_access_pressed",
+          "_on_trade_route_pressed"
+        ],
+        "autoloadsUsed": [
+          "GameManager",
+          "DataManager",
+          "DiplomacySystem",
+          "SkirmishTileTextures"
+        ],
+        "diplomacyActions": [
+          "send_gift",
+          "declare_war",
+          "propose_ceasefire",
+          "sign_non_aggression",
+          "form_alliance",
+          "grant_military_access",
+          "open_trade_route"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/diplomacy/diplomacy_panel.tscn",
+      "type": "file",
+      "path": "scenes/ui/diplomacy/diplomacy_panel.tscn",
+      "name": "diplomacy_panel.tscn",
+      "summary": "外交面板场景文件，根节点 DiplomacyPanel (Panel, 全屏锚点) 挂载 diplomacy_panel.gd。仅包含 Dim 遮罩（深色半透明背景），UI 由脚本动态构建。",
+      "tags": [
+        "scene",
+        "tscn",
+        "diplomacy",
+        "ui"
+      ],
+      "language": "TSCN",
+      "linesOfCode": 20,
+      "metadata": {
+        "scriptRefs": [
+          "scenes/ui/diplomacy/diplomacy_panel.gd"
+        ],
+        "nodes": [
+          "DiplomacyPanel",
+          "Dim"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/diplomacy/negotiation_dialog.gd",
+      "type": "file",
+      "path": "scenes/ui/diplomacy/negotiation_dialog.gd",
+      "name": "negotiation_dialog.gd",
+      "summary": "停战谈判弹窗脚本（ConfirmationDialog），战胜方开价界面。包含赔款输入框（SpinBox）、城市选择列表（OptionButton）、称臣复选框（CheckBox），支持最多 3 轮谈判历史显示。调用 DiplomacySystem.accept_ceasefire 执行停战，调用 DiplomacyAI.evaluate_ceasefire_offer/generate_counter_offer 处理 AI 还价逻辑。",
+      "tags": [
+        "scene",
+        "ui",
+        "diplomacy",
+        "negotiation",
+        "ceasefire",
+        "gdscript"
+      ],
+      "language": "GDScript",
+      "linesOfCode": 215,
+      "metadata": {
+        "extends": "ConfirmationDialog",
+        "signals": [
+          "negotiation_completed(success: bool)"
+        ],
+        "functions": [
+          "open",
+          "_build_ui",
+          "_update_info",
+          "_update_history",
+          "_get_current_terms",
+          "_on_accept_pressed",
+          "_on_reject_pressed",
+          "_on_counter_pressed"
+        ],
+        "autoloadsUsed": [
+          "DataManager",
+          "DiplomacySystem",
+          "DiplomacyAI",
+          "SkirmishTileTextures"
+        ],
+        "maxRounds": 3,
+        "termFields": [
+          "gold",
+          "city_id",
+          "city_name",
+          "vassal",
+          "payer",
+          "receiver"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/diplomacy/negotiation_dialog.tscn",
+      "type": "file",
+      "path": "scenes/ui/diplomacy/negotiation_dialog.tscn",
+      "name": "negotiation_dialog.tscn",
+      "summary": "停战谈判弹窗场景文件，根节点 NegotiationDialog (ConfirmationDialog, 400x300) 挂载 negotiation_dialog.gd。最小场景，UI 由脚本动态构建。",
+      "tags": [
+        "scene",
+        "tscn",
+        "diplomacy",
+        "negotiation"
+      ],
+      "language": "TSCN",
+      "linesOfCode": 7,
+      "metadata": {
+        "scriptRefs": [
+          "scenes/ui/diplomacy/negotiation_dialog.gd"
+        ],
+        "nodes": [
+          "NegotiationDialog"
+        ]
+      },
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scenes/ui/event_popup/event_popup.gd",
+      "name": "event_popup.gd",
+      "path": "scenes/ui/event_popup/event_popup.gd",
+      "language": "gdscript",
+      "summary": "事件弹窗 UI 控制器。监听 SignalBus.event_triggered 信号，动态构建事件插画、标题、描述和选项按钮。选择选项后调用 EventManager.resolve_event_choice()。使用 CanvasLayer(layer=100) 覆盖大地图。支持有选项和无选项两种事件格式，悬停选项时显示资源效果预览。",
+      "tags": [
+        "ui",
+        "event",
+        "popup",
+        "panel",
+        "signal-driven"
+      ],
+      "lines": 207,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::event_popup",
+      "name": "EventPopup",
+      "summary": "事件弹窗面板，继承 Panel。包含 _build_ui() 动态 UI 构建、_show_event() 事件展示、_on_option_selected() 选项处理、_format_outcomes() 效果格式化等核心方法。",
+      "tags": [
+        "ui",
+        "event",
+        "popup"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/event_popup/event_popup.tscn",
+      "name": "event_popup.tscn",
+      "path": "scenes/ui/event_popup/event_popup.tscn",
+      "language": "tscn",
+      "summary": "事件弹窗场景文件。定义 Panel 根节点，绑定 event_popup.gd 脚本，全屏锚点布局。",
+      "tags": [
+        "scene",
+        "ui",
+        "event"
+      ],
+      "lines": 11,
+      "complexity": "simple",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/event_test/event_test_panel.gd",
+      "name": "event_test_panel.gd",
+      "path": "scenes/ui/event_test/event_test_panel.gd",
+      "language": "gdscript",
+      "summary": "事件测试面板 UI。列出所有事件（从 DataManager.get_all_events()），支持按类别筛选和直接触发。使用 CanvasLayer(layer=60) 覆盖大地图。触发事件时通过 SignalBus.event_triggered.emit() 发射信号。",
+      "tags": [
+        "ui",
+        "event",
+        "test",
+        "debug",
+        "panel"
+      ],
+      "lines": 163,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::event_test_panel",
+      "name": "EventTestPanel",
+      "summary": "事件测试面板，继承 Panel。包含 _populate_events() 事件列表填充、_category_display() 类别显示名映射、_category_color() 类别颜色映射。支持经济/军事/民心/季节/政治/外交/学派/特殊 8 种事件类别。",
+      "tags": [
+        "ui",
+        "event",
+        "test"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/event_test/event_test_panel.tscn",
+      "name": "event_test_panel.tscn",
+      "path": "scenes/ui/event_test/event_test_panel.tscn",
+      "language": "tscn",
+      "summary": "事件测试面板场景文件。定义 Panel 根节点，绑定 event_test_panel.gd 脚本。",
+      "tags": [
+        "scene",
+        "ui",
+        "event",
+        "test"
+      ],
+      "lines": 11,
+      "complexity": "simple",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/resource_bar/resource_bar.gd",
+      "name": "resource_bar.gd",
+      "path": "scenes/ui/resource_bar/resource_bar.gd",
+      "language": "gdscript",
+      "summary": "顶部资源栏 UI。显示 10 种玩家资源（粮食/金币/木材/马匹/精铁/工匠/建材/兵力/人口/民心），每回合通过 SignalBus.turn_started 自动刷新。从 GameManager 获取资源数值，支持万为单位的格式化显示。",
+      "tags": [
+        "ui",
+        "resource",
+        "hud",
+        "game-loop"
+      ],
+      "lines": 88,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::resource_bar",
+      "name": "ResourceBar",
+      "summary": "资源栏控件，继承 HBoxContainer。包含 _add_resource_cell() 资源项创建、refresh() 全量刷新、_resource_icon() 图标映射、_format_number() 数值格式化。加入 'resource_bar' 组。",
+      "tags": [
+        "ui",
+        "resource",
+        "hud"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "name": "skirmish_mvp_panel.gd",
+      "path": "scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "language": "gdscript",
+      "summary": "战术演武主 UI 面板（860行，本批次最大文件）。CanvasLayer 根节点，管理六角格棋盘渲染、单位选择/移动/攻击交互、悬停信息显示、战斗特效播放、回合控制。使用 odd-R 矩形蜂巢密铺，通过 HexAxial 进行坐标转换。支持攻城、城墙 HP、关隘、首都标记、单位动画精灵等功能。",
+      "tags": [
+        "ui",
+        "skirmish",
+        "hex",
+        "combat",
+        "tactical",
+        "core-system"
+      ],
+      "lines": 860,
+      "complexity": "complex",
+      "type": "file"
+    },
+    {
+      "id": "class::skirmish_mvp_panel",
+      "name": "SkirmishMvpPanel",
+      "summary": "战术演武主面板，继承 CanvasLayer。核心方法：open_panel()/close_panel() 面板控制、_ensure_hex_buttons() 六角格创建、_on_hex_pressed() 点击处理、_refresh_display() 显示刷新、_build_hover_text() 悬停信息、_apply_unit_overlay() 单位精灵叠加、_play_combat_effect() 战斗特效。管理 SpriteFrames 缓存（单位动画+战斗特效）。",
+      "tags": [
+        "ui",
+        "skirmish",
+        "hex",
+        "combat"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/skirmish/skirmish_mvp_panel.tscn",
+      "name": "skirmish_mvp_panel.tscn",
+      "path": "scenes/ui/skirmish/skirmish_mvp_panel.tscn",
+      "language": "tscn",
+      "summary": "战术演武主面板场景。CanvasLayer(layer=50) 根节点，包含 Dim 遮罩、MarginContainer 布局、标题、按钮行（结束回合/待命/重置/撤退/关闭）、提示标签、战斗日志、HexBoard 六角棋盘、悬停信息栏。",
+      "tags": [
+        "scene",
+        "ui",
+        "skirmish",
+        "hex"
+      ],
+      "lines": 103,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "name": "skirmish_scenario_panel.gd",
+      "path": "scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "language": "gdscript",
+      "summary": "演武场景选择面板。从 DataManager.get_skirmish_scenarios() 加载场景列表，显示场景详情（名称/描述/机制/地图大小/单位数），支持季节选择（春夏秋冬）。发射 skirmish_started 信号通知 main.gd 打开演武面板。可打开测试指南面板。",
+      "tags": [
+        "ui",
+        "skirmish",
+        "scenario",
+        "selection"
+      ],
+      "lines": 136,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::skirmish_scenario_panel",
+      "name": "SkirmishScenarioPanel",
+      "summary": "演武场景选择面板，继承 CanvasLayer。信号 skirmish_started(scenario_id, season)。预加载 skirmish_test_guide_panel.tscn。核心方法：_populate_list() 列表填充、_show_detail() 详情展示、_on_start_pressed() 开始演武。",
+      "tags": [
+        "ui",
+        "skirmish",
+        "scenario"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/skirmish/skirmish_scenario_panel.tscn",
+      "name": "skirmish_scenario_panel.tscn",
+      "path": "scenes/ui/skirmish/skirmish_scenario_panel.tscn",
+      "language": "tscn",
+      "summary": "演武场景选择面板场景。CanvasLayer(layer=55) 根节点，包含左右分栏布局：左侧场景列表(ItemList)、右侧详情面板(名称/描述/机制/信息/季节选择)、底部按钮行(返回/测试指南/开始演武)。",
+      "tags": [
+        "scene",
+        "ui",
+        "skirmish"
+      ],
+      "lines": 153,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+      "name": "skirmish_test_guide_panel.gd",
+      "path": "scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+      "language": "gdscript",
+      "summary": "演武测试指南面板（298行）。包含 7 个场景的详细测试操作说明（基础平原战/弓弩射程战/水战演兵/攻城战/补给线战/冬季水战/火攻演兵），使用 BBCode 格式化，涵盖战斗公式、地形修正、ZoC、士气、射程、水战、攻城器械、断粮、火攻、夹击、包围、伏击等所有战术机制。",
+      "tags": [
+        "ui",
+        "skirmish",
+        "guide",
+        "test",
+        "documentation"
+      ],
+      "lines": 298,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::skirmish_test_guide_panel",
+      "name": "SkirmishTestGuidePanel",
+      "summary": "测试指南面板，继承 CanvasLayer。通过 open_guide(scenario_id) 显示对应场景指南。包含 7 个指南生成函数：_guide_basic_plains/ranged_warfare/naval_battle/siege_warfare/supply_warfare/winter_naval/fire_attack。",
+      "tags": [
+        "ui",
+        "skirmish",
+        "guide"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/skirmish/skirmish_test_guide_panel.tscn",
+      "name": "skirmish_test_guide_panel.tscn",
+      "path": "scenes/ui/skirmish/skirmish_test_guide_panel.tscn",
+      "language": "tscn",
+      "summary": "测试指南面板场景。CanvasLayer(layer=56) 根节点，包含 Dim 遮罩、PanelBG 容器、标题行(标题+关闭按钮)、ScrollContainer 内的 GuideContent(RichTextLabel, BBCode)。",
+      "tags": [
+        "scene",
+        "ui",
+        "skirmish",
+        "guide"
+      ],
+      "lines": 66,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/splash/announcement_popup.gd",
+      "name": "announcement_popup.gd",
+      "path": "scenes/ui/splash/announcement_popup.gd",
+      "language": "gdscript",
+      "summary": "公告弹窗控制器。卷轴展开/收起动画效果：背景 scale.x 从 0 到 1 展开，内容淡入，印章盖下（弹跳效果）。使用 Tween 并行动画，发射 announced 信号。",
+      "tags": [
+        "ui",
+        "splash",
+        "announcement",
+        "animation"
+      ],
+      "lines": 80,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::announcement_popup",
+      "name": "AnnouncementPopup",
+      "summary": "公告弹窗，继承 Control。信号 announced。动画常量：OPEN_DURATION=0.4s, CLOSE_DURATION=0.3s, SEAL_DROP_DURATION=0.2s。核心方法：show_announcement(title, body), _open() 卷轴展开, _close() 卷轴收起。",
+      "tags": [
+        "ui",
+        "splash",
+        "announcement"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/splash/announcement_popup.tscn",
+      "name": "announcement_popup.tscn",
+      "path": "scenes/ui/splash/announcement_popup.tscn",
+      "language": "tscn",
+      "summary": "公告弹窗场景。Control 根节点，包含 Overlay 遮罩、Background(卷轴纹理 ui_announcement_bg.png)、Content(标题/分隔/正文/确认按钮)、Seal(印章纹理 ui_announcement_seal.png)。",
+      "tags": [
+        "scene",
+        "ui",
+        "splash",
+        "announcement"
+      ],
+      "lines": 100,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/splash/faction_select.gd",
+      "name": "faction_select.gd",
+      "path": "scenes/ui/splash/faction_select.gd",
+      "language": "gdscript",
+      "summary": "势力选择界面。7 个战国势力（秦/赵/齐/楚/魏/燕/韩），每个势力有 id/name/desc/unit/bonus 属性。点击卡片选中势力，详情面板显示势力信息、特色兵种、势力加成。发射 faction_selected 信号并调用 StartupFlow.on_faction_selected()。",
+      "tags": [
+        "ui",
+        "splash",
+        "faction",
+        "selection",
+        "startup"
+      ],
+      "lines": 100,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::faction_select",
+      "name": "FactionSelect",
+      "summary": "势力选择界面，继承 Control。信号 faction_selected(faction_id)。FACTIONS 常量定义 7 个势力数据。核心方法：_create_cards() 创建势力卡片、_select_faction() 选中处理、_on_start() 开始游戏。使用 Tween 做选中/悬停动画。",
+      "tags": [
+        "ui",
+        "splash",
+        "faction"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/splash/faction_select.tscn",
+      "name": "faction_select.tscn",
+      "path": "scenes/ui/splash/faction_select.tscn",
+      "language": "tscn",
+      "summary": "势力选择场景。Control 根节点，包含 Background(选择背景纹理 ui_select_bg.png)、TitleLabel、CardsContainer(HBoxContainer)、DetailPanel(头像+信息)、Buttons(返回/开始游戏)。",
+      "tags": [
+        "scene",
+        "ui",
+        "splash",
+        "faction"
+      ],
+      "lines": 109,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/splash/loading_screen.gd",
+      "name": "loading_screen.gd",
+      "path": "scenes/ui/splash/loading_screen.gd",
+      "language": "gdscript",
+      "summary": "加载画面控制器。六角形旋转动画 + 武器图标轮播（剑/弓/盾/马，0.8秒切换）+ 打字机文字效果（5条提示语循环）。StartupFlow 活跃时自动启动 1.5 秒加载动画。发射 loading_finished 信号。",
+      "tags": [
+        "ui",
+        "splash",
+        "loading",
+        "animation"
+      ],
+      "lines": 132,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::loading_screen",
+      "name": "LoadingScreen",
+      "summary": "加载画面，继承 Control。信号 loading_finished。@export next_scene。动画参数：HEX_ROTATION_SPEED=TAU/2, WEAPON_SWITCH_INTERVAL=0.8s, TYPEWRITER_SPEED=0.1s。核心方法：start_loading(), finish_loading(), _switch_weapon(), _typewriter_step()。",
+      "tags": [
+        "ui",
+        "splash",
+        "loading"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/splash/loading_screen.tscn",
+      "name": "loading_screen.tscn",
+      "path": "scenes/ui/splash/loading_screen.tscn",
+      "language": "tscn",
+      "summary": "加载画面场景。Control 根节点，包含 Overlay 遮罩、HexFrame(六角形纹理 ui_loading_hex.png)、WeaponIcon(武器图标)、HintLabel(提示文字)。",
+      "tags": [
+        "scene",
+        "ui",
+        "splash",
+        "loading"
+      ],
+      "lines": 76,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/splash/mode_select.gd",
+      "name": "mode_select.gd",
+      "path": "scenes/ui/splash/mode_select.gd",
+      "language": "gdscript",
+      "summary": "模式选择界面。4 种游戏模式：征战天下(经典)、逐鹿中原(快速)、合纵连横(剧情)、自定义战役(沙盒)。卡片式 UI，点击选中后高亮，悬停缩放动画。发射 mode_selected 信号，调用 StartupFlow.on_mode_selected()。",
+      "tags": [
+        "ui",
+        "splash",
+        "mode",
+        "selection",
+        "startup"
+      ],
+      "lines": 149,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::mode_select",
+      "name": "ModeSelect",
+      "summary": "模式选择界面，继承 Control。信号 mode_selected(mode_id)。MODES 常量定义 4 种模式（classic/quick/story/sandbox），每种有 id/name/subtitle/desc/turns/diff/tag 属性。核心方法：_create_cards(), _build_card(), _select_mode(), _on_next()。",
+      "tags": [
+        "ui",
+        "splash",
+        "mode"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/splash/mode_select.tscn",
+      "name": "mode_select.tscn",
+      "path": "scenes/ui/splash/mode_select.tscn",
+      "language": "tscn",
+      "summary": "模式选择场景。Control 根节点，包含 Background(ColorRect 深色背景)、TitleLabel、CardsContainer(GridContainer 4列)、Buttons(返回/下一步)。",
+      "tags": [
+        "scene",
+        "ui",
+        "splash",
+        "mode"
+      ],
+      "lines": 78,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/splash/splash_screen.gd",
+      "name": "splash_screen.gd",
+      "path": "scenes/ui/splash/splash_screen.gd",
+      "language": "gdscript",
+      "summary": "启动画面控制器。Logo 淡入淡出动画（4.5秒），点击跳过。程序化创建 AnimationPlayer 动画（Logo 透明度 + 背景色变化 + 结束回调）。调用 StartupFlow.on_splash_finished() 进入下一步。",
+      "tags": [
+        "ui",
+        "splash",
+        "startup",
+        "animation"
+      ],
+      "lines": 68,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "class::splash_screen",
+      "name": "SplashScreen",
+      "summary": "启动画面，继承 Control。使用 AnimationPlayer 程序化创建动画。Logo 从 0.5s 淡入到 1.5s，3.5s-4.0s 淡出。支持点击跳过（_unhandled_input）。调用 StartupFlow.on_splash_finished()。",
+      "tags": [
+        "ui",
+        "splash",
+        "startup"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/ui/splash/splash_screen.tscn",
+      "name": "splash_screen.tscn",
+      "path": "scenes/ui/splash/splash_screen.tscn",
+      "language": "tscn",
+      "summary": "启动画面场景。Control 根节点，包含 Background(ColorRect 黑色)、LogoContainer(CenterContainer+Logo)、TitleContainer(带 ShaderMaterial 的 Title, 使用 splash_brush_reveal.gdshader)、AnimationPlayer。",
+      "tags": [
+        "scene",
+        "ui",
+        "splash",
+        "shader"
+      ],
+      "lines": 64,
+      "complexity": "moderate",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/ui/tech/tech_tree_panel.gd",
+      "name": "tech_tree_panel.gd",
+      "path": "scenes/ui/tech/tech_tree_panel.gd",
+      "language": "gdscript",
+      "summary": "科技树面板（373行）。显示 54 个科技的树状结构，横向三列（早期/中期/晚期）纵向四行（军事/经济/民生/建筑）。支持点击查看详情（名称/类别/时代/描述/费用/效果/前置/特殊条件/状态），可开始/取消研究。监听 SignalBus 的 tech_research_completed/started/available 信号。",
+      "tags": [
+        "ui",
+        "tech",
+        "tree",
+        "research",
+        "game-system"
+      ],
+      "lines": 373,
+      "complexity": "complex",
+      "type": "file"
+    },
+    {
+      "id": "class::tech_tree_panel",
+      "name": "TechTreePanel",
+      "summary": "科技树面板，继承 Control。颜色常量区分研究状态（绿已研/蓝可研/橙研中/灰锁定）。核心方法：_build_tree_grid() 构建网格、_show_tech_detail() 详情展示、_format_effect() 效果格式化（支持 18 种效果类型）、_on_start_research() 开始研究。通过 TechSystem 查询研究状态。",
+      "tags": [
+        "ui",
+        "tech",
+        "tree"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scenes/units/unit_movement_test.tscn",
+      "name": "unit_movement_test.tscn",
+      "path": "scenes/units/unit_movement_test.tscn",
+      "language": "tscn",
+      "summary": "单位移动测试场景。Node2D 根节点(UnitMovementTest)，包含 Unit(Node2D+unit.gd+AnimatedSprite2D) 和 UnitMovementManager(Node+unit_movement_manager.gd)。",
+      "tags": [
+        "scene",
+        "unit",
+        "test",
+        "movement"
+      ],
+      "lines": 16,
+      "complexity": "simple",
+      "type": "file"
+    },
+    {
+      "id": "file:scenes/units/unit.tscn",
+      "name": "unit.tscn",
+      "path": "scenes/units/unit.tscn",
+      "language": "tscn",
+      "summary": "单位基础场景。Node2D 根节点(Unit)，绑定 unit.gd 脚本，包含 AnimatedSprite2D 子节点用于动画播放。",
+      "tags": [
+        "scene",
+        "unit",
+        "base"
+      ],
+      "lines": 8,
+      "complexity": "simple",
+      "type": "file"
+    },
+    {
+      "id": "file:scripts/ai/diplomacy_ai.gd",
+      "name": "diplomacy_ai.gd",
+      "path": "scripts/ai/diplomacy_ai.gd",
+      "language": "gdscript",
+      "summary": "AI 外交决策系统（class_name DiplomacyAI）。纯静态方法类，由 GameManager.process_ai_turn() 调用。概率驱动评估（好战度 x 15%）。包含：宣战评估（距离/国力/好感度加权选目标）、停战评估（军队损耗/占领城数）、结盟评估（双方好感度>40）、均势反应（玩家国力超 AI 均值 1.5 倍触发联盟）、附庸脱离评估（声望/趁乱/第三方拉拢）、谈判评估与还价生成。",
+      "tags": [
+        "ai",
+        "diplomacy",
+        "decision",
+        "static-class"
+      ],
+      "lines": 338,
+      "complexity": "complex",
+      "type": "file"
+    },
+    {
+      "id": "class::diplomacy_ai",
+      "name": "DiplomacyAI",
+      "summary": "AI 外交决策系统，纯静态类。核心入口 evaluate_diplomacy(faction_id, turn_number)。宣战评估使用 _calculate_target_score() 三维加权（距离/国力/好感度）。停战条件：军队损耗>50% 或占领敌方 3 城。谈判评分系统：赔款/割地/称臣各有分值，性格修正影响接受阈值。工具函数 _hex_distance() 计算六角格距离。",
+      "tags": [
+        "ai",
+        "diplomacy",
+        "static"
+      ],
+      "language": "gdscript",
+      "complexity": "moderate",
+      "type": "class"
+    },
+    {
+      "id": "file:scripts/autoload/city_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 707,
+      "summary": "城市管理器 Autoload 单例，维护 50 城运行时状态。提供查询、建造、升级、拆除、归属变更、回合结算等接口。管理建筑队列、人口、首都迁都、灭国检查。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "city",
+        "building",
+        "ownership",
+        "game-state"
+      ],
+      "classes": [
+        "CityManager"
+      ],
+      "functions": [
+        "_ready",
+        "_initialize_states",
+        "_build_faction_index",
+        "get_city_state",
+        "get_all_city_states",
+        "get_faction_city_states",
+        "get_capital_state",
+        "can_build",
+        "start_build",
+        "can_upgrade",
+        "start_upgrade",
+        "demolish",
+        "change_ownership",
+        "relocate_player_capital",
+        "relocate_ai_capital",
+        "is_faction_eliminated",
+        "process_turn"
+      ],
+      "signals_emitted": [
+        "city_occupied",
+        "capital_lost",
+        "capital_relocated",
+        "faction_eliminated",
+        "building_completed",
+        "resources_produced"
+      ],
+      "constants": [
+        "REASON_OK",
+        "REASON_INVALID_CITY",
+        "REASON_INVALID_BUILDING",
+        "REASON_ALREADY_BUILT",
+        "REASON_ALREADY_QUEUED",
+        "REASON_SLOTS_FULL",
+        "REASON_NATIONAL_CAP_REACHED",
+        "REASON_INSUFFICIENT_RESOURCES",
+        "REASON_BUILDING_NOT_BUILT",
+        "REASON_MAX_LEVEL_REACHED",
+        "REASON_NOT_OWN_CITY",
+        "REASON_RELOCATION_LIMIT"
+      ],
+      "complexity": "complex",
+      "name": "city_manager.gd"
+    },
+    {
+      "id": "file:scripts/autoload/data_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 515,
+      "summary": "全局数据管理器 Autoload 单例。启动时加载 13 个 JSON 数据文件（地形、兵种、城池、事件、建筑、平衡参数、奇观、势力、外交、科技树、演武、学派、场景），构建索引并提供只读查询接口。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "data-loading",
+        "json",
+        "index",
+        "read-only"
+      ],
+      "classes": [
+        "DataManager"
+      ],
+      "functions": [
+        "_ready",
+        "_load_all_data",
+        "_load_json",
+        "_build_indices",
+        "validate_data",
+        "get_terrain",
+        "get_all_terrains",
+        "get_unit_type",
+        "get_all_unit_types",
+        "get_city",
+        "get_all_cities",
+        "get_cities_by_faction",
+        "get_building",
+        "get_all_buildings",
+        "get_event",
+        "get_all_events",
+        "get_balance_param",
+        "get_faction",
+        "get_all_factions",
+        "get_faction_variants",
+        "get_counter_multiplier",
+        "get_map_size",
+        "get_initial_relations",
+        "get_ai_personality",
+        "get_school",
+        "get_all_schools",
+        "get_all_techs",
+        "get_event_chains"
+      ],
+      "constants": [
+        "TERRAIN_PATH",
+        "UNITS_PATH",
+        "CITIES_PATH",
+        "EVENTS_PATH",
+        "BUILDINGS_PATH",
+        "BALANCE_PARAMS_PATH",
+        "WONDERS_PATH",
+        "FACTIONS_PATH",
+        "DIPLOMACY_PATH",
+        "TECH_TREE_PATH",
+        "TACTICAL_SKIRMISH_MVP_PATH",
+        "SCHOOLS_PATH",
+        "SKIRMISH_SCENARIOS_PATH"
+      ],
+      "complexity": "complex",
+      "name": "data_manager.gd"
+    },
+    {
+      "id": "file:scripts/autoload/diplomacy_system.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 744,
+      "summary": "外交系统 Autoload 单例。管理好感度、国际声望、条约、战争、附庸、商路、通行权。每回合衰减和过期处理。所有外交动作通过 SignalBus 广播。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "diplomacy",
+        "opinion",
+        "reputation",
+        "treaty",
+        "war",
+        "vassal",
+        "trade"
+      ],
+      "classes": [
+        "DiplomacySystem"
+      ],
+      "functions": [
+        "_ready",
+        "_on_turn_started",
+        "_on_turn_ended",
+        "initialize",
+        "_update_opinion_decay",
+        "_update_treaty_expiry",
+        "_update_war_cooldowns",
+        "_settle_vassal_tribute",
+        "_settle_trade_routes",
+        "_apply_building_diplomacy_effects",
+        "are_bordering",
+        "declare_war",
+        "sign_ceasefire",
+        "form_alliance",
+        "break_alliance",
+        "establish_vassal",
+        "escape_vassal",
+        "open_trade_route",
+        "sign_treaty",
+        "break_treaty"
+      ],
+      "signals_listened": [
+        "turn_started",
+        "turn_ended"
+      ],
+      "signals_emitted": [
+        "war_declared",
+        "ceasefire_signed",
+        "treaty_signed",
+        "treaty_expired",
+        "treaty_broken",
+        "alliance_formed",
+        "alliance_broken",
+        "vassal_established",
+        "vassal_escaped",
+        "trade_route_opened",
+        "opinion_changed",
+        "reputation_changed",
+        "diplomacy_action_performed",
+        "negotiation_started",
+        "negotiation_offer",
+        "negotiation_accepted",
+        "negotiation_rejected"
+      ],
+      "complexity": "complex",
+      "name": "diplomacy_system.gd"
+    },
+    {
+      "id": "file:scripts/autoload/event_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 439,
+      "summary": "事件管理器 Autoload 单例。三阶段流水线：链式事件（纵横家事件链）、季节事件（概率1.0）、分池竞争（按类型优先级）。差异化冷却和条件判定。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "event",
+        "chain",
+        "season",
+        "pool",
+        "cooldown"
+      ],
+      "classes": [
+        "EventManager"
+      ],
+      "functions": [
+        "_ready",
+        "_on_turn_started",
+        "_on_turn_ended",
+        "_check_and_trigger_events",
+        "_process_chain_events",
+        "_process_season_events",
+        "_process_pool_events",
+        "_is_chain_applicable",
+        "_check_conditions",
+        "_update_cooldowns"
+      ],
+      "signals_listened": [
+        "turn_started",
+        "turn_ended"
+      ],
+      "signals_emitted": [
+        "event_triggered",
+        "event_resolved"
+      ],
+      "constants": [
+        "TYPE_PRIORITY"
+      ],
+      "complexity": "complex",
+      "name": "event_manager.gd"
+    },
+    {
+      "id": "file:scripts/autoload/game_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 503,
+      "summary": "游戏主循环管理器 Autoload 单例。状态机（GAME_INIT→TURN_START→ACTION→TURN_END→GAME_OVER）。管理回合循环、势力顺序、玩家资源、AI 决策、胜利条件判定。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "game-loop",
+        "state-machine",
+        "turn",
+        "resource",
+        "victory"
+      ],
+      "classes": [
+        "GameManager"
+      ],
+      "functions": [
+        "_ready",
+        "_log_data_loaded",
+        "get_current_phase",
+        "get_current_turn",
+        "get_current_faction",
+        "is_player_faction",
+        "start_game",
+        "end_current_turn",
+        "process_ai_turn",
+        "_ai_economy_tick",
+        "_ai_research_tick",
+        "_init_player_resources",
+        "_init_ai_factions",
+        "_sort_factions_by_speed",
+        "_change_phase",
+        "check_victory",
+        "_process_production",
+        "_apply_upkeep",
+        "get_faction_resources",
+        "apply_faction_resource_delta"
+      ],
+      "signals_listened": [],
+      "signals_emitted": [
+        "turn_started",
+        "turn_ended",
+        "phase_changed",
+        "game_over"
+      ],
+      "enums": [
+        "Phase",
+        "TurnState"
+      ],
+      "constants": [
+        "FACTION_IDS"
+      ],
+      "complexity": "complex",
+      "name": "game_manager.gd"
+    },
+    {
+      "id": "file:scripts/autoload/signal_bus.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 78,
+      "summary": "全局信号总线 Autoload 单例。系统间解耦通信的核心枢纽。定义回合、事件、外交、科技、城市占领、城市管理等所有游戏信号。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "signal-bus",
+        "event-bus",
+        "decoupling"
+      ],
+      "classes": [
+        "SignalBus"
+      ],
+      "signals_emitted": [
+        "turn_started",
+        "turn_ended",
+        "phase_changed",
+        "game_over",
+        "event_triggered",
+        "event_resolved",
+        "war_declared",
+        "ceasefire_signed",
+        "treaty_signed",
+        "treaty_expired",
+        "treaty_broken",
+        "alliance_formed",
+        "alliance_broken",
+        "vassal_established",
+        "vassal_escaped",
+        "trade_route_opened",
+        "opinion_changed",
+        "reputation_changed",
+        "diplomacy_action_performed",
+        "negotiation_started",
+        "negotiation_offer",
+        "negotiation_accepted",
+        "negotiation_rejected",
+        "tech_research_started",
+        "tech_research_completed",
+        "tech_research_cancelled",
+        "tech_available",
+        "city_occupied",
+        "capital_lost",
+        "capital_relocated",
+        "faction_eliminated",
+        "building_completed",
+        "resources_produced"
+      ],
+      "complexity": "moderate",
+      "name": "signal_bus.gd"
+    },
+    {
+      "id": "file:scripts/autoload/startup_flow.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 135,
+      "summary": "启动流程管理器 Autoload 单例。管理 Splash→公告→模式选择→势力选择→加载→游戏 场景切换流程。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "startup",
+        "scene-flow",
+        "splash",
+        "mode-select",
+        "faction-select"
+      ],
+      "classes": [
+        "StartupFlow"
+      ],
+      "functions": [
+        "_ready",
+        "start_full_flow",
+        "quick_start",
+        "goto_splash",
+        "goto_mode_select",
+        "goto_faction_select",
+        "goto_loading",
+        "goto_game",
+        "on_splash_finished",
+        "on_mode_selected",
+        "on_faction_selected",
+        "on_loading_finished",
+        "_start_game",
+        "_get_active_factions"
+      ],
+      "signals_emitted": [
+        "flow_changed"
+      ],
+      "complexity": "moderate",
+      "name": "startup_flow.gd"
+    },
+    {
+      "id": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 1542,
+      "summary": "战术演武管理器 Autoload 单例。六角格移动、战斗结算、攻城、关隘城墙耐久。数据驱动自 tactical_skirmish_mvp.json。协调 CombatResolver、SkirmishAI、SkirmishAttackPipeline。",
+      "tags": [
+        "autoload",
+        "singleton",
+        "tactical",
+        "skirmish",
+        "hex-grid",
+        "combat",
+        "siege",
+        "city-wall"
+      ],
+      "classes": [
+        "TacticalSkirmishManager"
+      ],
+      "functions": [
+        "_ready",
+        "is_active",
+        "set_season",
+        "get_player_faction",
+        "get_enemy_faction",
+        "get_player_city",
+        "get_enemy_city",
+        "get_active_config",
+        "get_current_season",
+        "get_unit_morale",
+        "get_unit_supply",
+        "get_unit_burn",
+        "start_skirmish",
+        "reset_skirmish",
+        "get_unit_by_id",
+        "get_all_units",
+        "get_reachable_cells",
+        "try_move_unit",
+        "try_player_attack",
+        "try_attack_city_wall",
+        "compute_attack_preview",
+        "terrain_at",
+        "get_city_wall_hp",
+        "get_city_level",
+        "get_attack_move_cost",
+        "_can_attack",
+        "_can_fire_attack",
+        "_get_fire_attack_ctx",
+        "_get_passive_skill_bonus",
+        "_get_move_after_attack_skill",
+        "_process_burn_dot",
+        "_process_supply_effects",
+        "_is_in_own_city",
+        "_run_ai_turn",
+        "begin_player_phase"
+      ],
+      "signals_emitted": [
+        "log_appended",
+        "state_changed",
+        "skirmish_ended",
+        "combat_effect_requested"
+      ],
+      "complexity": "complex",
+      "name": "tactical_skirmish_manager.gd"
+    },
+    {
+      "id": "file:scripts/systems/combat_resolver.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 226,
+      "summary": "纯函数战斗伤害计算器。公式流程：攻防加法层→克制乘算→扣减防御→随机波动→崩溃态乘算。无副作用，所有状态通过参数传入。",
+      "tags": [
+        "system",
+        "pure-function",
+        "combat",
+        "damage",
+        "counter",
+        "morale"
+      ],
+      "classes": [
+        "CombatResolver"
+      ],
+      "functions": [
+        "_calc_atk_buff",
+        "_calc_def_buff",
+        "_get_morale_atk_offset",
+        "compute_counter_multiplier",
+        "morale_defense_multiplier",
+        "compute_damage"
+      ],
+      "constants": [],
+      "complexity": "moderate",
+      "name": "combat_resolver.gd"
+    },
+    {
+      "id": "file:scripts/systems/hex_axial.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 96,
+      "summary": "轴坐标六角格工具类。提供轴向/偏移坐标转换、邻居查找、距离计算、像素定位。支持点状顶和平顶六角朝向。",
+      "tags": [
+        "system",
+        "utility",
+        "hex-grid",
+        "coordinate",
+        "axial",
+        "offset"
+      ],
+      "classes": [
+        "HexAxial"
+      ],
+      "functions": [
+        "axial_pointy_top_cell_top_left",
+        "offset_odd_r_to_axial",
+        "axial_to_offset_odd_r",
+        "offset_odd_r_cell_top_left",
+        "axial_flat_top_cell_top_left",
+        "offset_odd_r_flat_top_cell_top_left",
+        "hex_distance_hex",
+        "hex_distance_axial",
+        "neighbors_hex",
+        "iter_rect"
+      ],
+      "constants": [
+        "DIRECTIONS"
+      ],
+      "complexity": "moderate",
+      "name": "hex_axial.gd"
+    },
+    {
+      "id": "file:scripts/systems/skirmish_ai.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 247,
+      "summary": "AI 战术回合执行器。从 TacticalSkirmishManager 提取的 AI 逻辑。处理烧伤DOT、补给效果、士气恢复、敌方单位决策。",
+      "tags": [
+        "system",
+        "ai",
+        "tactical",
+        "skirmish",
+        "enemy-turn"
+      ],
+      "classes": [
+        "SkirmishAI"
+      ],
+      "functions": [
+        "initialize",
+        "run_turn"
+      ],
+      "dependencies": [
+        "TacticalSkirmishManager"
+      ],
+      "complexity": "moderate",
+      "name": "skirmish_ai.gd"
+    },
+    {
+      "id": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 579,
+      "summary": "战术演武攻击流水线。从 TacticalSkirmishManager 提取的攻击逻辑。处理玩家攻击执行、城墙攻击、攻击预览计算、火攻判定。",
+      "tags": [
+        "system",
+        "attack",
+        "pipeline",
+        "siege",
+        "fire-attack",
+        "preview"
+      ],
+      "classes": [
+        "SkirmishAttackPipeline"
+      ],
+      "functions": [
+        "initialize",
+        "execute_player_attack",
+        "execute_city_wall_attack",
+        "compute_attack_preview"
+      ],
+      "dependencies": [
+        "TacticalSkirmishManager",
+        "HexAxial",
+        "CombatResolver",
+        "DataManager",
+        "TechSystem"
+      ],
+      "complexity": "complex",
+      "name": "skirmish_attack_pipeline.gd"
+    },
+    {
+      "id": "file:scripts/systems/tech_system.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 464,
+      "summary": "科技研究系统。管理 54 项科技的研究状态、前置判定、效果应用。提供攻击/防御/资源/移动力/士气等修正查询。",
+      "tags": [
+        "system",
+        "tech",
+        "research",
+        "modifier",
+        "progress"
+      ],
+      "classes": [
+        "TechSystem"
+      ],
+      "functions": [
+        "_ready",
+        "_on_turn_started",
+        "is_researched",
+        "is_available",
+        "start_research",
+        "cancel_research",
+        "_update_available_techs",
+        "_progress_research",
+        "reset",
+        "get_attack_modifier",
+        "get_defense_modifier",
+        "get_resource_modifier",
+        "get_movement_bonus",
+        "get_morale_bonus",
+        "get_ai_researched_techs"
+      ],
+      "signals_listened": [
+        "turn_started"
+      ],
+      "signals_emitted": [
+        "tech_research_started",
+        "tech_research_completed",
+        "tech_research_cancelled",
+        "tech_available"
+      ],
+      "complexity": "complex",
+      "name": "tech_system.gd"
+    },
+    {
+      "id": "file:scripts/systems/unit_movement_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 147,
+      "summary": "单位移动管理器。处理六角网格上的移动请求队列、验证边界、BFS 可达范围计算、A* 路径查找。",
+      "tags": [
+        "system",
+        "movement",
+        "hex-grid",
+        "pathfinding",
+        "bfs",
+        "astar"
+      ],
+      "classes": [
+        "UnitMovementManager"
+      ],
+      "functions": [
+        "_process",
+        "request_move",
+        "_start_move",
+        "_process_movement_queue",
+        "_on_unit_movement_finished",
+        "_is_valid_hex",
+        "get_reachable_hexes",
+        "find_path",
+        "set_map_bounds"
+      ],
+      "complexity": "moderate",
+      "name": "unit_movement_manager.gd"
+    },
+    {
+      "id": "file:scripts/ui/shader_helpers.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 86,
+      "summary": "Shader 材质工厂工具类。提供势力/学派颜色常量，以及文化覆盖、羊皮纸面板、按钮、高亮、图标发光、进度条等 ShaderMaterial 创建方法。",
+      "tags": [
+        "ui",
+        "shader",
+        "material",
+        "factory",
+        "color"
+      ],
+      "classes": [
+        "ShaderHelpers"
+      ],
+      "functions": [
+        "create_culture_material",
+        "create_parchment_material",
+        "create_button_material",
+        "set_button_state",
+        "create_highlight_material",
+        "create_icon_glow_material",
+        "create_progress_material",
+        "set_progress"
+      ],
+      "constants": [
+        "FACTION_COLORS",
+        "SCHOOL_COLORS"
+      ],
+      "complexity": "moderate",
+      "name": "shader_helpers.gd"
+    },
+    {
+      "id": "file:scripts/ui/skirmish_hex_cell.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 224,
+      "summary": "单六角格控件。平顶六角形绘制、地形纹理映射、色调叠加、点击检测。使用 Control._draw 绘制避免 Node2D 在 ScrollContainer 下不显示。",
+      "tags": [
+        "ui",
+        "hex-cell",
+        "control",
+        "drawing",
+        "texture",
+        "click"
+      ],
+      "classes": [
+        "SkirmishHexCell"
+      ],
+      "functions": [
+        "_ready",
+        "configure",
+        "set_board_bounds",
+        "_refresh_polygon_geometry",
+        "_draw",
+        "_has_point",
+        "set_terrain_texture",
+        "set_tint_color",
+        "get_bleed_polygon_local",
+        "get_terrain_texture_for_map",
+        "get_uvs_for_bleed_polygon",
+        "get_overlay_tint_color"
+      ],
+      "signals_emitted": [
+        "hex_clicked"
+      ],
+      "complexity": "moderate",
+      "name": "skirmish_hex_cell.gd"
+    },
+    {
+      "id": "file:scripts/ui/skirmish_hex_map_canvas.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 77,
+      "summary": "六角地图画布渲染器。单次 _draw() 绘制所有地形瓦片，避免逐格 Control._draw 叠加误差造成缝隙。",
+      "tags": [
+        "ui",
+        "canvas",
+        "hex-map",
+        "batch-rendering"
+      ],
+      "classes": [
+        "HexMapCanvas"
+      ],
+      "functions": [
+        "_scale_poly_outward",
+        "_ready",
+        "_notification",
+        "_white_vertex_colors",
+        "_draw"
+      ],
+      "complexity": "moderate",
+      "name": "skirmish_hex_map_canvas.gd"
+    },
+    {
+      "id": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 262,
+      "summary": "纹理路径注册表和缓存。定义地形、都城、事件插图、单位、特效精灵的路径映射，运行时缓存 Texture2D。",
+      "tags": [
+        "ui",
+        "texture",
+        "cache",
+        "path-registry",
+        "asset"
+      ],
+      "classes": [
+        "SkirmishTileTextures"
+      ],
+      "functions": [
+        "get_terrain_texture",
+        "get_capital_texture",
+        "get_event_texture",
+        "get_unit_texture",
+        "get_effect_texture",
+        "apply_global_font"
+      ],
+      "constants": [
+        "_TERRAIN_PATHS",
+        "_CAPITAL_PATHS",
+        "_EVENT_ID_PATHS",
+        "_EVENT_CATEGORY_PATHS",
+        "_UNIT_PATHS",
+        "_EFFECT_PATHS"
+      ],
+      "complexity": "moderate",
+      "name": "skirmish_tile_textures.gd"
+    },
+    {
+      "id": "file:scripts/units/unit_movement_test.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 156,
+      "summary": "单位移动动画测试脚本。集成测试用，验证 Unit 和 UnitMovementManager 的移动动画功能。",
+      "tags": [
+        "test",
+        "integration",
+        "unit",
+        "movement",
+        "animation"
+      ],
+      "classes": [],
+      "functions": [
+        "_ready"
+      ],
+      "complexity": "moderate",
+      "name": "unit_movement_test.gd"
+    },
+    {
+      "id": "file:scripts/units/unit.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 201,
+      "summary": "单位场景控制器。Node2D + AnimatedSprite2D，管理六角格位置、移动插值、动画状态机（IDLE/MOVE/ATTACK/HURT/DEATH）。",
+      "tags": [
+        "unit",
+        "scene",
+        "animation",
+        "movement",
+        "hex-position"
+      ],
+      "classes": [
+        "Unit"
+      ],
+      "functions": [
+        "_ready",
+        "_process",
+        "_load_sprite_frames",
+        "_create_sprite_frames_from_files",
+        "_play_animation",
+        "_get_animation_name",
+        "move_to",
+        "_update_movement",
+        "_finish_movement",
+        "_hex_to_pixel",
+        "setup",
+        "play_attack",
+        "play_hurt",
+        "play_death"
+      ],
+      "enums": [
+        "AnimState"
+      ],
+      "complexity": "moderate",
+      "name": "unit.gd"
+    },
+    {
+      "id": "file:shaders/skirmish_hex_tile.gdshader",
+      "type": "file",
+      "language": "gdshader",
+      "lines": 21,
+      "summary": "六角格地形瓦片 Shader。实现顶光效果、边角略暗、轻微冷色阴影的文明类六角渲染。",
+      "tags": [
+        "shader",
+        "hex-tile",
+        "lighting",
+        "rendering"
+      ],
+      "complexity": "simple",
+      "name": "skirmish_hex_tile.gdshader"
+    },
+    {
+      "id": "file:tests/unit/test_city_combat.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 309,
+      "summary": "城防战机制单元测试。验证城墙HP、城防值、伤害分流、攻城器械倍率、占领、自然恢复、箭塔、胜利条件。",
+      "tags": [
+        "test",
+        "unit-test",
+        "city-combat",
+        "siege",
+        "wall"
+      ],
+      "classes": [],
+      "functions": [
+        "before_each",
+        "test_city_has_initial_wall_hp",
+        "test_city_wall_hp_matches_config",
+        "test_city_level_stored",
+        "test_attack_reduces_wall_hp"
+      ],
+      "test_target": "scripts/autoload/tactical_skirmish_manager.gd",
+      "complexity": "complex",
+      "name": "test_city_combat.gd"
+    },
+    {
+      "id": "file:tests/unit/test_city_manager.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 571,
+      "summary": "CityManager 单元测试。验证 50 城状态初始化、运行时字段、查询接口、建造/升级/拆除、归属变更、迁都、灭国。",
+      "tags": [
+        "test",
+        "unit-test",
+        "city-manager",
+        "building",
+        "ownership"
+      ],
+      "classes": [],
+      "functions": [
+        "test_city_states_initialized",
+        "test_runtime_fields_present",
+        "test_runtime_fields_initial_values",
+        "test_static_fields_preserved",
+        "test_get_city_state_invalid_returns_empty",
+        "test_get_faction_city_states_qin",
+        "test_get_faction_city_states_neutral"
+      ],
+      "test_target": "scripts/autoload/city_manager.gd",
+      "complexity": "complex",
+      "name": "test_city_manager.gd"
+    },
+    {
+      "id": "file:tests/unit/test_combat_modifiers.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 94,
+      "summary": "战斗修正值连接测试。验证科技/学派加成通过 context 正确传入 combat_resolver 并影响伤害。",
+      "tags": [
+        "test",
+        "unit-test",
+        "combat",
+        "modifier",
+        "tech",
+        "school"
+      ],
+      "classes": [],
+      "functions": [
+        "before_each",
+        "test_tech_attack_bonus_increases_damage",
+        "test_tech_defense_bonus_decreases_damage",
+        "test_tech_attack_bonus_value_accuracy",
+        "test_tech_defense_bonus_value_accuracy",
+        "test_school_defense_bonus_increases_def_buff",
+        "test_school_defense_bonus_reduces_damage",
+        "test_multiple_modifiers_stack",
+        "test_modifiers_with_terrain",
+        "test_school_data_loaded",
+        "test_school_global_effects_accessible",
+        "test_all_schools_loaded",
+        "test_nonexistent_school_returns_empty"
+      ],
+      "test_target": "scripts/systems/combat_resolver.gd",
+      "complexity": "moderate",
+      "name": "test_combat_modifiers.gd"
+    },
+    {
+      "id": "file:tests/unit/test_combat_resolver.gd",
+      "type": "file",
+      "language": "gd",
+      "lines": 239,
+      "summary": "战斗伤害公式单元测试。验证攻防加法层、克制关系、崩溃态、远程精度、动能、反击等核心公式。",
+      "tags": [
+        "test",
+        "unit-test",
+        "combat",
+        "damage-formula",
+        "counter"
+      ],
+      "classes": [],
+      "functions": [
+        "before_each",
+        "test_atk_buff_base_is_1_0",
+        "test_atk_buff_terrain_offset",
+        "test_atk_buff_morale_offset",
+        "test_atk_buff_ambush_bonus",
+        "test_atk_buff_fire_bonus",
+        "test_atk_buff_ambush_fire_exclusive",
+        "test_atk_buff_multiple_modifiers",
+        "test_def_buff_base_is_1_0",
+        "test_def_buff_terrain_offset",
+        "test_def_buff_combined",
+        "test_counter_infantry_vs_cavalry",
+        "test_counter_cavalry_vs_infantry",
+        "test_counter_anti_cavalry_override"
+      ],
+      "test_target": "scripts/systems/combat_resolver.gd",
+      "complexity": "moderate",
+      "name": "test_combat_resolver.gd"
+    },
+    {
+      "id": "file:tests/unit/test_damage_overflow.gd",
+      "type": "file",
+      "label": "test_damage_overflow.gd",
+      "path": "tests/unit/test_damage_overflow.gd",
+      "language": "gdscript",
+      "linesOfCode": 55,
+      "summary": "伤害溢出机制单元测试（GUT）。验证击杀时多余伤害被丢弃、HP 不为负数。测试覆盖：伤害上限封顶（cap to target HP）、溢出伤害不生效、正常伤害不受影响。依赖 TacticalSkirmishManager 和 HexAxial。",
+      "tags": [
+        "test",
+        "gut",
+        "combat",
+        "damage-overflow",
+        "tactical-skirmish"
+      ],
+      "complexity": "moderate",
+      "name": "test_damage_overflow.gd"
+    },
+    {
+      "id": "file:tests/unit/test_data_manager.gd",
+      "type": "file",
+      "label": "test_data_manager.gd",
+      "path": "tests/unit/test_data_manager.gd",
+      "language": "gdscript",
+      "linesOfCode": 65,
+      "summary": "DataManager 单元测试（GUT）。验证 JSON 数据加载完整性：地形 11 种、兵种 19 种、城市 50 座。测试 ID 查询（地形/兵种/城市）、国家变体合并（秦锐士）、国家城市筛选、首都查询、地图尺寸 30x20。",
+      "tags": [
+        "test",
+        "gut",
+        "data-manager",
+        "json-loading",
+        "data-integrity"
+      ],
+      "complexity": "moderate",
+      "name": "test_data_manager.gd"
+    },
+    {
+      "id": "file:tests/unit/test_event_manager.gd",
+      "type": "file",
+      "label": "test_event_manager.gd",
+      "path": "tests/unit/test_event_manager.gd",
+      "language": "gdscript",
+      "linesOfCode": 154,
+      "summary": "EventManager 三阶段流水线 v2.0 单元测试（GUT）。覆盖：冷却机制（差异化冷却、one_shot 冷却 999）、冷却递减/移除、事件链推进、分池竞争（每类最多 1 条）、优先级排序、重置、存档读档、条件判定（turn_min/max、faction、morale_max）。",
+      "tags": [
+        "test",
+        "gut",
+        "event-manager",
+        "cooldown",
+        "event-chain",
+        "conditions"
+      ],
+      "complexity": "moderate",
+      "name": "test_event_manager.gd"
+    },
+    {
+      "id": "file:tests/unit/test_fire_attack.gd",
+      "type": "file",
+      "label": "test_fire_attack.gd",
+      "path": "tests/unit/test_fire_attack.gd",
+      "language": "gdscript",
+      "linesOfCode": 216,
+      "summary": "火攻机制单元测试（GUT）。验证触发条件（夏季/秋季+森林地形）、非触发条件（春季/冬季/非森林）、火攻与伏击互斥、DOT 烧伤施加（2 回合、base_attack*0.3）、DOT 递减/过期、迭代安全（双单位同时烧死）、火攻加成值计算。依赖 TacticalSkirmishManager 和 CombatResolver。",
+      "tags": [
+        "test",
+        "gut",
+        "fire-attack",
+        "burn-dot",
+        "combat",
+        "seasonal"
+      ],
+      "complexity": "moderate",
+      "name": "test_fire_attack.gd"
+    },
+    {
+      "id": "file:tests/unit/test_flanking.gd",
+      "type": "file",
+      "label": "test_flanking.gd",
+      "path": "tests/unit/test_flanking.gd",
+      "language": "gdscript",
+      "linesOfCode": 174,
+      "summary": "夹击/包围单元测试（GUT）。验证夹击机制（相对方向两敌触发士气 -20）、非相对方向不触发、单敌不触发、包围机制（六格全敌触发士气 -50）、包围优先于夹击不叠加、5 邻居触发夹击非包围、友军不触发夹击。",
+      "tags": [
+        "test",
+        "gut",
+        "flanking",
+        "encirclement",
+        "morale",
+        "combat"
+      ],
+      "complexity": "moderate",
+      "name": "test_flanking.gd"
+    },
+    {
+      "id": "file:tests/unit/test_game_manager.gd",
+      "type": "file",
+      "label": "test_game_manager.gd",
+      "path": "tests/unit/test_game_manager.gd",
+      "language": "gdscript",
+      "linesOfCode": 77,
+      "summary": "GameManager 回合循环状态机单元测试（GUT）。验证初始状态（GAME_INIT、turn 0）、开局流程（start_game 转 ACTION）、空列表/玩家不在列表拒绝、回合推进（end_turn 切势力、全员一轮后 turn+1）、信号发射（turn_started/turn_ended）、玩家身份判定。",
+      "tags": [
+        "test",
+        "gut",
+        "game-manager",
+        "state-machine",
+        "turn-cycle",
+        "signals"
+      ],
+      "complexity": "moderate",
+      "name": "test_game_manager.gd"
+    },
+    {
+      "id": "file:tests/unit/test_healing.gd",
+      "type": "file",
+      "label": "test_healing.gd",
+      "path": "tests/unit/test_healing.gd",
+      "language": "gdscript",
+      "linesOfCode": 167,
+      "summary": "治疗/回复单元测试（GUT）。验证脱战回复、战斗中不回复、相邻有敌军不回复、崩溃态不回复、治疗上限不超过 max_hp、城内回复 20 HP、野外回复 10 HP、战斗标记每回合重置。依赖 TacticalSkirmishManager 和 HexAxial。",
+      "tags": [
+        "test",
+        "gut",
+        "healing",
+        "hp-recovery",
+        "morale",
+        "tactical-skirmish"
+      ],
+      "complexity": "moderate",
+      "name": "test_healing.gd"
+    },
+    {
+      "id": "file:tests/unit/test_hex_axial.gd",
+      "type": "file",
+      "label": "test_hex_axial.gd",
+      "path": "tests/unit/test_hex_axial.gd",
+      "language": "gdscript",
+      "linesOfCode": 49,
+      "summary": "HexAxial 六角坐标工具类单元测试（GUT）。验证邻居数为 6、轴向距离计算、点顶六角像素摆放（水平节距 sqrt(3)*R、行间错位 sqrt(3)*R/2）、odd-R 偏移与轴向可逆转换、平顶轴向相邻格中心距、odd-R 平顶链式一致性。",
+      "tags": [
+        "test",
+        "gut",
+        "hex-axial",
+        "coordinates",
+        "pixel-layout",
+        "math"
+      ],
+      "complexity": "moderate",
+      "name": "test_hex_axial.gd"
+    },
+    {
+      "id": "file:tests/unit/test_naval_combat.gd",
+      "type": "file",
+      "label": "test_naval_combat.gd",
+      "path": "tests/unit/test_naval_combat.gd",
+      "language": "gdscript",
+      "linesOfCode": 125,
+      "summary": "海军战斗机制单元测试（GUT）。验证水军分类判断（蒙冲/大翼/楼船为水军，步兵/骑兵/弓兵非水军）、水面地形判断（河流/渡口为水面）、海军战斗修正（水军 vs 陆军 x0.5、水军 vs 水军无修正）、搁浅状态（冬季河流搁浅）、搁浅攻击限制（不能主动攻击、攻击修正 0.3）。",
+      "tags": [
+        "test",
+        "gut",
+        "naval-combat",
+        "water-terrain",
+        "stranded",
+        "combat-modifier"
+      ],
+      "complexity": "moderate",
+      "name": "test_naval_combat.gd"
+    },
+    {
+      "id": "file:tests/unit/test_pass_combat.gd",
+      "type": "file",
+      "label": "test_pass_combat.gd",
+      "path": "tests/unit/test_pass_combat.gd",
+      "language": "gdscript",
+      "linesOfCode": 313,
+      "summary": "关隘战斗机制单元测试（GUT）。验证关隘初始 HP/无主状态、行军降速、结构防御减少伤害、结构 HP 攻击后下降、攻城器械倍率（冲车/投石车）、HP 下限为 0、摧毁后无结构防御、占领（移动到摧毁关隘）、占领恢复 30% HP、有驻军不可占领、自然恢复（未被攻击时）、胜利阻断（有驻军关隘阻断胜利）。依赖 TacticalSkirmishManager、CombatResolver、HexAxial、DataManager。",
+      "tags": [
+        "test",
+        "gut",
+        "pass-combat",
+        "fortification",
+        "siege",
+        "capture",
+        "victory"
+      ],
+      "complexity": "moderate",
+      "name": "test_pass_combat.gd"
+    },
+    {
+      "id": "file:tests/unit/test_ranged_obstruction.gd",
+      "type": "file",
+      "label": "test_ranged_obstruction.gd",
+      "path": "tests/unit/test_ranged_obstruction.gd",
+      "language": "gdscript",
+      "linesOfCode": 94,
+      "summary": "远程遮挡机制单元测试（GUT）。验证高程差影响射程：同高程无惩罚、低处到高处射程 -1、高处到低处无惩罚、河流到山地射程归零、近战不受遮挡影响、攻击目标列表按高程过滤。依赖 TacticalSkirmishManager 和 HexAxial。",
+      "tags": [
+        "test",
+        "gut",
+        "ranged-obstruction",
+        "elevation",
+        "range",
+        "terrain"
+      ],
+      "complexity": "moderate",
+      "name": "test_ranged_obstruction.gd"
+    },
+    {
+      "id": "file:tests/unit/test_retreat.gd",
+      "type": "file",
+      "label": "test_retreat.gd",
+      "path": "tests/unit/test_retreat.gd",
+      "language": "gdscript",
+      "linesOfCode": 262,
+      "summary": "撤退/溃退/追击单元测试（GUT）。验证主动撤退（远离敌方、消耗全部移动力、无路可走则原地不动）、被动溃退（低士气触发、移向友方城市、到达城市恢复士气 30+）、追击伤害（步兵/骑兵追击、弓兵不追击）、包围惩罚（崩溃态被包围额外 HP 损失）、ZoC 豁免（撤退不受 ZoC 阻止）。",
+      "tags": [
+        "test",
+        "gut",
+        "retreat",
+        "rout",
+        "pursuit",
+        "morale",
+        "zoc-immunity"
+      ],
+      "complexity": "moderate",
+      "name": "test_retreat.gd"
+    },
+    {
+      "id": "file:tests/unit/test_supply.gd",
+      "type": "file",
+      "label": "test_supply.gd",
+      "path": "tests/unit/test_supply.gd",
+      "language": "gdscript",
+      "linesOfCode": 101,
+      "summary": "补给与断粮系统单元测试（GUT）。验证 BFS 补给连通性（城市附近有补给、城市上有补给、远方切断补给）、断粮效果（士气 -10、HP 损失 max_hp*5%）、有补给无效果、断粮标记 is_supplied=false、断粮可致死、敌方断粮也生效、迭代安全（双单位断粮致死）。",
+      "tags": [
+        "test",
+        "gut",
+        "supply",
+        "starvation",
+        "bfs",
+        "morale",
+        "hp-loss"
+      ],
+      "complexity": "moderate",
+      "name": "test_supply.gd"
+    },
+    {
+      "id": "file:tests/unit/test_tactical_skirmish_manager.gd",
+      "type": "file",
+      "label": "test_tactical_skirmish_manager.gd",
+      "path": "tests/unit/test_tactical_skirmish_manager.gd",
+      "language": "gdscript",
+      "linesOfCode": 24,
+      "summary": "TacticalSkirmishManager 基础功能冒烟测试（GUT）。验证 start_skirmish 生成 4 个单位、玩家单位有可达格、攻击移动力消耗为正、SkirmishTileTextures 贴图可加载（平原/骑兵/首都）。",
+      "tags": [
+        "test",
+        "gut",
+        "tactical-skirmish",
+        "smoke-test",
+        "textures"
+      ],
+      "complexity": "moderate",
+      "name": "test_tactical_skirmish_manager.gd"
+    },
+    {
+      "id": "file:tests/unit/test_turn_state.gd",
+      "type": "file",
+      "label": "test_turn_state.gd",
+      "path": "tests/unit/test_turn_state.gd",
+      "language": "gdscript",
+      "linesOfCode": 38,
+      "summary": "Sprint 8 回合状态机测试（GUT）。验证 TurnState 枚举存在（WAITING/EXECUTING/COMPLETED）、初始状态为 WAITING、势力排序（start_game 后排序包含所有势力、当前势力在列表中、7 势力完整保留）。",
+      "tags": [
+        "test",
+        "gut",
+        "turn-state",
+        "game-manager",
+        "faction-order"
+      ],
+      "complexity": "moderate",
+      "name": "test_turn_state.gd"
+    },
+    {
+      "id": "file:tests/unit/test_unit_morale.gd",
+      "type": "file",
+      "label": "test_unit_morale.gd",
+      "path": "tests/unit/test_unit_morale.gd",
+      "language": "gdscript",
+      "linesOfCode": 129,
+      "summary": "Sprint 2 单位独立士气系统测试（GUT）。纯函数测试：低/高/正常/崩溃态攻击偏移、崩溃态防御乘算 0.5。集成测试：初始士气 100、击杀攻击者 +15、友军击杀 +5、野外恢复 +3/回合、城中恢复 +8/回合、高士气衰减 -1/回合、崩溃态 HP -20%/回合、崩溃态速度 x0.5。依赖 CombatResolver 和 TacticalSkirmishManager。",
+      "tags": [
+        "test",
+        "gut",
+        "morale",
+        "combat-resolver",
+        "broken-state",
+        "recovery"
+      ],
+      "complexity": "moderate",
+      "name": "test_unit_morale.gd"
+    },
+    {
+      "id": "file:tests/unit/test_unit_skills.gd",
+      "type": "file",
+      "label": "test_unit_skills.gd",
+      "path": "tests/unit/test_unit_skills.gd",
+      "language": "gdscript",
+      "linesOfCode": 135,
+      "summary": "兵种技能执行单元测试（GUT）。验证 4 种技能类型：passive（空/单个/累加/atk_buff 应用）、terrain_move_modifier（森林行军减消耗、平原不受影响、最低消耗 1）、combat_on_kill（击杀恢复 5% HP、上限 max_hp、无技能无效果）、move_after_attack（技能查找、集成攻击后可移动、每回合限制、移动力耗尽自动 acted）。依赖 CombatResolver 和 TacticalSkirmishManager。",
+      "tags": [
+        "test",
+        "gut",
+        "unit-skills",
+        "passive",
+        "terrain-modifier",
+        "combat-on-kill",
+        "move-after-attack"
+      ],
+      "complexity": "moderate",
+      "name": "test_unit_skills.gd"
+    },
+    {
+      "id": "file:tests/unit/test_zoc.gd",
+      "type": "file",
+      "label": "test_zoc.gd",
+      "path": "tests/unit/test_zoc.gd",
+      "language": "gdscript",
+      "linesOfCode": 83,
+      "summary": "ZoC（区域控制）单元测试（GUT）。验证 ZoC 产生（步兵/骑兵产生 ZoC、弓兵不产生）、免疫（斥候/水军免疫、普通步兵/骑兵不免疫）、敌方 ZoC 范围检测（相邻在 ZoC 中、远离不在）、集成测试（ZoC 增加移耗、ZoC 不叠加）。",
+      "tags": [
+        "test",
+        "gut",
+        "zoc",
+        "zone-of-control",
+        "movement",
+        "immune"
+      ],
+      "complexity": "moderate",
+      "name": "test_zoc.gd"
+    },
+    {
+      "id": "file:tools/generate_announcement_assets.gd",
+      "type": "file",
+      "label": "generate_announcement_assets.gd",
+      "path": "tools/generate_announcement_assets.gd",
+      "language": "gdscript",
+      "linesOfCode": 115,
+      "summary": "@tool EditorScript：生成公告弹窗素材。输出 ui_announcement_bg.png（600x400 竹简/卷轴背景，含竹片纹理、卷轴装饰、标题横线）和 ui_announcement_seal.png（64x64 红色印章，含做旧效果、十字纹篆刻）。使用伪哈希噪点做旧。输出到 res://assets/ui/panels/。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "announcement",
+        "pixel-art",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "name": "generate_announcement_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_app_icon.gd",
+      "type": "file",
+      "label": "generate_app_icon.gd",
+      "path": "tools/generate_app_icon.gd",
+      "language": "gdscript",
+      "linesOfCode": 197,
+      "summary": "@tool EditorScript：生成 1024x1024 应用图标 icon_app_1024.png。构图：深褐→黑径向渐变背景、六角格暗纹网格、中央秦军将领半身像（复用 portrait_monarch_qin_hires.png，暖色调着色+边缘羽化）、底部「山河策」Logo（金色着色+描边）。输出到 res://assets/ui/。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "app-icon",
+        "composition",
+        "branding"
+      ],
+      "complexity": "moderate",
+      "name": "generate_app_icon.gd"
+    },
+    {
+      "id": "file:tools/generate_battle_p2_assets.gd",
+      "type": "file",
+      "label": "generate_battle_p2_assets.gd",
+      "path": "tools/generate_battle_p2_assets.gd",
+      "language": "gdscript",
+      "linesOfCode": 532,
+      "summary": "@tool EditorScript：生成 P2 战斗系统 UI 素材（6 个模块）。模块 1：战斗结果指示器（0-9 红色伤害数字 5x7 点阵、miss 文字、反击/格挡图标）。模块 2：特殊攻击指示器（夹击双箭头 32px、火攻火焰剑、灼烧 DOT、伏击惊叹号）。模块 3：地形/天气叠加层（攻防修正图标、海拔指示、河流冻结叠加、四季图标）。模块 4：单位状态指示（补给锁链、动量条、城墙血条、搁浅叠加）。模块 5：射程可视化（衰减/反击/夹击六角高亮）。模块 6：战斗 UI 面板（战斗预览、日志横幅、兵力徽章）。输出到 assets/ui/ 多个子目录。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "battle-ui",
+        "pixel-art",
+        "icons",
+        "indicators"
+      ],
+      "complexity": "moderate",
+      "name": "generate_battle_p2_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_battle_ui_assets.gd",
+      "type": "file",
+      "label": "generate_battle_ui_assets.gd",
+      "path": "tools/generate_battle_ui_assets.gd",
+      "language": "gdscript",
+      "linesOfCode": 269,
+      "summary": "@tool EditorScript：生成 P1 战斗系统 UI 素材。士气状态图标 4 个（48x48 圆形+内部符号：上升箭头/实心圆/下降箭头/崩溃叉）。Buff/Debuff 图标 7 个（40x40 菱形底+符号：剑/盾/箭/火焰/水滴/雪花/螺旋）。单位血条组件（64x10 背景/填充/边框）。城市/关隘血条组件（128x14）。使用像素绘制和圆角矩形。输出到 assets/ui/icons/ 和 assets/ui/bars/。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "battle-ui",
+        "morale-icons",
+        "buff-icons",
+        "hp-bars"
+      ],
+      "complexity": "moderate",
+      "name": "generate_battle_ui_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_city_tiles.gd",
+      "type": "file",
+      "label": "generate_city_tiles.gd",
+      "path": "tools/generate_city_tiles.gd",
+      "language": "gdscript",
+      "linesOfCode": 391,
+      "summary": "@tool EditorScript：生成城墙/城市相关六角图块（32x32 flat-top hex）。使用六角形掩码裁剪。生成 6 种图块：tile_pass_01.png（关隘，含城墙、城门、垛口、箭窗、旗帜、护城河）、tile_city_small_01.png（小城，灰色屋顶）、tile_city_large_01.png（大城，双层城墙+红色屋顶+角楼）、tile_city_capital_01.png（首都，三重城墙+金色屋顶宫殿+护城河）、tile_city_neutral_01.png（中立城，低矮城墙+棚屋）、tile_arrow_tower_01.png（箭楼，锥形塔顶+箭窗）。32 色战国低饱和暖色调调色板。输出到 res://assets/sprites/tiles/。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "city-tiles",
+        "hex-tiles",
+        "pixel-art",
+        "fortification"
+      ],
+      "complexity": "moderate",
+      "name": "generate_city_tiles.gd"
+    },
+    {
+      "id": "file:tools/generate_effect_sprite_frames.gd",
+      "type": "file",
+      "label": "generate_effect_sprite_frames.gd",
+      "path": "tools/generate_effect_sprite_frames.gd",
+      "language": "gdscript",
+      "linesOfCode": 73,
+      "summary": "@tool EditorScript / class_name GenerateEffectSpriteFrames：一键生成所有战斗特效的 SpriteFrames 资源。扫描 res://assets/sprites/units/effects/ 下 fx_* 目录，收集 PNG 帧并排序，生成 effect_frames.tres（8 FPS，不循环）。递归遍历目录结构。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "sprite-frames",
+        "effects",
+        "animation"
+      ],
+      "complexity": "moderate",
+      "name": "generate_effect_sprite_frames.gd"
+    },
+    {
+      "id": "file:tools/generate_faction_select_assets.gd",
+      "type": "file",
+      "label": "generate_faction_select_assets.gd",
+      "path": "tools/generate_faction_select_assets.gd",
+      "language": "gdscript",
+      "linesOfCode": 185,
+      "summary": "@tool EditorScript：生成势力选择界面素材。ui_select_bg.png（1920x1080 羊皮纸背景+六角格暗纹+标题装饰线）。7 张势力卡片 ui_faction_card_[id].png（96x128，羊皮纸底+势力色条+旗帜区域+国名区域）。选中态外框 ui_faction_card_selected.png（104x136，金色发光边框+四角装饰）。势力数据与 factions.json 一致（秦赵齐楚魏燕韩 7 国）。输出到 res://assets/ui/panels/。",
+      "tags": [
+        "utility",
+        "editor-script",
+        "asset-generation",
+        "faction-select",
+        "ui-cards",
+        "pixel-art"
+      ],
+      "complexity": "moderate",
+      "name": "generate_faction_select_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_loading_assets.gd",
+      "type": "file",
+      "label": "generate_loading_assets.gd",
+      "filePath": "tools/generate_loading_assets.gd",
+      "language": "GDScript",
+      "summary": "加载动画素材生成器。使用 @tool EditorScript 在 Godot 编辑器中生成加载画面所需的 PNG 素材：六角形旋转边框（128x128）和4个武器图标（剑/弓/盾/马，48x48）。所有素材通过像素级 Image API 绘制，使用金色/深棕/米色调色板。",
+      "tags": [
+        "utility",
+        "asset-generation",
+        "editor-script",
+        "loading-screen",
+        "pixel-art"
+      ],
+      "linesOfCode": 173,
+      "functions": [
+        {
+          "name": "_run",
+          "signature": "func _run() -> void",
+          "description": "入口函数，生成所有加载素材"
+        },
+        {
+          "name": "_generate_hex_frame",
+          "signature": "func _generate_hex_frame() -> void",
+          "description": "生成六角形旋转边框 ui_loading_hex.png（128x128）"
+        },
+        {
+          "name": "_generate_weapon",
+          "signature": "func _generate_weapon(filename: String, draw_fn: Callable) -> void",
+          "description": "通用武器图标生成框架（48x48）"
+        },
+        {
+          "name": "_draw_sword",
+          "signature": "func _draw_sword(img: Image, s: int) -> void",
+          "description": "绘制剑图标"
+        },
+        {
+          "name": "_draw_bow",
+          "signature": "func _draw_bow(img: Image, s: int) -> void",
+          "description": "绘制弓图标"
+        },
+        {
+          "name": "_draw_shield",
+          "signature": "func _draw_shield(img: Image, s: int) -> void",
+          "description": "绘制盾牌图标"
+        },
+        {
+          "name": "_draw_horse",
+          "signature": "func _draw_horse(img: Image, s: int) -> void",
+          "description": "绘制马头图标"
+        },
+        {
+          "name": "_draw_thick_line",
+          "signature": "func _draw_thick_line(img: Image, a: Vector2, b: Vector2, width: float, color: Color) -> void",
+          "description": "绘制粗线条"
+        },
+        {
+          "name": "_fill_circle",
+          "signature": "func _fill_circle(img: Image, cx: int, cy: int, r: int, color: Color) -> void",
+          "description": "填充圆形区域"
+        }
+      ],
+      "outputDir": "res://assets/ui/icons/",
+      "complexity": "moderate",
+      "name": "generate_loading_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_mode_select_assets.gd",
+      "type": "file",
+      "label": "generate_mode_select_assets.gd",
+      "filePath": "tools/generate_mode_select_assets.gd",
+      "language": "GDScript",
+      "summary": "模式选择界面素材生成器。使用 @tool EditorScript 生成游戏模式选择卡片 UI 素材：羊皮纸纹理卡片背景（240x320）、选中状态金色边框（248x328）、以及4个模式图标（经典/快速/剧情/沙盒，96x96）。图标分别为六角棋子、剑盾、竹简、骰子旗帜。",
+      "tags": [
+        "utility",
+        "asset-generation",
+        "editor-script",
+        "mode-select",
+        "pixel-art"
+      ],
+      "linesOfCode": 160,
+      "functions": [
+        {
+          "name": "_run",
+          "signature": "func _run() -> void",
+          "description": "入口函数，生成所有模式选择素材"
+        },
+        {
+          "name": "_generate_card_bg",
+          "signature": "func _generate_card_bg() -> void",
+          "description": "生成羊皮纸纹理卡片背景"
+        },
+        {
+          "name": "_generate_card_selected",
+          "signature": "func _generate_card_selected() -> void",
+          "description": "生成选中状态金色边框"
+        },
+        {
+          "name": "_generate_mode_icons",
+          "signature": "func _generate_mode_icons() -> void",
+          "description": "生成4个模式图标"
+        },
+        {
+          "name": "_draw_classic",
+          "signature": "func _draw_classic(img: Image, s: int) -> void",
+          "description": "经典模式图标：六角形+棋子"
+        },
+        {
+          "name": "_draw_quick",
+          "signature": "func _draw_quick(img: Image, s: int) -> void",
+          "description": "快速模式图标：剑+盾"
+        },
+        {
+          "name": "_draw_story",
+          "signature": "func _draw_story(img: Image, s: int) -> void",
+          "description": "剧情模式图标：竹简"
+        },
+        {
+          "name": "_draw_sandbox",
+          "signature": "func _draw_sandbox(img: Image, s: int) -> void",
+          "description": "沙盒模式图标：骰子+旗帜"
+        },
+        {
+          "name": "_rect_outline",
+          "signature": "func _rect_outline(...) -> void",
+          "description": "绘制矩形边框"
+        },
+        {
+          "name": "_rect_fill",
+          "signature": "func _rect_fill(...) -> void",
+          "description": "填充矩形"
+        },
+        {
+          "name": "_fill_circle",
+          "signature": "func _fill_circle(...) -> void",
+          "description": "填充圆形"
+        },
+        {
+          "name": "_line",
+          "signature": "func _line(...) -> void",
+          "description": "绘制直线"
+        },
+        {
+          "name": "_noise",
+          "signature": "func _noise(x: int, y: int) -> float",
+          "description": "简单哈希噪声函数"
+        }
+      ],
+      "outputDir": "res://assets/ui/panels/",
+      "complexity": "moderate",
+      "name": "generate_mode_select_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_splash_assets.gd",
+      "type": "file",
+      "label": "generate_splash_assets.gd",
+      "filePath": "tools/generate_splash_assets.gd",
+      "language": "GDScript",
+      "summary": "启动画面素材生成器。使用 @tool EditorScript 生成三个素材：splash_logo.png（512x256，尝试加载已有Logo或生成印章式备用）、splash_title.png（512x128，像素级绘制「山河策」三字篆书/隶书风格）、splash_title_mask.png（36帧毛笔写字遮罩精灵表，用于Shader逐帧揭露动画）。",
+      "tags": [
+        "utility",
+        "asset-generation",
+        "editor-script",
+        "splash-screen",
+        "pixel-art",
+        "shader-mask"
+      ],
+      "linesOfCode": 238,
+      "functions": [
+        {
+          "name": "_run",
+          "signature": "func _run() -> void",
+          "description": "入口函数，生成所有Splash素材"
+        },
+        {
+          "name": "_generate_splash_logo",
+          "signature": "func _generate_splash_logo() -> void",
+          "description": "生成项目Logo（512x256）"
+        },
+        {
+          "name": "_draw_fallback_logo",
+          "signature": "func _draw_fallback_logo(img: Image) -> void",
+          "description": "备用印章式Logo"
+        },
+        {
+          "name": "_generate_splash_title",
+          "signature": "func _generate_splash_title() -> void",
+          "description": "生成「山河策」标题文字"
+        },
+        {
+          "name": "_draw_title_text",
+          "signature": "func _draw_title_text(img: Image, color: Color, offset: Vector2i) -> void",
+          "description": "绘制三字标题"
+        },
+        {
+          "name": "_draw_char_shan",
+          "signature": "func _draw_char_shan(img: Image, cx: int, cy: int, col: Color) -> void",
+          "description": "像素绘制「山」字"
+        },
+        {
+          "name": "_draw_char_he",
+          "signature": "func _draw_char_he(img: Image, cx: int, cy: int, col: Color) -> void",
+          "description": "像素绘制「河」字"
+        },
+        {
+          "name": "_draw_char_ce",
+          "signature": "func _draw_char_ce(img: Image, cx: int, cy: int, col: Color) -> void",
+          "description": "像素绘制「策」字"
+        },
+        {
+          "name": "_generate_title_mask",
+          "signature": "func _generate_title_mask() -> void",
+          "description": "生成36帧毛笔写字遮罩精灵表"
+        },
+        {
+          "name": "_generate_char_mask_frames",
+          "signature": "func _generate_char_mask_frames(sheet: Image, char_idx: int) -> void",
+          "description": "为单个字生成12帧渐进揭露遮罩"
+        },
+        {
+          "name": "_load_image",
+          "signature": "func _load_image(path: String) -> Image",
+          "description": "安全加载图片资源"
+        }
+      ],
+      "outputDir": "res://assets/ui/splash/",
+      "complexity": "moderate",
+      "name": "generate_splash_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_unit_selection_assets.gd",
+      "type": "file",
+      "label": "generate_unit_selection_assets.gd",
+      "filePath": "tools/generate_unit_selection_assets.gd",
+      "language": "GDScript",
+      "summary": "演武场景选中动画素材生成器。使用 @tool EditorScript 生成单位选中/移动/攻击的高亮素材：单位脚下阴影椭圆（768x256）和三个六角形高亮图块（1024x1024）——金色选中、绿色移动、红色攻击。高亮使用扫描线填充+边缘渐变实现。",
+      "tags": [
+        "utility",
+        "asset-generation",
+        "editor-script",
+        "skirmish",
+        "hex-highlight",
+        "pixel-art"
+      ],
+      "linesOfCode": 107,
+      "functions": [
+        {
+          "name": "_run",
+          "signature": "func _run() -> void",
+          "description": "入口函数，生成所有选中动画素材"
+        },
+        {
+          "name": "_generate_shadow",
+          "signature": "func _generate_shadow() -> void",
+          "description": "生成单位脚下阴影椭圆（768x256）"
+        },
+        {
+          "name": "_generate_hex_highlight",
+          "signature": "func _generate_hex_highlight(filename: String, color: Color, alpha: float) -> void",
+          "description": "生成六角形高亮图块（1024x1024）"
+        },
+        {
+          "name": "_line_x_at_y",
+          "signature": "func _line_x_at_y(a: Vector2, b: Vector2, y: float)",
+          "description": "计算线段在指定y处的x交点"
+        },
+        {
+          "name": "_draw_hex_line",
+          "signature": "func _draw_hex_line(img: Image, a: Vector2, b: Vector2, color: Color) -> void",
+          "description": "绘制六角形边框线"
+        }
+      ],
+      "outputDir": "res://assets/ui/highlights/",
+      "complexity": "moderate",
+      "name": "generate_unit_selection_assets.gd"
+    },
+    {
+      "id": "file:tools/generate_unit_sprite_frames.gd",
+      "type": "file",
+      "label": "generate_unit_sprite_frames.gd",
+      "filePath": "tools/generate_unit_sprite_frames.gd",
+      "language": "GDScript",
+      "summary": "兵种 SpriteFrames 资源批量生成器。使用 @tool EditorScript 递归扫描 assets/sprites/units/ 目录，为每个兵种自动生成 unit_frames.tres（SpriteFrames 资源），包含 idle/move/attack/hurt/death 5个动画，FPS=8，idle和move循环播放。",
+      "tags": [
+        "utility",
+        "asset-generation",
+        "editor-script",
+        "sprite-frames",
+        "animation",
+        "batch-processing"
+      ],
+      "linesOfCode": 140,
+      "class_name": "GenerateUnitSpriteFrames",
+      "functions": [
+        {
+          "name": "_run",
+          "signature": "func _run() -> void",
+          "description": "入口函数，扫描并生成所有兵种SpriteFrames"
+        },
+        {
+          "name": "_scan_for_anim_dirs",
+          "signature": "func _scan_for_anim_dirs(path: String, results: Array[Dictionary]) -> void",
+          "description": "递归扫描目录，找到包含动画帧的文件夹"
+        }
+      ],
+      "outputDir": "res://assets/sprites/units/",
+      "complexity": "moderate",
+      "name": "generate_unit_sprite_frames.gd"
+    },
+    {
+      "id": "file:tools/rename_sprites.py",
+      "type": "file",
+      "label": "rename_sprites.py",
+      "filePath": "tools/rename_sprites.py",
+      "language": "Python",
+      "summary": "精灵文件批量重命名脚本。将 assets/sprites/ 下不规范的文件名改为符合 pre-push 检查的格式：兵种动画帧 idle_01.png 改为 unit_archer_idle_01.png，特效帧 fx_fire_01.png 改为 ui_fx_fire_01.png。支持 --dry-run 模式预览。",
+      "tags": [
+        "utility",
+        "python",
+        "file-rename",
+        "sprites",
+        "batch-processing",
+        "cli-tool"
+      ],
+      "linesOfCode": 82,
+      "functions": [
+        {
+          "name": "rename_file",
+          "signature": "def rename_file(old_path: str, new_name: str) -> None",
+          "description": "重命名单个文件，支持dry-run模式"
+        },
+        {
+          "name": "process_unit_animations",
+          "signature": "def process_unit_animations() -> None",
+          "description": "处理所有势力的兵种动画帧重命名"
+        },
+        {
+          "name": "process_effects",
+          "signature": "def process_effects() -> None",
+          "description": "处理特效帧重命名"
+        }
+      ],
+      "complexity": "moderate",
+      "name": "rename_sprites.py"
+    },
+    {
+      "id": "file:asset:ui_loading_hex.png",
+      "type": "resource",
+      "label": "ui_loading_hex.png",
+      "description": "加载画面六角形旋转边框（128x128，金色线条+顶点装饰）",
+      "tags": [
+        "png",
+        "ui",
+        "loading",
+        "hex",
+        "animation-frame"
+      ],
+      "complexity": "moderate",
+      "name": "ui_loading_hex.png",
+      "summary": "文件 file:asset:ui_loading_hex.png"
+    },
+    {
+      "id": "file:asset:ui_loading_sword.png",
+      "type": "resource",
+      "label": "ui_loading_sword.png",
+      "description": "加载画面剑图标（48x48，米色剑身+金色剑格+深棕剑柄）",
+      "tags": [
+        "png",
+        "ui",
+        "loading",
+        "icon",
+        "weapon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_loading_sword.png",
+      "summary": "文件 file:asset:ui_loading_sword.png"
+    },
+    {
+      "id": "file:asset:ui_loading_bow.png",
+      "type": "resource",
+      "label": "ui_loading_bow.png",
+      "description": "加载画面弓图标（48x48，深棕弓臂+米色弓弦+金色箭头）",
+      "tags": [
+        "png",
+        "ui",
+        "loading",
+        "icon",
+        "weapon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_loading_bow.png",
+      "summary": "文件 file:asset:ui_loading_bow.png"
+    },
+    {
+      "id": "file:asset:ui_loading_shield.png",
+      "type": "resource",
+      "label": "ui_loading_shield.png",
+      "description": "加载画面盾牌图标（48x48，椭圆盾面+十字纹饰）",
+      "tags": [
+        "png",
+        "ui",
+        "loading",
+        "icon",
+        "weapon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_loading_shield.png",
+      "summary": "文件 file:asset:ui_loading_shield.png"
+    },
+    {
+      "id": "file:asset:ui_loading_horse.png",
+      "type": "resource",
+      "label": "ui_loading_horse.png",
+      "description": "加载画面马头图标（48x48，侧面轮廓+鬃毛+眼睛）",
+      "tags": [
+        "png",
+        "ui",
+        "loading",
+        "icon",
+        "mount"
+      ],
+      "complexity": "moderate",
+      "name": "ui_loading_horse.png",
+      "summary": "文件 file:asset:ui_loading_horse.png"
+    },
+    {
+      "id": "file:asset:ui_mode_card_bg.png",
+      "type": "resource",
+      "label": "ui_mode_card_bg.png",
+      "description": "模式选择卡片背景（240x320，羊皮纸纹理+深棕边框）",
+      "tags": [
+        "png",
+        "ui",
+        "mode-select",
+        "card",
+        "parchment"
+      ],
+      "complexity": "moderate",
+      "name": "ui_mode_card_bg.png",
+      "summary": "文件 file:asset:ui_mode_card_bg.png"
+    },
+    {
+      "id": "file:asset:ui_mode_card_selected.png",
+      "type": "resource",
+      "label": "ui_mode_card_selected.png",
+      "description": "模式选择卡片选中状态（248x328，双层金色边框）",
+      "tags": [
+        "png",
+        "ui",
+        "mode-select",
+        "card",
+        "selection"
+      ],
+      "complexity": "moderate",
+      "name": "ui_mode_card_selected.png",
+      "summary": "文件 file:asset:ui_mode_card_selected.png"
+    },
+    {
+      "id": "file:asset:ui_mode_classic.png",
+      "type": "resource",
+      "label": "ui_mode_classic.png",
+      "description": "经典模式图标（96x96，六角形地图+棋子）",
+      "tags": [
+        "png",
+        "ui",
+        "mode-select",
+        "icon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_mode_classic.png",
+      "summary": "文件 file:asset:ui_mode_classic.png"
+    },
+    {
+      "id": "file:asset:ui_mode_quick.png",
+      "type": "resource",
+      "label": "ui_mode_quick.png",
+      "description": "快速模式图标（96x96，剑+盾）",
+      "tags": [
+        "png",
+        "ui",
+        "mode-select",
+        "icon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_mode_quick.png",
+      "summary": "文件 file:asset:ui_mode_quick.png"
+    },
+    {
+      "id": "file:asset:ui_mode_story.png",
+      "type": "resource",
+      "label": "ui_mode_story.png",
+      "description": "剧情模式图标（96x96，竹简+绳线）",
+      "tags": [
+        "png",
+        "ui",
+        "mode-select",
+        "icon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_mode_story.png",
+      "summary": "文件 file:asset:ui_mode_story.png"
+    },
+    {
+      "id": "file:asset:ui_mode_sandbox.png",
+      "type": "resource",
+      "label": "ui_mode_sandbox.png",
+      "description": "沙盒模式图标（96x96，骰子+沙盘+旗帜）",
+      "tags": [
+        "png",
+        "ui",
+        "mode-select",
+        "icon"
+      ],
+      "complexity": "moderate",
+      "name": "ui_mode_sandbox.png",
+      "summary": "文件 file:asset:ui_mode_sandbox.png"
+    },
+    {
+      "id": "file:asset:splash_logo.png",
+      "type": "resource",
+      "label": "splash_logo.png",
+      "description": "项目Logo（512x256，尝试加载已有logo或生成印章式备用）",
+      "tags": [
+        "png",
+        "ui",
+        "splash",
+        "logo"
+      ],
+      "complexity": "moderate",
+      "name": "splash_logo.png",
+      "summary": "文件 file:asset:splash_logo.png"
+    },
+    {
+      "id": "file:asset:splash_title.png",
+      "type": "resource",
+      "label": "splash_title.png",
+      "description": "「山河策」标题文字（512x128，像素级篆书/隶书风格）",
+      "tags": [
+        "png",
+        "ui",
+        "splash",
+        "title",
+        "pixel-calligraphy"
+      ],
+      "complexity": "moderate",
+      "name": "splash_title.png",
+      "summary": "文件 file:asset:splash_title.png"
+    },
+    {
+      "id": "file:asset:splash_title_mask.png",
+      "type": "resource",
+      "label": "splash_title_mask.png",
+      "description": "毛笔写字遮罩精灵表（512x128x36帧，每字12帧渐进揭露，用于Shader动画）",
+      "tags": [
+        "png",
+        "ui",
+        "splash",
+        "mask",
+        "shader",
+        "animation-sprite-sheet"
+      ],
+      "complexity": "moderate",
+      "name": "splash_title_mask.png",
+      "summary": "文件 file:asset:splash_title_mask.png"
+    },
+    {
+      "id": "file:asset:ui_unit_shadow.png",
+      "type": "resource",
+      "label": "ui_unit_shadow.png",
+      "description": "单位脚下阴影椭圆（768x256，径向渐变透明度）",
+      "tags": [
+        "png",
+        "ui",
+        "skirmish",
+        "shadow"
+      ],
+      "complexity": "moderate",
+      "name": "ui_unit_shadow.png",
+      "summary": "文件 file:asset:ui_unit_shadow.png"
+    },
+    {
+      "id": "file:asset:ui_highlight_select.png",
+      "type": "resource",
+      "label": "ui_highlight_select.png",
+      "description": "选中高亮六角形（1024x1024，金色半透明+边缘渐变）",
+      "tags": [
+        "png",
+        "ui",
+        "skirmish",
+        "hex-highlight",
+        "selection"
+      ],
+      "complexity": "moderate",
+      "name": "ui_highlight_select.png",
+      "summary": "文件 file:asset:ui_highlight_select.png"
+    },
+    {
+      "id": "file:asset:ui_highlight_move.png",
+      "type": "resource",
+      "label": "ui_highlight_move.png",
+      "description": "移动高亮六角形（1024x1024，绿色半透明+边缘渐变）",
+      "tags": [
+        "png",
+        "ui",
+        "skirmish",
+        "hex-highlight",
+        "movement"
+      ],
+      "complexity": "moderate",
+      "name": "ui_highlight_move.png",
+      "summary": "文件 file:asset:ui_highlight_move.png"
+    },
+    {
+      "id": "file:asset:ui_highlight_attack.png",
+      "type": "resource",
+      "label": "ui_highlight_attack.png",
+      "description": "攻击高亮六角形（1024x1024，红色半透明+边缘渐变）",
+      "tags": [
+        "png",
+        "ui",
+        "skirmish",
+        "hex-highlight",
+        "attack"
+      ],
+      "complexity": "moderate",
+      "name": "ui_highlight_attack.png",
+      "summary": "文件 file:asset:ui_highlight_attack.png"
+    },
+    {
+      "id": "file:asset:unit_frames.tres",
+      "type": "resource",
+      "label": "unit_frames.tres",
+      "description": "兵种 SpriteFrames 资源（每兵种一个），包含 idle/move/attack/hurt/death 5个动画，FPS=8",
+      "tags": [
+        "tres",
+        "sprite-frames",
+        "animation",
+        "unit"
+      ],
+      "complexity": "moderate",
+      "name": "unit_frames.tres",
+      "summary": "文件 file:asset:unit_frames.tres"
+    },
+    {
+      "id": "file:dir:assets/ui/icons",
+      "type": "file",
+      "label": "assets/ui/icons/",
+      "description": "UI图标资源目录，存放加载动画素材和武器图标",
+      "complexity": "moderate",
+      "name": "icons",
+      "summary": "文件 file:dir:assets/ui/icons",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "file:dir:assets/ui/panels",
+      "type": "file",
+      "label": "assets/ui/panels/",
+      "description": "UI面板资源目录，存放模式选择卡片素材",
+      "complexity": "moderate",
+      "name": "panels",
+      "summary": "文件 file:dir:assets/ui/panels",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "file:dir:assets/ui/splash",
+      "type": "file",
+      "label": "assets/ui/splash/",
+      "description": "启动画面资源目录，存放Logo、标题和遮罩素材",
+      "complexity": "moderate",
+      "name": "splash",
+      "summary": "文件 file:dir:assets/ui/splash",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "file:dir:assets/ui/highlights",
+      "type": "file",
+      "label": "assets/ui/highlights/",
+      "description": "六角格高亮资源目录，存放选中/移动/攻击高亮图块",
+      "complexity": "moderate",
+      "name": "highlights",
+      "summary": "文件 file:dir:assets/ui/highlights",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "file:dir:assets/sprites/units",
+      "type": "file",
+      "label": "assets/sprites/units/",
+      "description": "兵种精灵资源根目录，按势力/兵种组织动画帧PNG和SpriteFrames .tres",
+      "complexity": "moderate",
+      "name": "units",
+      "summary": "文件 file:dir:assets/sprites/units",
+      "tags": [
+        "untagged"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:.claude/commands/audit.md",
+      "target": "document:.claude/skills/godot-guidelines.md",
+      "type": "references",
+      "label": "审计规则依据数据驱动铁律",
+      "direction": "forward"
+    },
+    {
+      "source": "document:.claude/commands/tilegen.md",
+      "target": "document:.claude/skills/art-pipeline.md",
+      "type": "references",
+      "label": "基于美术管线规范生成绘制指南",
+      "direction": "forward"
+    },
+    {
+      "source": "document:.claude/skills/art-pipeline.md",
+      "target": "document:.claude/skills/godot-guidelines.md",
+      "type": "references",
+      "label": "美术管线引用架构规范中的 TileMapLayer 分层",
+      "direction": "forward"
+    },
+    {
+      "source": "document:.claude/skills/art-pipeline.md",
+      "target": "document:.claude/skills/shanhece-world.md",
+      "type": "references",
+      "label": "美术管线引用世界设定中的学派配色和数据表",
+      "direction": "forward"
+    },
+    {
+      "source": "document:.claude/skills/godot-guidelines.md",
+      "target": "document:.claude/skills/shanhece-world.md",
+      "type": "references",
+      "label": "架构规范引用世界设定中的系统设计和数据结构",
+      "direction": "forward"
+    },
+    {
+      "source": "config:.understand-anything/config.json",
+      "target": "config:.understand-anything/meta.json",
+      "type": "relates_to",
+      "label": "共享工具配置上下文",
+      "direction": "forward"
+    },
+    {
+      "source": "config:.understand-anything/fingerprints.json",
+      "target": "config:.understand-anything/knowledge-graph.json",
+      "type": "feeds_into",
+      "label": "指纹数据驱动图谱增量更新",
+      "direction": "forward"
+    },
+    {
+      "source": "config:data/balance_params.json",
+      "target": "config:data/units.json",
+      "description": "balance_params 定义兵种技能公式、伤害计算参数和克制系数，与 units.json 中的兵种数值配合使用",
+      "direction": "forward",
+      "type": "balances"
+    },
+    {
+      "source": "config:data/balance_params.json",
+      "target": "config:data/terrain.json",
+      "description": "balance_params 中的战斗修正和移动参数与 terrain.json 的地形修正联动",
+      "direction": "forward",
+      "type": "references"
+    },
+    {
+      "source": "config:data/balance_params.json",
+      "target": "config:data/buildings.json",
+      "description": "balance_params 定义资源上限和建筑效果倍率，与 buildings.json 的建筑效果配合",
+      "direction": "forward",
+      "type": "references"
+    },
+    {
+      "source": "config:data/balance_params.json",
+      "target": "config:data/events.json",
+      "description": "balance_params 定义内政事件触发概率和效果范围，events.json 实现具体事件",
+      "direction": "forward",
+      "type": "references"
+    },
+    {
+      "source": "config:data/balance_params.json",
+      "target": "config:data/diplomacy.json",
+      "description": "balance_params 中的人口/士气/稳定参数影响外交系统的基础数值",
+      "direction": "forward",
+      "type": "references"
+    },
+    {
+      "source": "config:data/balance_params.json",
+      "target": "config:data/schools.json",
+      "description": "balance_params 定义学派效果的基础倍率，schools.json 定义具体学派加成",
+      "direction": "forward",
+      "type": "references"
+    },
+    {
+      "source": "config:data/tech_tree.json",
+      "target": "config:data/units.json",
+      "description": "科技树中多项科技（如车战之术/弩机初制）解锁特定兵种",
+      "direction": "forward",
+      "type": "unlocks"
+    },
+    {
+      "source": "config:data/tech_tree.json",
+      "target": "config:data/tech_synergies.json",
+      "description": "科技联动基于 tech_tree 中的科技组合触发，required_techs 引用 tech_tree 的科技 ID",
+      "direction": "forward",
+      "type": "enables"
+    },
+    {
+      "source": "config:data/tech_tree.json",
+      "target": "config:data/tech_events.json",
+      "description": "科技研究过程中触发 tech_events 中的随机事件，tech_events 的 trigger.tech_id 引用 tech_tree",
+      "direction": "forward",
+      "type": "triggers"
+    },
+    {
+      "source": "config:data/tech_tree.json",
+      "target": "config:data/buildings.json",
+      "description": "部分科技解锁新建筑或建筑升级选项",
+      "direction": "forward",
+      "type": "unlocks"
+    },
+    {
+      "source": "config:data/cities.json",
+      "target": "config:data/factions.json",
+      "description": "每座城池的 faction_id 引用 factions.json 中的势力定义",
+      "direction": "forward",
+      "type": "belongs_to"
+    },
+    {
+      "source": "config:data/cities.json",
+      "target": "config:data/big_map_terrain.json",
+      "description": "城池的 hex_q/hex_r 坐标对应 big_map_terrain 的六角格位置",
+      "direction": "forward",
+      "type": "placed_on"
+    },
+    {
+      "source": "config:data/cities.json",
+      "target": "config:data/buildings.json",
+      "description": "城池可建造 buildings.json 中定义的建筑，初始建筑配置引用建筑 ID",
+      "direction": "forward",
+      "type": "contains"
+    },
+    {
+      "source": "config:data/factions.json",
+      "target": "config:data/schools.json",
+      "description": "每个势力的 default_school 字段引用 schools.json 中的学派 ID",
+      "direction": "forward",
+      "type": "defaults_to"
+    },
+    {
+      "source": "config:data/factions.json",
+      "target": "config:data/diplomacy.json",
+      "description": "势力间初始好感度矩阵定义在 factions.json 中，外交行为参数在 diplomacy.json 中",
+      "direction": "forward",
+      "type": "configured_by"
+    },
+    {
+      "source": "config:data/ministers.json",
+      "target": "config:data/schools.json",
+      "description": "官员的 school 字段引用 schools.json 中的学派，学派归属影响官员技能和效果",
+      "direction": "forward",
+      "type": "affiliated_with"
+    },
+    {
+      "source": "config:data/ministers.json",
+      "target": "config:data/factions.json",
+      "description": "官员被分配到势力治理城池，影响势力的内政产出",
+      "direction": "forward",
+      "type": "serves"
+    },
+    {
+      "source": "config:data/skirmish_scenarios.json",
+      "target": "config:data/units.json",
+      "description": "演武场景的 initial_units 引用 units.json 中的兵种 ID 部署单位",
+      "direction": "forward",
+      "type": "deploys"
+    },
+    {
+      "source": "config:data/skirmish_scenarios.json",
+      "target": "config:data/terrain.json",
+      "description": "演武场景的 rows 数组使用 terrain.json 中定义的地形类型",
+      "direction": "forward",
+      "type": "uses"
+    },
+    {
+      "source": "config:data/skirmish_scenarios.json",
+      "target": "config:data/factions.json",
+      "description": "演武场景的 player_faction_id/enemy_faction_id 引用 factions.json 中的势力",
+      "direction": "forward",
+      "type": "references"
+    },
+    {
+      "source": "config:data/tactical_skirmish_mvp.json",
+      "target": "config:data/terrain.json",
+      "description": "MVP 场景的 rows 数组使用 terrain.json 中定义的地形类型",
+      "direction": "forward",
+      "type": "uses"
+    },
+    {
+      "source": "config:data/tactical_skirmish_mvp.json",
+      "target": "config:data/units.json",
+      "description": "MVP 场景的 initial_units 引用 units.json 中的兵种 ID",
+      "direction": "forward",
+      "type": "deploys"
+    },
+    {
+      "source": "config:data/wonders.json",
+      "target": "config:data/buildings.json",
+      "description": "奇观的 build_requires 引用 buildings.json 中的建筑作为前置条件",
+      "direction": "forward",
+      "type": "requires"
+    },
+    {
+      "source": "config:data/wonders.json",
+      "target": "config:data/cities.json",
+      "description": "奇观建造在特定城池中，影响全国或单城效果",
+      "direction": "forward",
+      "type": "built_in"
+    },
+    {
+      "source": "config:data/tech_tree.json",
+      "target": "config:data/factions.json",
+      "description": "科技树对所有势力开放，但势力默认学派影响研发偏好",
+      "direction": "forward",
+      "type": "available_to"
+    },
+    {
+      "source": "config:data/events.json",
+      "target": "config:data/factions.json",
+      "description": "随机事件作用于各势力，改变资源/士气/人口等状态",
+      "direction": "forward",
+      "type": "affects"
+    },
+    {
+      "source": "config:data/diplomacy.json",
+      "target": "config:data/factions.json",
+      "description": "外交参数定义势力间所有外交行为的规则和效果",
+      "direction": "forward",
+      "type": "governs"
+    },
+    {
+      "source": "config:data/schools.json",
+      "target": "config:data/events.json",
+      "description": "学派的 event_ids 字段引用 events.json 中的学派专属事件",
+      "direction": "forward",
+      "type": "triggers"
+    },
+    {
+      "source": "config:data/terrain.json",
+      "target": "config:data/big_map_terrain.json",
+      "description": "terrain.json 定义地形类型枚举，big_map_terrain.json 的 rows 数组使用这些类型",
+      "direction": "forward",
+      "type": "defines_types_for"
+    },
+    {
+      "source": "config:data/terrain.json",
+      "target": "config:data/skirmish_scenarios.json",
+      "description": "terrain.json 定义地形类型，skirmish_scenarios.json 的场景地图使用这些类型",
+      "direction": "forward",
+      "type": "defines_types_for"
+    },
+    {
+      "source": "file:scenes/main/main.tscn",
+      "target": "file:scenes/main/main.gd",
+      "type": "configures",
+      "label": "主场景挂载主脚本",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/ui/big_map/big_map_panel.tscn",
+      "target": "file:scenes/ui/big_map/big_map_panel.gd",
+      "type": "configures",
+      "label": "大地图场景挂载脚本",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/ui/buff/buff_panel.tscn",
+      "target": "file:scenes/ui/buff/buff_panel.gd",
+      "type": "configures",
+      "label": "Buff 面板场景挂载脚本",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/ui/city_panel/city_panel.tscn",
+      "target": "file:scenes/ui/city_panel/city_panel.gd",
+      "type": "configures",
+      "label": "城市面板场景挂载脚本",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/ui/diplomacy/diplomacy_panel.tscn",
+      "target": "file:scenes/ui/diplomacy/diplomacy_panel.gd",
+      "type": "configures",
+      "label": "外交面板场景挂载脚本",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/ui/diplomacy/negotiation_dialog.tscn",
+      "target": "file:scenes/ui/diplomacy/negotiation_dialog.gd",
+      "type": "configures",
+      "label": "谈判弹窗场景挂载脚本",
+      "direction": "forward"
+    },
+    {
+      "source": "config:project.godot",
+      "target": "file:scenes/main/main.tscn",
+      "type": "configures",
+      "label": "设为主场景 (run/main_scene)",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/main/main.gd",
+      "target": "file:scenes/ui/diplomacy/diplomacy_panel.tscn",
+      "type": "depends_on",
+      "label": "preload 外交面板场景",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/main/main.gd",
+      "target": "file:scenes/ui/big_map/big_map_panel.tscn",
+      "type": "depends_on",
+      "label": "preload 大地图面板场景",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/main/main.gd",
+      "target": "file:scenes/ui/city_panel/city_panel.tscn",
+      "type": "depends_on",
+      "label": "preload 城市面板场景",
+      "direction": "forward"
+    },
+    {
+      "source": "document:docs/CODEMAP.md",
+      "target": "file:scenes/main/main.gd",
+      "type": "documents",
+      "label": "描述主场景脚本职责",
+      "direction": "forward"
+    },
+    {
+      "source": "document:docs/CODEMAP.md",
+      "target": "file:scenes/ui/big_map/big_map_panel.gd",
+      "type": "documents",
+      "label": "描述大地图面板职责",
+      "direction": "forward"
+    },
+    {
+      "source": "document:docs/CODEMAP.md",
+      "target": "file:scenes/ui/city_panel/city_panel.gd",
+      "type": "documents",
+      "label": "描述城市面板职责",
+      "direction": "forward"
+    },
+    {
+      "source": "document:docs/CODEMAP.md",
+      "target": "file:scenes/ui/diplomacy/diplomacy_panel.gd",
+      "type": "documents",
+      "label": "描述外交面板职责",
+      "direction": "forward"
+    },
+    {
+      "source": "document:docs/unit-movement-animation-guide.md",
+      "target": "file:scenes/main/main.gd",
+      "type": "documents",
+      "label": "含主场景集成示例代码",
+      "direction": "forward"
+    },
+    {
+      "source": "document:docs/superpowers/specs/2026-05-16-event-system-redesign.md",
+      "target": "document:docs/superpowers/plans/2026-05-16-event-system-redesign.md",
+      "type": "related_to",
+      "label": "规格书对应实施计划",
+      "direction": "forward"
+    },
+    {
+      "source": "document:.claude/README.md",
+      "target": "config:.claude/mcp.json.template",
+      "type": "documents",
+      "label": "说明 MCP 模板使用方法",
+      "direction": "forward"
+    },
+    {
+      "source": "config:.githooks/pre-commit",
+      "target": "file:scenes/ui/city_panel/city_panel.gd",
+      "type": "validates",
+      "label": "提交前检查硬编码和 JSON 校验",
+      "direction": "forward"
+    },
+    {
+      "source": "config:.githooks/pre-push",
+      "target": "file:scenes/ui/big_map/big_map_panel.gd",
+      "type": "validates",
+      "label": "推送前检查资产命名规范",
+      "direction": "forward"
+    },
+    {
+      "source": "file:.understand-anything/tmp/extract-attack-pipeline.cjs",
+      "target": "file:scenes/main/main.gd",
+      "type": "related_to",
+      "label": "重构脚本生成 skirmish_attack_pipeline.gd（main.gd 通过 TacticalSkirmishManager 间接引用）",
+      "direction": "forward"
+    },
+    {
+      "source": "config:project.godot",
+      "target": "file:scenes/ui/big_map/big_map_panel.gd",
+      "type": "configures",
+      "label": "Autoload DataManager/GameManager 被大地图面板使用",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "GameManager 查询 DataManager 获取数据",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "GameManager 通过 SignalBus 广播回合/阶段信号",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:scripts/autoload/city_manager.gd",
+      "type": "depends_on",
+      "label": "GameManager 调用 CityManager.process_turn",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:scripts/autoload/diplomacy_system.gd",
+      "type": "depends_on",
+      "label": "GameManager 调用 DiplomacySystem.initialize",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:scripts/systems/tech_system.gd",
+      "type": "depends_on",
+      "label": "GameManager 调用 TechSystem.reset 和 AI 研究",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/diplomacy_system.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "DiplomacySystem 监听 turn_started/turn_ended 并广播外交信号",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/diplomacy_system.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "DiplomacySystem 查询 DataManager 获取外交参数",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/event_manager.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "EventManager 监听 turn_started/turn_ended 并触发事件信号",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/event_manager.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "EventManager 从 DataManager 加载事件数据",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/event_manager.gd",
+      "target": "file:scripts/autoload/game_manager.gd",
+      "type": "depends_on",
+      "label": "EventManager 查询 GameManager.is_player_faction",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/city_manager.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "CityManager 通过 SignalBus 广播城市状态变更信号",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/city_manager.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "CityManager 从 DataManager 加载城池/建筑数据",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/startup_flow.gd",
+      "target": "file:scripts/autoload/game_manager.gd",
+      "type": "depends_on",
+      "label": "StartupFlow 调用 GameManager.start_game",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/startup_flow.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "StartupFlow 调用 SkirmishTileTextures.apply_global_font",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:scripts/systems/hex_axial.gd",
+      "type": "depends_on",
+      "label": "TacticalSkirmishManager 预加载 HexAxial 工具类",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:scripts/systems/combat_resolver.gd",
+      "type": "depends_on",
+      "label": "TacticalSkirmishManager 使用 CombatResolver 计算伤害",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:scripts/systems/skirmish_ai.gd",
+      "type": "depends_on",
+      "label": "TacticalSkirmishManager 委托 SkirmishAI 执行敌方回合",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "type": "depends_on",
+      "label": "TacticalSkirmishManager 委托 SkirmishAttackPipeline 执行攻击",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "TacticalSkirmishManager 从 DataManager 加载演武配置",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_ai.gd",
+      "target": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "type": "depends_on",
+      "label": "SkirmishAI 持有 manager 引用访问战斗/移动/状态 API",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_ai.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "SkirmishAI 查询 DataManager 获取士气平衡参数",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "target": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "type": "depends_on",
+      "label": "SkirmishAttackPipeline 持有 manager 引用访问战斗 API",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "target": "file:scripts/systems/hex_axial.gd",
+      "type": "depends_on",
+      "label": "SkirmishAttackPipeline 使用 HexAxial 距离计算",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "target": "file:scripts/systems/combat_resolver.gd",
+      "type": "depends_on",
+      "label": "SkirmishAttackPipeline 调用 CombatResolver 计算伤害",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "SkirmishAttackPipeline 查询 DataManager 获取兵种/地形数据",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/skirmish_attack_pipeline.gd",
+      "target": "file:scripts/systems/tech_system.gd",
+      "type": "depends_on",
+      "label": "SkirmishAttackPipeline 查询 TechSystem 获取科技战斗修正",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/combat_resolver.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "CombatResolver 查询 DataManager 获取兵种克制数据",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/tech_system.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "TechSystem 监听 turn_started 并广播科技信号",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/tech_system.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "TechSystem 从 DataManager 加载科技树数据",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/tech_system.gd",
+      "target": "file:scripts/autoload/game_manager.gd",
+      "type": "depends_on",
+      "label": "TechSystem 查询 GameManager.is_player_faction",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/unit_movement_manager.gd",
+      "target": "file:scripts/systems/hex_axial.gd",
+      "type": "depends_on",
+      "label": "UnitMovementManager 使用 HexAxial 邻居查找和距离计算",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/systems/unit_movement_manager.gd",
+      "target": "file:scripts/units/unit.gd",
+      "type": "depends_on",
+      "label": "UnitMovementManager 管理 Unit 实例的移动",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/ui/skirmish_hex_cell.gd",
+      "target": "file:scripts/systems/hex_axial.gd",
+      "type": "depends_on",
+      "label": "SkirmishHexCell 预加载 HexAxial 用于坐标转换",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/ui/skirmish_hex_map_canvas.gd",
+      "target": "file:scripts/ui/skirmish_hex_cell.gd",
+      "type": "depends_on",
+      "label": "HexMapCanvas 遍历并渲染 SkirmishHexCell 子节点",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scripts/units/unit.gd",
+      "target": "file:scripts/systems/hex_axial.gd",
+      "type": "depends_on",
+      "label": "Unit 使用 HexAxial 进行六角格坐标转像素",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:dir:assets/ui/icons",
+      "type": "writes_to",
+      "label": "输出加载动画素材到",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:asset:ui_loading_hex.png",
+      "type": "generates",
+      "label": "生成六角形边框",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:asset:ui_loading_sword.png",
+      "type": "generates",
+      "label": "生成剑图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:asset:ui_loading_bow.png",
+      "type": "generates",
+      "label": "生成弓图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:asset:ui_loading_shield.png",
+      "type": "generates",
+      "label": "生成盾牌图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:asset:ui_loading_horse.png",
+      "type": "generates",
+      "label": "生成马头图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:dir:assets/ui/panels",
+      "type": "writes_to",
+      "label": "输出模式选择素材到",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:asset:ui_mode_card_bg.png",
+      "type": "generates",
+      "label": "生成卡片背景",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:asset:ui_mode_card_selected.png",
+      "type": "generates",
+      "label": "生成选中边框",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:asset:ui_mode_classic.png",
+      "type": "generates",
+      "label": "生成经典模式图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:asset:ui_mode_quick.png",
+      "type": "generates",
+      "label": "生成快速模式图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:asset:ui_mode_story.png",
+      "type": "generates",
+      "label": "生成剧情模式图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_mode_select_assets.gd",
+      "target": "file:asset:ui_mode_sandbox.png",
+      "type": "generates",
+      "label": "生成沙盒模式图标",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_splash_assets.gd",
+      "target": "file:dir:assets/ui/splash",
+      "type": "writes_to",
+      "label": "输出启动画面素材到",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_splash_assets.gd",
+      "target": "file:asset:splash_logo.png",
+      "type": "generates",
+      "label": "生成项目Logo",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_splash_assets.gd",
+      "target": "file:asset:splash_title.png",
+      "type": "generates",
+      "label": "生成标题文字",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_splash_assets.gd",
+      "target": "file:asset:splash_title_mask.png",
+      "type": "generates",
+      "label": "生成毛笔写字遮罩精灵表",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_selection_assets.gd",
+      "target": "file:dir:assets/ui/highlights",
+      "type": "writes_to",
+      "label": "输出高亮素材到",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_selection_assets.gd",
+      "target": "file:asset:ui_unit_shadow.png",
+      "type": "generates",
+      "label": "生成单位阴影",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_selection_assets.gd",
+      "target": "file:asset:ui_highlight_select.png",
+      "type": "generates",
+      "label": "生成选中高亮",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_selection_assets.gd",
+      "target": "file:asset:ui_highlight_move.png",
+      "type": "generates",
+      "label": "生成移动高亮",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_selection_assets.gd",
+      "target": "file:asset:ui_highlight_attack.png",
+      "type": "generates",
+      "label": "生成攻击高亮",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_sprite_frames.gd",
+      "target": "file:dir:assets/sprites/units",
+      "type": "reads_from",
+      "label": "扫描兵种精灵目录",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_sprite_frames.gd",
+      "target": "file:asset:unit_frames.tres",
+      "type": "generates",
+      "label": "生成SpriteFrames资源",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/rename_sprites.py",
+      "target": "file:dir:assets/sprites/units",
+      "type": "reads_from",
+      "label": "扫描兵种精灵目录",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/rename_sprites.py",
+      "target": "file:dir:assets/sprites/units",
+      "type": "modifies",
+      "label": "重命名兵种动画帧文件",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:tools/generate_splash_assets.gd",
+      "type": "related_to",
+      "label": "共享调色板常量（COL_GOLD/COL_DARK_BROWN/COL_CREAM）",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_loading_assets.gd",
+      "target": "file:tools/generate_mode_select_assets.gd",
+      "type": "related_to",
+      "label": "共享调色板和绘图工具函数模式",
+      "direction": "forward"
+    },
+    {
+      "source": "file:tools/generate_unit_selection_assets.gd",
+      "target": "file:tools/generate_loading_assets.gd",
+      "type": "related_to",
+      "label": "共享六角形绘制和像素级Image API模式",
+      "direction": "forward"
+    },
+    {
+      "source": "file:scenes/ui/event_popup/event_popup.tscn",
+      "target": "file:scenes/ui/event_popup/event_popup.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/event_test/event_test_panel.tscn",
+      "target": "file:scenes/ui/event_test/event_test_panel.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.tscn",
+      "target": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_scenario_panel.tscn",
+      "target": "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_test_guide_panel.tscn",
+      "target": "file:scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/splash/announcement_popup.tscn",
+      "target": "file:scenes/ui/splash/announcement_popup.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/splash/faction_select.tscn",
+      "target": "file:scenes/ui/splash/faction_select.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/splash/loading_screen.tscn",
+      "target": "file:scenes/ui/splash/loading_screen.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/splash/mode_select.tscn",
+      "target": "file:scenes/ui/splash/mode_select.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/splash/splash_screen.tscn",
+      "target": "file:scenes/ui/splash/splash_screen.gd",
+      "type": "configures",
+      "label": ".tscn 绑定 .gd 脚本"
+    },
+    {
+      "source": "file:scenes/units/unit.tscn",
+      "target": "file:scenes/units/unit_movement_test.tscn",
+      "type": "depends_on",
+      "label": "unit_movement_test.tscn 引用 unit.tscn"
+    },
+    {
+      "source": "file:scenes/ui/event_popup/event_popup.gd",
+      "target": "class::event_popup",
+      "type": "contains",
+      "label": "定义 EventPopup 类"
+    },
+    {
+      "source": "file:scenes/ui/event_test/event_test_panel.gd",
+      "target": "class::event_test_panel",
+      "type": "contains",
+      "label": "定义 EventTestPanel 类"
+    },
+    {
+      "source": "file:scenes/ui/resource_bar/resource_bar.gd",
+      "target": "class::resource_bar",
+      "type": "contains",
+      "label": "定义 ResourceBar 类"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "class::skirmish_mvp_panel",
+      "type": "contains",
+      "label": "定义 SkirmishMvpPanel 类"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "target": "class::skirmish_scenario_panel",
+      "type": "contains",
+      "label": "定义 SkirmishScenarioPanel 类"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+      "target": "class::skirmish_test_guide_panel",
+      "type": "contains",
+      "label": "定义 SkirmishTestGuidePanel 类"
+    },
+    {
+      "source": "file:scenes/ui/splash/announcement_popup.gd",
+      "target": "class::announcement_popup",
+      "type": "contains",
+      "label": "定义 AnnouncementPopup 类"
+    },
+    {
+      "source": "file:scenes/ui/splash/faction_select.gd",
+      "target": "class::faction_select",
+      "type": "contains",
+      "label": "定义 FactionSelect 类"
+    },
+    {
+      "source": "file:scenes/ui/splash/loading_screen.gd",
+      "target": "class::loading_screen",
+      "type": "contains",
+      "label": "定义 LoadingScreen 类"
+    },
+    {
+      "source": "file:scenes/ui/splash/mode_select.gd",
+      "target": "class::mode_select",
+      "type": "contains",
+      "label": "定义 ModeSelect 类"
+    },
+    {
+      "source": "file:scenes/ui/splash/splash_screen.gd",
+      "target": "class::splash_screen",
+      "type": "contains",
+      "label": "定义 SplashScreen 类"
+    },
+    {
+      "source": "file:scenes/ui/tech/tech_tree_panel.gd",
+      "target": "class::tech_tree_panel",
+      "type": "contains",
+      "label": "定义 TechTreePanel 类"
+    },
+    {
+      "source": "file:scripts/ai/diplomacy_ai.gd",
+      "target": "class::diplomacy_ai",
+      "type": "contains",
+      "label": "定义 DiplomacyAI 类"
+    },
+    {
+      "source": "file:scenes/ui/event_popup/event_popup.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "监听 SignalBus.event_triggered"
+    },
+    {
+      "source": "file:scenes/ui/event_popup/event_popup.gd",
+      "target": "file:scripts/autoload/event_manager.gd",
+      "type": "depends_on",
+      "label": "调用 EventManager.resolve_event_choice()"
+    },
+    {
+      "source": "file:scenes/ui/event_popup/event_popup.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures 面板纹理和样式按钮"
+    },
+    {
+      "source": "file:scenes/ui/event_test/event_test_panel.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "调用 DataManager.get_all_events()"
+    },
+    {
+      "source": "file:scenes/ui/event_test/event_test_panel.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "发射 SignalBus.event_triggered"
+    },
+    {
+      "source": "file:scenes/ui/event_test/event_test_panel.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.styled_button()"
+    },
+    {
+      "source": "file:scenes/ui/resource_bar/resource_bar.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "监听 SignalBus.turn_started"
+    },
+    {
+      "source": "file:scenes/ui/resource_bar/resource_bar.gd",
+      "target": "file:scripts/autoload/game_manager.gd",
+      "type": "depends_on",
+      "label": "调用 GameManager.get_player_*() 获取 10 种资源"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "type": "depends_on",
+      "label": "核心依赖：移动/攻击/回合/状态管理"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "file:scripts/systems/hex_axial.gd",
+      "type": "depends_on",
+      "label": "preload HexAxial 坐标转换"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用纹理路径和样式按钮"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "调用 DataManager.get_terrain/get_unit_type/get_faction/get_balance_param"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "file:scripts/ui/skirmish_hex_map_canvas.gd",
+      "type": "depends_on",
+      "label": "创建 HexMapCanvas 地图画布"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "target": "file:scripts/ui/skirmish_hex_cell.gd",
+      "type": "depends_on",
+      "label": "创建 SkirmishHexCell 六角格控件"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "调用 DataManager.get_skirmish_scenarios()"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.style_scene_button()"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "target": "file:scenes/ui/skirmish/skirmish_test_guide_panel.tscn",
+      "type": "depends_on",
+      "label": "preload 测试指南场景"
+    },
+    {
+      "source": "file:scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.style_scene_button()"
+    },
+    {
+      "source": "file:scenes/ui/splash/announcement_popup.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.style_scene_button()"
+    },
+    {
+      "source": "file:scenes/ui/splash/faction_select.gd",
+      "target": "file:scripts/autoload/startup_flow.gd",
+      "type": "depends_on",
+      "label": "调用 StartupFlow.on_faction_selected()"
+    },
+    {
+      "source": "file:scenes/ui/splash/faction_select.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.styled_button()/style_scene_button()"
+    },
+    {
+      "source": "file:scenes/ui/splash/loading_screen.gd",
+      "target": "file:scripts/autoload/startup_flow.gd",
+      "type": "depends_on",
+      "label": "检查 StartupFlow.is_startup_flow_active，调用 on_loading_finished()"
+    },
+    {
+      "source": "file:scenes/ui/splash/mode_select.gd",
+      "target": "file:scripts/autoload/startup_flow.gd",
+      "type": "depends_on",
+      "label": "调用 StartupFlow.on_mode_selected()"
+    },
+    {
+      "source": "file:scenes/ui/splash/mode_select.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.style_scene_button()"
+    },
+    {
+      "source": "file:scenes/ui/splash/splash_screen.gd",
+      "target": "file:scripts/autoload/startup_flow.gd",
+      "type": "depends_on",
+      "label": "调用 StartupFlow.on_splash_finished()"
+    },
+    {
+      "source": "file:scenes/ui/tech/tech_tree_panel.gd",
+      "target": "file:scripts/autoload/signal_bus.gd",
+      "type": "depends_on",
+      "label": "监听 tech_research_completed/started/available 信号"
+    },
+    {
+      "source": "file:scenes/ui/tech/tech_tree_panel.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "调用 DataManager.get_tech/get_techs_by_category/get_city"
+    },
+    {
+      "source": "file:scenes/ui/tech/tech_tree_panel.gd",
+      "target": "file:scripts/systems/tech_system.gd",
+      "type": "depends_on",
+      "label": "调用 TechSystem.is_researched/start_research/cancel_research/is_available 等"
+    },
+    {
+      "source": "file:scenes/ui/tech/tech_tree_panel.gd",
+      "target": "file:scripts/ui/skirmish_tile_textures.gd",
+      "type": "depends_on",
+      "label": "使用 SkirmishTileTextures.styled_button()"
+    },
+    {
+      "source": "file:scripts/ai/diplomacy_ai.gd",
+      "target": "file:scripts/autoload/diplomacy_system.gd",
+      "type": "depends_on",
+      "label": "调用 DiplomacySystem 外交状态查询和操作"
+    },
+    {
+      "source": "file:scripts/ai/diplomacy_ai.gd",
+      "target": "file:scripts/autoload/data_manager.gd",
+      "type": "depends_on",
+      "label": "调用 DataManager.get_ai_personality/get_diplomacy_param/get_faction_cities"
+    },
+    {
+      "source": "file:scripts/ai/diplomacy_ai.gd",
+      "target": "file:scripts/autoload/game_manager.gd",
+      "type": "depends_on",
+      "label": "使用 GameManager.FACTION_IDS/get_player_faction/get_faction_resources"
+    },
+    {
+      "source": "file:scenes/units/unit_movement_test.tscn",
+      "target": "file:scripts/units/unit.gd",
+      "type": "depends_on",
+      "label": "引用 unit.gd 脚本"
+    },
+    {
+      "source": "file:scenes/units/unit_movement_test.tscn",
+      "target": "file:scripts/systems/unit_movement_manager.gd",
+      "type": "depends_on",
+      "label": "引用 unit_movement_manager.gd 脚本"
+    },
+    {
+      "source": "file:scenes/units/unit.tscn",
+      "target": "file:scripts/units/unit.gd",
+      "type": "depends_on",
+      "label": "绑定 unit.gd 脚本"
+    },
+    {
+      "source": "file:scenes/ui/event_popup/event_popup.gd",
+      "target": "file:scripts/autoload/event_manager.gd",
+      "type": "tested_by",
+      "label": "事件弹窗被事件系统测试覆盖"
+    },
+    {
+      "source": "file:scenes/ui/event_test/event_test_panel.gd",
+      "target": "file:scenes/ui/event_popup/event_popup.gd",
+      "type": "depends_on",
+      "label": "测试面板触发事件后由弹窗显示"
+    },
+    {
+      "source": "class::skirmish_scenario_panel",
+      "target": "class::skirmish_test_guide_panel",
+      "type": "depends_on",
+      "label": "场景选择面板可打开测试指南"
+    },
+    {
+      "source": "class::skirmish_scenario_panel",
+      "target": "class::skirmish_mvp_panel",
+      "type": "depends_on",
+      "label": "场景选择完成后打开演武主面板"
+    },
+    {
+      "source": "class::splash_screen",
+      "target": "class::mode_select",
+      "type": "depends_on",
+      "label": "启动画面完成后进入模式选择"
+    },
+    {
+      "source": "class::mode_select",
+      "target": "class::faction_select",
+      "type": "depends_on",
+      "label": "模式选择完成后进入势力选择"
+    },
+    {
+      "source": "class::faction_select",
+      "target": "class::loading_screen",
+      "type": "depends_on",
+      "label": "势力选择完成后进入加载画面"
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-baseline-failing.txt",
+      "target": "file:tests/unit/test_fire_attack.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-baseline-failing.txt",
+      "target": "file:tests/unit/test_city_manager.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-baseline-failing.txt",
+      "target": "file:tests/unit/test_naval_combat.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-baseline-failing.txt",
+      "target": "file:tests/unit/test_combat_modifiers.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-baseline-failing.txt",
+      "target": "file:tests/unit/test_data_manager.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p1-failing.txt",
+      "target": "file:tests/unit/test_fire_attack.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p1-failing.txt",
+      "target": "file:tests/unit/test_city_manager.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p1-failing.txt",
+      "target": "file:tests/unit/test_naval_combat.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p1-failing.txt",
+      "target": "file:tests/unit/test_combat_modifiers.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p1-failing.txt",
+      "target": "file:tests/unit/test_data_manager.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p2-failing.txt",
+      "target": "file:tests/unit/test_fire_attack.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p2-failing.txt",
+      "target": "file:tests/unit/test_city_manager.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p2-failing.txt",
+      "target": "file:tests/unit/test_naval_combat.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p2-failing.txt",
+      "target": "file:tests/unit/test_combat_modifiers.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "document:.understand-anything/tmp/gut-p2-failing.txt",
+      "target": "file:tests/unit/test_data_manager.gd",
+      "type": "related_to",
+      "label": ""
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_damage_overflow.gd",
+      "type": "related_to",
+      "label": "伤害溢出机制测试"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_damage_overflow.gd",
+      "type": "related_to",
+      "label": "距离计算辅助"
+    },
+    {
+      "source": "file:scripts/autoload/data_manager.gd",
+      "target": "file:tests/unit/test_data_manager.gd",
+      "type": "related_to",
+      "label": "数据加载与查询测试"
+    },
+    {
+      "source": "file:scripts/autoload/event_manager.gd",
+      "target": "file:tests/unit/test_event_manager.gd",
+      "type": "related_to",
+      "label": "事件系统全流程测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_fire_attack.gd",
+      "type": "related_to",
+      "label": "火攻机制测试"
+    },
+    {
+      "source": "file:scripts/systems/combat_resolver.gd",
+      "target": "file:tests/unit/test_fire_attack.gd",
+      "type": "related_to",
+      "label": "火攻加成计算测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_flanking.gd",
+      "type": "related_to",
+      "label": "夹击/包围机制测试"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:tests/unit/test_game_manager.gd",
+      "type": "related_to",
+      "label": "回合状态机测试"
+    },
+    {
+      "source": "file:scripts/autoload/city_manager.gd",
+      "target": "file:tests/unit/test_game_manager.gd",
+      "type": "related_to",
+      "label": "城市重置隔离"
+    },
+    {
+      "source": "file:scripts/autoload/signal_bus.gd",
+      "target": "file:tests/unit/test_game_manager.gd",
+      "type": "related_to",
+      "label": "信号发射测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_healing.gd",
+      "type": "related_to",
+      "label": "治疗/回复机制测试"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_healing.gd",
+      "type": "related_to",
+      "label": "距离计算辅助"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_hex_axial.gd",
+      "type": "related_to",
+      "label": "六角坐标数学测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_naval_combat.gd",
+      "type": "related_to",
+      "label": "海军战斗机制测试"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_naval_combat.gd",
+      "type": "related_to",
+      "label": "地形查找辅助"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_pass_combat.gd",
+      "type": "related_to",
+      "label": "关隘战斗机制测试"
+    },
+    {
+      "source": "file:scripts/systems/combat_resolver.gd",
+      "target": "file:tests/unit/test_pass_combat.gd",
+      "type": "related_to",
+      "label": "结构防御计算测试"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_pass_combat.gd",
+      "type": "related_to",
+      "label": "地形查找辅助"
+    },
+    {
+      "source": "file:scripts/autoload/data_manager.gd",
+      "target": "file:tests/unit/test_pass_combat.gd",
+      "type": "related_to",
+      "label": "平衡参数读取"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_ranged_obstruction.gd",
+      "type": "related_to",
+      "label": "远程遮挡机制测试"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_ranged_obstruction.gd",
+      "type": "related_to",
+      "label": "距离计算辅助"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_retreat.gd",
+      "type": "related_to",
+      "label": "撤退/溃退/追击测试"
+    },
+    {
+      "source": "file:scripts/systems/hex_axial.gd",
+      "target": "file:tests/unit/test_retreat.gd",
+      "type": "related_to",
+      "label": "距离计算辅助"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_supply.gd",
+      "type": "related_to",
+      "label": "补给/断粮系统测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_tactical_skirmish_manager.gd",
+      "type": "related_to",
+      "label": "基础功能冒烟测试"
+    },
+    {
+      "source": "file:scripts/ui/skirmish_tile_textures.gd",
+      "target": "file:tests/unit/test_tactical_skirmish_manager.gd",
+      "type": "related_to",
+      "label": "贴图加载测试"
+    },
+    {
+      "source": "file:scripts/autoload/game_manager.gd",
+      "target": "file:tests/unit/test_turn_state.gd",
+      "type": "related_to",
+      "label": "回合状态机与势力排序测试"
+    },
+    {
+      "source": "file:scripts/systems/combat_resolver.gd",
+      "target": "file:tests/unit/test_unit_morale.gd",
+      "type": "related_to",
+      "label": "士气攻击偏移/防御乘算测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_unit_morale.gd",
+      "type": "related_to",
+      "label": "士气集成测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_unit_skills.gd",
+      "type": "related_to",
+      "label": "兵种技能执行测试"
+    },
+    {
+      "source": "file:scripts/systems/combat_resolver.gd",
+      "target": "file:tests/unit/test_unit_skills.gd",
+      "type": "related_to",
+      "label": "被动技能 atk_buff 测试"
+    },
+    {
+      "source": "file:scripts/autoload/tactical_skirmish_manager.gd",
+      "target": "file:tests/unit/test_zoc.gd",
+      "type": "related_to",
+      "label": "ZoC 区域控制测试"
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:autoload-singletons",
+      "name": "Autoload 单例层",
+      "description": "全局 Autoload 单例脚本，提供游戏核心运行时服务：游戏循环、数据管理、信号总线、城池管理、外交系统、事件管理、启动流程、战术演武管理。",
+      "nodeIds": [
+        "file:scripts/autoload/city_manager.gd",
+        "file:scripts/autoload/data_manager.gd",
+        "file:scripts/autoload/diplomacy_system.gd",
+        "file:scripts/autoload/event_manager.gd",
+        "file:scripts/autoload/game_manager.gd",
+        "file:scripts/autoload/signal_bus.gd",
+        "file:scripts/autoload/startup_flow.gd",
+        "file:scripts/autoload/tactical_skirmish_manager.gd"
+      ]
+    },
+    {
+      "id": "layer:game-systems",
+      "name": "游戏系统层",
+      "description": "核心游戏系统脚本，包括战斗计算、六角格工具、科技系统、AI 决策、攻击管线、单位移动管理，以及 AI 外交决策。",
+      "nodeIds": [
+        "class::diplomacy_ai",
+        "file:scripts/ai/diplomacy_ai.gd",
+        "file:scripts/systems/combat_resolver.gd",
+        "file:scripts/systems/hex_axial.gd",
+        "file:scripts/systems/skirmish_ai.gd",
+        "file:scripts/systems/skirmish_attack_pipeline.gd",
+        "file:scripts/systems/tech_system.gd",
+        "file:scripts/systems/unit_movement_manager.gd"
+      ]
+    },
+    {
+      "id": "layer:ui-scripts",
+      "name": "UI 工具脚本层",
+      "description": "UI 底层工具脚本：Shader 材质工厂、六角地图画布渲染、纹理注册表、六角格控件等可复用 UI 基础组件。",
+      "nodeIds": [
+        "file:scripts/ui/shader_helpers.gd",
+        "file:scripts/ui/skirmish_hex_cell.gd",
+        "file:scripts/ui/skirmish_hex_map_canvas.gd",
+        "file:scripts/ui/skirmish_tile_textures.gd"
+      ]
+    },
+    {
+      "id": "layer:unit-scripts",
+      "name": "单位脚本层",
+      "description": "单位场景控制器脚本：动画状态机、六角格位置、移动插值等单位实体行为逻辑。",
+      "nodeIds": [
+        "file:scripts/units/unit.gd",
+        "file:scripts/units/unit_movement_test.gd"
+      ]
+    },
+    {
+      "id": "layer:ui-scenes",
+      "name": "UI 场景层",
+      "description": "所有 UI 面板和对话框的场景文件（.tscn）和脚本（.gd），包括启动流程、外交、科技树、演武、大地图、事件弹窗、资源栏等用户界面。",
+      "nodeIds": [
+        "class::announcement_popup",
+        "class::event_popup",
+        "class::event_test_panel",
+        "class::faction_select",
+        "class::loading_screen",
+        "class::mode_select",
+        "class::resource_bar",
+        "class::skirmish_mvp_panel",
+        "class::skirmish_scenario_panel",
+        "class::skirmish_test_guide_panel",
+        "class::splash_screen",
+        "class::tech_tree_panel",
+        "file:scenes/ui/event_popup/event_popup.gd",
+        "file:scenes/ui/event_popup/event_popup.tscn",
+        "file:scenes/ui/event_test/event_test_panel.gd",
+        "file:scenes/ui/event_test/event_test_panel.tscn",
+        "file:scenes/ui/resource_bar/resource_bar.gd",
+        "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+        "file:scenes/ui/skirmish/skirmish_mvp_panel.tscn",
+        "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+        "file:scenes/ui/skirmish/skirmish_scenario_panel.tscn",
+        "file:scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+        "file:scenes/ui/skirmish/skirmish_test_guide_panel.tscn",
+        "file:scenes/ui/splash/announcement_popup.gd",
+        "file:scenes/ui/splash/announcement_popup.tscn",
+        "file:scenes/ui/splash/faction_select.gd",
+        "file:scenes/ui/splash/faction_select.tscn",
+        "file:scenes/ui/splash/loading_screen.gd",
+        "file:scenes/ui/splash/loading_screen.tscn",
+        "file:scenes/ui/splash/mode_select.gd",
+        "file:scenes/ui/splash/mode_select.tscn",
+        "file:scenes/ui/splash/splash_screen.gd",
+        "file:scenes/ui/splash/splash_screen.tscn",
+        "file:scenes/ui/tech/tech_tree_panel.gd",
+        "file:scenes/ui/big_map/big_map_panel.gd",
+        "file:scenes/ui/big_map/big_map_panel.tscn",
+        "file:scenes/ui/buff/buff_panel.gd",
+        "file:scenes/ui/buff/buff_panel.tscn",
+        "file:scenes/ui/city_panel/city_panel.gd",
+        "file:scenes/ui/city_panel/city_panel.tscn",
+        "file:scenes/ui/diplomacy/diplomacy_panel.gd",
+        "file:scenes/ui/diplomacy/diplomacy_panel.tscn",
+        "file:scenes/ui/diplomacy/negotiation_dialog.gd",
+        "file:scenes/ui/diplomacy/negotiation_dialog.tscn"
+      ]
+    },
+    {
+      "id": "layer:main-scenes",
+      "name": "主场景层",
+      "description": "主游戏场景和单位实例场景：主场景入口点、单位场景定义、单位移动测试场景。",
+      "nodeIds": [
+        "file:scenes/units/unit.tscn",
+        "file:scenes/units/unit_movement_test.tscn",
+        "file:scenes/main/main.gd",
+        "file:scenes/main/main.tscn"
+      ]
+    },
+    {
+      "id": "layer:data-config",
+      "name": "数据配置层",
+      "description": "所有 JSON 数据文件，定义游戏数值和配置：地形、兵种、城池、势力、建筑、事件、外交参数、科技树、平衡参数等。",
+      "nodeIds": [
+        "config:data/balance_params.json",
+        "config:data/big_map_terrain.json",
+        "config:data/buildings.json",
+        "config:data/cities.json",
+        "config:data/diplomacy.json",
+        "config:data/events.json",
+        "config:data/factions.json",
+        "config:data/ministers.json",
+        "config:data/schools.json",
+        "config:data/skirmish_scenarios.json",
+        "config:data/tactical_skirmish_mvp.json",
+        "config:data/tech_events.json",
+        "config:data/tech_synergies.json",
+        "config:data/tech_tree.json",
+        "config:data/terrain.json",
+        "config:data/units.json",
+        "config:data/wonders.json"
+      ]
+    },
+    {
+      "id": "layer:tests",
+      "name": "测试层",
+      "description": "GUT 单元测试脚本，覆盖核心系统：战斗公式、六角格坐标、数据管理、游戏状态机、事件系统、城池管理、士气、侧翼、补给等。",
+      "nodeIds": [
+        "file:tests/unit/test_city_combat.gd",
+        "file:tests/unit/test_city_manager.gd",
+        "file:tests/unit/test_combat_modifiers.gd",
+        "file:tests/unit/test_combat_resolver.gd",
+        "file:tests/unit/test_damage_overflow.gd",
+        "file:tests/unit/test_data_manager.gd",
+        "file:tests/unit/test_event_manager.gd",
+        "file:tests/unit/test_fire_attack.gd",
+        "file:tests/unit/test_flanking.gd",
+        "file:tests/unit/test_game_manager.gd",
+        "file:tests/unit/test_healing.gd",
+        "file:tests/unit/test_hex_axial.gd",
+        "file:tests/unit/test_naval_combat.gd",
+        "file:tests/unit/test_pass_combat.gd",
+        "file:tests/unit/test_ranged_obstruction.gd",
+        "file:tests/unit/test_retreat.gd",
+        "file:tests/unit/test_supply.gd",
+        "file:tests/unit/test_tactical_skirmish_manager.gd",
+        "file:tests/unit/test_turn_state.gd",
+        "file:tests/unit/test_unit_morale.gd",
+        "file:tests/unit/test_unit_skills.gd",
+        "file:tests/unit/test_zoc.gd"
+      ]
+    },
+    {
+      "id": "layer:tools",
+      "name": "工具层",
+      "description": "资产生成和辅助工具脚本：精灵帧生成、UI 资产占位图生成、图标生成、重命名工具等开发期辅助脚本。",
+      "nodeIds": [
+        "file:tools/generate_announcement_assets.gd",
+        "file:tools/generate_app_icon.gd",
+        "file:tools/generate_battle_p2_assets.gd",
+        "file:tools/generate_battle_ui_assets.gd",
+        "file:tools/generate_city_tiles.gd",
+        "file:tools/generate_effect_sprite_frames.gd",
+        "file:tools/generate_faction_select_assets.gd",
+        "file:tools/generate_loading_assets.gd",
+        "file:tools/generate_mode_select_assets.gd",
+        "file:tools/generate_splash_assets.gd",
+        "file:tools/generate_unit_selection_assets.gd",
+        "file:tools/generate_unit_sprite_frames.gd",
+        "file:tools/rename_sprites.py"
+      ]
+    },
+    {
+      "id": "layer:shaders",
+      "name": "Shader 层",
+      "description": "GPU Shader 脚本，负责六角格瓦片渲染等底层图形效果。",
+      "nodeIds": [
+        "file:shaders/skirmish_hex_tile.gdshader"
+      ]
+    },
+    {
+      "id": "layer:assets",
+      "name": "美术资产层",
+      "description": "美术和 UI 资产文件：精灵图、图标、面板纹理、高亮资源、字体等运行时视觉资源。",
+      "nodeIds": [
+        "file:asset:splash_logo.png",
+        "file:asset:splash_title.png",
+        "file:asset:splash_title_mask.png",
+        "file:asset:ui_highlight_attack.png",
+        "file:asset:ui_highlight_move.png",
+        "file:asset:ui_highlight_select.png",
+        "file:asset:ui_loading_bow.png",
+        "file:asset:ui_loading_hex.png",
+        "file:asset:ui_loading_horse.png",
+        "file:asset:ui_loading_shield.png",
+        "file:asset:ui_loading_sword.png",
+        "file:asset:ui_mode_card_bg.png",
+        "file:asset:ui_mode_card_selected.png",
+        "file:asset:ui_mode_classic.png",
+        "file:asset:ui_mode_quick.png",
+        "file:asset:ui_mode_sandbox.png",
+        "file:asset:ui_mode_story.png",
+        "file:asset:ui_unit_shadow.png",
+        "file:asset:unit_frames.tres",
+        "file:dir:assets/sprites/units",
+        "file:dir:assets/ui/highlights",
+        "file:dir:assets/ui/icons",
+        "file:dir:assets/ui/panels",
+        "file:dir:assets/ui/splash"
+      ]
+    },
+    {
+      "id": "layer:docs",
+      "name": "文档层",
+      "description": "项目文档、设计决策记录、技能文件、自定义命令等非运行时知识资产。",
+      "nodeIds": [
+        "document:.claude/README.md",
+        "document:.claude/commands/audit.md",
+        "document:.claude/commands/balance.md",
+        "document:.claude/commands/event.md",
+        "document:.claude/commands/save.md",
+        "document:.claude/commands/tilegen.md",
+        "document:.claude/skills/art-pipeline.md",
+        "document:.claude/skills/godot-guidelines.md",
+        "document:.claude/skills/shanhece-world.md",
+        "document:docs/CODEMAP.md",
+        "document:docs/superpowers/plans/2026-05-16-event-system-redesign.md",
+        "document:docs/superpowers/specs/2026-05-16-event-system-redesign.md",
+        "document:docs/unit-movement-animation-guide.md"
+      ]
+    },
+    {
+      "id": "layer:project-config",
+      "name": "项目配置层",
+      "description": "项目根配置文件和版本控制配置：project.godot、.gitignore、.gitattributes、Git hooks 等。",
+      "nodeIds": [
+        "config:.claude/mcp.json.template",
+        "config:.claudeignore",
+        "config:.gitattributes",
+        "config:.githooks/pre-commit",
+        "config:.githooks/pre-push",
+        "config:project.godot"
+      ]
+    },
+    {
+      "id": "layer:understand-metadata",
+      "name": "代码理解元数据层",
+      "description": "understand-anything 工具生成的中间文件和元数据：配置、指纹、知识图谱、临时分析输出等。",
+      "nodeIds": [
+        "config:.understand-anything/.understandignore",
+        "config:.understand-anything/config.json",
+        "config:.understand-anything/fingerprints.json",
+        "config:.understand-anything/knowledge-graph.json",
+        "config:.understand-anything/meta.json",
+        "document:.understand-anything/tmp/gut-baseline-failing.txt",
+        "document:.understand-anything/tmp/gut-p1-failing.txt",
+        "document:.understand-anything/tmp/gut-p2-failing.txt",
+        "file:.understand-anything/tmp/extract-attack-pipeline.cjs"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "项目概览",
+      "description": "从项目入口点出发，了解《山河策》是什么——一款以战国七雄为背景的回合制 4X 策略游戏。阅读 project.godot 了解引擎配置和 Autoload 注册顺序，查看 CODEMAP.md 获取全局文件索引，再通过 shanhece-world.md 理解十三大核心系统和七雄势力设定。",
+      "nodeIds": [
+        "config:project.godot",
+        "file:scenes/main/main.tscn",
+        "file:scenes/main/main.gd",
+        "document:docs/CODEMAP.md",
+        "document:.claude/skills/shanhece-world.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "数据驱动架构",
+      "description": "《山河策》严格遵循「数据驱动铁律」——所有平衡数值必须从 JSON 读取，禁止硬编码。DataManager 在启动时加载全部 17 个 JSON 数据文件并提供只读索引。理解 terrain.json（11种地形）、units.json（19种兵种）、cities.json（50城）、factions.json（7势力）等数据文件的结构，是理解整个项目的基础。",
+      "nodeIds": [
+        "file:scripts/autoload/data_manager.gd",
+        "config:data/terrain.json",
+        "config:data/units.json",
+        "config:data/cities.json",
+        "config:data/factions.json",
+        "config:data/buildings.json",
+        "config:data/balance_params.json",
+        "document:.claude/skills/godot-guidelines.md"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "全局信号总线",
+      "description": "SignalBus 是项目的核心通信枢纽，通过 Godot 信号机制解耦各系统间的依赖。回合开始/结束、事件触发、外交行动、战斗结果、科技完成等所有跨系统通知都通过信号总线分发。掌握 SignalBus 的信号定义，就掌握了系统间的数据流向。",
+      "nodeIds": [
+        "file:scripts/autoload/signal_bus.gd"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "游戏主循环",
+      "description": "GameManager 是整个游戏的心脏，实现了一个清晰的状态机：GAME_INIT → TURN_START → ACTION → TURN_END → GAME_OVER。它管理回合循环、势力行动顺序、玩家资源和胜利条件判定。理解这个状态机是理解游戏流程的关键。",
+      "nodeIds": [
+        "file:scripts/autoload/game_manager.gd",
+        "file:tests/unit/test_game_manager.gd"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "城池与经营",
+      "description": "CityManager 管理 50 座城池的运行时状态，包括建筑建造/升级/拆除、所有权变更、迁都和灭国检查。city_panel.gd 提供城池管理 UI，让玩家查看城池信息、建筑列表和建造队列。buildings.json 定义了经济/军事/文化三大类建筑的升级树。",
+      "nodeIds": [
+        "file:scripts/autoload/city_manager.gd",
+        "file:scenes/ui/city_panel/city_panel.gd",
+        "file:scenes/ui/city_panel/city_panel.tscn",
+        "config:data/buildings.json",
+        "config:data/cities.json",
+        "file:tests/unit/test_city_manager.gd"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "外交系统",
+      "description": "合纵连横是战国时代的核心主题。DiplomacySystem 管理好感度、声望、条约、战争、附庸、商路等外交机制，每回合自动衰减和过期。DiplomacyAI 实现概率驱动的 AI 外交决策（战争评估/停战/结盟/合纵/脱附），并根据势力性格加权。谈判对话框支持 3 轮赔款协商。",
+      "nodeIds": [
+        "file:scripts/autoload/diplomacy_system.gd",
+        "file:scripts/ai/diplomacy_ai.gd",
+        "class::diplomacy_ai",
+        "file:scenes/ui/diplomacy/diplomacy_panel.gd",
+        "file:scenes/ui/diplomacy/diplomacy_panel.tscn",
+        "file:scenes/ui/diplomacy/negotiation_dialog.gd",
+        "file:scenes/ui/diplomacy/negotiation_dialog.tscn",
+        "config:data/diplomacy.json"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "战斗系统",
+      "description": "战术演武是游戏的核心战斗玩法，基于六角格地图。TacticalSkirmishManager 处理六角格移动、战斗结算、攻城和关隘城墙耐久。CombatResolver 是纯函数伤害计算器，实现攻防加法层、兵种克制、士气偏移、随机方差和溃散乘数。HexAxial 提供轴向/偏移坐标转换和距离计算。SkirmishAI 和 SkirmishAttackPipeline 分别负责 AI 决策和攻击执行管线。",
+      "nodeIds": [
+        "file:scripts/autoload/tactical_skirmish_manager.gd",
+        "file:scripts/systems/combat_resolver.gd",
+        "file:scripts/systems/hex_axial.gd",
+        "file:scripts/systems/skirmish_ai.gd",
+        "file:scripts/systems/skirmish_attack_pipeline.gd",
+        "file:scenes/ui/skirmish/skirmish_mvp_panel.gd",
+        "file:scenes/ui/skirmish/skirmish_mvp_panel.tscn",
+        "file:scenes/ui/skirmish/skirmish_scenario_panel.gd",
+        "config:data/skirmish_scenarios.json",
+        "config:data/tactical_skirmish_mvp.json",
+        "file:tests/unit/test_combat_resolver.gd",
+        "file:tests/unit/test_hex_axial.gd",
+        "file:tests/unit/test_tactical_skirmish_manager.gd"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "科技与事件",
+      "description": "TechSystem 管理 54 项科技树的研究流程，涵盖军事/经济/文化/建筑四大类，支持前置条件检查、精通等级和科技联动加成。EventManager 实现三阶段事件管线：连锁事件、季节事件和池竞争，管理冷却和条件触发。科技研究过程中还会触发专属随机事件，如「铸铁之喜」「弩机巧思」等。",
+      "nodeIds": [
+        "file:scripts/systems/tech_system.gd",
+        "file:scripts/autoload/event_manager.gd",
+        "class::tech_tree_panel",
+        "file:scenes/ui/tech/tech_tree_panel.gd",
+        "class::event_popup",
+        "file:scenes/ui/event_popup/event_popup.gd",
+        "file:scenes/ui/event_popup/event_popup.tscn",
+        "config:data/tech_tree.json",
+        "config:data/events.json",
+        "config:data/tech_events.json",
+        "config:data/tech_synergies.json",
+        "file:tests/unit/test_event_manager.gd"
+      ]
+    },
+    {
+      "order": 9,
+      "title": "UI 场景与启动流程",
+      "description": "StartupFlow 管理从 Splash 画面到游戏场景的完整启动链：动画 Logo → 卷轴公告弹窗 → 4 模式选择卡片 → 7 势力选择（含立绘/特色兵种/加成）→ 加载画面（旋转六角框+打字机提示）→ 主游戏场景。每个 UI 场景都是独立的 .tscn + .gd 组合，通过信号与启动流程协调。",
+      "nodeIds": [
+        "file:scripts/autoload/startup_flow.gd",
+        "class::splash_screen",
+        "file:scenes/ui/splash/splash_screen.gd",
+        "file:scenes/ui/splash/splash_screen.tscn",
+        "class::mode_select",
+        "file:scenes/ui/splash/mode_select.gd",
+        "file:scenes/ui/splash/mode_select.tscn",
+        "class::faction_select",
+        "file:scenes/ui/splash/faction_select.gd",
+        "file:scenes/ui/splash/faction_select.tscn",
+        "class::loading_screen",
+        "file:scenes/ui/splash/loading_screen.gd",
+        "file:scenes/ui/splash/loading_screen.tscn",
+        "class::announcement_popup",
+        "file:scenes/ui/splash/announcement_popup.gd",
+        "file:scenes/ui/splash/announcement_popup.tscn"
+      ]
+    },
+    {
+      "order": 10,
+      "title": "测试覆盖",
+      "description": "项目使用 GUT（Godot Unit Testing）框架，拥有 22 个单元测试文件，覆盖核心系统：战斗公式、六角格坐标、数据管理、游戏状态机、事件系统、城池管理等。测试遵循 AAA（Arrange-Act-Assert）模式，是验证游戏逻辑正确性的重要保障。",
+      "nodeIds": [
+        "file:tests/unit/test_combat_resolver.gd",
+        "file:tests/unit/test_hex_axial.gd",
+        "file:tests/unit/test_data_manager.gd",
+        "file:tests/unit/test_game_manager.gd",
+        "file:tests/unit/test_event_manager.gd",
+        "file:tests/unit/test_city_manager.gd",
+        "file:tests/unit/test_tactical_skirmish_manager.gd",
+        "file:tests/unit/test_unit_morale.gd",
+        "file:tests/unit/test_flanking.gd",
+        "file:tests/unit/test_supply.gd",
+        "file:tests/unit/test_fire_attack.gd",
+        "file:tests/unit/test_zoc.gd"
+      ]
+    },
+    {
+      "order": 11,
+      "title": "工具链",
+      "description": "tools/ 目录包含 12 个资产生成脚本，用于在美术不足时自动生成占位资源：单位精灵帧、战斗特效、启动画面、城池瓦片、UI 图标等。这些工具确保项目在 Godot 编辑器中可正常运行，遵循「阶段 0~1 使用 CC0 素材占位，禁止下场画终稿」的原则。",
+      "nodeIds": [
+        "file:tools/generate_unit_sprite_frames.gd",
+        "file:tools/generate_effect_sprite_frames.gd",
+        "file:tools/generate_splash_assets.gd",
+        "file:tools/generate_app_icon.gd",
+        "file:tools/generate_city_tiles.gd",
+        "file:tools/generate_faction_select_assets.gd",
+        "file:tools/generate_battle_ui_assets.gd",
+        "file:tools/generate_loading_assets.gd",
+        "file:tools/generate_mode_select_assets.gd",
+        "file:tools/generate_unit_selection_assets.gd",
+        "file:tools/generate_announcement_assets.gd",
+        "file:tools/rename_sprites.py"
+      ]
+    }
+  ]
+}

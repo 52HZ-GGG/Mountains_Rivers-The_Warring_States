@@ -16,6 +16,17 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
+	# 背景图
+	var bg_tex: Texture2D = SkirmishTileTextures.panel_texture("diplomacy")
+	if bg_tex != null:
+		var bg := TextureRect.new()
+		bg.name = "Background"
+		bg.texture = bg_tex
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(bg)
+
 	# 主布局
 	var main_vbox := VBoxContainer.new()
 	main_vbox.name = "MainVBox"
@@ -32,8 +43,7 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	title_bar.add_child(title)
 
-	var close_button := Button.new()
-	close_button.text = "关闭"
+	var close_button := SkirmishTileTextures.styled_button("关闭")
 	close_button.pressed.connect(_on_close_pressed)
 	title_bar.add_child(close_button)
 
@@ -91,8 +101,7 @@ func _build_ui() -> void:
 
 
 func _create_action_button(parent: Node, text: String, callback: Callable) -> void:
-	var btn := Button.new()
-	btn.text = text
+	var btn := SkirmishTileTextures.styled_button(text)
 	btn.pressed.connect(callback)
 	parent.add_child(btn)
 
@@ -107,7 +116,7 @@ func _populate_faction_list() -> void:
 	for fid in GameManager.FACTION_IDS:
 		if fid == player_faction:
 			continue
-		var btn := Button.new()
+		var btn := SkirmishTileTextures.styled_button()
 		var faction_data: Dictionary = DataManager.get_faction(fid)
 		var name: String = faction_data.get("name", fid)
 		var opinion: int = DiplomacySystem.get_opinion(player_faction, fid)

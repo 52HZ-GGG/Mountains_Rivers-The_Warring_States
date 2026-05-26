@@ -28,16 +28,21 @@ var _selected_faction: String = ""
 var _card_buttons: Array[Button] = []
 
 func _ready() -> void:
-	back_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/main/main.tscn"))
+	SkirmishTileTextures.style_scene_button(back_btn)
+	SkirmishTileTextures.style_scene_button(start_btn)
+	back_btn.pressed.connect(func():
+		StartupFlow.is_startup_flow_active = false
+		get_tree().change_scene_to_file("res://scenes/main/main.tscn")
+	)
 	start_btn.pressed.connect(_on_start)
 	start_btn.disabled = true
+	SkirmishTileTextures.update_button_disabled(start_btn)
 	_create_cards()
 
 func _create_cards() -> void:
 	for f in FACTIONS:
-		var btn := Button.new()
+		var btn := SkirmishTileTextures.styled_button(f["name"].substr(0, 2))
 		btn.custom_minimum_size = Vector2(96, 128)
-		btn.text = f["name"].substr(0, 2)  # 取"秦"字
 		btn.add_theme_font_size_override("font_size", 24)
 
 		# 加载卡片纹理（如有）

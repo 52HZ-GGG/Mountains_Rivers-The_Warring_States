@@ -97,10 +97,6 @@ func is_player_faction(faction_id: String) -> bool:
 	return faction_id == _player_faction
 
 
-func get_player_faction_id() -> String:
-	return _player_faction
-
-
 # ============= 状态转换 =============
 
 ## 开始游戏。active_factions 是激活的国家 ID 列表，player_faction 是人类玩家。
@@ -351,25 +347,6 @@ func apply_refined_iron_delta(delta: int) -> void:
 	_player_refined_iron = max(0, _player_refined_iron + delta)
 
 
-func get_player_craftsmen() -> int:
-	return _player_craftsmen
-
-
-func apply_craftsmen_delta(delta: int) -> void:
-	_player_craftsmen = max(0, _player_craftsmen + delta)
-
-
-func get_player_building_materials() -> int:
-	return _player_building_materials
-
-
-func apply_building_materials_delta(delta: int) -> void:
-	_player_building_materials = max(0, _player_building_materials + delta)
-
-
-## 获取当前采用的学派 ID（空串表示未选择）。待学派系统实现后连接。
-func get_current_school() -> String:
-	return ""
 # ============= 测试与重开 =============
 
 ## 重置到初始状态。供单元测试与「重新开局」使用。

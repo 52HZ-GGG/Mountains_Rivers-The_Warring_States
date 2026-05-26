@@ -23,6 +23,7 @@ func _ready() -> void:
 	overlay.color = Color(0, 0, 0, 0.5)
 	overlay.visible = false
 	bg.visible = false
+	SkirmishTileTextures.style_scene_button(confirm_btn)
 	confirm_btn.pressed.connect(_close)
 
 func show_announcement(title: String, body: String) -> void:

@@ -74,7 +74,7 @@ func _create_sprite_frames_from_files() -> void:
 		dir.list_dir_begin()
 		var entry := dir.get_next()
 		while entry != "":
-			if entry.ends_with(".png") and entry.begins_with(anim_name + "_"):
+			if entry.ends_with(".png") and not entry.ends_with(".import") and ("_" + anim_name + "_") in entry:
 				frame_files.append(base_path + entry)
 			entry = dir.get_next()
 		dir.list_dir_end()

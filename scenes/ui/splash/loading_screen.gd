@@ -38,6 +38,14 @@ func _ready() -> void:
 	overlay.visible = false
 	hex_frame.visible = false
 	_load_textures()
+	# 自动启动加载动画（由 StartupFlow 进入时）
+	if StartupFlow.is_startup_flow_active:
+		_auto_start()
+
+func _auto_start() -> void:
+	start_loading("")
+	await get_tree().create_timer(1.5).timeout
+	finish_loading()
 
 func _load_textures() -> void:
 	var paths := [

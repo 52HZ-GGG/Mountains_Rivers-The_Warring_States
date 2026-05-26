@@ -1,8 +1,6 @@
 [gd_resource type="FontVariation" format=3]
 
-[ext_resource type="FontFile" path="res://assets/fonts/stliti.ttf" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/STLITI.TTF" id="1"]
 
 [resource]
 base_font = ExtResource("1")
-fixed_size = 16
-fixed_size_scale_mode = 0

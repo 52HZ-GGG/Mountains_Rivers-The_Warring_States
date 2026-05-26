@@ -23,24 +23,33 @@ const _CLR_ENEMY_CITY: Color = Color(1.0, 0.9, 0.9)
 @onready var _hex_board: Control = %HexBoard
 @onready var _log_view: RichTextLabel = %SkirmishLog
 @onready var _hint: Label = %HintLabel
-@onready var _hover_info: Label = %HexHoverInfo
+@onready var _hover_info: RichTextLabel = %HexHoverInfo
 @onready var _retreat_btn: Button = %RetreatBtn
 @onready var _season_label: Label = %SeasonLabel
 
 var _selected_unit_id: String = ""
 var _reachable: Dictionary = {}
 var _hex_refit_pending: bool = false
+var _unit_frames_cache: Dictionary = {}  # "unit_type_id:faction_id" -> SpriteFrames
+var _effect_frames_cache: Dictionary = {}  # effect_id -> SpriteFrames
 
 
 func _ready() -> void:
 	visible = false
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/EndTurnBtn)
+	SkirmishTileTextures.style_scene_button(%StandbyBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/RestartBtn)
+	SkirmishTileTextures.style_scene_button(_retreat_btn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/CloseBtn)
 	$MarginContainer/MainVBox/ButtonRow/EndTurnBtn.pressed.connect(_on_end_turn_pressed)
+	%StandbyBtn.pressed.connect(_on_standby_pressed)
 	$MarginContainer/MainVBox/ButtonRow/RestartBtn.pressed.connect(_on_restart_pressed)
 	_retreat_btn.pressed.connect(_on_retreat_pressed)
 	$MarginContainer/MainVBox/ButtonRow/CloseBtn.pressed.connect(_on_close_pressed)
 	TacticalSkirmishManager.skirmish_ended.connect(_on_skirmish_ended_unified)
 	TacticalSkirmishManager.state_changed.connect(_refresh_display)
 	TacticalSkirmishManager.log_appended.connect(_on_mgr_log)
+	TacticalSkirmishManager.combat_effect_requested.connect(_play_combat_effect)
 
 
 func open_panel() -> void:
@@ -113,6 +122,19 @@ func _on_restart_pressed() -> void:
 func _on_end_turn_pressed() -> void:
 	if TacticalSkirmishManager.is_active():
 		TacticalSkirmishManager.end_player_turn()
+	_selected_unit_id = ""
+	_reachable.clear()
+	_refresh_display()
+
+
+func _on_standby_pressed() -> void:
+	if _selected_unit_id == "":
+		_hint.text = "请先选中一个单位。"
+		return
+	TacticalSkirmishManager.finalize_player_unit_action(_selected_unit_id)
+	_hint.text = "已待命（%s 本回合结束）。" % _selected_unit_id
+	_selected_unit_id = ""
+	_reachable.clear()
 	_refresh_display()
 
 
@@ -274,7 +296,7 @@ func _ensure_board_backdrop() -> void:
 		bg.offset_bottom = 0.0
 		_hex_board.add_child(bg)
 		_hex_board.move_child(bg, 0)
-	bg.color = Color(0.35, 0.38, 0.32, 1.0)
+	bg.color = Color(0.50, 0.55, 0.45, 1.0)
 	_ensure_hex_map_canvas()
 
 
@@ -311,30 +333,46 @@ func _build_hover_text(cell: Vector2i) -> String:
 	var atk_m: float = float(tdata.get("atk_mod", 1.0))
 	var def_m: float = float(tdata.get("def_mod", 1.0))
 	var amb: float = float(tdata.get("ambush_chance", 0.0))
-	var amb_str: String = ("伏击概率+%d%%" % int(round(amb * 100.0))) if amb > 0.001 else "无额外伏击"
+	var amb_str: String = ("伏击+%d%%" % int(round(amb * 100.0))) if amb > 0.001 else ""
 	var lines: PackedStringArray = []
-	lines.append("地形：%s（%s）" % [t_name, t_id])
-	lines.append("移耗：%s ｜ 攻方伤害×%.2f ｜ 守方防御×%.2f ｜ %s" % [mc_str, atk_m, def_m, amb_str])
+	var terrain_line: String = "地形：%s ｜ 移耗%s ｜ 攻×%.2f 守×%.2f" % [t_name, mc_str, atk_m, def_m]
+	if amb_str != "":
+		terrain_line += " ｜ " + amb_str
+	lines.append(terrain_line)
+	# 城市信息
 	var pc: Vector2i = TacticalSkirmishManager.get_player_city()
 	var ec: Vector2i = TacticalSkirmishManager.get_enemy_city()
-	if cell == pc:
-		lines.append("据点：秦国目标城格（占领赵城格获胜）")
-	elif cell == ec:
-		lines.append("据点：赵国目标城格（占领秦城格赵方获胜）")
+	var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(cell)
+	var wall_max: int = TacticalSkirmishManager.get_city_wall_max_hp(cell)
+	if cell == pc or cell == ec:
+		var owner_str: String = "己方" if cell == pc else "敌方"
+		var city_line: String = "据点：%s城格" % owner_str
+		if wall_hp >= 0:
+			if wall_hp > 0:
+				city_line += " ｜ 城墙 %d/%d" % [wall_hp, wall_max]
+			else:
+				city_line += " ｜ 城墙已破"
+		lines.append(city_line)
+	elif wall_hp > 0:
+		lines.append("城墙：%d/%d" % [wall_hp, wall_max])
+	# 单位信息
 	var uu: Dictionary = _unit_at_cell(cell)
 	if not uu.is_empty():
 		var fid: String = str(uu["faction_id"])
 		var fac_name: String = _faction_display_name(fid)
 		var ut: Dictionary = DataManager.get_unit_type(str(uu["unit_type_id"]))
 		var ut_name: String = str(ut.get("name", uu["unit_type_id"]))
+		var base_atk: int = int(ut.get("attack", 10))
+		var base_def: int = int(ut.get("defense", 10))
 		var rng: int = int(ut.get("range", 1))
-		var acted: bool = bool(uu.get("acted", false))
-		var act_str: String = "本回合已行动" if acted else "尚未行动"
+		var cat: String = str(ut.get("category", ""))
 		var spd: int = int(uu.get("speed", 3))
 		var rem: int = int(uu.get("mp_remaining", spd))
-		var atk_mp: int = TacticalSkirmishManager.get_attack_move_cost()
-		lines.append("单位：%s · %s ｜ HP %d/%d ｜ 射程%d ｜ 移动力 %d/%d（攻击额外 %d）｜ %s" % [
-			fac_name, ut_name, int(uu["hp"]), int(uu["max_hp"]), rng, rem, spd, atk_mp, act_str
+		var acted: bool = bool(uu.get("acted", false))
+		var act_str: String = "已行动" if acted else "待命"
+		lines.append("[ %s · %s ] %s" % [fac_name, ut_name, act_str])
+		lines.append("HP %d/%d ｜ 攻击 %d ｜ 防御 %d ｜ 射程 %d ｜ 移动力 %d/%d" % [
+			int(uu["hp"]), int(uu["max_hp"]), base_atk, base_def, rng, rem, spd
 		])
 		var uid: String = str(uu["id"])
 		var morale_val: int = TacticalSkirmishManager.get_unit_morale(uid)
@@ -343,14 +381,102 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var status_parts: PackedStringArray = []
 		status_parts.append("士气 %d" % morale_val)
 		if not supplied:
-			status_parts.append("断粮")
+			status_parts.append("[color=red]断粮[/color]")
 		if burn_val > 0:
-			status_parts.append("烧伤(%d回合)" % burn_val)
+			status_parts.append("[color=orange]烧伤(%d回合)[/color]" % burn_val)
+		# 技能
+		var skills: Array = uu.get("skills", [])
+		if not skills.is_empty():
+			var skill_names: PackedStringArray = []
+			for sk: Variant in skills:
+				var sd: Dictionary = sk as Dictionary
+				skill_names.append(str(sd.get("name", sd.get("type", "?"))))
+			status_parts.append("技能：%s" % ", ".join(skill_names))
 		lines.append("状态：%s" % " | ".join(status_parts))
+		# 选中己方单位时：攻击预览
 		if _selected_unit_id != "" and fid == TacticalSkirmishManager.get_enemy_faction():
-			var can_atk: bool = TacticalSkirmishManager.list_attack_targets(_selected_unit_id).has(str(uu["id"]))
-			lines.append("（当前选中己方单位）%s" % ("可攻击此目标" if can_atk else "不可攻击（射程或移动力不足）"))
+			_append_attack_preview(lines, _selected_unit_id, str(uu["id"]), false)
+	# 选中己方单位 + 城墙格：攻城预览
+	if _selected_unit_id != "" and wall_hp > 0 and uu.is_empty():
+		_append_attack_preview(lines, _selected_unit_id, cell, true)
 	return "\n".join(lines)
+
+
+## 追加攻击预览信息（单位攻击或攻城）
+func _append_attack_preview(lines: PackedStringArray, attacker_id: String, target: Variant, is_wall: bool) -> void:
+	var preview: Dictionary = TacticalSkirmishManager.compute_attack_preview(attacker_id, target)
+	if preview.is_empty():
+		return
+	var base_a: int = int(preview["base_atk"])
+	var eff_a: float = float(preview["effective_atk"])
+	var atk_parts: PackedStringArray = []
+	atk_parts.append("基础 %d" % base_a)
+	for d: String in preview["atk_details"]:
+		atk_parts.append(d)
+	lines.append("── 攻击：%s → 实际 %.0f" % [" + ".join(atk_parts), eff_a])
+	if not is_wall:
+		var base_d: int = int(preview["base_def"])
+		var eff_d: float = float(preview["effective_def"])
+		var def_parts: PackedStringArray = []
+		def_parts.append("基础 %d" % base_d)
+		for d2: String in preview["def_details"]:
+			def_parts.append(d2)
+		lines.append("── 防御：%s → 实际 %.0f" % [" + ".join(def_parts), eff_d])
+		var counter: float = float(preview["counter"])
+		var counter_str: String = ""
+		if counter > 1.05:
+			counter_str = "（克制 ×%.1f）" % counter
+		elif counter < 0.95:
+			counter_str = "（被克 ×%.1f）" % counter
+		var dmg_lo: int = int(preview.get("expected_dmg_lo", preview["expected_dmg"]))
+		var dmg_hi: int = int(preview.get("expected_dmg_hi", preview["expected_dmg"]))
+		lines.append("── 公式：(攻%.0f × 克制%.1f - 防%.0f) ≈ [color=yellow]预期伤害 %d~%d[/color]" % [
+			eff_a, counter, eff_d, dmg_lo, dmg_hi
+		])
+		if counter_str != "":
+			lines.append("── %s" % counter_str)
+		# 反击预览
+		if bool(preview.get("can_counter", false)):
+			var c_dmg: int = int(preview.get("counter_atk_dmg", 0))
+			var c_dmg_lo: int = int(preview.get("counter_atk_dmg_lo", c_dmg))
+			var c_dmg_hi: int = int(preview.get("counter_atk_dmg_hi", c_dmg))
+			var c_parts: PackedStringArray = []
+			for cd: String in preview.get("counter_details", []):
+				c_parts.append(cd)
+			lines.append("── 反伤：%s → [color=orange]预计受到 %d~%d 反击伤害[/color]" % [
+				" + ".join(c_parts) if not c_parts.is_empty() else "—", c_dmg_lo, c_dmg_hi
+			])
+		else:
+			lines.append("── [color=gray]远程攻击不触发反击[/color]")
+	else:
+		var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
+		var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
+		var a_unit2: Dictionary = TacticalSkirmishManager.get_unit_by_id(attacker_id)
+		var a_utype: Dictionary = DataManager.get_unit_type(str(a_unit2.get("unit_type_id", "")))
+		var is_siege: bool = str(a_utype.get("special", "")) == "siege_bonus" or str(a_utype.get("category", "")) == "siege"
+		var siege_note: String = "（攻城器械 ×%.0f）" % siege_mult if is_siege else ""
+		lines.append("── 公式：攻%.0f × 50%% → [color=yellow]预期城墙伤害 %d[/color]%s" % [
+			eff_a, int(preview["wall_dmg"]), siege_note
+		])
+	# 可攻击提示
+	var can_atk: bool = false
+	if not is_wall:
+		can_atk = TacticalSkirmishManager.list_attack_targets(attacker_id).has(str(target))
+	else:
+		var a_unit: Dictionary = TacticalSkirmishManager.get_unit_by_id(attacker_id)
+		if not a_unit.is_empty():
+			var ac: Vector2i = Vector2i(int(a_unit["q"]), int(a_unit["r"]))
+			var dc: Vector2i = target as Vector2i
+			var dq: int = ac.x - dc.x
+			var dr: int = ac.y - dc.y
+			var dist: int = maxi(abs(dq), maxi(abs(dr), abs(dq + dr)))
+			var ug: Dictionary = DataManager.get_unit_type(str(a_unit["unit_type_id"]))
+			var rng2: int = int(ug.get("range", 1))
+			can_atk = dist >= 1 and dist <= rng2
+	if can_atk:
+		lines.append("[color=green]可攻击[/color]")
+	else:
+		lines.append("[color=gray]超出射程或移动力不足[/color]")
 
 
 func _faction_display_name(faction_id: String) -> String:
@@ -386,16 +512,15 @@ func _on_hex_pressed(q: int, r: int) -> void:
 			_hint.text = "该单位本回合已行动。"
 			return
 		if str(occ["id"]) == _selected_unit_id:
-			TacticalSkirmishManager.finalize_player_unit_action(str(occ["id"]))
 			_selected_unit_id = ""
 			_reachable.clear()
-			_hint.text = "已待命（本单位本回合结束）。"
+			_hint.text = "已取消选中。"
 			_refresh_display()
 			return
 		_selected_unit_id = str(occ["id"])
 		_reachable = TacticalSkirmishManager.get_reachable_cells(_selected_unit_id)
 		var ac: int = TacticalSkirmishManager.get_attack_move_cost()
-		_hint.text = "已选 %s：点绿格移动；攻击需额外移动力 %d；再点本单位可待命。" % [_selected_unit_id, ac]
+		_hint.text = "已选 %s：点绿格移动；点敌军攻击（需 %d 移动力）；点自身取消；点[待命]结束行动。" % [_selected_unit_id, ac]
 		_refresh_display()
 		return
 	# 已选中：可走空格移动；移动后若本回合未结束则保持选中
@@ -404,18 +529,38 @@ func _on_hex_pressed(q: int, r: int) -> void:
 			var moving_id: String = _selected_unit_id
 			var mv: Dictionary = TacticalSkirmishManager.try_move_unit(moving_id, cell)
 			if bool(mv.get("ok", false)):
-				var u_after: Dictionary = TacticalSkirmishManager.get_unit_by_id(moving_id)
-				if not u_after.is_empty() and not bool(u_after.get("acted", false)):
-					_selected_unit_id = moving_id
-					_reachable = TacticalSkirmishManager.get_reachable_cells(moving_id)
-					var ae: int = TacticalSkirmishManager.get_attack_move_cost()
-					_hint.text = "移动后仍可行动：点橙格敌军攻击（需额外 %d 移动力）或再点本单位待命。" % ae
+				_selected_unit_id = moving_id
+				_reachable = TacticalSkirmishManager.get_reachable_cells(moving_id)
+				var ae: int = TacticalSkirmishManager.get_attack_move_cost()
+				var targets: Array = TacticalSkirmishManager.list_attack_targets(moving_id)
+				if not targets.is_empty():
+					_hint.text = "移动完成：可继续移动、点橙格攻击（需 %d 移动力）或点[待命]结束。" % ae
+				elif not _reachable.is_empty():
+					_hint.text = "移动完成：可继续移动或点[待命]结束。"
 				else:
-					_selected_unit_id = ""
-					_reachable.clear()
+					_hint.text = "移动完成：无可行动项，点[待命]或[结束回合]。"
 			else:
 				_selected_unit_id = ""
 				_reachable.clear()
+		# 点击城市格：有城墙时尝试攻城
+		if _selected_unit_id != "" and occ.is_empty():
+			var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(cell)
+			if wall_hp > 0:
+				var atk_res: Dictionary = TacticalSkirmishManager.try_attack_city_wall(_selected_unit_id, cell)
+				if bool(atk_res.get("ok", false)):
+					_hint.text = "攻城！城墙受到 %d 伤害。" % int(atk_res["damage"])
+					_selected_unit_id = ""
+					_reachable.clear()
+				elif str(atk_res.get("reason", "")) == "out_of_range":
+					_hint.text = "城墙未破（%d HP），需移近后攻击。" % wall_hp
+				elif str(atk_res.get("reason", "")) == "insufficient_mp":
+					_hint.text = "移动力不足，无法攻城。"
+				elif str(atk_res.get("reason", "")) == "already_acted":
+					_hint.text = "该单位本回合已行动。"
+				else:
+					_hint.text = "城墙未破（%d HP），无法攻城。" % wall_hp
+			elif wall_hp == 0:
+				_hint.text = "城墙已破，可移动单位占领。"
 		_refresh_display()
 		return
 
@@ -468,9 +613,23 @@ func _refresh_display() -> void:
 			hex_cell.set_tint_color(_cell_tint_color(cell_axial, uu))
 			var tag: String = ""
 			if cell_axial == TacticalSkirmishManager.get_player_city():
-				tag = "秦城"
+				var wh: int = TacticalSkirmishManager.get_city_wall_hp(cell_axial)
+				var wm: int = TacticalSkirmishManager.get_city_wall_max_hp(cell_axial)
+				if wh > 0:
+					tag = "秦城\n城墙 %d/%d" % [wh, wm]
+				else:
+					tag = "秦城（城墙已破）"
 			elif cell_axial == TacticalSkirmishManager.get_enemy_city():
-				tag = "赵城"
+				var wh: int = TacticalSkirmishManager.get_city_wall_hp(cell_axial)
+				var wm: int = TacticalSkirmishManager.get_city_wall_max_hp(cell_axial)
+				if wh > 0:
+					tag = "赵城\n城墙 %d/%d" % [wh, wm]
+				else:
+					tag = "赵城（城墙已破）"
+			# 关隘 HP 显示
+			var pass_hp: int = TacticalSkirmishManager.get_pass_hp(cell_axial)
+			if pass_hp >= 0:
+				tag = "关隘 HP:%d" % pass_hp
 			var line2: String = ""
 			if not uu.is_empty():
 				var fn: String = _faction_short(str(uu["faction_id"]))
@@ -559,49 +718,138 @@ func _apply_capital_badge(hex_cell: Control, cell: Vector2i) -> void:
 
 
 func _apply_unit_overlay(btn: Control, uu: Dictionary) -> void:
-	var overlay: TextureRect = btn.get_node_or_null("UnitOverlay") as TextureRect
+	var anim_sprite: AnimatedSprite2D = btn.get_node_or_null("UnitSprite") as AnimatedSprite2D
 	var unit_shadow: TextureRect = btn.get_node_or_null("UnitShadow") as TextureRect
 	if uu.is_empty():
-		if overlay != null:
-			overlay.visible = false
+		if anim_sprite != null:
+			anim_sprite.visible = false
 		if unit_shadow != null:
 			unit_shadow.visible = false
 		return
-	if overlay == null:
-		var ushadow: TextureRect = TextureRect.new()
-		ushadow.name = "UnitShadow"
-		ushadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ushadow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		ushadow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		ushadow.modulate = Color(0.06, 0.03, 0.02, 0.52)
-		ushadow.z_index = 3
-		btn.add_child(ushadow)
-		overlay = TextureRect.new()
-		overlay.name = "UnitOverlay"
-		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		overlay.z_index = 4
-		btn.add_child(overlay)
-	overlay.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	overlay.offset_left = -42.0
-	overlay.offset_top = 2.0
-	overlay.offset_right = -2.0
-	overlay.offset_bottom = 42.0
-	var ut: Texture2D = SkirmishTileTextures.unit_texture(str(uu["unit_type_id"]))
+	# 创建或复用 AnimatedSprite2D
+	if anim_sprite == null:
+		anim_sprite = AnimatedSprite2D.new()
+		anim_sprite.name = "UnitSprite"
+		anim_sprite.z_index = 4
+		btn.add_child(anim_sprite)
+	# 加载 SpriteFrames
+	var unit_type_id: String = str(uu.get("unit_type_id", ""))
+	var faction_id: String = str(uu.get("faction_id", "base"))
+	var sf: SpriteFrames = _get_or_create_unit_frames(unit_type_id, faction_id)
+	if sf != null:
+		anim_sprite.sprite_frames = sf
+		if not anim_sprite.is_playing():
+			anim_sprite.play("idle")
+	# 定位到格子右上角
+	anim_sprite.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	var cell_size: Vector2 = btn.custom_minimum_size
+	var sprite_size: float = minf(cell_size.x, cell_size.y) * 0.65
+	anim_sprite.offset_left = -sprite_size - 2.0
+	anim_sprite.offset_top = 2.0
+	anim_sprite.offset_right = -2.0
+	anim_sprite.offset_bottom = sprite_size + 2.0
+	anim_sprite.visible = true
+	# 阴影（保留 TextureRect 方案，用静态贴图做阴影）
+	if unit_shadow == null:
+		unit_shadow = TextureRect.new()
+		unit_shadow.name = "UnitShadow"
+		unit_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		unit_shadow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		unit_shadow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		unit_shadow.modulate = Color(0.06, 0.03, 0.02, 0.52)
+		unit_shadow.z_index = 3
+		btn.add_child(unit_shadow)
+	var ut: Texture2D = SkirmishTileTextures.unit_texture(unit_type_id)
 	if ut != null:
-		overlay.texture = ut
-	overlay.visible = true
-	unit_shadow = btn.get_node_or_null("UnitShadow") as TextureRect
-	if unit_shadow != null and ut != null:
 		unit_shadow.texture = ut
 		unit_shadow.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-		unit_shadow.offset_left = overlay.offset_left + 5.0
-		unit_shadow.offset_top = overlay.offset_top + 7.0
-		unit_shadow.offset_right = overlay.offset_right + 5.0
-		unit_shadow.offset_bottom = overlay.offset_bottom + 7.0
+		unit_shadow.offset_left = anim_sprite.offset_left + 5.0
+		unit_shadow.offset_top = anim_sprite.offset_top + 7.0
+		unit_shadow.offset_right = anim_sprite.offset_right + 5.0
+		unit_shadow.offset_bottom = anim_sprite.offset_bottom + 7.0
 		unit_shadow.visible = true
-	overlay.move_to_front()
+	anim_sprite.move_to_front()
+
+
+func _get_or_create_unit_frames(unit_type_id: String, faction_id: String) -> SpriteFrames:
+	var key: String = "%s:%s" % [unit_type_id, faction_id]
+	if _unit_frames_cache.has(key):
+		return _unit_frames_cache[key]
+	var sf: SpriteFrames = _load_unit_sprite_frames(unit_type_id, faction_id)
+	if sf != null:
+		_unit_frames_cache[key] = sf
+	return sf
+
+
+func _load_unit_sprite_frames(unit_type_id: String, faction_id: String) -> SpriteFrames:
+	var base_path: String = "res://assets/sprites/units/%s/%s/" % [faction_id, unit_type_id]
+	var dir: DirAccess = DirAccess.open(base_path)
+	if not dir:
+		# 回退到 base 阵营
+		base_path = "res://assets/sprites/units/base/%s/" % unit_type_id
+		dir = DirAccess.open(base_path)
+		if not dir:
+			return null
+	var sf: SpriteFrames = SpriteFrames.new()
+	sf.remove_animation("default")
+	var anim_names: Array[String] = ["idle", "move", "attack", "hurt", "death"]
+	var loop_anims: Array[String] = ["idle", "move"]
+	var fps: float = 8.0
+	for anim_name: String in anim_names:
+		var frame_files: Array[String] = []
+		dir.list_dir_begin()
+		var entry: String = dir.get_next()
+		while entry != "":
+			if entry.ends_with(".png") and not entry.ends_with(".import") and ("_" + anim_name + "_") in entry:
+				frame_files.append(base_path + entry)
+			entry = dir.get_next()
+		dir.list_dir_end()
+		if frame_files.is_empty():
+			continue
+		frame_files.sort()
+		sf.add_animation(anim_name)
+		sf.set_animation_speed(anim_name, fps)
+		sf.set_animation_loop(anim_name, anim_name in loop_anims)
+		for frame_path: String in frame_files:
+			var tex: Texture2D = load(frame_path) as Texture2D
+			if tex != null:
+				sf.add_frame(anim_name, tex)
+	return sf
+
+
+func _play_combat_effect(effect_id: String, cell: Vector2i, _attacker_cell: Vector2i) -> void:
+	var hex_cell: Control = _find_hex_cell(cell)
+	if hex_cell == null:
+		return
+	var sf: SpriteFrames = _effect_frames_cache.get(effect_id)
+	if sf == null:
+		sf = SkirmishTileTextures.effect_frames(effect_id)
+		if sf == null:
+			return
+		_effect_frames_cache[effect_id] = sf
+	var fx: AnimatedSprite2D = AnimatedSprite2D.new()
+	fx.name = "CombatEffect"
+	fx.sprite_frames = sf
+	fx.z_index = 10
+	hex_cell.add_child(fx)
+	fx.set_anchors_preset(Control.PRESET_CENTER)
+	var cell_size: Vector2 = hex_cell.custom_minimum_size
+	var fx_size: float = minf(cell_size.x, cell_size.y) * 0.8
+	fx.offset_left = -fx_size * 0.5
+	fx.offset_top = -fx_size * 0.5
+	fx.offset_right = fx_size * 0.5
+	fx.offset_bottom = fx_size * 0.5
+	fx.play("play")
+	fx.animation_finished.connect(fx.queue_free)
+
+
+func _find_hex_cell(cell: Vector2i) -> SkirmishHexCell:
+	for ch: Node in _hex_board.get_children():
+		if ch is SkirmishHexCell:
+			var hc: SkirmishHexCell = ch as SkirmishHexCell
+			if Vector2i(hc.cell_q, hc.cell_r) == cell:
+				return hc
+	return null
 
 
 func _on_mgr_log(line: String) -> void:

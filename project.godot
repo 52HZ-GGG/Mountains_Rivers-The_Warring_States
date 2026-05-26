@@ -38,6 +38,10 @@ window/stretch/mode="canvas_items"
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
+[gui]
+
+theme/default_font="res://assets/fonts/pixel_lishu_dynamic.tres"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

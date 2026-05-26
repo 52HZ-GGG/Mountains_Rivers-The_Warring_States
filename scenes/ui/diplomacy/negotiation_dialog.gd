@@ -85,13 +85,11 @@ func _build_ui() -> void:
 	var button_box := HBoxContainer.new()
 	vbox.add_child(button_box)
 
-	var reject_btn := Button.new()
-	reject_btn.text = "拒绝"
+	var reject_btn := SkirmishTileTextures.styled_button("拒绝")
 	reject_btn.pressed.connect(_on_reject_pressed)
 	button_box.add_child(reject_btn)
 
-	var counter_btn := Button.new()
-	counter_btn.text = "还价"
+	var counter_btn := SkirmishTileTextures.styled_button("还价")
 	counter_btn.pressed.connect(_on_counter_pressed)
 	button_box.add_child(counter_btn)
 

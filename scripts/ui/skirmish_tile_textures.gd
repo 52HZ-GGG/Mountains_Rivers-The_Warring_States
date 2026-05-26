@@ -17,13 +17,13 @@ const _TERRAIN_PATHS: Dictionary = {
 
 ## 战术演武城格据点：七国首都（美工资源）
 const _CAPITAL_PATHS: Dictionary = {
-	"qin": "res://photos/city/qin.png",
-	"zhao": "res://photos/city/zhao.png",
-	"chu": "res://photos/city/chu.png",
-	"qi": "res://photos/city/qi.png",
-	"wei": "res://photos/city/wei.png",
-	"yan": "res://photos/city/yan.png",
-	"han": "res://photos/city/han.png",
+	"qin": "res://photos/city/tile_city_qin_capital.png",
+	"zhao": "res://photos/city/tile_city_zhao_capital.png",
+	"chu": "res://photos/city/tile_city_chu_capital.png",
+	"qi": "res://photos/city/tile_city_qi_capital.png",
+	"wei": "res://photos/city/tile_city_wei_capital.png",
+	"yan": "res://photos/city/tile_city_yan_capital.png",
+	"han": "res://photos/city/tile_city_han_capital.png",
 }
 
 ## 事件插画：按事件 ID 映射，category 做后备
@@ -130,6 +130,37 @@ static func unit_texture(unit_type_id: String) -> Texture2D:
 	return _load_cached(path)
 
 
+## UI 面板背景
+const _PANEL_PATHS: Dictionary = {
+	"city": "res://assets/ui/panels/ui_city_panel.png",
+	"diplomacy": "res://assets/ui/panels/ui_diplomacy_panel.png",
+	"event_popup": "res://assets/ui/panels/ui_event_popup.png",
+	"tech": "res://assets/ui/panels/ui_tech_panel.png",
+	"school": "res://assets/ui/panels/ui_school_panel.png",
+	"battle": "res://assets/ui/panels/ui_battle_panel.png",
+	"settings": "res://assets/ui/panels/ui_settings.png",
+	"save_load": "res://assets/ui/panels/ui_save_load.png",
+	"victory": "res://assets/ui/panels/ui_victory.png",
+	"defeat": "res://assets/ui/panels/ui_defeat.png",
+	"new_game": "res://assets/ui/panels/ui_new_game.png",
+	"unit_info": "res://assets/ui/panels/ui_unit_info.png",
+}
+
+static func panel_texture(panel_name: String) -> Texture2D:
+	var path: String = str(_PANEL_PATHS.get(panel_name, ""))
+	if path.is_empty():
+		return null
+	return _load_cached(path)
+
+
+## UI 图标（资源 / 建筑 / 学派 / 季节 / 科技）
+const _ICON_BASE_PATH: String = "res://assets/ui/icons/"
+
+static func icon_texture(icon_name: String) -> Texture2D:
+	var path: String = _ICON_BASE_PATH + icon_name + ".png"
+	return _load_cached(path)
+
+
 static func _load_cached(path: String) -> Texture2D:
 	if _cache.has(path):
 		return _cache[path] as Texture2D
@@ -143,3 +174,89 @@ static func _load_cached(path: String) -> Texture2D:
 ## 单元测试或热重载时可清空缓存（一般无需调用）
 static func clear_cache() -> void:
 	_cache.clear()
+
+
+## 创建带 shader 材质的按钮，自动连接 hover/pressed 信号切换状态
+static func styled_button(text: String = "") -> Button:
+	var btn := Button.new()
+	btn.text = text
+	# 清除默认 StyleBox，让 shader 输出可见
+	var empty := StyleBoxEmpty.new()
+	btn.add_theme_stylebox_override("normal", empty)
+	btn.add_theme_stylebox_override("hover", empty)
+	btn.add_theme_stylebox_override("pressed", empty)
+	btn.add_theme_stylebox_override("disabled", empty)
+	btn.add_theme_stylebox_override("focus", empty)
+	var mat := ShaderHelpers.create_button_material()
+	btn.material = mat
+	btn.mouse_entered.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1))
+	btn.mouse_exited.connect(func() -> void: ShaderHelpers.set_button_state(mat, 0))
+	btn.button_down.connect(func() -> void: ShaderHelpers.set_button_state(mat, 2))
+	btn.button_up.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1 if btn.is_hovered() else 0))
+	return btn
+
+
+## 给场景中已有的 Button 挂上 shader 样式（清除默认 StyleBox + 连接信号）
+static func style_scene_button(btn: Button) -> void:
+	var empty := StyleBoxEmpty.new()
+	btn.add_theme_stylebox_override("normal", empty)
+	btn.add_theme_stylebox_override("hover", empty)
+	btn.add_theme_stylebox_override("pressed", empty)
+	btn.add_theme_stylebox_override("disabled", empty)
+	btn.add_theme_stylebox_override("focus", empty)
+	var mat := ShaderHelpers.create_button_material()
+	btn.material = mat
+	btn.mouse_entered.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1))
+	btn.mouse_exited.connect(func() -> void: ShaderHelpers.set_button_state(mat, 0))
+	btn.button_down.connect(func() -> void: ShaderHelpers.set_button_state(mat, 2))
+	btn.button_up.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1 if btn.is_hovered() else 0))
+
+
+## 更新按钮 disabled 状态的 shader（设置 btn.disabled 后调用）
+static func update_button_disabled(btn: Button) -> void:
+	if btn.material is ShaderMaterial:
+		ShaderHelpers.set_button_state(btn.material as ShaderMaterial, 3 if btn.disabled else 0)
+
+
+## 动态创建特效 SpriteFrames（15 个特效 × 8 帧）
+static func effect_frames(effect_id: String) -> SpriteFrames:
+	var base_path := "res://assets/sprites/units/effects/%s/" % effect_id
+	var dir := DirAccess.open(base_path)
+	if not dir:
+		return null
+	var sf := SpriteFrames.new()
+	sf.remove_animation("default")
+	sf.add_animation("play")
+	sf.set_animation_speed("play", 8.0)
+	sf.set_animation_loop("play", false)
+	var files: Array[String] = []
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if entry.ends_with(".png") and not entry.ends_with(".import"):
+			files.append(base_path + entry)
+		entry = dir.get_next()
+	dir.list_dir_end()
+	files.sort()
+	for f in files:
+		var tex := load(f) as Texture2D
+		if tex:
+			sf.add_frame("play", tex)
+	return sf
+
+
+## 将隶书字体设为全局默认字体（在 StartupFlow._ready() 中调用）
+static func apply_global_font() -> void:
+	var font_path := "res://assets/fonts/pixel_lishu_dynamic.tres"
+	if not ResourceLoader.exists(font_path):
+		push_warning("[SkirmishTileTextures] 字体文件不存在: %s" % font_path)
+		return
+	var font: Font = load(font_path)
+	if font == null:
+		push_warning("[SkirmishTileTextures] 字体加载失败: %s" % font_path)
+		return
+	var theme := Theme.new()
+	theme.default_font = font
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if tree != null and tree.root != null:
+		tree.root.theme = theme

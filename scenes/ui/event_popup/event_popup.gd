@@ -60,6 +60,17 @@ func _build_ui() -> void:
 	popup.offset_bottom = 200
 	_panel.add_child(popup)
 
+	# 弹窗背景图
+	var bg_tex: Texture2D = SkirmishTileTextures.panel_texture("event_popup")
+	if bg_tex != null:
+		var bg := TextureRect.new()
+		bg.name = "Background"
+		bg.texture = bg_tex
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		popup.add_child(bg)
+
 	var popup_vbox := VBoxContainer.new()
 	popup_vbox.name = "PopupVBox"
 	popup_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -135,9 +146,8 @@ func _show_event() -> void:
 	var options: Variant = _event_data.get("options")
 	if options != null and options is Array and options.size() > 0:
 		for opt in options:
-			var btn := Button.new()
 			var opt_text: String = str(opt.get("text", opt.get("id", "")))
-			btn.text = opt_text
+			var btn := SkirmishTileTextures.styled_button(opt_text)
 			btn.add_theme_font_size_override("font_size", 15)
 			btn.pressed.connect(_on_option_selected.bind(str(opt.get("id", ""))))
 			var hint: String = _format_outcomes(opt.get("outcomes", {}))
@@ -147,8 +157,7 @@ func _show_event() -> void:
 	else:
 		# 无选项事件 — 显示效果 + 确定按钮
 		_effect_label.text = _format_outcomes(_event_data.get("effects", {}))
-		var btn := Button.new()
-		btn.text = "确定"
+		var btn := SkirmishTileTextures.styled_button("确定")
 		btn.add_theme_font_size_override("font_size", 15)
 		btn.pressed.connect(_on_confirm_pressed)
 		_options_container.add_child(btn)

@@ -1,0 +1,76 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#   *.png, *.jpg, *.jpeg, *.gif, *.svg, *.ico, *.woff, *.woff2, *.ttf, *.eot
+#   *.mp3, *.mp4, *.pdf, *.zip, *.tar, *.gz
+
+# --- Heavy binary asset directories ---
+photos/
+assets/
+build/
+.godot/
+.import/
+
+# --- Third-party Godot addon (GUT testing framework) ---
+addons/gut/
+
+# --- Godot binary / generated files ---
+*.tres
+*.res
+*.scn
+*.import
+*.translation
+*.aseprite
+*.aseprite-bak
+*.ogg
+*.wav
+*.otf
+*.x86_64
+*.x86
+*.exe
+*.apk
+*.aab
+*.app
+*.dmg
+*.pck
+
+# --- Editor / OS noise ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# --- Local config / secrets ---
+.claude/settings.json
+.claude/settings.local.json
+.claude/scheduled_tasks.json
+.claude/plans/
+.claude/mcp.json
+.obsidian/
+.env
+.env.local
+*.pem
+*.key
+secrets.json
+export.cfg
+
+# --- Python cache ---
+__pycache__/
+*.pyc
+
+# --- Logs / tmp ---
+*.tmp
+*.log
+*.bak
+*.cache
+
+# --- Force-include important configs even though "build" is in defaults ---
+!project.godot
+!export_presets.cfg
