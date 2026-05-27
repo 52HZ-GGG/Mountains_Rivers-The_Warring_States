@@ -161,8 +161,7 @@ func end_current_turn() -> void:
 ## AI 行动入口。阶段2：外交决策 + 经济简单tick。
 func process_ai_turn() -> void:
 	var faction_id := get_current_faction()
-	# 1. AI外交决策（概率触发）
-	DiplomacyAI.evaluate_diplomacy(faction_id, _turn_number)
+	# 1. AI外交决策（DiplomacyAI 未实现，暂跳过）
 	# 2. AI科技研究
 	_ai_research_tick(faction_id)
 	# 3. AI军事决策（暂留阶段1占位）

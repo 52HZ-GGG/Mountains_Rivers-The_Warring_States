@@ -493,7 +493,13 @@ func _process_build_queue(city_id: String, events: Dictionary) -> void:
 		queue.remove_at(idx)
 
 
-## 人口增长：基于当前人口 × 增长率。
+## 人口增长（进度条制）+ 饥荒检测。
+## 增长周期 = growth_base_period × (1/food_ratio) × (1/season_mod) × (1/stability_mod)
+##   food_ratio = 城市粮食净产出 / (人口 × food_consume_per_pop)，兜底 0.5
+##   season_mod: spring 1.0 / summer 1.0 / autumn 1.2 / winter 0.7
+##   stability_mod = growth_stability_base + stability × growth_stability_per_point
+## 每回合 progress += 1/period，满 1.0 则 pop += 1。
+## 饥荒：粮食净产出 < 0 时每回合减 famine_pop_loss 人口（最低 1）。
 func _process_population_growth(city_id: String) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
@@ -501,10 +507,58 @@ func _process_population_growth(city_id: String) -> void:
 	var pop: int = int(city.get("current_population", 0))
 	if pop <= 0:
 		return
-	var growth_rate: float = DataManager.get_balance_param("resources.pop_growth_rate")
-	var morale_mod: float = 1.0  # 后续接入民心修正
-	var new_pop: int = int(pop * (1.0 + growth_rate * morale_mod))
-	city["current_population"] = new_pop
+
+	# 计算城市粮食净产出
+	var prod: Dictionary = get_city_production(city_id)
+	var season: String = get_current_season(GameManager.get_current_turn())
+	var season_prod: Dictionary = _apply_season_modifier(prod, season)
+	var net_food: int = int(season_prod.get("food", 0))
+
+	# 饥荒检测：净产出 < 0
+	if net_food < 0:
+		var famine_loss: int = int(DataManager.get_balance_param("population.famine_pop_loss"))
+		city["current_population"] = max(1, pop - famine_loss)
+		city["growth_progress"] = 0.0
+		return
+
+	# 人口已到上限则不增长
+	var city_level: int = int(city.get("city_level", 1))
+	var levels_cfg: Dictionary = DataManager.get_balance_param("city_levels")
+	var level_cfg: Dictionary = levels_cfg.get(str(city_level), {})
+	var pop_cap: int = int(level_cfg.get("population_capacity", 0))
+	if pop_cap > 0 and pop >= pop_cap:
+		return
+
+	# 粮食比 = 净产出 / (人口消耗)
+	var food_consume_per_pop: int = int(DataManager.get_balance_param("population.food_consume_per_pop"))
+	var total_consumption: int = pop * food_consume_per_pop
+	var food_ratio: float = float(net_food) / float(max(total_consumption, 1))
+	food_ratio = clampf(food_ratio, 0.5, 3.0)
+
+	# 季节修正
+	var growth_season_mod: Dictionary = DataManager.get_balance_param("population.growth_season_mod")
+	var season_mod: float = float(growth_season_mod.get(season, 1.0))
+	season_mod = maxf(season_mod, 0.1)
+
+	# 安定度修正（暂用基础值，Phase 2 接入实际安定度）
+	var stability_base: float = float(DataManager.get_balance_param("population.growth_stability_base"))
+	var stability_per_point: float = float(DataManager.get_balance_param("population.growth_stability_per_point"))
+	var stability_mod: float = stability_base + 50.0 * stability_per_point  # 默认安定度 50
+	stability_mod = maxf(stability_mod, 0.1)
+
+	# 增长周期
+	var base_period: float = float(DataManager.get_balance_param("population.growth_base_period"))
+	var period: float = base_period * (1.0 / food_ratio) * (1.0 / season_mod) * (1.0 / stability_mod)
+	period = clampf(period, 2.0, 20.0)
+
+	# 进度累加
+	var progress: float = float(city.get("growth_progress", 0.0))
+	progress += 1.0 / period
+	if progress >= 1.0:
+		city["current_population"] = pop + 1
+		city["growth_progress"] = progress - 1.0
+	else:
+		city["growth_progress"] = progress
 
 
 # ============= 建筑效果与产出 =============
@@ -572,6 +626,9 @@ func get_city_production(city_id: String) -> Dictionary:
 	var sr: Variant = city.get("special_resource", null)
 	if sr != null:
 		_apply_special_resource_modifier(prod, str(sr))
+	# 粮食消耗（人口吃饭）
+	var food_consume_per_pop: int = int(DataManager.get_balance_param("population.food_consume_per_pop"))
+	prod["food"] -= pop * food_consume_per_pop
 	return prod
 
 
@@ -649,6 +706,7 @@ func _initialize_states() -> void:
 		state["buildings"] = []
 		state["build_queue"] = []
 		state["current_population"] = int(city_data.get("initial_population", 0))
+		state["growth_progress"] = 0.0
 		_city_states[city_data["id"]] = state
 
 
