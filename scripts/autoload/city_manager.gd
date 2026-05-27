@@ -11,8 +11,8 @@ extends Node
 ##
 ## 状态字段约定（见 docs/decisions/阶段1-策划任务决策记录.md 决策 43/44）：
 ## - 静态字段（来自 cities.json）：id / name / faction_id / hex_q / hex_r /
-##   jurisdiction_radius / max_building_slots / special_resource /
-##   is_capital / base_population
+##   jurisdiction_radius / city_level / special_resource /
+##   is_capital / initial_population
 ## - 运行时字段（本管理器维护）：
 ##   - current_faction_id: String — 当前占领者，初始 = faction_id
 ##   - buildings: Array — 已建建筑 [{building_id, level}]，初始 []
@@ -126,7 +126,10 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 		return {"allowed": false, "reason": REASON_ALREADY_QUEUED}
 
 	# 槽位计算：buildings + 仅「新建」队列项（升级中的项已经在 buildings 里，不重复占槽）
-	var slots: int = int(city.get("max_building_slots", 0))
+	var city_level: int = int(city.get("city_level", 1))
+	var levels_cfg: Dictionary = DataManager.get_balance_param("city_levels")
+	var level_cfg: Dictionary = levels_cfg.get(str(city_level), {})
+	var slots: int = int(level_cfg.get("building_slots", 0))
 	var occupied: int = (city["buildings"] as Array).size() + _count_new_build_in_queue(city)
 	if occupied >= slots:
 		return {"allowed": false, "reason": REASON_SLOTS_FULL}
@@ -512,6 +515,8 @@ func get_faction_cities(faction_id: String) -> Array:
 
 
 ## 返回城市本回合产出（已含建筑效果，未含季节/特产修正）。
+## 百分比加成（*_bonus）与固定值加成（*_production）分别处理：
+##   最终值 = 基础值 × (1 + Σ百分比) + Σ固定值
 func get_city_production(city_id: String) -> Dictionary:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
@@ -521,14 +526,22 @@ func get_city_production(city_id: String) -> Dictionary:
 		"horse": 0, "refined_iron": 0,
 		"craftsmen": 0, "building_materials": 0,
 		"morale_bonus": 0, "defense_bonus": 0.0,
-		"recruit_discount": 0.0, "tax_bonus": 0.0,
+		"recruit_speed_bonus": 0.0, "tax_bonus": 0.0,
+		"culture_production": 0,
+		"max_food_production": 0, "national_grain_cap": 0,
 	}
-	# 基础产出
+	# 基础产出（路径来自 balance_params.json 实际结构）
 	var pop: int = int(city.get("current_population", 0))
-	prod["food"] = int(pop * DataManager.get_balance_param("resources.pop_food_rate"))
-	prod["gold"] = int(DataManager.get_balance_param("resources.city_base_gold"))
-	prod["wood"] = 0
-	# 累加建筑效果
+	var food_per_pop: Variant = DataManager.get_balance_param("population.food_per_pop")
+	var gold_per_pop: Variant = DataManager.get_balance_param("population.gold_per_pop")
+	var base_food: int = int(pop * (float(food_per_pop) if food_per_pop != null else 3.0))
+	var base_gold: int = int(pop * (float(gold_per_pop) if gold_per_pop != null else 10.0))
+	prod["food"] = base_food
+	prod["gold"] = base_gold
+	prod["wood"] = int(DataManager.get_balance_param("resources.city_base_wood"))
+	# 收集建筑效果：百分比加成单独累加，固定值直接加
+	var food_bonus: float = 0.0
+	var gold_bonus: float = 0.0
 	for b in city.get("buildings", []):
 		var bid: String = str(b.get("building_id", ""))
 		var bdata: Dictionary = DataManager.get_building(bid)
@@ -537,10 +550,24 @@ func get_city_production(city_id: String) -> Dictionary:
 		var effects: Dictionary = bdata.get("effects", {})
 		var level: int = int(b.get("level", 1))
 		for key in effects:
-			if prod.has(key):
-				var val: Variant = effects[key]
-				if val is int or val is float:
-					prod[key] += val * level
+			var val: Variant = effects[key]
+			if not (val is int or val is float):
+				continue
+			# 百分比加成：food_production_bonus / gold_production_bonus
+			if key == "food_production_bonus":
+				food_bonus += float(val) * level
+			elif key == "gold_production_bonus":
+				gold_bonus += float(val) * level
+			elif prod.has(key):
+				# 固定值加成：wood_production / craftsmen_production / morale_bonus 等
+				prod[key] += val * level
+	# 应用百分比加成（基础值 × 累加倍率）
+	prod["food"] = int(base_food * (1.0 + food_bonus))
+	prod["gold"] = int(base_gold * (1.0 + gold_bonus))
+	# 粮仓 max_food_production 上限截断
+	var max_fp: int = int(prod.get("max_food_production", 0))
+	if max_fp > 0 and prod["food"] > max_fp:
+		prod["food"] = max_fp
 	# 特产加成
 	var sr: Variant = city.get("special_resource", null)
 	if sr != null:
@@ -588,11 +615,11 @@ func _apply_season_modifier(prod: Dictionary, season: String) -> Dictionary:
 	var wood_mod: Dictionary = DataManager.get_balance_param("resources.season_wood_mod")
 	var craftsmen_mod: Dictionary = DataManager.get_balance_param("resources.season_craftsmen_mod")
 	var bm_mod: Dictionary = DataManager.get_balance_param("resources.season_building_materials_mod")
-	result["food"] = int(result["food"] * (1.0 + float(food_mod.get(season, 0.0))))
-	result["gold"] = int(result["gold"] * (1.0 + float(gold_mod.get(season, 0.0))))
-	result["wood"] = int(result["wood"] * (1.0 + float(wood_mod.get(season, 0.0))))
-	result["craftsmen"] = int(result["craftsmen"] * (1.0 + float(craftsmen_mod.get(season, 0.0))))
-	result["building_materials"] = int(result["building_materials"] * (1.0 + float(bm_mod.get(season, 0.0))))
+	result["food"] = int(result["food"] * float(food_mod.get(season, 1.0)))
+	result["gold"] = int(result["gold"] * float(gold_mod.get(season, 1.0)))
+	result["wood"] = int(result["wood"] * float(wood_mod.get(season, 1.0)))
+	result["craftsmen"] = int(result["craftsmen"] * float(craftsmen_mod.get(season, 1.0)))
+	result["building_materials"] = int(result["building_materials"] * float(bm_mod.get(season, 1.0)))
 	return result
 
 
@@ -602,8 +629,8 @@ func _apply_special_resource_modifier(prod: Dictionary, special_resource: String
 	var mod: Dictionary = sr_mods.get(special_resource, {})
 	for key in mod:
 		if prod.has(key):
-			var offset: float = float(mod[key])
-			prod[key] = int(prod[key] * (1.0 + offset))
+			var factor: float = float(mod[key])
+			prod[key] = int(prod[key] * factor)
 	# 马匹/精铁特产城市直接产出对应资源
 	var sr_production: Dictionary = DataManager.get_balance_param("resources.special_resources")
 	if sr_production.has(special_resource):
@@ -622,12 +649,6 @@ func _initialize_states() -> void:
 		state["buildings"] = []
 		state["build_queue"] = []
 		state["current_population"] = int(city_data.get("initial_population", 0))
-		var city_level: int = int(city_data.get("city_level", 1))
-		var level_data: Dictionary = DataManager.get_balance_param("city_levels.%d" % city_level)
-		if level_data is Dictionary:
-			state["max_building_slots"] = int(level_data.get("building_slots", 1))
-		else:
-			state["max_building_slots"] = 1
 		_city_states[city_data["id"]] = state
 
 

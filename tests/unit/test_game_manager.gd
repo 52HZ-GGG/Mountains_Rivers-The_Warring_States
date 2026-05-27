@@ -105,8 +105,52 @@ func test_is_player_faction_for_ai() -> void:
 	assert_false(GameManager.is_player_faction("zhao"), "非玩家 faction 应识别为 AI")
 
 
-# ============= TODO（待 AI / 城市占领系统就位后追加）=============
-# - test_ai_turn_completes_via_process_ai_turn
-# - test_check_victory_when_player_capital_captured
-# - test_game_over_signal_emitted_on_victory
-# - test_phase_locked_after_game_over
+# ============= 季节民心修正 =============
+
+func test_season_morale_spring_on_start() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	# turn 1 = spring，初始民心 50 + 5 = 55
+	assert_eq(GameManager.get_player_morale(), 55,
+		"春季开局民心应为 55（50 + spring +5）")
+
+
+func test_season_morale_summer() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	# 跑完一轮到 turn 2 = summer
+	GameManager.end_current_turn()  # qin → zhao
+	GameManager.end_current_turn()  # zhao → turn 2, summer
+	# 55 + summer(-5) = 50
+	assert_eq(GameManager.get_player_morale(), 50,
+		"夏季民心应为 50（55 + summer -5）")
+
+
+func test_season_morale_autumn() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	# 跑到 turn 3 = autumn
+	for i in 4:
+		GameManager.end_current_turn()
+	# 50 + autumn(+10) = 60
+	assert_eq(GameManager.get_player_morale(), 60,
+		"秋季民心应为 60（50 + autumn +10）")
+
+
+func test_season_morale_winter() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	# 跑到 turn 4 = winter
+	for i in 6:
+		GameManager.end_current_turn()
+	# 60 + winter(-10) = 50
+	assert_eq(GameManager.get_player_morale(), 50,
+		"冬季民心应为 50（60 + winter -10）")
+
+
+func test_season_morale_cycle_returns_to_start() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	# 跑完一整年（4 轮 × 2 faction = 8 次 end_turn）
+	for i in 8:
+		GameManager.end_current_turn()
+	# 50 → +5 → -5 → +10 → -10 = 50，回到原点
+	assert_eq(GameManager.get_player_morale(), 50,
+		"四季循环后民心应恢复到 50")
+	assert_eq(GameManager.get_current_turn(), 5,
+		"跑完 4 轮后应回到 turn 5（新一年春天）")
