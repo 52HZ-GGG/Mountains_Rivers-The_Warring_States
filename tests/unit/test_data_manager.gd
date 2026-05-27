@@ -36,7 +36,7 @@ func test_get_terrain_by_id() -> void:
 func test_get_unit_type_by_id() -> void:
 	var infantry := DataManager.get_unit_type("infantry")
 	assert_eq(infantry.get("name"), "步兵")
-	assert_eq(infantry.get("attack"), 10)
+	assert_eq(infantry.get("attack"), 20)
 
 
 func test_get_city_by_id() -> void:
@@ -57,8 +57,8 @@ func test_faction_variant_merge_qin_rushi() -> void:
 	assert_eq(rushi.get("variant_id"), "rushi")
 	assert_eq(rushi.get("variant_name"), "锐士")
 	# stat_overrides 应覆盖基础值
-	assert_eq(rushi.get("attack"), 12, "锐士 attack 应被覆盖为 12")
-	assert_eq(rushi.get("defense"), 10, "锐士 defense 应被覆盖为 10")
+	assert_eq(rushi.get("attack"), 24, "锐士 attack 应被覆盖为 24")
+	assert_eq(rushi.get("defense"), 12, "锐士 defense 应被覆盖为 12")
 	assert_eq(rushi.get("cost_gold"), 75, "锐士 cost_gold 应被覆盖为 75")
 	# 未覆盖字段应保留基础值
 	assert_eq(rushi.get("hp"), 100, "锐士 hp 未在 overrides 中应保留 100")
@@ -90,5 +90,5 @@ func test_get_capital_qin() -> void:
 
 func test_map_size() -> void:
 	var size := DataManager.get_map_size()
-	# 决策 43：地图从 20×15（300 格）扩大到 30×20（600 格）
-	assert_eq(size, Vector2i(30, 20), "地图应为 30×20")
+	# 大地图从 30×20 扩大到 100×70（战国七雄全境）
+	assert_eq(size, Vector2i(100, 70), "地图应为 100×70")
