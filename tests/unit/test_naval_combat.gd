@@ -16,8 +16,8 @@ func before_each() -> void:
 
 func test_navy_unit_is_navy() -> void:
 	assert_true(TacticalSkirmishManager._is_navy("mengchong"), "蒙冲应为水军")
-	assert_true(TacticalSkirmishManager._is_navy("dayi"), "大翼应为水军")
-	assert_true(TacticalSkirmishManager._is_navy("louchuan"), "楼船应为水军")
+	assert_true(TacticalSkirmishManager._is_navy("great_wing"), "大翼应为水军")
+	assert_true(TacticalSkirmishManager._is_navy("tower_ship"), "楼船应为水军")
 
 
 func test_land_unit_is_not_navy() -> void:
@@ -68,7 +68,7 @@ func test_land_vs_navy_attack_mod() -> void:
 
 
 func test_navy_vs_navy_no_mod() -> void:
-	var mod: float = TacticalSkirmishManager._calc_naval_combat_mod("mengchong", "dayi", Vector2i(0, 0), Vector2i(1, 0))
+	var mod: float = TacticalSkirmishManager._calc_naval_combat_mod("mengchong", "great_wing", Vector2i(0, 0), Vector2i(1, 0))
 	assert_eq(mod, 1.0, "水军 vs 水军应无修正（实际 %.1f）" % mod)
 
 
