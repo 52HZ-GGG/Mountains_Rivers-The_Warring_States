@@ -107,7 +107,7 @@ func _build_card(mode: Dictionary) -> PanelContainer:
 	panel.add_child(vbox)
 
 	# 点击选中
-	var mid := mode["id"]
+	var mid: String = str(mode["id"])
 	panel.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed:
 			_select_mode(mid)
@@ -131,7 +131,7 @@ func _select_mode(mode_id: String) -> void:
 
 	for i in _cards.size():
 		var card := _cards[i]
-		var is_selected := MODES[i]["id"] == mode_id
+		var is_selected: bool = str(MODES[i]["id"]) == mode_id
 		var tw := create_tween().set_parallel(true)
 		if is_selected:
 			tw.tween_property(card, "scale", Vector2(1.05, 1.05), 0.3)
