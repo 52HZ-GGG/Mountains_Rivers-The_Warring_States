@@ -4,6 +4,7 @@ extends GutTest
 ## 验证士气初始化、击杀/阵亡事件、四段式效果、恢复、崩溃态
 
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+const HexLib := preload("res://scripts/systems/hex_axial.gd")
 
 # ============= 纯函数测试（combat_resolver） =============
 
@@ -142,6 +143,10 @@ func test_high_morale_decays_to_cap() -> void:
 func test_broken_morale_loses_hp() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var p1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
+	# 移到远离城市的格子，防止溃退进城后士气重置+治疗干扰
+	var far_cell: Vector2i = HexLib.offset_odd_r_to_axial(6, 6)
+	p1["q"] = far_cell.x
+	p1["r"] = far_cell.y
 	p1["morale"] = 15
 	var max_hp: int = int(p1.get("max_hp", 100))
 	p1["hp"] = max_hp

@@ -216,7 +216,10 @@ func _refresh_info() -> void:
 	var fid: String = str(city.get("current_faction_id", ""))
 	var fname: String = _faction_display_name(fid)
 	var pop: int = int(city.get("current_population", 0))
-	var slots: int = int(city.get("max_building_slots", 0))
+	var city_level: int = int(city.get("city_level", 1))
+	var levels_cfg: Dictionary = DataManager.get_balance_param("city_levels")
+	var level_cfg: Dictionary = levels_cfg.get(str(city_level), {})
+	var slots: int = int(level_cfg.get("building_slots", 0))
 	var dev: int = int(city.get("development", 0))
 	var sr: Variant = city.get("special_resource", null)
 	var sr_str: String = "\n特产：%s" % _special_resource_name(str(sr)) if sr != null else ""
