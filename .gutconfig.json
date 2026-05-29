@@ -4,6 +4,7 @@
   "prefix": "test_",
   "suffix": ".gd",
   "log_level": 1,
+  "paint_after": 0.0,
   "ignore_pause": false,
   "should_exit": true,
   "should_exit_on_success": true

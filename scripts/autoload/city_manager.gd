@@ -55,6 +55,10 @@ const REASON_BUILDING_NOT_BUILT := "BUILDING_NOT_BUILT"
 const REASON_MAX_LEVEL_REACHED := "MAX_LEVEL_REACHED"
 const REASON_NOT_OWN_CITY := "NOT_OWN_CITY"
 const REASON_RELOCATION_LIMIT := "RELOCATION_LIMIT"
+const REASON_INVALID_AMOUNT := "INVALID_AMOUNT"
+const REASON_GARRISON_FULL := "GARRISON_FULL"
+const REASON_GARRISON_EMPTY := "GARRISON_EMPTY"
+const REASON_INSUFFICIENT_TROOPS := "INSUFFICIENT_TROOPS"
 
 # ============= 私有状态 =============
 
@@ -100,6 +104,167 @@ func get_capital_state(faction_id: String) -> Dictionary:
 	return {}
 
 
+## 获取城市当前征兵池容量。
+func get_conscription_pool(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		push_warning("CityManager: 未找到城市 %s" % city_id)
+		return 0
+	return int(city.get("conscription_pool", 0))
+
+
+## 获取 faction 所有城市征兵池总和。
+func get_faction_conscription_pool(faction_id: String) -> int:
+	var total: int = 0
+	for city in get_faction_city_states(faction_id):
+		total += int(city.get("conscription_pool", 0))
+	return total
+
+
+## 从城市征兵池征兵。返回 {"recruited": int, "reason": String}。
+## amount 为请求人数；实际征发 = min(amount, pool, population)。
+## 征兵会减少城市人口。
+func conscribe(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"recruited": 0, "reason": REASON_INVALID_CITY}
+	var pool: int = int(city.get("conscription_pool", 0))
+	var pop: int = int(city.get("current_population", 0))
+	var recruited: int = mini(mini(amount, pool), pop)
+	if recruited <= 0:
+		return {"recruited": 0, "reason": "POOL_EMPTY"}
+	city["conscription_pool"] = pool - recruited
+	city["current_population"] = pop - recruited
+	return {"recruited": recruited, "reason": REASON_OK}
+
+
+# ============= 城池 HP 系统（Phase 4） =============
+
+## 获取城池当前 HP。
+func get_city_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("current_hp", 0))
+
+
+## 获取城池最大 HP（按城级查 city_levels 配置）。
+func get_city_max_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var lv: int = int(city.get("city_level", 1))
+	var cfg: Dictionary = DataManager.get_balance_param("city_levels")
+	var lv_cfg: Dictionary = cfg.get(str(lv), {})
+	return int(lv_cfg.get("hp", 300))
+
+
+## 获取城池防御值（city_defense + 防御建筑加成）。
+func get_city_defense(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var lv: int = int(city.get("city_level", 1))
+	var cfg: Dictionary = DataManager.get_balance_param("city_levels")
+	var lv_cfg: Dictionary = cfg.get(str(lv), {})
+	var base_def: int = int(lv_cfg.get("city_defense", 10))
+	# 防御建筑加成
+	var building_bonus: float = 0.0
+	for b in city.get("buildings", []):
+		var bid: String = str(b.get("building_id", ""))
+		var bdata: Dictionary = DataManager.get_building(bid)
+		if bdata.is_empty():
+			continue
+		var effects: Dictionary = bdata.get("effects", {})
+		var level: int = int(b.get("level", 1))
+		if effects.has("defense_bonus"):
+			building_bonus += float(effects["defense_bonus"]) * level
+	var base_total: int = int(base_def * (1.0 + building_bonus))
+	# 驻军加成
+	var garrison_count: int = int(city.get("garrison", 0))
+	var garrison_def_per: float = float(DataManager.get_balance_param("stability.garrison_def_per_unit"))
+	base_total += int(garrison_count * garrison_def_per)
+	return base_total
+
+
+## 获取城池攻击力（按城级 + 军事建筑加成）。
+func get_city_attack(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var lv: int = int(city.get("city_level", 1))
+	var cfg: Dictionary = DataManager.get_balance_param("city_levels")
+	var lv_cfg: Dictionary = cfg.get(str(lv), {})
+	var base_atk: int = int(lv_cfg.get("attack", 5))
+	var building_bonus: float = 0.0
+	for b in city.get("buildings", []):
+		var bid: String = str(b.get("building_id", ""))
+		var bdata: Dictionary = DataManager.get_building(bid)
+		if bdata.is_empty():
+			continue
+		var effects: Dictionary = bdata.get("effects", {})
+		var level: int = int(b.get("level", 1))
+		if effects.has("attack_bonus"):
+			building_bonus += float(effects["attack_bonus"]) * level
+	var base_total_atk: int = int(base_atk * (1.0 + building_bonus))
+	# 驻军加成
+	var garrison_count_atk: int = int(city.get("garrison", 0))
+	var garrison_atk_per: float = float(DataManager.get_balance_param("stability.garrison_atk_per_unit"))
+	base_total_atk += int(garrison_count_atk * garrison_atk_per)
+	return base_total_atk
+
+
+## 对城池造成伤害。返回 {"destroyed": bool, "damage": int}。
+func damage_city(city_id: String, damage: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"destroyed": false, "damage": 0}
+	var hp: int = int(city.get("current_hp", 0))
+	var actual: int = mini(damage, hp)
+	city["current_hp"] = hp - actual
+	return {"destroyed": city["current_hp"] <= 0, "damage": actual}
+
+
+## 修复城池 HP（每回合自然恢复或建筑效果）。
+func repair_city(city_id: String, amount: int) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	var hp: int = int(city.get("current_hp", 0))
+	var max_hp: int = get_city_max_hp(city_id)
+	city["current_hp"] = mini(hp + amount, max_hp)
+
+
+## 占领城池：变更归属 + HP 恢复 50% + 清空建造队列。
+func occupy_city(city_id: String, new_faction_id: String) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	var old_faction: String = str(city["current_faction_id"])
+	if old_faction == new_faction_id:
+		return false
+	# 变更归属
+	city["current_faction_id"] = new_faction_id
+	city["is_capital"] = false
+	# HP 恢复 50%
+	var max_hp: int = get_city_max_hp(city_id)
+	city["current_hp"] = max_hp / 2
+	# 清空建造队列
+	city["build_queue"] = []
+	# 安定度重置（占领惩罚）
+	var stab_cfg: Dictionary = DataManager.get_balance_param("stability")
+	var initial_stab: int = int(stab_cfg.get("initial", 50))
+	var capture_penalty: int = int(stab_cfg.get("city_captured_penalty", -30))
+	city["stability"] = clampi(initial_stab + capture_penalty, 0, 100)
+	city["turns_since_capture"] = 10  # 10 回合恢复期
+	# 清空驻军
+	city["garrison"] = 0
+	# 更新 faction 索引
+	_move_city_in_faction_index(city, old_faction, new_faction_id)
+	SignalBus.city_occupied.emit(city_id, old_faction, new_faction_id)
+	return true
+
+
 # ============= 建造接口 =============
 
 ## 校验是否能在 city_id 建造 building_id。
@@ -142,8 +307,10 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 		if existing >= int(max_per_faction):
 			return {"allowed": false, "reason": REASON_NATIONAL_CAP_REACHED}
 
-	var cost_gold: int = int(building.get("cost_gold", 0))
-	var cost_wood: int = int(building.get("cost_wood", 0))
+	var levels: Array = building.get("levels", [])
+	var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
+	var cost_gold: int = int(lv0.get("cost_gold", 0))
+	var cost_wood: int = int(lv0.get("cost_wood", 0))
 	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_wood() < cost_wood:
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
@@ -159,9 +326,11 @@ func start_build(city_id: String, building_id: String) -> bool:
 		return false
 
 	var building: Dictionary = DataManager.get_building(building_id)
-	var cost_gold: int = int(building.get("cost_gold", 0))
-	var cost_wood: int = int(building.get("cost_wood", 0))
-	var build_turns: int = int(building.get("build_turns", 1))
+	var levels: Array = building.get("levels", [])
+	var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
+	var cost_gold: int = int(lv0.get("cost_gold", 0))
+	var cost_wood: int = int(lv0.get("cost_wood", 0))
+	var build_turns: int = int(lv0.get("build_turns", 1))
 
 	GameManager.apply_gold_delta(-cost_gold)
 	GameManager.apply_wood_delta(-cost_wood)
@@ -224,7 +393,9 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 	var city: Dictionary = _city_states[city_id]
 	var current_level: int = _city_building_level(city, building_id)
 	var costs: Array = _calculate_upgrade_cost(building, current_level)
-	var build_turns: int = int(building.get("build_turns", 1))
+	var levels: Array = building.get("levels", [])
+	var target_lv: Dictionary = levels[current_level] if current_level < levels.size() else {}
+	var build_turns: int = int(target_lv.get("build_turns", 1))
 
 	GameManager.apply_gold_delta(-int(costs[0]))
 	GameManager.apply_wood_delta(-int(costs[1]))
@@ -259,8 +430,10 @@ func demolish(city_id: String, building_id: String) -> bool:
 		var diff: String = GameManager.get_difficulty()
 		var settings: Dictionary = DataManager.get_difficulty_settings(diff)
 		var ratio: float = float(settings.get("demolish_refund_ratio", 0.5))
-		var refund_gold: int = int(round(float(building.get("cost_gold", 0)) * ratio))
-		var refund_wood: int = int(round(float(building.get("cost_wood", 0)) * ratio))
+		var levels: Array = building.get("levels", [])
+		var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
+		var refund_gold: int = int(round(float(lv0.get("cost_gold", 0)) * ratio))
+		var refund_wood: int = int(round(float(lv0.get("cost_wood", 0)) * ratio))
 		if refund_gold > 0:
 			GameManager.apply_gold_delta(refund_gold)
 		if refund_wood > 0:
@@ -350,6 +523,84 @@ func change_ownership(city_id: String, new_faction_id: String) -> bool:
 		SignalBus.capital_lost.emit(old_faction_id, city_id)
 	SignalBus.city_occupied.emit(city_id, old_faction_id, new_faction_id)
 	return true
+
+
+## 叛乱执行：城池翻为中立，人口损失/驻军清零/安定度重置/建筑破坏。
+## 由 GameManager._on_revolt_occurred() 调用。不能复用 change_ownership()，
+## 因为它校验 DataManager.get_faction(new_faction_id) 对 "neutral" 返空。
+func revoke_to_neutral(city_id: String) -> Dictionary:
+	if not _city_states.has(city_id):
+		return {"success": false}
+	var city: Dictionary = _city_states[city_id]
+	var old_faction: String = city.get("current_faction_id", "")
+	if old_faction == "" or old_faction == "neutral":
+		return {"success": false}
+
+	var revolt_cfg: Dictionary = DataManager.get_balance_param("stability.revolt")
+
+	# 人口损失
+	var pop_loss_ratio: float = float(revolt_cfg.get("population_loss_ratio", 0.2))
+	var pop: int = int(city.get("current_population", 0))
+	var pop_loss: int = int(pop * pop_loss_ratio)
+	city["current_population"] = maxi(pop - pop_loss, 1)
+
+	# 驻军清零
+	var old_garrison: int = int(city.get("garrison", 0))
+	if old_garrison > 0:
+		city["garrison"] = 0
+		SignalBus.garrison_changed.emit(city_id, old_garrison, 0)
+
+	# 安定度重置
+	city["stability"] = int(revolt_cfg.get("post_revolt_stability", 10))
+
+	# 清空建造队列
+	city["build_queue"] = []
+
+	# 建筑破坏
+	var destroy_chance: float = float(revolt_cfg.get("building_destruction_chance", 0.3))
+	var buildings: Array = city.get("buildings", [])
+	var buildings_destroyed: int = 0
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var surviving: Array = []
+	for b in buildings:
+		if rng.randf() < destroy_chance:
+			buildings_destroyed += 1
+		else:
+			surviving.append(b)
+	city["buildings"] = surviving
+
+	# 更新归属为 neutral
+	city["current_faction_id"] = "neutral"
+	_move_city_in_faction_index(city, old_faction, "neutral")
+
+	SignalBus.city_revolted.emit(city_id, old_faction)
+	return {
+		"success": true,
+		"old_faction": old_faction,
+		"population_lost": pop_loss,
+		"buildings_destroyed": buildings_destroyed,
+	}
+
+
+## 计算城池的叛乱镇压率（驻军 + 监狱），上限 95%。
+func get_revolt_suppression(city_id: String) -> float:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0.0
+	var cfg: Dictionary = DataManager.get_balance_param("stability.revolt.suppression")
+	var garrison_per_unit: float = float(cfg.get("garrison_per_unit", 0.01))
+	var prison_per_level: float = float(cfg.get("prison_per_level", 0.15))
+	var max_sup: float = float(cfg.get("max_suppression", 0.95))
+
+	var garrison_count: int = int(city.get("garrison", 0))
+	var prison_level: int = 0
+	for b in city.get("buildings", []):
+		if str(b.get("building_id", "")) == "prison":
+			prison_level += int(b.get("level", 1))
+
+	var suppression: float = garrison_count * garrison_per_unit + prison_level * prison_per_level
+	return clampf(suppression, 0.0, max_sup)
 
 
 ## 玩家迁都：把 faction_id 的首都迁到 new_capital_city_id。
@@ -456,6 +707,8 @@ func process_turn(faction_id: String) -> Dictionary:
 		var city_id: String = str(city["id"])
 		_process_build_queue(city_id, events)
 		_process_population_growth(city_id)
+		_process_conscription_fill(city_id)
+		_process_stability(city_id, faction_id)
 	return events
 
 
@@ -540,10 +793,11 @@ func _process_population_growth(city_id: String) -> void:
 	var season_mod: float = float(growth_season_mod.get(season, 1.0))
 	season_mod = maxf(season_mod, 0.1)
 
-	# 安定度修正（暂用基础值，Phase 2 接入实际安定度）
+	# 安定度修正
 	var stability_base: float = float(DataManager.get_balance_param("population.growth_stability_base"))
 	var stability_per_point: float = float(DataManager.get_balance_param("population.growth_stability_per_point"))
-	var stability_mod: float = stability_base + 50.0 * stability_per_point  # 默认安定度 50
+	var stability_val: float = float(int(city.get("stability", 50)))
+	var stability_mod: float = stability_base + stability_val * stability_per_point
 	stability_mod = maxf(stability_mod, 0.1)
 
 	# 增长周期
@@ -559,6 +813,205 @@ func _process_population_growth(city_id: String) -> void:
 		city["growth_progress"] = progress - 1.0
 	else:
 		city["growth_progress"] = progress
+
+
+## 征兵池填充：每回合按人口 × fill_rate 补充，上限 = 人口 × conscription_rate。
+func _process_conscription_fill(city_id: String) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	var pop: int = int(city.get("current_population", 0))
+	if pop <= 0:
+		return
+	var fill_rate: float = float(DataManager.get_balance_param("population.conscription_fill_rate"))
+	var max_rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
+	var fill: int = int(pop * fill_rate)
+	var cap: int = int(pop * max_rate)
+	var pool: int = int(city.get("conscription_pool", 0))
+	city["conscription_pool"] = mini(pool + fill, cap)
+
+
+# ============= 驻军系统（Phase 5） =============
+
+## 获取城池当前驻军数量。
+func get_garrison(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("garrison", 0))
+
+
+## 获取城池驻军容量上限。
+func get_garrison_capacity(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("garrison_capacity", 0))
+
+
+## 驻军：从 GameManager 兵种构成中扣减 amount 人加入城池驻军。
+## 返回 {"success": bool, "reason": String, "assigned": int}。
+func assign_garrison(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"success": false, "reason": REASON_INVALID_CITY, "assigned": 0}
+	if amount <= 0:
+		return {"success": false, "reason": REASON_INVALID_AMOUNT, "assigned": 0}
+	var fid: String = str(city["current_faction_id"])
+	var current: int = int(city.get("garrison", 0))
+	var cap: int = int(city.get("garrison_capacity", 0))
+	var room: int = cap - current
+	if room <= 0:
+		return {"success": false, "reason": REASON_GARRISON_FULL, "assigned": 0}
+	var available: int = GameManager.get_total_troops(fid)
+	if available <= 0:
+		return {"success": false, "reason": REASON_INSUFFICIENT_TROOPS, "assigned": 0}
+	var actual: int = mini(mini(amount, room), available)
+	# 从 GameManager 兵种构成中按比例扣减
+	_remove_troops_from_composition(fid, actual)
+	city["garrison"] = current + actual
+	SignalBus.garrison_changed.emit(city_id, current, current + actual)
+	return {"success": true, "reason": REASON_OK, "assigned": actual}
+
+
+## 直接增加驻军。调用方需先自行扣减机动兵力。
+func add_garrison_direct(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"success": false, "reason": REASON_INVALID_CITY, "assigned": 0}
+	if amount <= 0:
+		return {"success": false, "reason": REASON_INVALID_AMOUNT, "assigned": 0}
+	var current: int = int(city.get("garrison", 0))
+	var cap: int = int(city.get("garrison_capacity", 0))
+	var room: int = cap - current
+	if room <= 0:
+		return {"success": false, "reason": REASON_GARRISON_FULL, "assigned": 0}
+	var actual: int = mini(amount, room)
+	city["garrison"] = current + actual
+	SignalBus.garrison_changed.emit(city_id, current, current + actual)
+	return {"success": true, "reason": REASON_OK, "assigned": actual}
+
+
+## 撤军：从城池驻军中撤出 amount 人，归入 GameManager 兵种构成。
+## 返回 {"success": bool, "reason": String, "withdrawn": int}。
+func withdraw_garrison(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"success": false, "reason": REASON_INVALID_CITY, "withdrawn": 0}
+	if amount <= 0:
+		return {"success": false, "reason": REASON_INVALID_AMOUNT, "withdrawn": 0}
+	var fid: String = str(city["current_faction_id"])
+	var current: int = int(city.get("garrison", 0))
+	if current <= 0:
+		return {"success": false, "reason": REASON_GARRISON_EMPTY, "withdrawn": 0}
+	var actual: int = mini(amount, current)
+	city["garrison"] = current - actual
+	# 归入 GameManager（作为步兵归入，简化处理）
+	GameManager.add_units(fid, "infantry", actual)
+	SignalBus.garrison_changed.emit(city_id, current, current - actual)
+	return {"success": true, "reason": REASON_OK, "withdrawn": actual}
+
+
+## 从 GameManager 兵种构成中按比例扣减兵力（内部辅助）。
+func _remove_troops_from_composition(faction_id: String, amount: int) -> void:
+	var comp: Dictionary = GameManager.get_unit_composition(faction_id)
+	if comp.is_empty():
+		GameManager.remove_units(faction_id, "infantry", amount)
+		return
+	var remaining: int = amount
+	var unit_ids: Array = comp.keys()
+	for uid in unit_ids:
+		if remaining <= 0:
+			break
+		var count: int = int(comp[uid])
+		var deduct: int = mini(remaining, count)
+		GameManager.remove_units(faction_id, str(uid), deduct)
+		remaining -= deduct
+	if remaining > 0:
+		GameManager.remove_units(faction_id, "infantry", remaining)
+
+
+# ============= 安定度系统（Phase 5） =============
+
+## 获取城池当前安定度。
+func get_city_stability(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("stability", 0))
+
+
+## 获取安定度阈值效果。
+## 返回 {"production_mod": float, "revolt_chance": float}。
+func get_stability_threshold_effect(stability: int) -> Dictionary:
+	var cfg: Dictionary = DataManager.get_balance_param("stability")
+	if cfg.is_empty():
+		return {"production_mod": 1.0, "revolt_chance": 0.0}
+	var high: int = int(cfg.get("threshold_high", 80))
+	var mid: int = int(cfg.get("threshold_mid", 50))
+	var unstable: int = int(cfg.get("threshold_unstable", 30))
+	if stability >= high:
+		return {"production_mod": 1.0 + float(cfg.get("high_output_bonus", 0.2)), "revolt_chance": 0.0}
+	elif stability >= mid:
+		return {"production_mod": 1.0 + float(cfg.get("mid_output_penalty", 0.0)), "revolt_chance": 0.0}
+	elif stability >= unstable:
+		return {"production_mod": 1.0 + float(cfg.get("unstable_output_penalty", -0.2)), "revolt_chance": float(cfg.get("low_revolt_chance", 0.15))}
+	else:
+		return {"production_mod": 1.0 + float(cfg.get("critical_output_penalty", -0.5)), "revolt_chance": float(cfg.get("critical_uprising_chance", 0.3))}
+
+
+## 每回合安定度结算（内部）。
+func _process_stability(city_id: String, faction_id: String) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	var old_stability: int = int(city.get("stability", 50))
+	var delta: float = 0.0
+
+	# 建筑加成
+	var stab_cfg: Dictionary = DataManager.get_balance_param("stability")
+	var building_effects: Dictionary = stab_cfg.get("building_effect", {})
+	for b in city.get("buildings", []):
+		var bid: String = str(b.get("building_id", ""))
+		var level: int = int(b.get("level", 1))
+		if building_effects.has(bid):
+			delta += float(building_effects[bid]) * level
+
+	# 驻军加成
+	var garrison_count: int = int(city.get("garrison", 0))
+	var garrison_effect: float = float(stab_cfg.get("garrison_effect_per_unit", 6))
+	delta += garrison_count * garrison_effect
+
+	# 战争恢复（被占领后逐渐恢复）
+	var turns_since: int = int(city.get("turns_since_capture", 0))
+	if turns_since > 0:
+		var recovery: float = float(stab_cfg.get("war_recovery_per_turn", 3))
+		delta += recovery
+		city["turns_since_capture"] = turns_since - 1
+
+	# 民心传导（国家民心 < 30 → stability -3/回合）
+	var morale: int = GameManager.get_player_morale() if GameManager.is_player_faction(faction_id) else 50
+	var low_morale_threshold: int = int(stab_cfg.get("low_morale_threshold", 30))
+	if morale < low_morale_threshold:
+		delta += float(stab_cfg.get("low_morale_stability_penalty", -3))
+
+	# 应用并 clamp
+	var new_stability: int = clampi(old_stability + int(delta), 0, 100)
+	city["stability"] = new_stability
+	if new_stability != old_stability:
+		SignalBus.stability_changed.emit(city_id, old_stability, new_stability)
+
+	# 叛乱检定（含镇压修正）
+	var effect: Dictionary = get_stability_threshold_effect(new_stability)
+	var revolt_chance: float = float(effect.get("revolt_chance", 0.0))
+	if revolt_chance > 0.0:
+		var suppression: float = get_revolt_suppression(city_id)
+		var effective_chance: float = revolt_chance * (1.0 - suppression)
+		if effective_chance > 0.0:
+			var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+			rng.randomize()
+			if rng.randf() < effective_chance:
+				SignalBus.revolt_occurred.emit(city_id, new_stability)
 
 
 # ============= 建筑效果与产出 =============
@@ -629,6 +1082,13 @@ func get_city_production(city_id: String) -> Dictionary:
 	# 粮食消耗（人口吃饭）
 	var food_consume_per_pop: int = int(DataManager.get_balance_param("population.food_consume_per_pop"))
 	prod["food"] -= pop * food_consume_per_pop
+	# 安定度修正
+	var stability: int = int(city.get("stability", 50))
+	var stab_effect: Dictionary = get_stability_threshold_effect(stability)
+	var stab_mod: float = float(stab_effect.get("production_mod", 1.0))
+	prod["food"] = int(prod["food"] * stab_mod)
+	prod["gold"] = int(prod["gold"] * stab_mod)
+	prod["wood"] = int(prod["wood"] * stab_mod)
 	return prod
 
 
@@ -707,6 +1167,17 @@ func _initialize_states() -> void:
 		state["build_queue"] = []
 		state["current_population"] = int(city_data.get("initial_population", 0))
 		state["growth_progress"] = 0.0
+		state["conscription_pool"] = 0
+		# 城池 HP：初始 = max_hp（按城级查 city_levels）
+		var cl_cfg: Dictionary = DataManager.get_balance_param("city_levels")
+		var lv_cfg: Dictionary = cl_cfg.get(str(int(city_data.get("city_level", 1))), {})
+		state["current_hp"] = int(lv_cfg.get("hp", 300))
+		# 驻军：初始 0，容量按城级
+		state["garrison"] = 0
+		state["garrison_capacity"] = int(lv_cfg.get("garrison_capacity", 20))
+		# 安定度：初始值从 balance_params 读取
+		state["stability"] = int(DataManager.get_balance_param("stability.initial"))
+		state["turns_since_capture"] = 0
 		_city_states[city_data["id"]] = state
 
 
@@ -766,14 +1237,14 @@ func _city_building_level(city: Dictionary, building_id: String) -> int:
 	return 0
 
 
-## 升级到下一级的成本（基础成本 × multiplier^current_level）。
-## 返回 [cost_gold, cost_wood]，已 round + int 化。
+## 升级到下一级的成本（从 levels[current_level] 读取）。
+## 返回 [cost_gold, cost_wood]。
 func _calculate_upgrade_cost(building: Dictionary, current_level: int) -> Array:
-	var multiplier: float = float(building.get("upgrade_cost_multiplier", 1.5))
-	var factor: float = pow(multiplier, current_level)
-	var cost_gold: int = int(round(float(building.get("cost_gold", 0)) * factor))
-	var cost_wood: int = int(round(float(building.get("cost_wood", 0)) * factor))
-	return [cost_gold, cost_wood]
+	var levels: Array = building.get("levels", [])
+	if current_level >= levels.size():
+		return [0, 0]
+	var lv: Dictionary = levels[current_level]
+	return [int(lv.get("cost_gold", 0)), int(lv.get("cost_wood", 0))]
 
 
 ## 该城市 build_queue 中「新建」类型的项数（即 building_id 未在 buildings 中）。
