@@ -176,46 +176,43 @@ static func clear_cache() -> void:
 	_cache.clear()
 
 
-## 创建带 shader 材质的按钮，自动连接 hover/pressed 信号切换状态
+## 创建统一竹简风格按钮
 static func styled_button(text: String = "") -> Button:
 	var btn := Button.new()
 	btn.text = text
-	# 清除默认 StyleBox，让 shader 输出可见
-	var empty := StyleBoxEmpty.new()
-	btn.add_theme_stylebox_override("normal", empty)
-	btn.add_theme_stylebox_override("hover", empty)
-	btn.add_theme_stylebox_override("pressed", empty)
-	btn.add_theme_stylebox_override("disabled", empty)
-	btn.add_theme_stylebox_override("focus", empty)
-	var mat := ShaderHelpers.create_button_material()
-	btn.material = mat
-	btn.mouse_entered.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1))
-	btn.mouse_exited.connect(func() -> void: ShaderHelpers.set_button_state(mat, 0))
-	btn.button_down.connect(func() -> void: ShaderHelpers.set_button_state(mat, 2))
-	btn.button_up.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1 if btn.is_hovered() else 0))
+	_apply_button_style(btn)
 	return btn
 
 
-## 给场景中已有的 Button 挂上 shader 样式（清除默认 StyleBox + 连接信号）
+## 给场景中已有的 Button 应用统一竹简风格
 static func style_scene_button(btn: Button) -> void:
-	var empty := StyleBoxEmpty.new()
-	btn.add_theme_stylebox_override("normal", empty)
-	btn.add_theme_stylebox_override("hover", empty)
-	btn.add_theme_stylebox_override("pressed", empty)
-	btn.add_theme_stylebox_override("disabled", empty)
-	btn.add_theme_stylebox_override("focus", empty)
-	var mat := ShaderHelpers.create_button_material()
-	btn.material = mat
-	btn.mouse_entered.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1))
-	btn.mouse_exited.connect(func() -> void: ShaderHelpers.set_button_state(mat, 0))
-	btn.button_down.connect(func() -> void: ShaderHelpers.set_button_state(mat, 2))
-	btn.button_up.connect(func() -> void: ShaderHelpers.set_button_state(mat, 1 if btn.is_hovered() else 0))
+	_apply_button_style(btn)
 
 
-## 更新按钮 disabled 状态的 shader（设置 btn.disabled 后调用）
+static func _apply_button_style(btn: Button) -> void:
+	btn.add_theme_font_size_override("font_size", 18)
+	btn.add_theme_color_override("font_color", Color(0.91, 0.835, 0.69, 1))
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.10, 0.08, 0.06, 0.95)
+	bg.border_color = Color(0.45, 0.38, 0.24, 1.0)
+	bg.set_border_width_all(2)
+	bg.set_corner_radius_all(2)
+	btn.add_theme_stylebox_override("normal", bg)
+	var bg_hover := bg.duplicate()
+	bg_hover.bg_color = Color(0.16, 0.12, 0.08, 0.95)
+	btn.add_theme_stylebox_override("hover", bg_hover)
+	var bg_pressed := bg.duplicate()
+	bg_pressed.bg_color = Color(0.06, 0.05, 0.03, 0.95)
+	btn.add_theme_stylebox_override("pressed", bg_pressed)
+	var bg_disabled := bg.duplicate()
+	bg_disabled.bg_color = Color(0.08, 0.07, 0.06, 0.7)
+	btn.add_theme_stylebox_override("disabled", bg_disabled)
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+
+
+## 兼容旧调用：StyleBox 状态由 Godot Button 自动切换
 static func update_button_disabled(btn: Button) -> void:
-	if btn.material is ShaderMaterial:
-		ShaderHelpers.set_button_state(btn.material as ShaderMaterial, 3 if btn.disabled else 0)
+	btn.queue_redraw()
 
 
 ## 动态创建特效 SpriteFrames（15 个特效 × 8 帧）
@@ -255,8 +252,15 @@ static func apply_global_font() -> void:
 	if font == null:
 		push_warning("[SkirmishTileTextures] 字体加载失败: %s" % font_path)
 		return
-	var theme := Theme.new()
-	theme.default_font = font
 	var tree: SceneTree = Engine.get_main_loop() as SceneTree
 	if tree != null and tree.root != null:
-		tree.root.theme = theme
+		var existing: Theme = tree.root.theme
+		if existing == null:
+			existing = Theme.new()
+			tree.root.theme = existing
+		existing.default_font = font
+		existing.default_font_size = 18
+		existing.set_color("font_color", "Label", Color.WHITE)
+		existing.set_color("font_color", "Button", Color.WHITE)
+		existing.set_color("font_outline_color", "Label", Color(0, 0, 0, 0))
+		existing.set_constant("outline_size", "Label", 0)
