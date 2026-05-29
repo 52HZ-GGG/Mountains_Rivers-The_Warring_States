@@ -53,7 +53,7 @@ func _create_cards() -> void:
 			btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 
-		var fid := f["id"]
+		var fid: String = str(f["id"])
 		btn.pressed.connect(func(): _select_faction(fid))
 		cards_container.add_child(btn)
 		_card_buttons.append(btn)
