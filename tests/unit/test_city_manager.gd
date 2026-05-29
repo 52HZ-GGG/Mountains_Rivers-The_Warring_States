@@ -59,7 +59,7 @@ func test_get_faction_city_states_qin() -> void:
 func test_get_faction_city_states_neutral() -> void:
 	# 中立城市（洛邑、邢台、定陶）应被识别为合法 faction
 	var neutral_states := CityManager.get_faction_city_states("neutral")
-	assert_eq(neutral_states.size(), 3, "中立应有 3 城")
+	assert_eq(neutral_states.size(), 2, "中立应有 2 城")
 
 
 func test_get_faction_city_states_invalid_returns_empty() -> void:

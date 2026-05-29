@@ -5,7 +5,7 @@
     "ambush_base_chance": 0.05,
     "ambush_atk_bonus": 0.3,
     "ambush_chance_cap": 0.95,
-    "ambush_damage_multiplier": 2.0,
+    "ambush_damage_multiplier": 2,
     "fire_atk_bonus": 0.4,
     "fire_burn_duration": 2,
     "fire_burn_dot_ratio": 0.3,
@@ -125,35 +125,35 @@
     "wood_cap_base": 200,
     "wood_cap_per_lumbermill_level": 30,
     "city_base_wood": 10,
-    "horse_upkeep_food_per_unit": 3,
+    "horse_upkeep_food_per_unit": 5,
     "season_food_mod": {
       "spring": 0.2,
-      "summer": 0.0,
-      "autumn": 1.0,
+      "summer": 0,
+      "autumn": 1,
       "winter": -0.3
     },
     "season_gold_mod": {
-      "spring": 0.0,
-      "summer": 0.0,
+      "spring": 0,
+      "summer": 0,
       "autumn": 0.5,
       "winter": -0.2
     },
     "season_wood_mod": {
-      "spring": 0.0,
-      "summer": 0.0,
-      "autumn": 0.0,
+      "spring": 0,
+      "summer": 0,
+      "autumn": 0,
       "winter": -0.2
     },
     "season_craftsmen_mod": {
-      "spring": 0.0,
-      "summer": 0.0,
+      "spring": 0,
+      "summer": 0,
       "autumn": 0.2,
       "winter": -0.2
     },
     "season_building_materials_mod": {
       "spring": 0.2,
-      "summer": 0.0,
-      "autumn": 0.0,
+      "summer": 0,
+      "autumn": 0,
       "winter": -0.3
     },
     "special_resource_mod": {
@@ -214,7 +214,9 @@
         "cap_per_building_level": 30,
         "description": "帛书（通过藏书阁产出，用于科技研究和精通升级）"
       }
-    }
+    },
+    "army_upkeep_food_per_unit": 3,
+    "army_upkeep_gold_per_unit": 5
   },
   "population": {
     "food_per_pop": 3,
@@ -222,8 +224,8 @@
     "food_consume_per_pop": 1,
     "growth_base_period": 6.67,
     "growth_season_mod": {
-      "spring": 1.0,
-      "summer": 1.0,
+      "spring": 1,
+      "summer": 1,
       "autumn": 1.2,
       "winter": 0.7
     },
@@ -238,9 +240,9 @@
     "conscription_rate": 0.2,
     "conscription_fill_rate": 0.1,
     "service_penalty_threshold": 0.1,
-    "service_penalty_food_mod": 2.0,
-    "service_penalty_gold_mod": 2.0,
-    "service_penalty_growth_mod": 5.0,
+    "service_penalty_food_mod": 2,
+    "service_penalty_gold_mod": 2,
+    "service_penalty_growth_mod": 5,
     "death_recovery_period": 4,
     "national_grain_cap_base": 200,
     "granary_grain_cap_bonus": 50,
@@ -324,13 +326,26 @@
     "low_morale_threshold": 30,
     "low_morale_stability_penalty": -3,
     "city_captured_penalty": -30,
-    "war_recovery_per_turn": 3
+    "war_recovery_per_turn": 3,
+    "garrison_def_per_unit": 0.5,
+    "garrison_atk_per_unit": 0.3,
+    "revolt": {
+      "population_loss_ratio": 0.2,
+      "post_revolt_stability": 10,
+      "building_destruction_chance": 0.3,
+      "capital_revolt_morale_penalty": -15,
+      "suppression": {
+        "garrison_per_unit": 0.01,
+        "prison_per_level": 0.15,
+        "max_suppression": 0.95
+      }
+    }
   },
   "tax": {
     "min_rate": 0.1,
     "max_rate": 0.5,
     "default_rate": 0.3,
-    "current_efficiency": 1.0
+    "current_efficiency": 1
   },
   "corruption": {
     "growth": {
@@ -385,7 +400,7 @@
     "spread_rate": 0.05,
     "winter_spread_mod": 0.5,
     "distance_decay": {
-      "1": 1.0,
+      "1": 1,
       "2": 0.7,
       "3": 0.4,
       "4": 0.2
@@ -400,7 +415,7 @@
     "decay": {
       "base_decay_rate": 0.3,
       "decay_reduction": 0.1,
-      "radiation_input_max": 1.0
+      "radiation_input_max": 1
     },
     "trade_route": {
       "establish_cost": 100,
@@ -487,7 +502,7 @@
   "fortification": {
     "pass_hp": 500,
     "pass_defense": 100,
-    "siege_damage_multiplier": 3.0,
+    "siege_damage_multiplier": 3,
     "hp_type": "fortification"
   },
   "victory": {
@@ -528,7 +543,7 @@
     "land_vs_navy_attack_mod": 0.5,
     "land_on_water_attack_mod": 0.5,
     "land_on_water_defense_mod": 0.5,
-    "navy_on_water_defense_mod": 1.0
+    "navy_on_water_defense_mod": 1
   },
   "naval_freeze": {
     "stranded_attack_mod": 0.3,
@@ -566,7 +581,7 @@
     "border_distance_threshold": 4
   },
   "tech": {
-    "research_speed_base": 1.0,
+    "research_speed_base": 1,
     "research_speed_per_turn": 1,
     "special_condition_check_on_unlock": true,
     "era_gate_enabled": false,
@@ -645,39 +660,39 @@
   },
   "category_counter_matrix": {
     "infantry": {
-      "infantry": 1.0,
+      "infantry": 1,
       "cavalry": 0.8,
       "archer": 1.2,
       "siege": 0.7,
-      "navy": 1.0
+      "navy": 1
     },
     "cavalry": {
       "infantry": 1.3,
-      "cavalry": 1.0,
+      "cavalry": 1,
       "archer": 0.7,
       "siege": 0.6,
-      "navy": 1.0
+      "navy": 1
     },
     "archer": {
       "infantry": 0.8,
       "cavalry": 1.3,
-      "archer": 1.0,
+      "archer": 1,
       "siege": 0.9,
-      "navy": 1.0
+      "navy": 1
     },
     "siege": {
       "infantry": 0.5,
       "cavalry": 0.5,
       "archer": 0.8,
-      "siege": 1.0,
+      "siege": 1,
       "navy": 0.5
     },
     "navy": {
-      "infantry": 1.0,
-      "cavalry": 1.0,
-      "archer": 1.0,
+      "infantry": 1,
+      "cavalry": 1,
+      "archer": 1,
       "siege": 0.5,
-      "navy": 1.0
+      "navy": 1
     }
   },
   "minister": {
@@ -946,7 +961,8 @@
       "base_food": 3,
       "base_gold": 5,
       "max_population": 10,
-      "max_food_production": 30
+      "max_food_production": 30,
+      "garrison_capacity": 20
     },
     "2": {
       "name": "镇",
@@ -958,7 +974,8 @@
       "base_food": 6,
       "base_gold": 10,
       "max_population": 15,
-      "max_food_production": 45
+      "max_food_production": 45,
+      "garrison_capacity": 40
     },
     "3": {
       "name": "城",
@@ -970,7 +987,8 @@
       "base_food": 10,
       "base_gold": 15,
       "max_population": 20,
-      "max_food_production": 60
+      "max_food_production": 60,
+      "garrison_capacity": 80
     },
     "4": {
       "name": "府",
@@ -982,7 +1000,8 @@
       "base_food": 15,
       "base_gold": 25,
       "max_population": 25,
-      "max_food_production": 75
+      "max_food_production": 75,
+      "garrison_capacity": 120
     },
     "5": {
       "name": "都",
@@ -994,7 +1013,8 @@
       "base_food": 20,
       "base_gold": 35,
       "max_population": 30,
-      "max_food_production": 90
+      "max_food_production": 90,
+      "garrison_capacity": 160
     },
     "capital_bonus": {
       "hp": 500,
@@ -1007,9 +1027,9 @@
   "city_combat": {
     "damage_split_garrison": 0.5,
     "damage_split_wall": 0.5,
-    "no_garrison_wall_ratio": 1.0,
-    "no_wall_hp_damage_split_garrison": 1.0,
-    "siege_damage_multiplier": 3.0,
+    "no_garrison_wall_ratio": 1,
+    "no_wall_hp_damage_split_garrison": 1,
+    "siege_damage_multiplier": 3,
     "capture_restore_ratio": 0.3,
     "natural_recovery_ratio": 0.05,
     "natural_recovery_requires_no_attack": true,
@@ -1017,36 +1037,6 @@
     "demolish_turns": 1,
     "wall_defense_hp_scaling": true,
     "wall_defense_min_ratio": 0.5
-  },
-  "ai_military": {
-    "recruitment": {
-      "base_recruit_ratio": 0.5,
-      "aggression_recruit_bonus_per_point": 0.1,
-      "diplomacy_recruit_penalty_per_point": 0.05,
-      "min_gold_reserve": 50,
-      "min_food_reserve": 100,
-      "prefer_unit_weights": {
-        "infantry": 3,
-        "cavalry": 2,
-        "archer": 2,
-        "siege": 1
-      }
-    },
-    "siege": {
-      "evaluation_chance_base": 0.1,
-      "aggression_chance_per_point": 0.08,
-      "adjacent_hex_distance": 2,
-      "min_troop_ratio_to_siege": 1.5,
-      "siege_troop_allocate_ratio": 0.3,
-      "post_siege_garrison_ratio": 0.3
-    },
-    "garrison": {
-      "threat_evaluation_distance": 3,
-      "garrison_ratio_peaceful": 0.2,
-      "garrison_ratio_threatened": 0.5,
-      "frontline_garrison_bonus": 0.2,
-      "conquered_city_garrison_ratio": 0.4
-    }
   },
   "building_effects": {
     "revolt_suppression_per_level": {
@@ -1082,7 +1072,7 @@
     "policy_unlock_per_level": 1,
     "max_mentors_per_school": 2,
     "wu_minister_base_capacity": 5,
-    "switch_transition_effect_multiplier": 0.0,
+    "switch_transition_effect_multiplier": 0,
     "switch_transition_quest_lock": true,
     "auto_exp_triggers": {
       "confucianism": {
@@ -1183,5 +1173,36 @@
     "politics": 999,
     "season": 0,
     "event_chain": 0
+  },
+  "ai_military": {
+    "recruitment": {
+      "base_recruit_ratio": 0.5,
+      "aggression_recruit_bonus_per_point": 0.1,
+      "diplomacy_recruit_penalty_per_point": 0.05,
+      "min_gold_reserve": 100,
+      "min_food_reserve": 50,
+      "prefer_unit_weights": {
+        "infantry": 3,
+        "cavalry": 2,
+        "archer": 2,
+        "siege": 1
+      }
+    },
+    "siege": {
+      "evaluation_chance_base": 0.10,
+      "aggression_chance_per_point": 0.08,
+      "min_troop_ratio_to_siege": 1.5,
+      "max_target_city_level_diff": 2,
+      "adjacent_hex_distance": 2,
+      "siege_troop_allocate_ratio": 0.3,
+      "post_siege_garrison_ratio": 0.3
+    },
+    "garrison": {
+      "threat_evaluation_distance": 3,
+      "garrison_ratio_peaceful": 0.2,
+      "garrison_ratio_threatened": 0.5,
+      "frontline_garrison_bonus": 0.2,
+      "conquered_city_garrison_ratio": 0.4
+    }
   }
 }
