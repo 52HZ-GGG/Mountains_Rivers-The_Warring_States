@@ -25,6 +25,7 @@ var _events: Array = []
 var _cooldowns: Dictionary = {}  # event_id -> remaining_cooldown_turns
 var _chain_states: Dictionary = {}  # chain_id -> { "current_index": int }
 var _triggered_categories: Dictionary = {}  # category -> true（本回合已触发的类型）
+var _muted: bool = false
 
 
 func _ready() -> void:
@@ -34,6 +35,8 @@ func _ready() -> void:
 
 
 func _on_turn_started(turn_number: int, faction_id: String) -> void:
+	if _muted:
+		return
 	if not GameManager.is_player_faction(faction_id):
 		return
 	_check_and_trigger_events("turn_start", turn_number, faction_id)
@@ -432,6 +435,11 @@ func reset() -> void:
 	_cooldowns.clear()
 	_chain_states.clear()
 	_triggered_categories.clear()
+	_muted = false
+
+
+func set_muted(muted: bool) -> void:
+	_muted = muted
 
 
 ## 获取当前冷却状态（供测试使用）

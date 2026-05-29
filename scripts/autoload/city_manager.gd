@@ -55,6 +55,10 @@ const REASON_BUILDING_NOT_BUILT := "BUILDING_NOT_BUILT"
 const REASON_MAX_LEVEL_REACHED := "MAX_LEVEL_REACHED"
 const REASON_NOT_OWN_CITY := "NOT_OWN_CITY"
 const REASON_RELOCATION_LIMIT := "RELOCATION_LIMIT"
+const REASON_INVALID_AMOUNT := "INVALID_AMOUNT"
+const REASON_GARRISON_FULL := "GARRISON_FULL"
+const REASON_GARRISON_EMPTY := "GARRISON_EMPTY"
+const REASON_INSUFFICIENT_TROOPS := "INSUFFICIENT_TROOPS"
 
 # ============= 私有状态 =============
 
@@ -98,6 +102,93 @@ func get_capital_state(faction_id: String) -> Dictionary:
 			return state
 	push_warning("CityManager: 未找到 %s 的首都" % faction_id)
 	return {}
+
+
+func get_conscription_pool(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("conscription_pool", 0))
+
+
+func conscribe(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"recruited": 0, "reason": REASON_INVALID_CITY}
+	if amount <= 0:
+		return {"recruited": 0, "reason": REASON_INVALID_AMOUNT}
+	var pool: int = int(city.get("conscription_pool", 0))
+	var population: int = int(city.get("current_population", 0))
+	var recruited: int = mini(mini(amount, pool), population)
+	if recruited <= 0:
+		return {"recruited": 0, "reason": "POOL_EMPTY"}
+	city["conscription_pool"] = pool - recruited
+	city["current_population"] = population - recruited
+	return {"recruited": recruited, "reason": REASON_OK}
+
+
+func get_city_max_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var city_level: int = int(city.get("city_level", 1))
+	var levels_cfg: Variant = DataManager.get_balance_param("city_levels")
+	var level_cfg: Dictionary = (levels_cfg as Dictionary).get(str(city_level), {}) if levels_cfg is Dictionary else {}
+	return int(level_cfg.get("hp", 300))
+
+
+func get_city_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("current_hp", get_city_max_hp(city_id)))
+
+
+func get_city_defense(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var city_level: int = int(city.get("city_level", 1))
+	var levels_cfg: Variant = DataManager.get_balance_param("city_levels")
+	var level_cfg: Dictionary = (levels_cfg as Dictionary).get(str(city_level), {}) if levels_cfg is Dictionary else {}
+	var defense: int = int(level_cfg.get("city_defense", 10))
+	defense += int(city.get("garrison", 0))
+	return defense
+
+
+func get_city_attack(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var city_level: int = int(city.get("city_level", 1))
+	var levels_cfg: Variant = DataManager.get_balance_param("city_levels")
+	var level_cfg: Dictionary = (levels_cfg as Dictionary).get(str(city_level), {}) if levels_cfg is Dictionary else {}
+	var attack: int = int(level_cfg.get("attack", 5))
+	attack += int(city.get("garrison", 0))
+	return attack
+
+
+func damage_city(city_id: String, damage: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty() or damage <= 0:
+		return {"destroyed": false, "damage": 0}
+	var hp: int = get_city_hp(city_id)
+	var actual: int = mini(damage, hp)
+	city["current_hp"] = hp - actual
+	return {"destroyed": int(city["current_hp"]) <= 0, "damage": actual}
+
+
+func occupy_city(city_id: String, new_faction_id: String) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	var changed: bool = change_ownership(city_id, new_faction_id)
+	if not changed:
+		return false
+	city["current_hp"] = int(get_city_max_hp(city_id) * 0.5)
+	city["garrison"] = 0
+	city["turns_since_capture"] = 10
+	return true
 
 
 # ============= 建造接口 =============
@@ -456,6 +547,86 @@ func process_turn(faction_id: String) -> Dictionary:
 	return events
 
 
+func get_garrison(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("garrison", 0))
+
+
+func get_garrison_capacity(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	return int(city.get("garrison_capacity", 0))
+
+
+func assign_garrison(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"success": false, "reason": REASON_INVALID_CITY, "assigned": 0}
+	if amount <= 0:
+		return {"success": false, "reason": REASON_INVALID_AMOUNT, "assigned": 0}
+	var faction_id: String = str(city["current_faction_id"])
+	var current: int = int(city.get("garrison", 0))
+	var capacity: int = int(city.get("garrison_capacity", 0))
+	var room: int = capacity - current
+	if room <= 0:
+		return {"success": false, "reason": REASON_GARRISON_FULL, "assigned": 0}
+	var available: int = GameManager.get_total_troops(faction_id)
+	if available <= 0:
+		return {"success": false, "reason": REASON_INSUFFICIENT_TROOPS, "assigned": 0}
+	var actual: int = mini(mini(amount, room), available)
+	_remove_troops_from_composition(faction_id, actual)
+	city["garrison"] = current + actual
+	SignalBus.garrison_changed.emit(city_id, current, current + actual)
+	return {"success": true, "reason": REASON_OK, "assigned": actual}
+
+
+func add_garrison_direct(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"success": false, "reason": REASON_INVALID_CITY, "assigned": 0}
+	if amount <= 0:
+		return {"success": false, "reason": REASON_INVALID_AMOUNT, "assigned": 0}
+	var current: int = int(city.get("garrison", 0))
+	var capacity: int = int(city.get("garrison_capacity", 0))
+	var actual: int = mini(amount, capacity - current)
+	if actual <= 0:
+		return {"success": false, "reason": REASON_GARRISON_FULL, "assigned": 0}
+	city["garrison"] = current + actual
+	SignalBus.garrison_changed.emit(city_id, current, current + actual)
+	return {"success": true, "reason": REASON_OK, "assigned": actual}
+
+
+func withdraw_garrison(city_id: String, amount: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"success": false, "reason": REASON_INVALID_CITY, "withdrawn": 0}
+	if amount <= 0:
+		return {"success": false, "reason": REASON_INVALID_AMOUNT, "withdrawn": 0}
+	var current: int = int(city.get("garrison", 0))
+	if current <= 0:
+		return {"success": false, "reason": REASON_GARRISON_EMPTY, "withdrawn": 0}
+	var actual: int = mini(amount, current)
+	city["garrison"] = current - actual
+	GameManager.add_units(str(city["current_faction_id"]), "infantry", actual)
+	SignalBus.garrison_changed.emit(city_id, current, current - actual)
+	return {"success": true, "reason": REASON_OK, "withdrawn": actual}
+
+
+func _remove_troops_from_composition(faction_id: String, amount: int) -> void:
+	var remaining: int = amount
+	var comp: Dictionary = GameManager.get_unit_composition(faction_id)
+	for unit_id in comp.keys():
+		if remaining <= 0:
+			break
+		var count: int = int(comp[unit_id])
+		var deduct: int = mini(count, remaining)
+		GameManager.remove_units(faction_id, str(unit_id), deduct)
+		remaining -= deduct
+
+
 ## 递减建造队列，turns_remaining <= 0 时自动完成建造/升级。
 func _process_build_queue(city_id: String, events: Dictionary) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})
@@ -628,6 +799,11 @@ func _initialize_states() -> void:
 			state["max_building_slots"] = int(level_data.get("building_slots", 1))
 		else:
 			state["max_building_slots"] = 1
+		state["conscription_pool"] = 0
+		state["current_hp"] = int(level_data.get("hp", 300)) if level_data is Dictionary else 300
+		state["garrison"] = 0
+		state["garrison_capacity"] = int(level_data.get("garrison_capacity", city_level * 20)) if level_data is Dictionary else 20
+		state["turns_since_capture"] = 0
 		_city_states[city_data["id"]] = state
 
 

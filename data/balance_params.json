@@ -1018,6 +1018,36 @@
     "wall_defense_hp_scaling": true,
     "wall_defense_min_ratio": 0.5
   },
+  "ai_military": {
+    "recruitment": {
+      "base_recruit_ratio": 0.5,
+      "aggression_recruit_bonus_per_point": 0.1,
+      "diplomacy_recruit_penalty_per_point": 0.05,
+      "min_gold_reserve": 50,
+      "min_food_reserve": 100,
+      "prefer_unit_weights": {
+        "infantry": 3,
+        "cavalry": 2,
+        "archer": 2,
+        "siege": 1
+      }
+    },
+    "siege": {
+      "evaluation_chance_base": 0.1,
+      "aggression_chance_per_point": 0.08,
+      "adjacent_hex_distance": 2,
+      "min_troop_ratio_to_siege": 1.5,
+      "siege_troop_allocate_ratio": 0.3,
+      "post_siege_garrison_ratio": 0.3
+    },
+    "garrison": {
+      "threat_evaluation_distance": 3,
+      "garrison_ratio_peaceful": 0.2,
+      "garrison_ratio_threatened": 0.5,
+      "frontline_garrison_bonus": 0.2,
+      "conquered_city_garrison_ratio": 0.4
+    }
+  },
   "building_effects": {
     "revolt_suppression_per_level": {
       "prison": 0.15

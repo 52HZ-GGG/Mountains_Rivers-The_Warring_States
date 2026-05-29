@@ -224,3 +224,39 @@ func compute_counter_attack(
 		p_atk_ctx,
 		p_def_ctx,
 	)
+
+
+static func compute_siege_damage(
+	attacker_type_id: String,
+	troop_count: int,
+	city_defense: int,
+	city_hp: int,
+	rng: RandomNumberGenerator,
+) -> Dictionary:
+	var unit_data: Dictionary = DataManager.get_unit_type(attacker_type_id)
+	if unit_data.is_empty() or troop_count <= 0 or city_hp <= 0:
+		return {"damage": 0, "city_destroyed": false}
+	var siege_multiplier: float = float(DataManager.get_balance_param("city_combat.siege_damage_multiplier"))
+	var attack: float = float(unit_data.get("attack", 0)) * float(troop_count) * 0.1
+	if unit_data.get("category", "") == "siege":
+		attack *= siege_multiplier
+	var spread: float = rng.randf_range(0.9, 1.1)
+	var damage: int = maxi(1, int((attack - float(city_defense)) * spread))
+	damage = mini(damage, city_hp)
+	return {"damage": damage, "city_destroyed": damage >= city_hp}
+
+
+static func compute_city_counter_damage(
+	city_attack: int,
+	city_level: int,
+	attacker_type_id: String,
+	troop_count: int,
+	rng: RandomNumberGenerator,
+) -> Dictionary:
+	if city_attack <= 0 or troop_count <= 0:
+		return {"damage": 0}
+	var unit_data: Dictionary = DataManager.get_unit_type(attacker_type_id)
+	var unit_defense: int = int(unit_data.get("defense", 0)) if not unit_data.is_empty() else 0
+	var raw_damage: float = maxf(0.0, float(city_attack + city_level * 2 - unit_defense))
+	var damage: int = mini(troop_count, int(raw_damage * rng.randf_range(0.05, 0.15)))
+	return {"damage": max(0, damage)}
