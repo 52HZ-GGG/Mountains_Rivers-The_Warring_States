@@ -99,7 +99,7 @@ func _switch_weapon() -> void:
 func _start_hint_typewriter() -> void:
 	hint_label.text = ""
 	hint_label.visible = true
-	var hint := HINTS[_current_hint]
+	var hint: String = str(HINTS[_current_hint])
 	_typewriter_step(hint, 0)
 
 func _typewriter_step(text: String, index: int) -> void:
