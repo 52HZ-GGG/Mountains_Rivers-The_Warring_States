@@ -155,7 +155,8 @@ func compute_damage(
 	atk_ctx["terrain_atk_offset"] = float(terrain.get("atk_mod", 1.0)) - 1.0
 	atk_ctx["morale_atk_offset"] = _get_morale_atk_offset(p_attacker_morale, morale_params)
 	var atk_buff: float = _calc_atk_buff(atk_ctx)
-	var effective_atk: float = float(atk_unit.get("attack", 0)) * atk_buff
+	var base_atk_val: float = float(p_atk_ctx.get("override_attack", atk_unit.get("attack", 0)))
+	var effective_atk: float = base_atk_val * atk_buff
 
 	# 崩溃态独立乘算（攻击）
 	var break_threshold: int = int(morale_params.get("morale_break_threshold", 20))

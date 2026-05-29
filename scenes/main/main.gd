@@ -44,8 +44,7 @@ func _ready() -> void:
 	add_child(_event_popup)
 
 	# 事件测试按钮（开发用）
-	var event_test_btn := Button.new()
-	event_test_btn.text = "事件测试"
+	var event_test_btn := SkirmishTileTextures.styled_button("事件测试")
 	event_test_btn.pressed.connect(_on_event_test_button_pressed)
 	# 放在 BigMapButton 旁边
 	var big_map_btn := $BigMapButton

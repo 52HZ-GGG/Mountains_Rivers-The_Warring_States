@@ -12,7 +12,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.14, 0.11, 0.08, 0.58)
+color = Color(0.12, 0.13, 0.10, 0.03)
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 15
@@ -41,6 +41,11 @@ layout_mode = 2
 [node name="EndTurnBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
 layout_mode = 2
 text = "结束战术回合"
+
+[node name="StandbyBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "待命"
 
 [node name="RestartBtn" type="Button" parent="MarginContainer/MainVBox/ButtonRow"]
 layout_mode = 2
@@ -86,9 +91,13 @@ vertical_scroll_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HexHoverInfo" type="Label" parent="MarginContainer/MainVBox"]
+[node name="HexHoverInfo" type="RichTextLabel" parent="MarginContainer/MainVBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-autowrap_mode = 3
-theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
-theme_override_font_sizes/font_size = 13
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+theme_override_colors/default_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/bold_font_size = 13

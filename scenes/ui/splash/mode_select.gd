@@ -20,10 +20,22 @@ var _selected_mode: String = ""
 var _cards: Array[PanelContainer] = []
 
 func _ready() -> void:
-	back_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/main/main.tscn"))
-	next_btn.pressed.connect(_on_next)
+	print("[ModeSelect] _ready 开始")
+	SkirmishTileTextures.style_scene_button(back_btn)
+	SkirmishTileTextures.style_scene_button(next_btn)
+	back_btn.pressed.connect(func():
+		print("[ModeSelect] 返回按钮被点击")
+		StartupFlow.is_startup_flow_active = false
+		get_tree().change_scene_to_file("res://scenes/main/main.tscn")
+	)
+	next_btn.pressed.connect(func():
+		print("[ModeSelect] 下一步按钮被点击")
+		_on_next()
+	)
 	next_btn.disabled = true
+	SkirmishTileTextures.update_button_disabled(next_btn)
 	_create_cards()
+	print("[ModeSelect] _ready 完成, back_btn=%s next_btn=%s" % [str(back_btn), str(next_btn)])
 
 func _create_cards() -> void:
 	for m in MODES:
@@ -95,7 +107,7 @@ func _build_card(mode: Dictionary) -> PanelContainer:
 	panel.add_child(vbox)
 
 	# 点击选中
-	var mid := mode["id"]
+	var mid: String = str(mode["id"])
 	panel.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed:
 			_select_mode(mid)
@@ -119,7 +131,7 @@ func _select_mode(mode_id: String) -> void:
 
 	for i in _cards.size():
 		var card := _cards[i]
-		var is_selected := MODES[i]["id"] == mode_id
+		var is_selected: bool = str(MODES[i]["id"]) == mode_id
 		var tw := create_tween().set_parallel(true)
 		if is_selected:
 			tw.tween_property(card, "scale", Vector2(1.05, 1.05), 0.3)

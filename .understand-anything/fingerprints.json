@@ -1,0 +1,1474 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "75a1bb97e8d4793288d2e3706ec74803435c5e91",
+  "generatedAt": "2026-05-26T14:33:55.774Z",
+  "files": {
+    ".claude/commands/audit.md": {
+      "filePath": ".claude/commands/audit.md",
+      "contentHash": "563a4e84a2c6a27222e4c310e029eac0b77360a8be3feff057c2bc658667eefd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/commands/balance.md": {
+      "filePath": ".claude/commands/balance.md",
+      "contentHash": "a5dabf0a0b04039a6a9695dda3463c8cca381f91afc0f2baeb8728dafa214943",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/commands/event.md": {
+      "filePath": ".claude/commands/event.md",
+      "contentHash": "72f80466a326cb1a9aabc91ff923c429b71d465c8ee3efd73b8c1617604fdb99",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/commands/save.md": {
+      "filePath": ".claude/commands/save.md",
+      "contentHash": "61092cd9b89f0225d1e204d75827ed41cab1839b5046bec827bcc80150f23ac3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/commands/tilegen.md": {
+      "filePath": ".claude/commands/tilegen.md",
+      "contentHash": "baebf800ffdbfd01aa15e87d1bb446659ba153e24c88b72a9bdb200695c14ab2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/mcp.json.template": {
+      "filePath": ".claude/mcp.json.template",
+      "contentHash": "8256bcc29cde88287c683988ae6cc181b64f1056fd54c1fe0250309edbb13aaf",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": false
+    },
+    ".claude/README.md": {
+      "filePath": ".claude/README.md",
+      "contentHash": "c701126acc0d00c0a5419ae147fcc889f1c0fbf2c6a939242c1e944fa4e7b0cc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/skills/art-pipeline.md": {
+      "filePath": ".claude/skills/art-pipeline.md",
+      "contentHash": "a5ab53cca38822bbfe8457daf2e375789b63cc5fe10e67af44ac9c0a453a4ae0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 49,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/skills/godot-guidelines.md": {
+      "filePath": ".claude/skills/godot-guidelines.md",
+      "contentHash": "202022ae5b46be8dd35f98a3d1b683d67c5917265d77aa971f06a3c542b9854f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 78,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/skills/shanhece-world.md": {
+      "filePath": ".claude/skills/shanhece-world.md",
+      "contentHash": "75ce9cd25f9f10fe8ab3409b240d50c83917c806de7e4db9701807a30f45d38e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 175,
+      "hasStructuralAnalysis": true
+    },
+    ".claudeignore": {
+      "filePath": ".claudeignore",
+      "contentHash": "21ca8feed102ecdd5b515834f8d2d002c74d92effba82d227eae133c73ffa562",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 163,
+      "hasStructuralAnalysis": false
+    },
+    ".gitattributes": {
+      "filePath": ".gitattributes",
+      "contentHash": "c492ba72db570432f26cde094f433a03f9f69a9e9dccb52cb953a2e6532b169e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 71,
+      "hasStructuralAnalysis": false
+    },
+    ".githooks/pre-commit": {
+      "filePath": ".githooks/pre-commit",
+      "contentHash": "bb72ec9e2f1ee45e369c5251a91f9b6ea068efbf480009970470580b31bc705c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 66,
+      "hasStructuralAnalysis": false
+    },
+    ".githooks/pre-push": {
+      "filePath": ".githooks/pre-push",
+      "contentHash": "cb683b39a4566615ee6b1cebc3bed3218470d4b3b0505f6fffa5c07a54aee590",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": false
+    },
+    ".gutconfig.json": {
+      "filePath": ".gutconfig.json",
+      "contentHash": "2e08ded3670acfcaf38aa9ac7782927b36272271a6fb6abcbf8b525f5fca64a5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/.understandignore": {
+      "filePath": ".understand-anything/.understandignore",
+      "contentHash": "49b8dd60537df877fe73eb48761e774dcfa9216fab3ee0b921e744ef12e75c60",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 77,
+      "hasStructuralAnalysis": false
+    },
+    ".understand-anything/config.json": {
+      "filePath": ".understand-anything/config.json",
+      "contentHash": "c580d182c06471d20da334e756934fa65efa6806350e985e2fcf84d3c9e395a4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/fingerprints.json": {
+      "filePath": ".understand-anything/fingerprints.json",
+      "contentHash": "902cb75fd12dcb796ff411ddbabbf9b23cdae7411437e0e3d92d141bf8d6ad19",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1375,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/knowledge-graph.json": {
+      "filePath": ".understand-anything/knowledge-graph.json",
+      "contentHash": "f447f4e8317d84d9a8418cac4900bab2814f8c8232659e7d538bfd1dbfd34271",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6142,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/meta.json": {
+      "filePath": ".understand-anything/meta.json",
+      "contentHash": "ec6a66b45d13f60ad7f5c968104fed7b993cd7871b1a14cbb3d7a399107898b3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/tmp/extract-attack-pipeline.cjs": {
+      "filePath": ".understand-anything/tmp/extract-attack-pipeline.cjs",
+      "contentHash": "4f38a4caabcdca6671e7c7adb3557ebff5afaac08100ae570f3093c504d00c27",
+      "functions": [
+        {
+          "name": "prefixSymbols",
+          "params": [
+            "src"
+          ],
+          "exported": false,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 143,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/tmp/gut-baseline-failing.txt": {
+      "filePath": ".understand-anything/tmp/gut-baseline-failing.txt",
+      "contentHash": "d21f40c3868b28c73c6ab22251c84ce582c36db77b1f2070c0d9ae6be3c1362d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": false
+    },
+    ".understand-anything/tmp/gut-p1-failing.txt": {
+      "filePath": ".understand-anything/tmp/gut-p1-failing.txt",
+      "contentHash": "d21f40c3868b28c73c6ab22251c84ce582c36db77b1f2070c0d9ae6be3c1362d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": false
+    },
+    ".understand-anything/tmp/gut-p2-failing.txt": {
+      "filePath": ".understand-anything/tmp/gut-p2-failing.txt",
+      "contentHash": "d21f40c3868b28c73c6ab22251c84ce582c36db77b1f2070c0d9ae6be3c1362d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": false
+    },
+    "CLAUDE.md": {
+      "filePath": "CLAUDE.md",
+      "contentHash": "d19cdab6ee6a4f3fbfbf3ede61d83827925613b39a700aa98f1cc403b3e23ffb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 275,
+      "hasStructuralAnalysis": true
+    },
+    "data/balance_params.json": {
+      "filePath": "data/balance_params.json",
+      "contentHash": "1e9985ab36402ddb15f96ec19a4370ee5d7c34a886cee552f2aec6be8006613e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1157,
+      "hasStructuralAnalysis": true
+    },
+    "data/big_map_terrain.json": {
+      "filePath": "data/big_map_terrain.json",
+      "contentHash": "b805c9d3df3646b88af231ea6c95f878262df8ee3cb4a5266cfdf089eac70d69",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": true
+    },
+    "data/buildings.json": {
+      "filePath": "data/buildings.json",
+      "contentHash": "e7327bb38e9963e09fc637dbf20c554fd3d6ff5907fbe9584b7cf0ba26084edc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1160,
+      "hasStructuralAnalysis": true
+    },
+    "data/cities.json": {
+      "filePath": "data/cities.json",
+      "contentHash": "a806b5538fd143497ac78fd9389b2010ef07983b8f1b89c6724dc2a9c5d3d00a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 657,
+      "hasStructuralAnalysis": true
+    },
+    "data/diplomacy.json": {
+      "filePath": "data/diplomacy.json",
+      "contentHash": "cfc1cd5f2449ed85f4269d963654830a5d3f4d18c96efb427eada4c16368fe57",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 231,
+      "hasStructuralAnalysis": true
+    },
+    "data/events.json": {
+      "filePath": "data/events.json",
+      "contentHash": "bae094296f95ddb0166e9e4285acf5ff629243ee57aee81d5c247608948ada42",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3958,
+      "hasStructuralAnalysis": true
+    },
+    "data/factions.json": {
+      "filePath": "data/factions.json",
+      "contentHash": "a14e4698f4939410aa17587425a466e7981783a649308f496719aeaa1c848208",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 145,
+      "hasStructuralAnalysis": true
+    },
+    "data/ministers.json": {
+      "filePath": "data/ministers.json",
+      "contentHash": "809acbeb406f108963d291df00d5b81402f3719231f63a621d94c7979c1749b3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 704,
+      "hasStructuralAnalysis": true
+    },
+    "data/schools.json": {
+      "filePath": "data/schools.json",
+      "contentHash": "e26397456dc10fee7d612ad2f09a91861d6aee6e7fd5f78876e513b89528c53a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 735,
+      "hasStructuralAnalysis": true
+    },
+    "data/skirmish_scenarios.json": {
+      "filePath": "data/skirmish_scenarios.json",
+      "contentHash": "f85b8bee2588a5ca59351b7f32f52b6e5ab1b344b418dae3fde6d714078bcf87",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 224,
+      "hasStructuralAnalysis": true
+    },
+    "data/tactical_skirmish_mvp.json": {
+      "filePath": "data/tactical_skirmish_mvp.json",
+      "contentHash": "b468981a73565a4bb20430e7621533dda363e1fca43d6bb65716b4675ca2ebf9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "data/tech_events.json": {
+      "filePath": "data/tech_events.json",
+      "contentHash": "b6468dc14d837277bb36cc543b79503b370790ff107c1c6105648508b0a45e35",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 326,
+      "hasStructuralAnalysis": true
+    },
+    "data/tech_synergies.json": {
+      "filePath": "data/tech_synergies.json",
+      "contentHash": "10b81172e193ad1c0913adf5ae9aac4e5bd908141200dff2d5cc311210ac96ba",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 160,
+      "hasStructuralAnalysis": true
+    },
+    "data/tech_tree.json": {
+      "filePath": "data/tech_tree.json",
+      "contentHash": "1d44ea9dabddd65c954352424586669e5d7f8a05341b926dd5b76b10738c3fe9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2894,
+      "hasStructuralAnalysis": true
+    },
+    "data/terrain.json": {
+      "filePath": "data/terrain.json",
+      "contentHash": "886ff654e95dabb0d22810f9fa12cef112c817fe6e320861c0fccf2e2afcc800",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 278,
+      "hasStructuralAnalysis": true
+    },
+    "data/units.json": {
+      "filePath": "data/units.json",
+      "contentHash": "d000be592a199aa2e0579933f60577dbed45123957dd6c5f9ccc163b4eb3b13c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 556,
+      "hasStructuralAnalysis": true
+    },
+    "data/wonders.json": {
+      "filePath": "data/wonders.json",
+      "contentHash": "68d9eace3578be61532085963ab6da0f1f1d9e213661490bb1e5e664f94000f8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 276,
+      "hasStructuralAnalysis": true
+    },
+    "docs/CODEMAP.md": {
+      "filePath": "docs/CODEMAP.md",
+      "contentHash": "3285e069c7d97b03017cfe13c751a27e6801b66df7175f4db6e18a9dbce94912",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 178,
+      "hasStructuralAnalysis": true
+    },
+    "docs/superpowers/plans/2026-05-16-event-system-redesign.md": {
+      "filePath": "docs/superpowers/plans/2026-05-16-event-system-redesign.md",
+      "contentHash": "ede396a49c8d206afd443a570928c5f6663e5a38940c0f666764d744330ec33d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 853,
+      "hasStructuralAnalysis": true
+    },
+    "docs/superpowers/specs/2026-05-16-event-system-redesign.md": {
+      "filePath": "docs/superpowers/specs/2026-05-16-event-system-redesign.md",
+      "contentHash": "e5f36fd7c6bc43f2e97dad0ea9bfcbcca1f20e99cc5740215fa98c1dc84d1159",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 308,
+      "hasStructuralAnalysis": true
+    },
+    "docs/unit-movement-animation-guide.md": {
+      "filePath": "docs/unit-movement-animation-guide.md",
+      "contentHash": "6d586a417004c3eab14c83a52f232bebd917da12bb03d34cc063618898d402cf",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 161,
+      "hasStructuralAnalysis": true
+    },
+    "project.godot": {
+      "filePath": "project.godot",
+      "contentHash": "058b26f3821868159e691f24e0cd2964dc17c03742d5d6a291d2d7af06986598",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 49,
+      "hasStructuralAnalysis": false
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "c01e6525addd595d341548fc857f868679e1c4b6f3451dfcd74dc60602576fd7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 119,
+      "hasStructuralAnalysis": true
+    },
+    "scenes/main/main.gd": {
+      "filePath": "scenes/main/main.gd",
+      "contentHash": "5d70ba86cec1e89039b7283b453db39d3c0e358efbc7b2ea7b35713d81a8d0ba",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 182,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/main/main.tscn": {
+      "filePath": "scenes/main/main.tscn",
+      "contentHash": "2d3591e1bed228324695bd829f373d7832c23d05a10cf1f8edf1373ddab9aa1b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 64,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/big_map/big_map_panel.gd": {
+      "filePath": "scenes/ui/big_map/big_map_panel.gd",
+      "contentHash": "6e87e9b2d4c9bb142d8147511747baaaf5edb57d6cc9a2924157577991904a57",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 555,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/big_map/big_map_panel.tscn": {
+      "filePath": "scenes/ui/big_map/big_map_panel.tscn",
+      "contentHash": "558c7a7818ff64ef66de75a89b47b65eca01315e5a1fbb2a64cbdc6808434958",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 92,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/buff/buff_panel.gd": {
+      "filePath": "scenes/ui/buff/buff_panel.gd",
+      "contentHash": "86cef296a7aabbd01e1dd68d125264d1b64070dd887ac4e4a8747353b06a4e97",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 124,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/buff/buff_panel.tscn": {
+      "filePath": "scenes/ui/buff/buff_panel.tscn",
+      "contentHash": "edb08c276062bc1b55da9095af2c38800de0bc49d3199afbc5d3647ae7323f6c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 106,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/city_panel/city_panel.gd": {
+      "filePath": "scenes/ui/city_panel/city_panel.gd",
+      "contentHash": "78778335d8a3bb1e341ea991c481551a5777f929ebdcdb0dc21e07f556f9e8bb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 557,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/city_panel/city_panel.tscn": {
+      "filePath": "scenes/ui/city_panel/city_panel.tscn",
+      "contentHash": "a883dd7c10d0301e9c104146369c9557121bcd944d5a18a24ac23fb58be93c03",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 21,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/diplomacy/diplomacy_panel.gd": {
+      "filePath": "scenes/ui/diplomacy/diplomacy_panel.gd",
+      "contentHash": "f802e6eaf1dbbabe16b575dcd71994826a2bbf32c41c6098ecbea934e42b637e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 311,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/diplomacy/diplomacy_panel.tscn": {
+      "filePath": "scenes/ui/diplomacy/diplomacy_panel.tscn",
+      "contentHash": "dc623159022c20ea19aaa6d8382b94a0f8655ebbc0b9b90234e8b92b580a97bc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 21,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/diplomacy/negotiation_dialog.gd": {
+      "filePath": "scenes/ui/diplomacy/negotiation_dialog.gd",
+      "contentHash": "3ea10dc7f9b94bce45beedb695b644bbaeffea9ca98fe838b260c22015733f81",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 216,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/diplomacy/negotiation_dialog.tscn": {
+      "filePath": "scenes/ui/diplomacy/negotiation_dialog.tscn",
+      "contentHash": "1ed3d0fbf48f2206d92ab86eeef4862276c8e7ced31f3c149fb3ce2ecf31392b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/event_popup/event_popup.gd": {
+      "filePath": "scenes/ui/event_popup/event_popup.gd",
+      "contentHash": "7f82f2fefeccd4048ee64bec4fdf6ff398c02a320a3ff6b613fd3c2b70d24e62",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 208,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/event_popup/event_popup.tscn": {
+      "filePath": "scenes/ui/event_popup/event_popup.tscn",
+      "contentHash": "7f8f8d0c8f25f2a3732ef08ea62c6c350ca3bde5fd83be42c7b94b001f7f8bab",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/event_test/event_test_panel.gd": {
+      "filePath": "scenes/ui/event_test/event_test_panel.gd",
+      "contentHash": "86ba3deaea18ab7a356c0449101d9062b3fe4c46e00d7d5d60b4396ce340d26a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 164,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/event_test/event_test_panel.tscn": {
+      "filePath": "scenes/ui/event_test/event_test_panel.tscn",
+      "contentHash": "33e12726d4440c6b5a4c46b0ea7e30e5a800e9a2a8de42f167e071d616923693",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/resource_bar/resource_bar.gd": {
+      "filePath": "scenes/ui/resource_bar/resource_bar.gd",
+      "contentHash": "c6b5f445b08730066ace25b48d52f1d5f8757cef58ecf8e84da820bac18a229a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 89,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/skirmish/skirmish_mvp_panel.gd": {
+      "filePath": "scenes/ui/skirmish/skirmish_mvp_panel.gd",
+      "contentHash": "961115ce26d1f110e6563004d94e4791eda9b34890d04f52dc1a0c6bd559227c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 861,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/skirmish/skirmish_mvp_panel.tscn": {
+      "filePath": "scenes/ui/skirmish/skirmish_mvp_panel.tscn",
+      "contentHash": "e96d91e37c361387dcc2948bf9706d807e931aea4f6bfa980ee0b89fdb3a9ff5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 104,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/skirmish/skirmish_scenario_panel.gd": {
+      "filePath": "scenes/ui/skirmish/skirmish_scenario_panel.gd",
+      "contentHash": "a46bab35f6a1e7a9be6810a2b765eb8a31e3280c2e906e48cef84ee3e6243f28",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 137,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/skirmish/skirmish_scenario_panel.tscn": {
+      "filePath": "scenes/ui/skirmish/skirmish_scenario_panel.tscn",
+      "contentHash": "6093facf5a3d8644b7c2c1d746f9c8dd0ca0532e1b8c512ea9846d2bc5d7b595",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 154,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/skirmish/skirmish_test_guide_panel.gd": {
+      "filePath": "scenes/ui/skirmish/skirmish_test_guide_panel.gd",
+      "contentHash": "0984e79bb3a52485c44f17204b9adb54bab9aa2262bbb49d0d8d9fc04bf11d3c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 299,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/skirmish/skirmish_test_guide_panel.tscn": {
+      "filePath": "scenes/ui/skirmish/skirmish_test_guide_panel.tscn",
+      "contentHash": "9e159863d8cccd8cc72d01ed98647a403899f33e7d2379417f626c27792e10fa",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 67,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/announcement_popup.gd": {
+      "filePath": "scenes/ui/splash/announcement_popup.gd",
+      "contentHash": "9fec533d0521ee37e70c8780fbfc05756773e8a233b626e2f5b6e714b0c906a2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 81,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/announcement_popup.tscn": {
+      "filePath": "scenes/ui/splash/announcement_popup.tscn",
+      "contentHash": "f2774da85aa790677a6253216b991aec137fd87b081f0bbad4698a15851202a4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 101,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/faction_select.gd": {
+      "filePath": "scenes/ui/splash/faction_select.gd",
+      "contentHash": "778245c10d2a0e93ba7c2ce50a44dc45f0a98bdd5b3e1d2c3bbdaf48119a9592",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 101,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/faction_select.tscn": {
+      "filePath": "scenes/ui/splash/faction_select.tscn",
+      "contentHash": "e218edeed6ac92f59776f36502dfb2bcb8e0e2c5bc6eb88297137a76ab4db51e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 110,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/loading_screen.gd": {
+      "filePath": "scenes/ui/splash/loading_screen.gd",
+      "contentHash": "bbc2f96c3544338882596cba32323639d5bd5ddb561b63296ef4ee091caf246c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 133,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/loading_screen.tscn": {
+      "filePath": "scenes/ui/splash/loading_screen.tscn",
+      "contentHash": "fd1642f85446a451b81c10943edcb9420101389415c43755fc4bbc8ce9739e00",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 77,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/mode_select.gd": {
+      "filePath": "scenes/ui/splash/mode_select.gd",
+      "contentHash": "bd7811b382edaac6516ba5c1b6562b11027d71f1280a68cf999bc03f0b981e1d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 150,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/mode_select.tscn": {
+      "filePath": "scenes/ui/splash/mode_select.tscn",
+      "contentHash": "49d5b67364ed105197317d5a505bf4c5d0ce8d845ec419e8e123162bc348ba0a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 79,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/splash_screen.gd": {
+      "filePath": "scenes/ui/splash/splash_screen.gd",
+      "contentHash": "fe1363eeb9226b691ff1a0f17fa5d8d6d51ce09fb2223437ebbd2149f0ea1c06",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 69,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/splash/splash_screen.tscn": {
+      "filePath": "scenes/ui/splash/splash_screen.tscn",
+      "contentHash": "9cb61785db7ea6034a6e641a4f96f986b506ddb86d683ae834d46e67f01e5b22",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 65,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/ui/tech/tech_tree_panel.gd": {
+      "filePath": "scenes/ui/tech/tech_tree_panel.gd",
+      "contentHash": "49aae1faf9c2556c3071365894ac85930abaa1647e98044838f637b7428e0077",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 374,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/units/unit_movement_test.tscn": {
+      "filePath": "scenes/units/unit_movement_test.tscn",
+      "contentHash": "fbf4b2990e787edf8c50f5cd943fe561d0af4de802054f6111054271166415dc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": false
+    },
+    "scenes/units/unit.tscn": {
+      "filePath": "scenes/units/unit.tscn",
+      "contentHash": "8e6836e43119d3f41d822a3f9fb1c83f8834c040421ba078e519817ba3b79429",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/ai/diplomacy_ai.gd": {
+      "filePath": "scripts/ai/diplomacy_ai.gd",
+      "contentHash": "45998f02687e03354f4b9132a65de8ab42576317ba37f57f813f18b441b3493b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 339,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/city_manager.gd": {
+      "filePath": "scripts/autoload/city_manager.gd",
+      "contentHash": "49a4308f348320e5de8ee1cfa98e38c0f367a88d4cb51bea0c31ed4bfa745af4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 708,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/data_manager.gd": {
+      "filePath": "scripts/autoload/data_manager.gd",
+      "contentHash": "e5e9a52a6b1a280af701a1b43b2e5ac2db025957e68bea271310f1c23f263e46",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 516,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/diplomacy_system.gd": {
+      "filePath": "scripts/autoload/diplomacy_system.gd",
+      "contentHash": "4f14410f2dc7dd635b02560ed9e78cae82447710f82a8ae22a50071e24a17f53",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 745,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/event_manager.gd": {
+      "filePath": "scripts/autoload/event_manager.gd",
+      "contentHash": "4f9502e77c0825fded7a7a53836edb1788a48b802089d5292fed7340b92c5f70",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 440,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/game_manager.gd": {
+      "filePath": "scripts/autoload/game_manager.gd",
+      "contentHash": "674578a1b8643ac486dac337f64c8bf5020787fd7a286c2dc2702169d807ee96",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 504,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/signal_bus.gd": {
+      "filePath": "scripts/autoload/signal_bus.gd",
+      "contentHash": "760ff9c7bfd7e264d4a9c551c6569b33f3c57d358fc25986df378ad086d20631",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 79,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/startup_flow.gd": {
+      "filePath": "scripts/autoload/startup_flow.gd",
+      "contentHash": "1980183c9a1a99713279256e5a014338703cfe4dedcda364137ce4ecf284c15b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 136,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/autoload/tactical_skirmish_manager.gd": {
+      "filePath": "scripts/autoload/tactical_skirmish_manager.gd",
+      "contentHash": "8bc3cc19c3c5348e0ebdd0adff8caf20734810a2494a90e88212e8a8265232f6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1543,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/systems/combat_resolver.gd": {
+      "filePath": "scripts/systems/combat_resolver.gd",
+      "contentHash": "19be9de71d44e0a24b921184a79716b9814c3a10f2f806340068a7dd612b1ce8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 227,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/systems/hex_axial.gd": {
+      "filePath": "scripts/systems/hex_axial.gd",
+      "contentHash": "96134e8e28fa010d70f912e2e1ed8f7638fa59bf586d65e3a1243987d8c1a1e6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 97,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/systems/skirmish_ai.gd": {
+      "filePath": "scripts/systems/skirmish_ai.gd",
+      "contentHash": "397e13f9b0d2e352909ffb6572b8746baaf69a1f80f9afcd83045b7b245368b9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 248,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/systems/skirmish_attack_pipeline.gd": {
+      "filePath": "scripts/systems/skirmish_attack_pipeline.gd",
+      "contentHash": "037e8e989c6f9aa7127bea17d4fef4f084b92b0b3a18bc17f9cd2fef86b79f68",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 580,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/systems/tech_system.gd": {
+      "filePath": "scripts/systems/tech_system.gd",
+      "contentHash": "47ee0930cbae00f6743fd04cb85f25d06de5e2af87f90deb1f6d873aaff815a8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 465,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/systems/unit_movement_manager.gd": {
+      "filePath": "scripts/systems/unit_movement_manager.gd",
+      "contentHash": "e5c6a1f438cf71ebf7d97bea90b18f8f3082886c87d38111bce0cacf936e0400",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 148,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/ui/shader_helpers.gd": {
+      "filePath": "scripts/ui/shader_helpers.gd",
+      "contentHash": "5188d62166ec3f11f1d9a8f107783f6b55be2191fcc2266932baef3833dec904",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 87,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/ui/skirmish_hex_cell.gd": {
+      "filePath": "scripts/ui/skirmish_hex_cell.gd",
+      "contentHash": "3ad7ad54c84e0033942edfa1c9b6b8aec569b8bc5fc1858b7e23e6118dda24b3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 225,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/ui/skirmish_hex_map_canvas.gd": {
+      "filePath": "scripts/ui/skirmish_hex_map_canvas.gd",
+      "contentHash": "bbd82a0508c157c4b77b1178c8afa2850448f7343958e28ba9068ed37842d0e5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 78,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/ui/skirmish_tile_textures.gd": {
+      "filePath": "scripts/ui/skirmish_tile_textures.gd",
+      "contentHash": "0807dbabb307beebe08365d5f7b549178264e0d1520b970838cad232e8d45905",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 263,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/units/unit_movement_test.gd": {
+      "filePath": "scripts/units/unit_movement_test.gd",
+      "contentHash": "5a42f396e341d7087c35d8d39aa91f9132753f02d017770aa8fa1bc438ea6ad9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 157,
+      "hasStructuralAnalysis": false
+    },
+    "scripts/units/unit.gd": {
+      "filePath": "scripts/units/unit.gd",
+      "contentHash": "630d8572cd33b4840bef2515e0095ea4066ecddb3d62ce68df434e1bc5b73430",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 202,
+      "hasStructuralAnalysis": false
+    },
+    "shaders/skirmish_hex_tile.gdshader": {
+      "filePath": "shaders/skirmish_hex_tile.gdshader",
+      "contentHash": "5ac4135f40f42d34e448699152dcdf1cd47e9a671f185b2d374b3a4f2682872f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_city_combat.gd": {
+      "filePath": "tests/unit/test_city_combat.gd",
+      "contentHash": "4f95bf4287799f5ea3c8bcde8207ae35a2a10afb42af3bb8d4f965fad2b0256d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 310,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_city_manager.gd": {
+      "filePath": "tests/unit/test_city_manager.gd",
+      "contentHash": "ec9b4767c1a3267a0dd9b9e801f34bb60cfaaef7e40f2ab3e64fd7b44616220a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 572,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_combat_modifiers.gd": {
+      "filePath": "tests/unit/test_combat_modifiers.gd",
+      "contentHash": "ac0b682b6bc9776dd871cc432e939f91a1b5f33afcb41e71031fce6e85e3428c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 95,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_combat_resolver.gd": {
+      "filePath": "tests/unit/test_combat_resolver.gd",
+      "contentHash": "121220d41ee81d04c81378e6b5dd6b73d09f5c002b7ba413b377a8441762a359",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 240,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_damage_overflow.gd": {
+      "filePath": "tests/unit/test_damage_overflow.gd",
+      "contentHash": "a3df1c9dc200c1a88c6d558abe8f6e19027ef28a7095b82859e3e9953fe2004f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 66,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_data_manager.gd": {
+      "filePath": "tests/unit/test_data_manager.gd",
+      "contentHash": "9690fda12dec7be36d4e1fcfe223216fe172967ef17d4cc8e5acff4dab5ed354",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 95,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_event_manager.gd": {
+      "filePath": "tests/unit/test_event_manager.gd",
+      "contentHash": "f80047f3035704ef097ca5ff52a00654b89a6c5d1ce2f43af5d3210772112ef2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 207,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_fire_attack.gd": {
+      "filePath": "tests/unit/test_fire_attack.gd",
+      "contentHash": "f353df593a9a5dce2d0c6668597cba0ea93f36fc5324c93535884b705255c4c4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 255,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_flanking.gd": {
+      "filePath": "tests/unit/test_flanking.gd",
+      "contentHash": "6d4ad5294688a0f156d841f280715d8b0bd7a1ba6da7a1e98f9be8137f6b998b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 196,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_game_manager.gd": {
+      "filePath": "tests/unit/test_game_manager.gd",
+      "contentHash": "a2b55d0e0ac76e06a812251e412cd173ebc6ad20a35b893982888641cb983436",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 113,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_healing.gd": {
+      "filePath": "tests/unit/test_healing.gd",
+      "contentHash": "558e205309d38dc518b4db00bbd0e732ce823f84039570b315bba79c203297a3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 189,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_hex_axial.gd": {
+      "filePath": "tests/unit/test_hex_axial.gd",
+      "contentHash": "e207da8174e042b16e19024a3ad077d2a5144c67d7217694115b284902cb84e9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 68,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_naval_combat.gd": {
+      "filePath": "tests/unit/test_naval_combat.gd",
+      "contentHash": "9cca78e882a5f854996e98b1d94234d0178da5ffd66f873e2804a5569eb7436a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 168,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_pass_combat.gd": {
+      "filePath": "tests/unit/test_pass_combat.gd",
+      "contentHash": "53e3b3dfe6b972fc35f386621488c53abdf47e4dab9e09499747bdfbfe7f5a18",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 372,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_ranged_obstruction.gd": {
+      "filePath": "tests/unit/test_ranged_obstruction.gd",
+      "contentHash": "1eebe10a4eb8e57d953f81bc8be9121e7b3401776d69ee13d6aa75339b6cc3af",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 115,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_retreat.gd": {
+      "filePath": "tests/unit/test_retreat.gd",
+      "contentHash": "2e07cd4b2709627270ab13cd9940db57682d90c056da299f8fff9f43c328301f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 290,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_supply.gd": {
+      "filePath": "tests/unit/test_supply.gd",
+      "contentHash": "163508dfa9c80f85425a96bcba293470b60e3a690793a257bb9a3b05a9a3024e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 128,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_tactical_skirmish_manager.gd": {
+      "filePath": "tests/unit/test_tactical_skirmish_manager.gd",
+      "contentHash": "e4a70a429d165a7ecf2a041ff924b2d703a830306b91d357a71eeeb604c0a97f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 34,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_turn_state.gd": {
+      "filePath": "tests/unit/test_turn_state.gd",
+      "contentHash": "b96aa069b857d112daca20794e71ca02e2e3bd5f75129d9d3a2cde635aaa09fa",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 47,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_unit_morale.gd": {
+      "filePath": "tests/unit/test_unit_morale.gd",
+      "contentHash": "ffceb77229534d5d493f82bae7c63138a29425cbea03fbf35f3cf3eccae2913d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 163,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_unit_skills.gd": {
+      "filePath": "tests/unit/test_unit_skills.gd",
+      "contentHash": "89230ad302c2ac25cd100d76d9c6addb8c51d6119a273846b097f7b988aa1344",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 177,
+      "hasStructuralAnalysis": false
+    },
+    "tests/unit/test_zoc.gd": {
+      "filePath": "tests/unit/test_zoc.gd",
+      "contentHash": "71926e72df1b7ff22bcae6175483db235c76d353cc6a100815b41c0b688de2db",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 112,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_announcement_assets.gd": {
+      "filePath": "tools/generate_announcement_assets.gd",
+      "contentHash": "3d06067f97ed31d3214cce73cc5b52c5f7094526fba330e6e426d0634ade864e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 134,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_app_icon.gd": {
+      "filePath": "tools/generate_app_icon.gd",
+      "contentHash": "25131ebab68d2a118374c37a7faf30cfa40cbace8c5b6be9da48158beb470686",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 227,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_battle_p2_assets.gd": {
+      "filePath": "tools/generate_battle_p2_assets.gd",
+      "contentHash": "0622d6d5f84dadc5ed91e7abed26b6b8211d46552d08b561878d9db77e208312",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 614,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_battle_ui_assets.gd": {
+      "filePath": "tools/generate_battle_ui_assets.gd",
+      "contentHash": "1ff80e0469838457761ed81c6f54fc3235bba4a546c1174499da650011cd45df",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 311,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_city_tiles.gd": {
+      "filePath": "tools/generate_city_tiles.gd",
+      "contentHash": "afcb427f3059ce4714dd98a28ac222dba94734674766ef5419ff46a6588e0878",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 470,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_effect_sprite_frames.gd": {
+      "filePath": "tools/generate_effect_sprite_frames.gd",
+      "contentHash": "be0e319173c5d98e7f0da1a38baa0af384bcbf289fc4dd1c8b88cd831ed72d98",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 95,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_faction_select_assets.gd": {
+      "filePath": "tools/generate_faction_select_assets.gd",
+      "contentHash": "9af8941ee205eff0b9c224020bb2cab5d95c7aceb51063d7733e8acb4c35a71c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 186,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_loading_assets.gd": {
+      "filePath": "tools/generate_loading_assets.gd",
+      "contentHash": "fb22d7cb0f201d12a32ab54bb2f1a6c091bd124cb023ce3c8dcd9e92fd2b9987",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 174,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_mode_select_assets.gd": {
+      "filePath": "tools/generate_mode_select_assets.gd",
+      "contentHash": "38cb5645cc7c3c743fec5855e5a5b63e55ea8f5f2428a74d3a988deb0d9c8483",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 161,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_splash_assets.gd": {
+      "filePath": "tools/generate_splash_assets.gd",
+      "contentHash": "82405bc036e20eb469f579af3d49d3e4d3aa57fb41e6f69d37d9bfbf604590fb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 239,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_unit_selection_assets.gd": {
+      "filePath": "tools/generate_unit_selection_assets.gd",
+      "contentHash": "ff4fc341fabc573e052a6b967a1e42b2cdf3f7570f2f7ec0c0fbf589cccf42e7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 108,
+      "hasStructuralAnalysis": false
+    },
+    "tools/generate_unit_sprite_frames.gd": {
+      "filePath": "tools/generate_unit_sprite_frames.gd",
+      "contentHash": "b89413d7b1f50fb1f7cf903af1af650c96e21653b0f135aa3a18880d786ac173",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 141,
+      "hasStructuralAnalysis": false
+    },
+    "tools/rename_sprites.py": {
+      "filePath": "tools/rename_sprites.py",
+      "contentHash": "7f6c288fe37b9c69a792b90ec5ce6cdb45985c0617ea462d316b22ec94f25076",
+      "functions": [
+        {
+          "name": "rename_file",
+          "params": [
+            "old_path",
+            "new_name"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "process_unit_animations",
+          "params": [],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "process_effects",
+          "params": [],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        }
+      ],
+      "exports": [
+        "rename_file",
+        "process_unit_animations",
+        "process_effects"
+      ],
+      "totalLines": 83,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

@@ -28,12 +28,6 @@ signal event_triggered(event_data: Dictionary)
 ## 事件结算后发出（效果已应用）。choice_id 为空串表示无选项事件
 signal event_resolved(event_id: String, choice_id: String)
 
-## 事件链推进时发出
-signal chain_advanced(chain_id: String, event_id: String)
-
-## 事件链完结时发出
-signal chain_completed(chain_id: String)
-
 # ============= 外交系统 =============
 
 signal war_declared(attacker: String, defender: String)
@@ -74,11 +68,6 @@ signal capital_relocated(faction_id: String, new_capital_id: String)
 
 ## faction 灭国时发出（无任何城市 或 玩家迁都次数耗尽且首都再次失守）
 signal faction_eliminated(faction_id: String)
-
-# ============= 学派系统 =============
-
-## 事件获得学派经验时发出（待学派系统实现后连接）
-signal school_exp_gained(amount: int)
 
 # ============= 城市管理 =============
 

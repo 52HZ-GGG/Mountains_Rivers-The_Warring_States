@@ -12,6 +12,7 @@ var _current_scenario_id: String = ""
 
 func _ready() -> void:
 	visible = false
+	SkirmishTileTextures.style_scene_button(_close_btn)
 	_close_btn.pressed.connect(_on_close_pressed)
 
 

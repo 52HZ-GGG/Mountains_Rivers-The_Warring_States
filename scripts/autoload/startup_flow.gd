@@ -10,6 +10,9 @@ signal flow_changed(step: String)
 # 当前流程步骤
 var _current_step: String = ""
 
+# 是否正在启动流程中（main.gd 据此跳过自动初始化）
+var is_startup_flow_active: bool = false
+
 # 玩家选择
 var selected_mode: String = ""
 var selected_faction: String = ""
@@ -25,8 +28,15 @@ var selected_faction: String = ""
 @export var skip_splash: bool = false
 
 func _ready() -> void:
-	# 不自动跳转 — 由 main 场景或命令行触发
-	pass
+	# 应用全局隶书字体
+	SkirmishTileTextures.apply_global_font()
+	# 标记启动流程激活
+	is_startup_flow_active = true
+	# 等待所有 autoload 和主场景加载完毕
+	await get_tree().process_frame
+	await get_tree().process_frame
+	# 切换到 Splash（此时主场景已加载，change_scene 生效）
+	get_tree().change_scene_to_file(splash_scene)
 
 # ────────────────────────────────────────────
 # 流程入口
@@ -73,7 +83,9 @@ func goto_loading() -> void:
 
 func goto_game() -> void:
 	_current_step = "game"
+	is_startup_flow_active = false
 	flow_changed.emit(_current_step)
+	get_tree().change_scene_to_file(game_scene)
 	_start_game()
 
 # ────────────────────────────────────────────

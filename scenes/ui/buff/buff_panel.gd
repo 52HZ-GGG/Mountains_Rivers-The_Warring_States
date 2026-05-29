@@ -29,6 +29,7 @@ const CLOSE_DURATION := 0.2
 var _buff_data: Array[Dictionary] = []
 
 func _ready() -> void:
+	SkirmishTileTextures.style_scene_button(close_btn)
 	close_btn.pressed.connect(_close)
 	detail_panel.visible = false
 	visible = false
@@ -56,9 +57,8 @@ func _populate_icons() -> void:
 			buff_container.add_child(icon_btn)
 
 func _create_icon_button(data: Dictionary, index: int) -> Button:
-	var btn := Button.new()
+	var btn := SkirmishTileTextures.styled_button(data.get("name", "?").substr(0, 2))
 	btn.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
-	btn.text = data.get("name", "?").substr(0, 2)
 	btn.add_theme_font_size_override("font_size", 14)
 
 	# 加载图标纹理

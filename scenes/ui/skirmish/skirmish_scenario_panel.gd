@@ -25,11 +25,16 @@ func _ready() -> void:
 	_scenarios = DataManager.get_skirmish_scenarios()
 	_populate_list()
 	_scenario_list.item_selected.connect(_on_scenario_selected)
+	SkirmishTileTextures.style_scene_button(%BackBtn)
+	SkirmishTileTextures.style_scene_button(_start_btn)
+	SkirmishTileTextures.style_scene_button(_guide_btn)
 	%BackBtn.pressed.connect(_on_back_pressed)
 	_start_btn.pressed.connect(_on_start_pressed)
 	_start_btn.disabled = true
+	SkirmishTileTextures.update_button_disabled(_start_btn)
 	_guide_btn.pressed.connect(_on_guide_pressed)
 	_guide_btn.disabled = true
+	SkirmishTileTextures.update_button_disabled(_guide_btn)
 
 
 func open_panel() -> void:

@@ -23,6 +23,11 @@ var _political_mode: bool = false
 
 
 func _ready() -> void:
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomOutBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomInBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomResetBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/PoliticalBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/CloseBtn)
 	$MarginContainer/MainVBox/TitleBar/CloseBtn.pressed.connect(_on_close_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomInBtn.pressed.connect(_on_zoom_in_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomOutBtn.pressed.connect(_on_zoom_out_pressed)

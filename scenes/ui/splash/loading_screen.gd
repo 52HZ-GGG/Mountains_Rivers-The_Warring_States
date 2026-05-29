@@ -38,6 +38,14 @@ func _ready() -> void:
 	overlay.visible = false
 	hex_frame.visible = false
 	_load_textures()
+	# 自动启动加载动画（由 StartupFlow 进入时）
+	if StartupFlow.is_startup_flow_active:
+		_auto_start()
+
+func _auto_start() -> void:
+	start_loading("")
+	await get_tree().create_timer(1.5).timeout
+	finish_loading()
 
 func _load_textures() -> void:
 	var paths := [
@@ -91,7 +99,7 @@ func _switch_weapon() -> void:
 func _start_hint_typewriter() -> void:
 	hint_label.text = ""
 	hint_label.visible = true
-	var hint := HINTS[_current_hint]
+	var hint: String = str(HINTS[_current_hint])
 	_typewriter_step(hint, 0)
 
 func _typewriter_step(text: String, index: int) -> void:

@@ -18,6 +18,24 @@ var _selected_building_id: String = ""
 signal return_to_map
 signal panel_closed
 
+## 建筑 ID → 图标文件名映射（无匹配的建筑不显示图标）
+const _BUILDING_ICON_MAP: Dictionary = {
+	"farm": "icon_building_farm",
+	"market": "icon_building_market",
+	"granary": "icon_building_granary",
+	"barracks": "icon_building_barracks",
+	"stable": "icon_building_stable",
+	"horse_farm": "icon_building_stable",
+	"wall": "icon_building_wall",
+	"academy": "icon_building_academy",
+	"ironworks": "icon_building_forge",
+	"workshop": "icon_building_forge",
+	"shrine": "icon_building_temple",
+	"temple_daoist": "icon_building_temple",
+	"lumbermill": "icon_building_farm",
+	"fishery": "icon_building_farm",
+}
+
 # ── 生命周期 ──────────────────────────────────────
 
 func _ready() -> void:
@@ -46,6 +64,17 @@ func get_resource_bar_slot() -> VBoxContainer:
 # ── UI 骨架 ──────────────────────────────────────
 
 func _build_ui() -> void:
+	# 背景图
+	var bg_tex: Texture2D = SkirmishTileTextures.panel_texture("city")
+	if bg_tex != null:
+		var bg := TextureRect.new()
+		bg.name = "Background"
+		bg.texture = bg_tex
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(bg)
+
 	_main_vbox = VBoxContainer.new()
 	_main_vbox.name = "MainVBox"
 	_main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -69,13 +98,11 @@ func _build_ui() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_bar.add_child(spacer)
 
-	var back_btn := Button.new()
-	back_btn.text = "返回大地图"
+	var back_btn := SkirmishTileTextures.styled_button("返回大地图")
 	back_btn.pressed.connect(_on_back_pressed)
 	title_bar.add_child(back_btn)
 
-	var close_btn := Button.new()
-	close_btn.text = "关闭"
+	var close_btn := SkirmishTileTextures.styled_button("关闭")
 	close_btn.pressed.connect(_on_close_pressed)
 	title_bar.add_child(close_btn)
 
@@ -225,6 +252,18 @@ func _refresh_buildings() -> void:
 		row.add_theme_constant_override("separation", 8)
 		_buildings_list.add_child(row)
 
+		# 建筑图标
+		var icon_name: String = str(_BUILDING_ICON_MAP.get(bid, ""))
+		if not icon_name.is_empty():
+			var icon_tex: Texture2D = SkirmishTileTextures.icon_texture(icon_name)
+			if icon_tex != null:
+				var icon_rect := TextureRect.new()
+				icon_rect.texture = icon_tex
+				icon_rect.custom_minimum_size = Vector2(24, 24)
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				row.add_child(icon_rect)
+
 		var lbl := Label.new()
 		lbl.text = "%s Lv.%d  %s" % [bname, level, effects_str]
 		lbl.add_theme_font_size_override("font_size", 13)
@@ -234,10 +273,10 @@ func _refresh_buildings() -> void:
 
 		# 升级按钮
 		var upgrade_check: Dictionary = CityManager.can_upgrade(_city_id, bid)
-		var up_btn := Button.new()
-		up_btn.text = "升级"
+		var up_btn := SkirmishTileTextures.styled_button("升级")
 		up_btn.add_theme_font_size_override("font_size", 12)
 		up_btn.disabled = not upgrade_check["allowed"]
+		SkirmishTileTextures.update_button_disabled(up_btn)
 		if up_btn.disabled:
 			up_btn.tooltip_text = _reason_text(upgrade_check["reason"])
 		else:
@@ -250,8 +289,7 @@ func _refresh_buildings() -> void:
 		row.add_child(up_btn)
 
 		# 拆除按钮
-		var del_btn := Button.new()
-		del_btn.text = "拆除"
+		var del_btn := SkirmishTileTextures.styled_button("拆除")
 		del_btn.add_theme_font_size_override("font_size", 12)
 		del_btn.pressed.connect(_on_demolish_pressed.bind(bid))
 		row.add_child(del_btn)
@@ -292,8 +330,7 @@ func _refresh_queue() -> void:
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(lbl)
 
-		var cancel_btn := Button.new()
-		cancel_btn.text = "取消"
+		var cancel_btn := SkirmishTileTextures.styled_button("取消")
 		cancel_btn.add_theme_font_size_override("font_size", 12)
 		cancel_btn.pressed.connect(_on_cancel_build_pressed.bind(i))
 		row.add_child(cancel_btn)
@@ -318,10 +355,22 @@ func _refresh_build_list() -> void:
 		row.add_theme_constant_override("separation", 8)
 		_build_list.add_child(row)
 
-		var btn := Button.new()
-		btn.text = "%s [%s] (%d金 %d木材)" % [bname, _category_name(category), cost_gold, cost_wood]
+		# 建筑图标
+		var icon_name: String = str(_BUILDING_ICON_MAP.get(bid, ""))
+		if not icon_name.is_empty():
+			var icon_tex: Texture2D = SkirmishTileTextures.icon_texture(icon_name)
+			if icon_tex != null:
+				var icon_rect := TextureRect.new()
+				icon_rect.texture = icon_tex
+				icon_rect.custom_minimum_size = Vector2(24, 24)
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				row.add_child(icon_rect)
+
+		var btn := SkirmishTileTextures.styled_button("%s [%s] (%d金 %d木材)" % [bname, _category_name(category), cost_gold, cost_wood])
 		btn.add_theme_font_size_override("font_size", 13)
 		btn.disabled = not allowed
+		SkirmishTileTextures.update_button_disabled(btn)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if not allowed:
 			btn.tooltip_text = _reason_text(check["reason"])
@@ -329,8 +378,7 @@ func _refresh_build_list() -> void:
 		row.add_child(btn)
 
 		# 详情按钮
-		var info_btn := Button.new()
-		info_btn.text = "?"
+		var info_btn := SkirmishTileTextures.styled_button("?")
 		info_btn.add_theme_font_size_override("font_size", 12)
 		info_btn.custom_minimum_size = Vector2(30, 0)
 		info_btn.pressed.connect(_on_detail_pressed.bind(bid))

@@ -61,8 +61,7 @@ func _build_ui() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_bar.add_child(title)
 
-	var close_btn := Button.new()
-	close_btn.text = "关闭"
+	var close_btn := SkirmishTileTextures.styled_button("关闭")
 	close_btn.pressed.connect(_on_close_pressed)
 	title_bar.add_child(close_btn)
 
@@ -123,8 +122,7 @@ func _populate_events() -> void:
 		row.add_child(opt_label)
 
 		# 触发按钮
-		var trigger_btn := Button.new()
-		trigger_btn.text = "触发"
+		var trigger_btn := SkirmishTileTextures.styled_button("触发")
 		trigger_btn.add_theme_font_size_override("font_size", 13)
 		trigger_btn.pressed.connect(_on_trigger_pressed.bind(evt))
 		row.add_child(trigger_btn)

@@ -46,8 +46,7 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	title_bar.add_child(title)
 
-	var close_btn := Button.new()
-	close_btn.text = "关闭"
+	var close_btn := SkirmishTileTextures.styled_button("关闭")
 	close_btn.pressed.connect(_on_close_pressed)
 	title_bar.add_child(close_btn)
 
@@ -113,8 +112,7 @@ func _build_tree_grid(grid: GridContainer) -> void:
 			for tech in techs:
 				if tech.get("era", "") != era:
 					continue
-				var btn := Button.new()
-				btn.text = tech.name
+				var btn := SkirmishTileTextures.styled_button(tech.name)
 				btn.custom_minimum_size = Vector2(120, 30)
 				btn.add_theme_font_size_override("font_size", 12)
 				var tech_id: String = tech.id
@@ -242,13 +240,11 @@ func _show_tech_detail(tech_id: String) -> void:
 	_detail_panel.add_child(btn_container)
 
 	if TechSystem.is_available(tech_id) and TechSystem.get_researching_tech() == "":
-		var research_btn := Button.new()
-		research_btn.text = "开始研究"
+		var research_btn := SkirmishTileTextures.styled_button("开始研究")
 		research_btn.pressed.connect(_on_start_research.bind(tech_id))
 		btn_container.add_child(research_btn)
 	elif TechSystem.get_researching_tech() == tech_id:
-		var cancel_btn := Button.new()
-		cancel_btn.text = "取消研究"
+		var cancel_btn := SkirmishTileTextures.styled_button("取消研究")
 		cancel_btn.pressed.connect(_on_cancel_research)
 		btn_container.add_child(cancel_btn)
 
