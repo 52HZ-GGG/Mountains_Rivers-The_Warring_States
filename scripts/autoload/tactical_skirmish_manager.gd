@@ -113,6 +113,9 @@ func terrain_at(cell: Vector2i) -> String:
 
 ## 开始演武：从 DataManager 读取默认 MVP 配置
 func start_skirmish() -> void:
+	if _skirmish_active:
+		push_warning("TacticalSkirmishManager: 演武已在进行中，忽略重复启动")
+		return
 	var cfg: Dictionary = DataManager.get_tactical_skirmish_mvp().duplicate(true)
 	if cfg.is_empty():
 		push_error("TacticalSkirmishManager: tactical_skirmish_mvp 数据为空")
@@ -122,6 +125,11 @@ func start_skirmish() -> void:
 
 ## 以指定配置和季节开始演武（供场景选择器调用）
 func start_skirmish_with_config(cfg: Dictionary, season: String = "summer") -> void:
+	print("[TSM] guard check: _skirmish_active=%s" % str(_skirmish_active))
+	if _skirmish_active:
+		push_warning("TacticalSkirmishManager: 演武已在进行中，忽略重复启动")
+		print("[TSM] 已阻止重复启动")
+		return
 	print("[TSM] start_skirmish_with_config: name=%s season=%s" % [str(cfg.get("name", "???")), season])
 	_cfg = cfg
 	_current_season = season
@@ -143,6 +151,8 @@ func start_skirmish_with_config(cfg: Dictionary, season: String = "summer") -> v
 
 
 func reset_skirmish() -> void:
+	print("[TSM] reset_skirmish 被调用! 堆栈追踪:")
+	print_stack()
 	_skirmish_active = false
 	_units.clear()
 	_tiles.clear()
@@ -1058,7 +1068,8 @@ func _is_water_frozen(cell: Vector2i) -> bool:
 	var tdata: Dictionary = DataManager.get_terrain(tid)
 	if not bool(tdata.get("is_navigable", false)):
 		return false
-	var frozen_season: String = str(tdata.get("frozen_season", ""))
+	var winter_effects: Dictionary = tdata.get("winter_effects", {})
+	var frozen_season: String = str(winter_effects.get("frozen_season", ""))
 	return frozen_season != "" and frozen_season == _current_season
 
 
