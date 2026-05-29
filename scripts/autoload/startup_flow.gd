@@ -32,11 +32,8 @@ func _ready() -> void:
 	SkirmishTileTextures.apply_global_font()
 	# 标记启动流程激活
 	is_startup_flow_active = true
-	# 等待所有 autoload 和主场景加载完毕
-	await get_tree().process_frame
-	await get_tree().process_frame
-	# 切换到 Splash（此时主场景已加载，change_scene 生效）
-	get_tree().change_scene_to_file(splash_scene)
+	# 避免在 _ready() 内直接切换场景触发 remove_child 错误
+	call_deferred("_change_to_splash")
 
 # ────────────────────────────────────────────
 # 流程入口
@@ -113,6 +110,9 @@ func on_loading_finished() -> void:
 # ────────────────────────────────────────────
 # 内部
 # ────────────────────────────────────────────
+
+func _change_to_splash() -> void:
+	get_tree().change_scene_to_file(splash_scene)
 
 func _start_game() -> void:
 	# 根据模式决定激活哪些势力

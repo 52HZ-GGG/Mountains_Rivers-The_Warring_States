@@ -42,8 +42,6 @@ void fragment() {
         // 悬停脉冲发光
         float glow = glow_strength * (0.5 + 0.5 * sin(TIME * glow_speed));
         col.rgb += vec3(glow);
-        // 边框微亮
-        border_color.rgb += vec3(0.08);
     } else if (state == 2) {
         col = color_pressed;
         // 按下时内容下移 1px 效果（通过 UV 偏移模拟）
