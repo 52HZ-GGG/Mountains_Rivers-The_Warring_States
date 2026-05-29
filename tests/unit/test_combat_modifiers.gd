@@ -22,11 +22,13 @@ func test_tech_attack_bonus_increases_damage() -> void:
 
 
 func test_tech_defense_bonus_decreases_damage() -> void:
-	# 使用克制关系（骑兵 vs 步兵 1.3x）确保基础伤害 > 1
+	# 使用克制关系（骑兵 vs 步兵 1.3x）+ 更大防御差确保效果可见
 	var base: Dictionary = _combat.compute_damage("cavalry", "infantry", "plains", 100, 100, _rng, {}, {})
-	var with_tech: Dictionary = _combat.compute_damage("cavalry", "infantry", "plains", 100, 100, _rng, {}, {"tech_def": 0.1})
+	var rng2: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng2.seed = 42
+	var with_tech: Dictionary = _combat.compute_damage("cavalry", "infantry", "plains", 100, 100, rng2, {}, {"tech_def": 0.3})
 	assert_gt(int(base["damage"]), 1, "基础伤害应 > 1（实际 %d）" % int(base["damage"]))
-	assert_lt(int(with_tech["damage"]), int(base["damage"]), "科技防御 +10%% 应减少伤害（%d → %d）" % [int(base["damage"]), int(with_tech["damage"])])
+	assert_lt(int(with_tech["damage"]), int(base["damage"]), "科技防御 +30%% 应减少伤害（%d → %d）" % [int(base["damage"]), int(with_tech["damage"])])
 
 
 func test_tech_attack_bonus_value_accuracy() -> void:
@@ -79,9 +81,10 @@ func test_school_data_loaded() -> void:
 
 func test_school_global_effects_accessible() -> void:
 	var school: Dictionary = DataManager.get_school("mohism")
-	var effects: Dictionary = school.get("global_effects", {})
-	var def_bonus: float = float(effects.get("def_combat_bonus", 0.0))
-	assert_almost_eq(def_bonus, 0.25, 0.01, "墨家 def_combat_bonus 应为 0.25")
+	var lv2: Dictionary = school.get("level_effects", {}).get("2", {})
+	var effects: Dictionary = lv2.get("effects", {})
+	var def_bonus: float = float(effects.get("defense_bonus", 0.0))
+	assert_almost_eq(def_bonus, 0.25, 0.01, "墨家 level2 defense_bonus 应为 0.25")
 
 
 func test_all_schools_loaded() -> void:

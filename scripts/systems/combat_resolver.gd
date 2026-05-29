@@ -1,3 +1,4 @@
+class_name CombatResolver
 extends RefCounted
 
 ## 战斗伤害结算器 — 对齐 docs/机制概览/战斗系统.md §2
@@ -224,3 +225,66 @@ func compute_counter_attack(
 		p_atk_ctx,
 		p_def_ctx,
 	)
+
+
+# ============= 攻城伤害计算（Phase 4）=============
+
+## 计算军队对城池的伤害。
+## 公式：damage = (军队总攻击力 × 攻城加成 - 城池防御) × 随机波动，保底 1。
+static func compute_siege_damage(
+	attacker_unit_id: String,
+	attacker_count: int,
+	city_defense: int,
+	city_hp: int,
+	p_rng: RandomNumberGenerator,
+	atk_ctx: Dictionary = {},
+) -> Dictionary:
+	var unit_data: Dictionary = DataManager.get_unit_type(attacker_unit_id)
+	if unit_data.is_empty() or attacker_count <= 0:
+		return {"damage": 0, "city_destroyed": false}
+	var base_atk: float = float(unit_data.get("attack", 0)) * attacker_count
+	# 攻城加成（special = "siege"）
+	var siege_bonus: float = 1.0
+	if unit_data.get("special", "") == "siege":
+		siege_bonus = float(unit_data.get("special_value", 2.0))
+	# 攻击加法层
+	var atk_buff: float = 1.0
+	atk_buff += atk_ctx.get("tech_atk", 0.0)
+	atk_buff += atk_ctx.get("faction_atk", 0.0)
+	atk_buff += atk_ctx.get("morale_atk_offset", 0.0)
+	var effective_atk: float = base_atk * atk_buff * siege_bonus
+	# 扣减城防
+	var raw_dmg: float = maxf(effective_atk - float(city_defense), 1.0)
+	# 随机波动
+	var rmin: Variant = DataManager.get_balance_param("combat.base_random_spread_lo")
+	var rmax: Variant = DataManager.get_balance_param("combat.base_random_spread_hi")
+	var rd_lo: float = float(rmin) if rmin != null else 0.9
+	var rd_hi: float = float(rmax) if rmax != null else 1.1
+	var rand_spread: float = p_rng.randf_range(rd_lo, rd_hi)
+	var dmg: float = raw_dmg * rand_spread
+	var final_dmg: int = int(floor(maxf(dmg, 1.0)))
+	return {"damage": final_dmg, "city_destroyed": final_dmg >= city_hp}
+
+
+## 计算城池对攻城军队的反击伤害。
+## 公式：damage = (城池攻击 × 城级) - (军队总防御 × 数量 × 0.1)，保底 1。
+static func compute_city_counter_damage(
+	city_attack: int,
+	city_level: int,
+	defender_unit_id: String,
+	defender_count: int,
+	p_rng: RandomNumberGenerator,
+) -> Dictionary:
+	var unit_data: Dictionary = DataManager.get_unit_type(defender_unit_id)
+	if unit_data.is_empty() or defender_count <= 0:
+		return {"damage": 0}
+	var base_city_atk: float = float(city_attack) * float(city_level)
+	var unit_def: float = float(unit_data.get("defense", 0)) * defender_count * 0.1
+	var raw_dmg: float = maxf(base_city_atk - unit_def, 1.0)
+	var rmin: Variant = DataManager.get_balance_param("combat.base_random_spread_lo")
+	var rmax: Variant = DataManager.get_balance_param("combat.base_random_spread_hi")
+	var rd_lo: float = float(rmin) if rmin != null else 0.9
+	var rd_hi: float = float(rmax) if rmax != null else 1.1
+	var rand_spread: float = p_rng.randf_range(rd_lo, rd_hi)
+	var dmg: float = raw_dmg * rand_spread
+	return {"damage": int(floor(maxf(dmg, 1.0)))}

@@ -326,7 +326,20 @@
     "low_morale_threshold": 30,
     "low_morale_stability_penalty": -3,
     "city_captured_penalty": -30,
-    "war_recovery_per_turn": 3
+    "war_recovery_per_turn": 3,
+    "garrison_def_per_unit": 0.5,
+    "garrison_atk_per_unit": 0.3,
+    "revolt": {
+      "population_loss_ratio": 0.2,
+      "post_revolt_stability": 10,
+      "building_destruction_chance": 0.3,
+      "capital_revolt_morale_penalty": -15,
+      "suppression": {
+        "garrison_per_unit": 0.01,
+        "prison_per_level": 0.15,
+        "max_suppression": 0.95
+      }
+    }
   },
   "tax": {
     "min_rate": 0.1,
@@ -948,7 +961,8 @@
       "base_food": 3,
       "base_gold": 5,
       "max_population": 10,
-      "max_food_production": 30
+      "max_food_production": 30,
+      "garrison_capacity": 20
     },
     "2": {
       "name": "镇",
@@ -960,7 +974,8 @@
       "base_food": 6,
       "base_gold": 10,
       "max_population": 15,
-      "max_food_production": 45
+      "max_food_production": 45,
+      "garrison_capacity": 40
     },
     "3": {
       "name": "城",
@@ -972,7 +987,8 @@
       "base_food": 10,
       "base_gold": 15,
       "max_population": 20,
-      "max_food_production": 60
+      "max_food_production": 60,
+      "garrison_capacity": 80
     },
     "4": {
       "name": "府",
@@ -984,7 +1000,8 @@
       "base_food": 15,
       "base_gold": 25,
       "max_population": 25,
-      "max_food_production": 75
+      "max_food_production": 75,
+      "garrison_capacity": 120
     },
     "5": {
       "name": "都",
@@ -996,7 +1013,8 @@
       "base_food": 20,
       "base_gold": 35,
       "max_population": 30,
-      "max_food_production": 90
+      "max_food_production": 90,
+      "garrison_capacity": 160
     },
     "capital_bonus": {
       "hp": 500,
@@ -1155,5 +1173,36 @@
     "politics": 999,
     "season": 0,
     "event_chain": 0
+  },
+  "ai_military": {
+    "recruitment": {
+      "base_recruit_ratio": 0.5,
+      "aggression_recruit_bonus_per_point": 0.1,
+      "diplomacy_recruit_penalty_per_point": 0.05,
+      "min_gold_reserve": 100,
+      "min_food_reserve": 50,
+      "prefer_unit_weights": {
+        "infantry": 3,
+        "cavalry": 2,
+        "archer": 2,
+        "siege": 1
+      }
+    },
+    "siege": {
+      "evaluation_chance_base": 0.10,
+      "aggression_chance_per_point": 0.08,
+      "min_troop_ratio_to_siege": 1.5,
+      "max_target_city_level_diff": 2,
+      "adjacent_hex_distance": 2,
+      "siege_troop_allocate_ratio": 0.3,
+      "post_siege_garrison_ratio": 0.3
+    },
+    "garrison": {
+      "threat_evaluation_distance": 3,
+      "garrison_ratio_peaceful": 0.2,
+      "garrison_ratio_threatened": 0.5,
+      "frontline_garrison_bonus": 0.2,
+      "conquered_city_garrison_ratio": 0.4
+    }
   }
 }
