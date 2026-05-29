@@ -76,3 +76,6 @@ signal building_completed(city_id: String, building_id: String, level: int)
 
 ## 势力每回合资源产出结算后发出
 signal resources_produced(faction_id: String, production: Dictionary)
+
+## 城池驻军数量变化时发出
+signal garrison_changed(city_id: String, old_value: int, new_value: int)

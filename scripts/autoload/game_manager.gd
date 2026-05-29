@@ -47,6 +47,9 @@ var _player_troops: int = 0
 var _player_horse: int = 0
 var _player_refined_iron: int = 0
 
+# 兵种构成追踪：{faction_id: {unit_id: count}}
+var _unit_composition: Dictionary = {}
+
 # AI 国家资源追踪（阶段2）
 var _faction_resources: Dictionary = {}  # {faction_id: {food, gold, iron, morale, population, troops}}
 
@@ -172,7 +175,8 @@ func process_ai_turn() -> void:
 	DiplomacyAI.evaluate_diplomacy(faction_id, _turn_number)
 	# 2. AI科技研究
 	_ai_research_tick(faction_id)
-	# 3. AI军事决策（暂留阶段1占位）
+	# 3. AI军事决策（征兵 / 攻城 / 驻军）
+	MilitaryAI.evaluate_military(faction_id)
 	end_current_turn()
 
 
@@ -331,6 +335,52 @@ func apply_troops_delta(delta: int) -> void:
 	_player_troops = max(0, _player_troops + delta)
 
 
+func get_unit_composition(faction_id: String) -> Dictionary:
+	return _unit_composition.get(faction_id, {})
+
+
+func add_units(faction_id: String, unit_id: String, count: int) -> void:
+	if count <= 0:
+		return
+	if not _unit_composition.has(faction_id):
+		_unit_composition[faction_id] = {}
+	var comp: Dictionary = _unit_composition[faction_id]
+	comp[unit_id] = int(comp.get(unit_id, 0)) + count
+	if faction_id == _player_faction:
+		_player_troops = _sum_composition(faction_id)
+	elif _faction_resources.has(faction_id):
+		_faction_resources[faction_id]["troops"] = _sum_composition(faction_id)
+
+
+func remove_units(faction_id: String, unit_id: String, count: int) -> void:
+	if count <= 0 or not _unit_composition.has(faction_id):
+		return
+	var comp: Dictionary = _unit_composition[faction_id]
+	if not comp.has(unit_id):
+		return
+	comp[unit_id] = max(0, int(comp[unit_id]) - count)
+	if int(comp[unit_id]) == 0:
+		comp.erase(unit_id)
+	if faction_id == _player_faction:
+		_player_troops = _sum_composition(faction_id)
+	elif _faction_resources.has(faction_id):
+		_faction_resources[faction_id]["troops"] = _sum_composition(faction_id)
+
+
+func get_total_troops(faction_id: String) -> int:
+	var composition_total: int = _sum_composition(faction_id)
+	if composition_total > 0:
+		return composition_total
+	return get_faction_resource(faction_id, "troops")
+
+
+func _sum_composition(faction_id: String) -> int:
+	var total: int = 0
+	for count in _unit_composition.get(faction_id, {}).values():
+		total += int(count)
+	return total
+
+
 func get_player_horse() -> int:
 	return _player_horse
 
@@ -368,6 +418,7 @@ func reset() -> void:
 	_player_horse = 0
 	_player_refined_iron = 0
 	_faction_resources.clear()
+	_unit_composition.clear()
 	_difficulty = "normal"
 
 
