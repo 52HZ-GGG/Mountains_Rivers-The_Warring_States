@@ -815,7 +815,7 @@ git commit -m "feat(events): 新增事件链状态存档/读档接口"
 
 - [ ] **Step 1: 更新文档为 v2.0**
 
-将文档内容更新为与设计文档 `docs/superpowers/specs/2026-05-16-event-system-redesign.md` 一致。主要变更：
+将文档内容更新为与设计文档 `docs/归档/过程稿/superpowers/specs-2026-05-16-event-system-redesign.md` 一致。主要变更：
 - 版本号从 v1.2 更新为 v2.0
 - 触发机制章节重写为三阶段流水线
 - 新增优先级系统章节
