@@ -4,6 +4,7 @@ extends CanvasLayer
 ## 选择场景 + 季节 → 通知 main.gd 打开演武面板
 
 signal skirmish_started(scenario_id: String, season: String)
+signal panel_closed
 
 var _guide_panel_scene: PackedScene = preload("res://scenes/ui/skirmish/skirmish_test_guide_panel.tscn")
 var _guide_panel: CanvasLayer = null
@@ -47,6 +48,7 @@ func open_panel() -> void:
 
 
 func close_panel() -> void:
+	panel_closed.emit()
 	hide()
 
 

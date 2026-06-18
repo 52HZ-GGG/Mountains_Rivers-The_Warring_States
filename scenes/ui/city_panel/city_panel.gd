@@ -14,6 +14,7 @@ var _queue_list: VBoxContainer
 var _build_list: VBoxContainer
 var _detail_label: RichTextLabel
 var _selected_building_id: String = ""
+var _refresh_pending: bool = false
 
 signal return_to_map
 signal panel_closed
@@ -64,16 +65,19 @@ func get_resource_bar_slot() -> VBoxContainer:
 # ── UI 骨架 ──────────────────────────────────────
 
 func _build_ui() -> void:
-	# 背景图
-	var bg_tex: Texture2D = SkirmishTileTextures.panel_texture("city")
-	if bg_tex != null:
-		var bg := TextureRect.new()
-		bg.name = "Background"
-		bg.texture = bg_tex
-		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(bg)
+	# 背景：半透明深色面板
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.06, 0.12, 0.92)
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_color = Color(0.6, 0.5, 0.3, 0.6)
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_left = 4
+	style.corner_radius_bottom_right = 4
+	add_theme_stylebox_override("panel", style)
 
 	_main_vbox = VBoxContainer.new()
 	_main_vbox.name = "MainVBox"
@@ -199,6 +203,20 @@ func _refresh_all() -> void:
 	_refresh_queue()
 	_refresh_build_list()
 	_show_default_detail()
+
+
+func _queue_refresh_all() -> void:
+	if _refresh_pending:
+		return
+	_refresh_pending = true
+	call_deferred("_apply_deferred_refresh")
+
+
+func _apply_deferred_refresh() -> void:
+	_refresh_pending = false
+	if not visible:
+		return
+	_refresh_all()
 
 
 func _refresh_info() -> void:
@@ -344,12 +362,15 @@ func _refresh_build_list() -> void:
 		ch.queue_free()
 
 	var all_buildings: Array = DataManager.get_all_buildings()
+	print("[CityPanel] _refresh_build_list: %d buildings, city_id=%s" % [all_buildings.size(), _city_id])
 	for bdata in all_buildings:
 		var bid: String = str(bdata["id"])
 		var bname: String = str(bdata.get("name", bid))
 		var category: String = str(bdata.get("category", ""))
-		var cost_gold: int = int(bdata.get("cost_gold", 0))
-		var cost_wood: int = int(bdata.get("cost_wood", 0))
+		var lv0_arr: Array = bdata.get("levels", [])
+		var lv0: Dictionary = lv0_arr[0] if lv0_arr.size() > 0 else {}
+		var cost_gold: int = int(lv0.get("cost_gold", 0))
+		var cost_wood: int = int(lv0.get("cost_wood", 0))
 
 		var check: Dictionary = CityManager.can_build(_city_id, bid)
 		var allowed: bool = check["allowed"]
@@ -468,7 +489,7 @@ func _on_cancel_build_pressed(queue_index: int) -> void:
 
 func _on_building_completed(_cid: String, _bid: String, _level: int) -> void:
 	if _cid == _city_id:
-		_refresh_all()
+		_queue_refresh_all()
 
 
 func _refresh_resource_bar() -> void:

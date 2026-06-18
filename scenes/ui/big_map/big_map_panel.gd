@@ -165,7 +165,7 @@ func _build_city_lookup() -> void:
 	_city_at_axial.clear()
 	var cities: Array = DataManager.get_all_cities()
 	for c: Dictionary in cities:
-		var axial: Vector2i = Vector2i(int(c["hex_q"]), int(c["hex_r"]))
+		var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(int(c["hex_q"]), int(c["hex_r"]))
 		_city_at_axial[axial] = c
 
 

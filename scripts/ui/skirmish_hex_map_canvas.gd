@@ -65,7 +65,7 @@ func _draw() -> void:
 		if tex != null and bp.size() == uvs.size():
 			draw_polygon(bp, _white_vertex_colors(bp.size()), uvs, tex)
 		else:
-			draw_colored_polygon(bp, SkirmishHexCell.fallback_terrain_color())
+			draw_colored_polygon(bp, cell.get_terrain_fallback_color())
 	for cell2: SkirmishHexCell in list:
 		var tc: Color = cell2.get_overlay_tint_color()
 		if tc.a <= 0.001:

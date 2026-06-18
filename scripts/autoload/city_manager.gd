@@ -59,18 +59,23 @@ const REASON_INVALID_AMOUNT := "INVALID_AMOUNT"
 const REASON_GARRISON_FULL := "GARRISON_FULL"
 const REASON_GARRISON_EMPTY := "GARRISON_EMPTY"
 const REASON_INSUFFICIENT_TROOPS := "INSUFFICIENT_TROOPS"
+const REASON_SPECIAL_RESOURCE_REQUIRED := "SPECIAL_RESOURCE_REQUIRED"
+const REASON_TERRAIN_REQUIRED := "TERRAIN_REQUIRED"
 
 # ============= 私有状态 =============
 
 var _city_states: Dictionary = {}              # city_id (String) → city_state (Dictionary)
 var _states_by_faction: Dictionary = {}        # faction_id (String) → Array of city_state
 var _player_relocation_counts: Dictionary = {} # faction_id (String) → 已迁都次数 (int)
+var _big_map_rows: Array = []                  # big_map_terrain.json rows（rows[r][q] = terrain_id）
+var _big_map_width: int = 0
 
 # ============= 生命周期 =============
 
 func _ready() -> void:
 	_initialize_states()
 	_build_faction_index()
+	_load_big_map_terrain()
 	print("[CityManager] 已初始化 %d 城" % _city_states.size())
 
 
@@ -168,17 +173,20 @@ func get_city_defense(city_id: String) -> int:
 	var cfg: Dictionary = DataManager.get_balance_param("city_levels")
 	var lv_cfg: Dictionary = cfg.get(str(lv), {})
 	var base_def: int = int(lv_cfg.get("city_defense", 10))
-	# 防御建筑加成
+	# 防御建筑加成：从 levels[level-1].effects 读取
 	var building_bonus: float = 0.0
 	for b in city.get("buildings", []):
 		var bid: String = str(b.get("building_id", ""))
 		var bdata: Dictionary = DataManager.get_building(bid)
 		if bdata.is_empty():
 			continue
-		var effects: Dictionary = bdata.get("effects", {})
+		var blevels: Array = bdata.get("levels", [])
 		var level: int = int(b.get("level", 1))
+		if level < 1 or level > blevels.size():
+			continue
+		var effects: Dictionary = blevels[level - 1].get("effects", {})
 		if effects.has("defense_bonus"):
-			building_bonus += float(effects["defense_bonus"]) * level
+			building_bonus += float(effects["defense_bonus"])
 	var base_total: int = int(base_def * (1.0 + building_bonus))
 	# 驻军加成
 	var garrison_count: int = int(city.get("garrison", 0))
@@ -196,16 +204,20 @@ func get_city_attack(city_id: String) -> int:
 	var cfg: Dictionary = DataManager.get_balance_param("city_levels")
 	var lv_cfg: Dictionary = cfg.get(str(lv), {})
 	var base_atk: int = int(lv_cfg.get("attack", 5))
+	# 攻击建筑加成：从 levels[level-1].effects 读取
 	var building_bonus: float = 0.0
 	for b in city.get("buildings", []):
 		var bid: String = str(b.get("building_id", ""))
 		var bdata: Dictionary = DataManager.get_building(bid)
 		if bdata.is_empty():
 			continue
-		var effects: Dictionary = bdata.get("effects", {})
+		var blevels: Array = bdata.get("levels", [])
 		var level: int = int(b.get("level", 1))
+		if level < 1 or level > blevels.size():
+			continue
+		var effects: Dictionary = blevels[level - 1].get("effects", {})
 		if effects.has("attack_bonus"):
-			building_bonus += float(effects["attack_bonus"]) * level
+			building_bonus += float(effects["attack_bonus"])
 	var base_total_atk: int = int(base_atk * (1.0 + building_bonus))
 	# 驻军加成
 	var garrison_count_atk: int = int(city.get("garrison", 0))
@@ -306,6 +318,19 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 		var existing: int = _count_faction_building(faction_id, building_id)
 		if existing >= int(max_per_faction):
 			return {"allowed": false, "reason": REASON_NATIONAL_CAP_REACHED}
+
+	# build_requires 校验（特产/地形）
+	var build_req: Variant = building.get("build_requires")
+	if build_req != null and build_req is Dictionary:
+		var req: Dictionary = build_req as Dictionary
+		if req.has("special_resource"):
+			var city_sr: Variant = city.get("special_resource", null)
+			if city_sr == null or str(city_sr) != str(req["special_resource"]):
+				return {"allowed": false, "reason": REASON_SPECIAL_RESOURCE_REQUIRED}
+		if req.has("terrain"):
+			var required_terrains: Array = req["terrain"] if req["terrain"] is Array else [req["terrain"]]
+			if not _city_has_terrain(city_id, required_terrains):
+				return {"allowed": false, "reason": REASON_TERRAIN_REQUIRED}
 
 	var levels: Array = building.get("levels", [])
 	var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
@@ -968,14 +993,21 @@ func _process_stability(city_id: String, faction_id: String) -> void:
 	var old_stability: int = int(city.get("stability", 50))
 	var delta: float = 0.0
 
-	# 建筑加成
+	# 建筑加成：从 levels[level-1].effects 读取 stability_bonus
 	var stab_cfg: Dictionary = DataManager.get_balance_param("stability")
-	var building_effects: Dictionary = stab_cfg.get("building_effect", {})
 	for b in city.get("buildings", []):
 		var bid: String = str(b.get("building_id", ""))
 		var level: int = int(b.get("level", 1))
-		if building_effects.has(bid):
-			delta += float(building_effects[bid]) * level
+		var bdata: Dictionary = DataManager.get_building(bid)
+		if bdata.is_empty():
+			continue
+		var blevels: Array = bdata.get("levels", [])
+		if level < 1 or level > blevels.size():
+			continue
+		var bld_effects: Dictionary = blevels[level - 1].get("effects", {})
+		var stab_bonus: Variant = bld_effects.get("stability_bonus")
+		if stab_bonus != null and (stab_bonus is int or stab_bonus is float):
+			delta += float(stab_bonus)
 
 	# 驻军加成
 	var garrison_count: int = int(city.get("garrison", 0))
@@ -1054,20 +1086,23 @@ func get_city_production(city_id: String) -> Dictionary:
 		var bdata: Dictionary = DataManager.get_building(bid)
 		if bdata.is_empty():
 			continue
-		var effects: Dictionary = bdata.get("effects", {})
+		var blevels: Array = bdata.get("levels", [])
 		var level: int = int(b.get("level", 1))
+		if level < 1 or level > blevels.size():
+			continue
+		var effects: Dictionary = blevels[level - 1].get("effects", {})
 		for key in effects:
 			var val: Variant = effects[key]
 			if not (val is int or val is float):
 				continue
 			# 百分比加成：food_production_bonus / gold_production_bonus
 			if key == "food_production_bonus":
-				food_bonus += float(val) * level
+				food_bonus += float(val)
 			elif key == "gold_production_bonus":
-				gold_bonus += float(val) * level
+				gold_bonus += float(val)
 			elif prod.has(key):
 				# 固定值加成：wood_production / craftsmen_production / morale_bonus 等
-				prod[key] += val * level
+				prod[key] += val
 	# 应用百分比加成（基础值 × 累加倍率）
 	prod["food"] = int(base_food * (1.0 + food_bonus))
 	prod["gold"] = int(base_gold * (1.0 + gold_bonus))
@@ -1255,3 +1290,48 @@ func _count_new_build_in_queue(city: Dictionary) -> int:
 		if not _city_has_building(city, entry.get("building_id", "")):
 			count += 1
 	return count
+
+
+## 加载 big_map_terrain.json 到缓存。
+func _load_big_map_terrain() -> void:
+	var fa: FileAccess = FileAccess.open("res://data/big_map_terrain.json", FileAccess.READ)
+	if fa == null:
+		push_warning("CityManager: 无法加载 big_map_terrain.json")
+		return
+	var parsed: Variant = JSON.parse_string(fa.get_as_text())
+	if parsed == null or not (parsed is Dictionary):
+		push_warning("CityManager: big_map_terrain.json 解析失败")
+		return
+	var cfg: Dictionary = parsed as Dictionary
+	_big_map_rows = cfg.get("rows", []) as Array
+	_big_map_width = int(cfg.get("map_width", 0))
+
+
+## 检查城市辖区是否有任一 required_terrains 中的地形。
+func _city_has_terrain(city_id: String, required_terrains: Array) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	var cq: int = int(city.get("hex_q", 0))
+	var cr: int = int(city.get("hex_r", 0))
+	var radius: int = int(city.get("jurisdiction_radius", 1))
+	var center: Vector2i = Vector2i(cq, cr)
+	for dq in range(-radius, radius + 1):
+		for dr in range(maxi(-radius, -dq - radius), mini(radius, -dq + radius) + 1):
+			var hex: Vector2i = Vector2i(cq + dq, cr + dr)
+			if HexAxial.hex_distance_hex(center, hex) > radius:
+				continue
+			var terrain_id: String = _get_terrain_at_hex(hex.x, hex.y)
+			if terrain_id in required_terrains:
+				return true
+	return false
+
+
+## 从缓存读取 hex (q, r) 的地形 ID，越界返回 "plains"。
+func _get_terrain_at_hex(q: int, r: int) -> String:
+	if r < 0 or r >= _big_map_rows.size():
+		return "plains"
+	var row: Array = _big_map_rows[r] as Array
+	if q < 0 or q >= row.size():
+		return "plains"
+	return str(row[q])

@@ -1,0 +1,7 @@
+{
+	"schema_version": "1.0",
+	"description": "大地图政治统治范围覆盖层；未覆盖格按城市 jurisdiction_radius 自动推导",
+	"map_width": 100,
+	"map_height": 70,
+	"overrides": []
+}

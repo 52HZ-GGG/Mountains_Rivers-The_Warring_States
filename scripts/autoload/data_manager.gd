@@ -16,9 +16,12 @@ const WONDERS_PATH := "res://data/wonders.json"
 const FACTIONS_PATH := "res://data/factions.json"
 const DIPLOMACY_PATH := "res://data/diplomacy.json"
 const TECH_TREE_PATH := "res://data/tech_tree.json"
+const BIG_MAP_TERRAIN_PATH := "res://data/big_map_terrain.json"
+const BIG_MAP_POLITICAL_CONTROL_PATH := "res://data/big_map_political_control.json"
 const TACTICAL_SKIRMISH_MVP_PATH := "res://data/tactical_skirmish_mvp.json"
 const SCHOOLS_PATH := "res://data/schools.json"
 const SKIRMISH_SCENARIOS_PATH := "res://data/skirmish_scenarios.json"
+const BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 
 var _terrains: Dictionary = {}
 var _units: Dictionary = {}
@@ -30,9 +33,13 @@ var _wonders: Dictionary = {}
 var _factions: Dictionary = {}
 var _diplomacy: Dictionary = {}
 var _tech_tree: Dictionary = {}
+var _big_map_terrain: Dictionary = {}
+var _big_map_political_control: Dictionary = {}
 var _tactical_skirmish_mvp: Dictionary = {}
 var _schools: Dictionary = {}
 var _skirmish_scenarios: Dictionary = {}
+var _big_map_control_grid_cache: Dictionary = {}
+var _big_map_control_cache_ready: bool = false
 
 var _terrain_index: Dictionary = {}
 var _unit_type_index: Dictionary = {}
@@ -63,9 +70,13 @@ func _load_all_data() -> void:
 	_factions = _load_json(FACTIONS_PATH)
 	_diplomacy = _load_json(DIPLOMACY_PATH)
 	_tech_tree = _load_json(TECH_TREE_PATH)
+	_big_map_terrain = _load_json(BIG_MAP_TERRAIN_PATH)
+	_big_map_political_control = _load_json(BIG_MAP_POLITICAL_CONTROL_PATH)
 	_tactical_skirmish_mvp = _load_json(TACTICAL_SKIRMISH_MVP_PATH)
 	_schools = _load_json(SCHOOLS_PATH)
 	_skirmish_scenarios = _load_json(SKIRMISH_SCENARIOS_PATH)
+	_big_map_control_cache_ready = false
+	_big_map_control_grid_cache.clear()
 
 
 func _load_json(path: String) -> Dictionary:
@@ -211,6 +222,52 @@ func get_map_size() -> Vector2i:
 		push_error("DataManager: cities.json 缺少 map_width / map_height 字段")
 		return Vector2i.ZERO
 	return Vector2i(_cities["map_width"], _cities["map_height"])
+
+
+func get_big_map_size() -> Vector2i:
+	if not _big_map_terrain.has("map_width") or not _big_map_terrain.has("map_height"):
+		push_error("DataManager: big_map_terrain.json 缺少 map_width / map_height 字段")
+		return Vector2i.ZERO
+	return Vector2i(int(_big_map_terrain["map_width"]), int(_big_map_terrain["map_height"]))
+
+
+func get_big_map_terrain_config() -> Dictionary:
+	return _big_map_terrain
+
+
+func get_big_map_rows() -> Array:
+	return _big_map_terrain.get("rows", [])
+
+
+func get_big_map_terrain_at_offset(col: int, row: int) -> String:
+	var rows: Array = get_big_map_rows()
+	if row < 0 or row >= rows.size():
+		return ""
+	var row_data: Variant = rows[row]
+	if row_data is not Array:
+		return ""
+	var cells: Array = row_data as Array
+	if col < 0 or col >= cells.size():
+		return ""
+	return str(cells[col])
+
+
+func get_big_map_political_control() -> Dictionary:
+	return _big_map_political_control
+
+
+func get_big_map_control_overrides() -> Array:
+	return _big_map_political_control.get("overrides", [])
+
+
+func get_big_map_control_owner(q: int, r: int) -> String:
+	_ensure_big_map_control_cache()
+	return str(_big_map_control_grid_cache.get(Vector2i(q, r), ""))
+
+
+func get_big_map_control_grid() -> Dictionary:
+	_ensure_big_map_control_cache()
+	return _big_map_control_grid_cache
 
 
 # ============= 事件接口 =============
@@ -482,7 +539,69 @@ func validate_data() -> bool:
 	if not _tactical_skirmish_mvp.is_empty():
 		if not _validate_tactical_skirmish_mvp():
 			valid = false
+	if not _validate_big_map_data():
+		valid = false
 	return valid
+
+
+func _validate_big_map_data() -> bool:
+	var ok: bool = true
+	var map_size: Vector2i = get_big_map_size()
+	if map_size == Vector2i.ZERO:
+		return false
+	var rows: Array = get_big_map_rows()
+	if rows.size() != map_size.y:
+		push_error("DataManager: big_map_terrain rows 行数与 map_height 不符")
+		ok = false
+	for row_index: int in range(rows.size()):
+		var row_data: Variant = rows[row_index]
+		if row_data is not Array or (row_data as Array).size() != map_size.x:
+			push_error("DataManager: big_map_terrain rows[%d] 列数与 map_width 不符" % row_index)
+			ok = false
+			continue
+		for terrain_v: Variant in row_data:
+			var terrain_id: String = str(terrain_v)
+			if get_terrain(terrain_id).is_empty():
+				push_error("DataManager: big_map_terrain 使用了未知地形 %s" % terrain_id)
+				ok = false
+	var political_size: Vector2i = Vector2i(
+		int(_big_map_political_control.get("map_width", -1)),
+		int(_big_map_political_control.get("map_height", -1))
+	)
+	if political_size != map_size:
+		push_error("DataManager: big_map_political_control 尺寸与大地图不一致")
+		ok = false
+	var overrides: Array = get_big_map_control_overrides()
+	for override_index: int in range(overrides.size()):
+		var entry_v: Variant = overrides[override_index]
+		if entry_v is not Dictionary:
+			push_error("DataManager: big_map_political_control overrides[%d] 不是字典" % override_index)
+			ok = false
+			continue
+		var entry: Dictionary = entry_v as Dictionary
+		var q: int = int(entry.get("q", 0))
+		var r: int = int(entry.get("r", 0))
+		if not BigMapPoliticalControl.is_axial_in_big_map_bounds(q, r, map_size):
+			push_error("DataManager: big_map_political_control overrides[%d] 坐标越界" % override_index)
+			ok = false
+		var owner: Variant = entry.get("owner_faction_id", null)
+		if owner != null:
+			var owner_id: String = str(owner)
+			if owner_id != "neutral" and get_faction(owner_id).is_empty():
+				push_error("DataManager: big_map_political_control overrides[%d] 使用了未知势力 %s" % [override_index, owner_id])
+				ok = false
+	return ok
+
+
+func _ensure_big_map_control_cache() -> void:
+	if _big_map_control_cache_ready:
+		return
+	_big_map_control_grid_cache = BigMapPoliticalControl.build_resolved_control_grid(
+		get_all_cities(),
+		get_big_map_control_overrides(),
+		get_big_map_size()
+	)
+	_big_map_control_cache_ready = true
 
 
 func _validate_tactical_skirmish_mvp() -> bool:

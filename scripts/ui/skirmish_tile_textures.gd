@@ -12,7 +12,23 @@ const _TERRAIN_PATHS: Dictionary = {
 	"pass": "res://photos/terrain/tile_pass_01.png",
 	"ford": "res://photos/terrain/tile_ford_01.png",
 	"desert": "res://photos/terrain/tile_desert_01.png",
-	"tundra": "res://photos/terrain/tile_plain_01.png",  # 暂用平原，待美术补充冻土贴图
+	"tundra": "",
+	"deep_ocean": "res://photos/terrain/tile_deepsea_01.png",
+	"shallow_ocean": "res://photos/terrain/tile_shallowsea_01.png",
+}
+
+const _TERRAIN_FALLBACK_COLORS: Dictionary = {
+	"plains": Color(0.60, 0.69, 0.46, 1.0),
+	"forest": Color(0.36, 0.51, 0.29, 1.0),
+	"mountain": Color(0.45, 0.44, 0.46, 1.0),
+	"river": Color(0.28, 0.51, 0.72, 1.0),
+	"marsh": Color(0.42, 0.50, 0.36, 1.0),
+	"pass": Color(0.61, 0.49, 0.31, 1.0),
+	"ford": Color(0.43, 0.62, 0.72, 1.0),
+	"desert": Color(0.76, 0.67, 0.42, 1.0),
+	"tundra": Color(0.74, 0.79, 0.82, 1.0),
+	"deep_ocean": Color(0.13, 0.28, 0.52, 1.0),
+	"shallow_ocean": Color(0.24, 0.48, 0.72, 1.0),
 }
 
 ## 战术演武城格据点：七国首都（美工资源）
@@ -98,10 +114,18 @@ static var _cache: Dictionary = {}
 
 
 static func terrain_texture(terrain_id: String) -> Texture2D:
-	var path: String = str(_TERRAIN_PATHS.get(terrain_id, _TERRAIN_PATHS.get("plains", "")))
+	var path: String = str(_TERRAIN_PATHS.get(terrain_id, ""))
+	if path.is_empty() and not _TERRAIN_PATHS.has(terrain_id):
+		path = str(_TERRAIN_PATHS.get("plains", ""))
 	if path.is_empty():
 		return null
 	return _load_cached(path)
+
+
+static func terrain_fallback_color(terrain_id: String) -> Color:
+	if _TERRAIN_FALLBACK_COLORS.has(terrain_id):
+		return _TERRAIN_FALLBACK_COLORS[terrain_id] as Color
+	return _TERRAIN_FALLBACK_COLORS["plains"] as Color
 
 
 static func capital_texture(faction_id: String) -> Texture2D:
