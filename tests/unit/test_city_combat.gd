@@ -167,6 +167,7 @@ func test_capture_city_when_wall_destroyed() -> void:
 	TacticalSkirmishManager.try_move_unit("mvp_p1", enemy_city)
 	var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(enemy_city)
 	assert_gt(wall_hp, 0, "占领后城墙 HP 应恢复（实际 %d）" % wall_hp)
+	assert_false(TacticalSkirmishManager.is_active(), "占领敌城后应立即结束演武，不能被城墙恢复抵消胜利")
 
 
 func test_capture_restores_30_percent_hp() -> void:

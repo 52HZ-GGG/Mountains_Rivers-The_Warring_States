@@ -13,6 +13,7 @@ signal hex_clicked(q: int, r: int)
 const _OUTLINE_COLOR: Color = Color(0.28, 0.24, 0.20, 0.55)
 const _OUTLINE_WIDTH: float = 1.0
 const _FALLBACK_TERRAIN: Color = Color(0.42, 0.52, 0.36, 1.0)
+const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
 
 
 static func fallback_terrain_color() -> Color:
@@ -30,6 +31,7 @@ var _board_h: int = 1
 var _poly: PackedVector2Array = PackedVector2Array()
 var _uvs: PackedVector2Array = PackedVector2Array()
 var _terrain_tex: Texture2D
+var _terrain_color: Color = _FALLBACK_TERRAIN
 var _tint_color: Color = Color(0, 0, 0, 0)
 
 
@@ -88,6 +90,17 @@ func _hex_uvs(poly: PackedVector2Array) -> PackedVector2Array:
 		var p: Vector2 = poly[i]
 		uvs.append(Vector2(p.x / bw, p.y / bh))
 		i += 1
+	return uvs
+
+
+func _cropped_hex_uvs(poly: PackedVector2Array) -> PackedVector2Array:
+	var uvs: PackedVector2Array = PackedVector2Array()
+	var base_uvs: PackedVector2Array = _hex_uvs(poly)
+	for uv: Vector2 in base_uvs:
+		uvs.append(Vector2(
+			_TERRAIN_UV_CROP.position.x + uv.x * _TERRAIN_UV_CROP.size.x,
+			_TERRAIN_UV_CROP.position.y + uv.y * _TERRAIN_UV_CROP.size.y
+		))
 	return uvs
 
 
@@ -156,11 +169,15 @@ func get_bleed_polygon_local() -> PackedVector2Array:
 
 
 func get_uvs_for_bleed_polygon(draw_poly: PackedVector2Array) -> PackedVector2Array:
-	return _hex_uvs(draw_poly)
+	return _cropped_hex_uvs(draw_poly)
 
 
 func get_terrain_texture_for_map() -> Texture2D:
 	return _terrain_tex
+
+
+func get_terrain_fallback_color() -> Color:
+	return _terrain_color
 
 
 func get_overlay_tint_color() -> Color:
@@ -170,7 +187,14 @@ func get_overlay_tint_color() -> Color:
 func _draw() -> void:
 	if _poly.size() < 3:
 		return
-	## 地形与可走格染色均在 HexMapCanvas 绘制，避免与 Control 叠层错位
+	var fill_poly: PackedVector2Array = _poly_bleed_outward(_poly)
+	var fill_uvs: PackedVector2Array = _cropped_hex_uvs(fill_poly)
+	if _terrain_tex != null and fill_poly.size() == fill_uvs.size():
+		draw_polygon(fill_poly, _white_vertex_colors(fill_poly.size()), fill_uvs, _terrain_tex)
+	else:
+		draw_colored_polygon(fill_poly, _terrain_color)
+	if _tint_color.a > 0.001:
+		draw_colored_polygon(fill_poly, _tint_color)
 	var n: int = _poly.size()
 	var i2: int = 0
 	while i2 < n:
@@ -184,6 +208,15 @@ func _draw() -> void:
 		var b: Vector2 = _poly[(i2 + 1) % n]
 		draw_line(a, b, _OUTLINE_COLOR, _OUTLINE_WIDTH, false)
 		i2 += 1
+
+
+func _white_vertex_colors(n: int) -> PackedColorArray:
+	var colors: PackedColorArray = PackedColorArray()
+	var i: int = 0
+	while i < n:
+		colors.append(Color.WHITE)
+		i += 1
+	return colors
 
 
 func _has_point(point: Vector2) -> bool:
@@ -201,6 +234,15 @@ func _gui_input(event: InputEvent) -> void:
 
 func set_terrain_texture(tex: Texture2D) -> void:
 	_terrain_tex = tex
+	queue_redraw()
+	_queue_parent_hex_map_canvas_redraw()
+
+
+func set_terrain_style(tex: Texture2D, fallback_color: Color) -> void:
+	_terrain_tex = tex
+	_terrain_color = fallback_color
+	queue_redraw()
+	_queue_parent_hex_map_canvas_redraw()
 
 
 func set_tint_color(c: Color) -> void:

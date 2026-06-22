@@ -21,6 +21,7 @@ const BIG_MAP_POLITICAL_CONTROL_PATH := "res://data/big_map_political_control.js
 const TACTICAL_SKIRMISH_MVP_PATH := "res://data/tactical_skirmish_mvp.json"
 const SCHOOLS_PATH := "res://data/schools.json"
 const SKIRMISH_SCENARIOS_PATH := "res://data/skirmish_scenarios.json"
+const MINISTERS_PATH := "res://data/ministers.json"
 const BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 
 var _terrains: Dictionary = {}
@@ -38,6 +39,7 @@ var _big_map_political_control: Dictionary = {}
 var _tactical_skirmish_mvp: Dictionary = {}
 var _schools: Dictionary = {}
 var _skirmish_scenarios: Dictionary = {}
+var _ministers: Dictionary = {}
 var _big_map_control_grid_cache: Dictionary = {}
 var _big_map_control_cache_ready: bool = false
 
@@ -56,6 +58,12 @@ var _skirmish_scenario_index: Dictionary = {}
 func _ready() -> void:
 	_load_all_data()
 	_build_indices()
+	if not SignalBus.city_occupied.is_connected(_on_runtime_city_control_changed):
+		SignalBus.city_occupied.connect(_on_runtime_city_control_changed)
+	if not SignalBus.city_revolted.is_connected(_on_runtime_city_revolted):
+		SignalBus.city_revolted.connect(_on_runtime_city_revolted)
+	if not SignalBus.capital_relocated.is_connected(_on_runtime_capital_relocated):
+		SignalBus.capital_relocated.connect(_on_runtime_capital_relocated)
 	assert(validate_data(), "DataManager: 数据校验失败，启动中止")
 
 
@@ -75,6 +83,7 @@ func _load_all_data() -> void:
 	_tactical_skirmish_mvp = _load_json(TACTICAL_SKIRMISH_MVP_PATH)
 	_schools = _load_json(SCHOOLS_PATH)
 	_skirmish_scenarios = _load_json(SKIRMISH_SCENARIOS_PATH)
+	_ministers = _load_json(MINISTERS_PATH)
 	_big_map_control_cache_ready = false
 	_big_map_control_grid_cache.clear()
 
@@ -256,6 +265,10 @@ func get_big_map_political_control() -> Dictionary:
 	return _big_map_political_control
 
 
+func get_big_map_political_radius_rules() -> Dictionary:
+	return _big_map_political_control.get("derived_radius_rules", {})
+
+
 func get_big_map_control_overrides() -> Array:
 	return _big_map_political_control.get("overrides", [])
 
@@ -374,6 +387,11 @@ func get_all_factions() -> Array:
 	return _factions.get("factions", [])
 
 
+func get_initial_tribute(faction_id: String) -> int:
+	var faction: Dictionary = get_faction(faction_id)
+	return int(faction.get("initial_tribute", 0))
+
+
 func get_initial_relations(faction_a: String, faction_b: String) -> int:
 	var relations: Dictionary = _factions.get("initial_relations", {})
 	if relations.has(faction_a) and relations[faction_a] is Dictionary:
@@ -404,6 +422,30 @@ func get_gift_tiers() -> Array:
 	return _diplomacy.get("gift_tiers", [])
 
 
+func get_tribute_params() -> Dictionary:
+	return _diplomacy.get("tribute", {})
+
+
+func get_enfeoffment_params() -> Dictionary:
+	return _diplomacy.get("enfeoffment", {})
+
+
+func get_hostage_params() -> Dictionary:
+	return _diplomacy.get("hostage", {})
+
+
+func get_intelligence_params() -> Dictionary:
+	return _diplomacy.get("intelligence", {})
+
+
+func get_zhou_faction_params() -> Dictionary:
+	return _diplomacy.get("zhou_faction", {})
+
+
+func get_declare_war_params() -> Dictionary:
+	return _diplomacy.get("declare_war_params", {})
+
+
 func get_action_effects(action: String) -> Dictionary:
 	var effects: Dictionary = _diplomacy.get("action_effects", {})
 	return effects.get(action, {})
@@ -424,6 +466,20 @@ func get_school(school_id: String) -> Dictionary:
 
 func get_all_schools() -> Array:
 	return _schools.get("schools", [])
+
+
+func get_all_school_general_policies() -> Array:
+	return _schools.get("general_policies", [])
+
+
+# ============= 官员接口 =============
+
+func get_minister_pool() -> Dictionary:
+	return _ministers.get("minister_pool", {})
+
+
+func get_minister_skills() -> Dictionary:
+	return _ministers.get("skills", {})
 
 
 # ============= 科技接口 =============
@@ -597,11 +653,29 @@ func _ensure_big_map_control_cache() -> void:
 	if _big_map_control_cache_ready:
 		return
 	_big_map_control_grid_cache = BigMapPoliticalControl.build_resolved_control_grid(
-		get_all_cities(),
+		CityManager.get_all_city_states(),
 		get_big_map_control_overrides(),
-		get_big_map_size()
+		get_big_map_size(),
+		get_big_map_political_radius_rules()
 	)
 	_big_map_control_cache_ready = true
+
+
+func _invalidate_big_map_control_cache() -> void:
+	_big_map_control_cache_ready = false
+	_big_map_control_grid_cache.clear()
+
+
+func _on_runtime_city_control_changed(_city_id: String, _old_faction: String, _new_faction: String) -> void:
+	_invalidate_big_map_control_cache()
+
+
+func _on_runtime_city_revolted(_city_id: String, _old_faction: String) -> void:
+	_invalidate_big_map_control_cache()
+
+
+func _on_runtime_capital_relocated(_faction_id: String, _new_capital_id: String) -> void:
+	_invalidate_big_map_control_cache()
 
 
 func _validate_tactical_skirmish_mvp() -> bool:

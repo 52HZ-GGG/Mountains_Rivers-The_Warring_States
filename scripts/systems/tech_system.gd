@@ -88,7 +88,7 @@ func get_researched_techs() -> Array:
 
 
 func can_research(tech_id: String) -> Dictionary:
-	var result := {"can_research": true, "missing_prereqs": [], "missing_conditions": []}
+	var result := {"can_research": true, "missing_prereqs": [], "missing_conditions": [], "missing_resources": {}}
 	var tech: Dictionary = DataManager.get_tech(tech_id)
 	if tech.is_empty():
 		result.can_research = false
@@ -105,6 +105,11 @@ func can_research(tech_id: String) -> Dictionary:
 	if not _check_special_conditions(tech_id):
 		result.missing_conditions = tech.get("special_conditions", [])
 		result.can_research = false
+	if bool(DataManager.get_balance_param("tech.cost_resources_enabled")):
+		var missing_resources: Dictionary = _get_missing_cost_resources(tech)
+		if not missing_resources.is_empty():
+			result.missing_resources = missing_resources
+			result.can_research = false
 	return result
 
 
@@ -115,8 +120,12 @@ func start_research(tech_id: String) -> Dictionary:
 		return {"success": false, "reason": "已有科技正在研究: %s" % _researching_tech}
 	var check := can_research(tech_id)
 	if not check.can_research:
+		if not (check.missing_resources as Dictionary).is_empty():
+			return {"success": false, "reason": "研究资源不足", "missing_resources": check.missing_resources}
 		return {"success": false, "reason": "前置条件不满足"}
 	var tech: Dictionary = DataManager.get_tech(tech_id)
+	if bool(DataManager.get_balance_param("tech.cost_resources_enabled")):
+		_consume_cost_resources(tech)
 	var cost_turns: int = DataManager.get_balance_param("tech.research_speed_per_turn")
 	if cost_turns == null:
 		cost_turns = 1
@@ -232,29 +241,64 @@ func _check_special_conditions(tech_id: String) -> bool:
 			"fame":
 				# 预留：历史名人系统
 				pass
+	if tech.has("requires_wonder"):
+		var wonder_id: String = str(tech.get("requires_wonder", ""))
+		if wonder_id != "" and not WonderManager.has_wonder(GameManager.get_player_faction(), wonder_id):
+			return false
 	return true
 
 
+func _get_missing_cost_resources(tech: Dictionary) -> Dictionary:
+	var missing: Dictionary = {}
+	var cost_resources: Dictionary = tech.get("cost_resources", {})
+	for resource in cost_resources:
+		var required: int = int(cost_resources.get(resource, 0))
+		if required <= 0:
+			continue
+		var available: int = GameManager.get_faction_resource(GameManager.get_player_faction(), str(resource))
+		if available < required:
+			missing[resource] = required - available
+	return missing
+
+
+func _consume_cost_resources(tech: Dictionary) -> void:
+	var cost_resources: Dictionary = tech.get("cost_resources", {})
+	var faction_id: String = GameManager.get_player_faction()
+	for resource in cost_resources:
+		var required: int = int(cost_resources.get(resource, 0))
+		if required <= 0:
+			continue
+		GameManager.apply_faction_resource_delta(faction_id, str(resource), -required)
+
+
 func _is_city_controlled(city_id: String) -> bool:
-	# 暂时简化：检查城市是否在玩家城市列表中
-	# 后续对接CityManager
-	var player_cities: Array = DataManager.get_faction_cities(GameManager._player_faction)
-	for c in player_cities:
-		if c["id"] == city_id:
-			return true
-	return false
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	if city.is_empty():
+		return false
+	return str(city.get("current_faction_id", "")) == GameManager.get_player_faction()
 
 
 func _has_building(building_id: String) -> bool:
-	# 暂时简化：预留接口，后续对接BuildingManager
-	push_warning("TechSystem: _has_building 尚未对接BuildingManager (%s)" % building_id)
+	for city in CityManager.get_faction_city_states(GameManager.get_player_faction()):
+		for building in city.get("buildings", []):
+			if str((building as Dictionary).get("building_id", "")) == building_id:
+				return true
 	return false
 
 
-func _control_region(_region: String, _min_cities: int) -> bool:
-	# 暂时简化：预留接口，后续对接CityManager
-	push_warning("TechSystem: _control_region 尚未对接CityManager")
-	return false
+func _control_region(region: String, min_cities: int) -> bool:
+	if min_cities <= 0:
+		return true
+	var count: int = 0
+	for city in CityManager.get_faction_city_states(GameManager.get_player_faction()):
+		if region == "northern_border":
+			var q: int = int(city.get("hex_q", 0))
+			var r: int = int(city.get("hex_r", 0))
+			if q >= 55 or r <= 15:
+				count += 1
+		elif str(city.get("region", "")) == region:
+			count += 1
+	return count >= min_cities
 
 
 func _apply_tech_effects(tech_id: String) -> void:

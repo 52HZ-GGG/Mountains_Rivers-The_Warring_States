@@ -1,0 +1,105 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/demo/demo_objective_panel.gd" id="1"]
+
+[node name="DemoObjectivePanel" type="PanelContainer"]
+visible = false
+custom_minimum_size = Vector2(380, 328)
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 404.0
+offset_bottom = 352.0
+mouse_filter = 0
+script = ExtResource("1")
+
+[node name="Margin" type="MarginContainer" parent="."]
+custom_minimum_size = Vector2(356, 304)
+layout_mode = 0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 368.0
+offset_bottom = 316.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margin/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.87, 0.66, 1)
+theme_override_font_sizes/font_size = 22
+text = "Demo 目标"
+
+[node name="CollapseButton" type="Button" parent="Margin/VBox/Header"]
+layout_mode = 2
+text = "收起"
+
+[node name="CollapsedHint" type="Label" parent="Margin/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.87, 0.66, 1)
+theme_override_font_sizes/font_size = 15
+text = "目标：攻取洛邑。点击“展开”查看步骤。"
+
+[node name="Objective" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "攻取洛邑"
+
+[node name="Guidance" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.86, 0.72, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+text = "演武胜利条件：摧毁敌方城墙后，占领敌方城格。"
+
+[node name="CurrentStep" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.84, 1)
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 2
+text = "当前步骤："
+
+[node name="Separator" type="HSeparator" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="Steps" type="VBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PrepareQin" type="Label" parent="Margin/VBox/Steps"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "[未完成] 1. 点击“出征洛邑”进入演武"
+
+[node name="WinSkirmish" type="Label" parent="Margin/VBox/Steps"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "[未完成] 2. 摧毁敌城城墙并占领敌方城格"
+
+[node name="CaptureLuoyi" type="Label" parent="Margin/VBox/Steps"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "[未完成] 3. 演武胜利后洛邑归秦"
+
+[node name="Completion" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.87, 0.66, 1)
+theme_override_font_sizes/font_size = 16
+text = "状态：进行中"
+
+[node name="SortieButton" type="Button" parent="Margin/VBox"]
+layout_mode = 2
+text = "出征洛邑"
+
+[node name="CheatAttackButton" type="Button" parent="Margin/VBox"]
+layout_mode = 2
+text = "测试作弊：我方伤害 ×20"

@@ -4,18 +4,18 @@ class_name BigMapPoliticalControl
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 
 
-static func build_resolved_control_grid(cities: Array, overrides: Array, map_size: Vector2i) -> Dictionary:
+static func build_resolved_control_grid(cities: Array, overrides: Array, map_size: Vector2i, rules: Dictionary = {}) -> Dictionary:
 	var resolved: Dictionary = {}
 	var override_map: Dictionary = _build_override_map(overrides)
 	for row: int in range(map_size.y):
 		for col: int in range(map_size.x):
 			var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(col, row)
-			var owner: Variant = resolve_owner_for_axial(axial.x, axial.y, cities, override_map)
+			var owner: Variant = resolve_owner_for_axial(axial.x, axial.y, cities, override_map, rules)
 			resolved[axial] = owner if owner != null else ""
 	return resolved
 
 
-static func resolve_owner_for_axial(q: int, r: int, cities: Array, override_map: Dictionary) -> Variant:
+static func resolve_owner_for_axial(q: int, r: int, cities: Array, override_map: Dictionary, rules: Dictionary = {}) -> Variant:
 	var cell: Vector2i = Vector2i(q, r)
 	if override_map.has(cell):
 		return override_map[cell]
@@ -25,7 +25,7 @@ static func resolve_owner_for_axial(q: int, r: int, cities: Array, override_map:
 		if city_v is not Dictionary:
 			continue
 		var city: Dictionary = city_v as Dictionary
-		var radius: int = maxi(0, int(city.get("jurisdiction_radius", 0)))
+		var radius: int = effective_jurisdiction_radius(city, rules)
 		var city_offset: Vector2i = Vector2i(int(city.get("hex_q", 0)), int(city.get("hex_r", 0)))
 		var city_axial: Vector2i = _HexAxial.offset_odd_r_to_axial(city_offset.x, city_offset.y)
 		var city_q: int = city_axial.x
@@ -38,7 +38,24 @@ static func resolve_owner_for_axial(q: int, r: int, cities: Array, override_map:
 			best_distance = distance
 	if best_city.is_empty():
 		return null
-	return str(best_city.get("faction_id", ""))
+	return str(best_city.get("current_faction_id", best_city.get("faction_id", "")))
+
+
+static func effective_jurisdiction_radius(city: Dictionary, rules: Dictionary = {}) -> int:
+	var authored_radius: int = maxi(0, int(city.get("jurisdiction_radius", 0)))
+	var owner_id: String = str(city.get("current_faction_id", city.get("faction_id", "")))
+	if owner_id == "neutral":
+		return maxi(authored_radius, int(rules.get("neutral_radius", 2)))
+
+	var level: int = maxi(1, int(city.get("city_level", 1)))
+	var level_radii: Dictionary = rules.get("level_radii", {}) as Dictionary
+	var inferred_radius: int = int(level_radii.get(str(level), level + 3))
+	if bool(city.get("is_capital", false)):
+		inferred_radius += int(rules.get("capital_bonus_radius", 2))
+	var development: int = int(city.get("development", 0))
+	if development >= int(rules.get("development_bonus_threshold", 50)):
+		inferred_radius += int(rules.get("development_bonus_radius", 1))
+	return maxi(authored_radius, inferred_radius)
 
 
 static func is_axial_in_big_map_bounds(q: int, r: int, map_size: Vector2i) -> bool:

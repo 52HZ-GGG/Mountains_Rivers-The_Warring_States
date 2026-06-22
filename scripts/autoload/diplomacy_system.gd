@@ -28,6 +28,23 @@ var _trade_routes: Dictionary = {}
 ## 通行权: key = "a_b", value = {max_units, turns_left, used_units}
 var _military_access: Dictionary = {}
 
+## 朝贡度: faction_id -> int
+var _tribute: Dictionary = {}
+
+## 质子状态: sender -> {receiver, minister_id, turns_left, quality}
+var _hostages: Dictionary = {}
+
+## 被俘大夫: owner_faction -> [minister_id]
+var _prisoners: Dictionary = {}
+
+## 情报力: observer -> {target -> {points, suppress_turns}}
+var _intelligence: Dictionary = {}
+
+## 纵横家能力/联盟预留状态
+var _strategist_abilities: Dictionary = {}
+var _hezong_alliance: Dictionary = {}
+var _lianheng_alliance: Dictionary = {}
+
 ## 好感度衰减计数器
 var _decay_counter: int = 0
 
@@ -48,6 +65,8 @@ func _on_turn_started(turn_number: int, _faction_id: String) -> void:
 func _on_turn_ended(turn_number: int, _faction_id: String) -> void:
 	_settle_vassal_tribute()
 	_settle_trade_routes()
+	_tick_hostages()
+	_tick_intelligence()
 
 
 # ============= 初始化 =============
@@ -61,12 +80,23 @@ func initialize(active_factions: Array[String]) -> void:
 	_vassals.clear()
 	_trade_routes.clear()
 	_military_access.clear()
+	_tribute.clear()
+	_hostages.clear()
+	_prisoners.clear()
+	_intelligence.clear()
+	_strategist_abilities.clear()
+	_hezong_alliance.clear()
+	_lianheng_alliance.clear()
 	_decay_counter = 0
 
 	# 初始化好感度（基于 initial_relations + 接壤修正）
 	for a in active_factions:
 		_opinions[a] = {}
 		_reputation[a] = DataManager.get_balance_param("diplomacy.initial_reputation") as int
+		_tribute[a] = DataManager.get_initial_tribute(a)
+		_intelligence[a] = {}
+		if not _prisoners.has(a):
+			_prisoners[a] = []
 		for b in active_factions:
 			if a == b:
 				continue
@@ -75,6 +105,7 @@ func initialize(active_factions: Array[String]) -> void:
 			if are_bordering(a, b):
 				base_opinion -= 10
 			_opinions[a][b] = base_opinion
+			(_intelligence[a] as Dictionary)[b] = {"points": maxf(float(base_opinion), 0.0), "suppress_turns": 0}
 
 	# 应用建筑外交效果
 	_apply_building_diplomacy_effects()
@@ -176,8 +207,192 @@ func get_power_score(faction_id: String) -> float:
 		+ culture * params.get("culture_weight", 1)
 
 
+func get_tribute(faction_id: String) -> int:
+	return int(_tribute.get(faction_id, DataManager.get_initial_tribute(faction_id)))
+
+
+func set_tribute(faction_id: String, value: int) -> void:
+	if faction_id == "":
+		return
+	_tribute[faction_id] = clampi(value, 0, 100)
+
+
+func get_hostage(faction_id: String) -> Dictionary:
+	return _hostages.get(faction_id, {}).duplicate(true) if _hostages.has(faction_id) else {}
+
+
+func has_hostage(faction_id: String) -> bool:
+	return _hostages.has(faction_id)
+
+
+func is_hostage_of(faction_id: String) -> bool:
+	for sender in _hostages:
+		var hostage: Dictionary = _hostages[sender]
+		if str(hostage.get("receiver", "")) == faction_id:
+			return true
+	return false
+
+
+func get_prisoners(faction_id: String) -> Array[String]:
+	var result: Array[String] = []
+	for minister_id in _prisoners.get(faction_id, []):
+		result.append(str(minister_id))
+	return result
+
+
+func get_intelligence_points(observer: String, target: String) -> int:
+	if observer == "" or target == "":
+		return 0
+	if DataManager.get_faction(observer).get("is_passive", false) or DataManager.get_faction(target).get("is_passive", false):
+		return 100
+	if are_at_war(observer, target):
+		var war_state: Dictionary = _get_intelligence_state(observer, target)
+		if not war_state.is_empty() and int(war_state.get("suppress_turns", 0)) > 0:
+			return int(war_state.get("points", 0))
+		return 0
+	var value: int = 0
+	var obs_intel: Dictionary = _intelligence.get(observer, {})
+	var state: Dictionary = obs_intel.get(target, {})
+	value += get_opinion(observer, target)
+	value += int(state.get("points", 0))
+	if have_trade_route(observer, target):
+		value += int(DataManager.get_diplomacy_param("intelligence.modifiers.trade_route"))
+	if has_hostage(observer):
+		var hostage: Dictionary = _hostages.get(observer, {})
+		if str(hostage.get("receiver", "")) == target:
+			value += int(DataManager.get_diplomacy_param("intelligence.modifiers.hostage_held"))
+	if DataManager.get_faction(observer).get("is_passive", false) or DataManager.get_faction(target).get("is_passive", false):
+		return 100
+	return maxi(0, value)
+
+
+func get_intelligence_level(observer: String, target: String) -> int:
+	var points: int = get_intelligence_points(observer, target)
+	var thresholds: Dictionary = DataManager.get_diplomacy_param("intelligence.level_thresholds")
+	if points >= int(thresholds.get("complete_min", 80)):
+		return 4
+	if points >= int(thresholds.get("detailed_min", 60)):
+		return 3
+	if points >= int(thresholds.get("basic_min", 40)):
+		return 2
+	if points >= int(thresholds.get("blackout_max", 20)):
+		return 1
+	return 0
+
+
+func get_visible_enemy_cities(observer: String, target: String) -> Array[String]:
+	var level: int = get_intelligence_level(observer, target)
+	var visible: Array[String] = []
+	if level <= 0:
+		return visible
+	for city in DataManager.get_faction_cities(target):
+		visible.append(str(city.get("id", "")))
+	return visible
+
+
+func get_intel_detail(observer: String, target: String, info_type: String) -> Variant:
+	var level: int = get_intelligence_level(observer, target)
+	match info_type:
+		"city_count":
+			return DataManager.get_faction_cities(target).size() if level >= 1 else null
+		"reputation":
+			return get_reputation(target) if level >= 1 else null
+		"troops":
+			return GameManager.get_faction_resource(target, "troops") if level >= 2 else null
+		"resources":
+			return GameManager.get_faction_resources(target) if level >= 3 else null
+		"cities":
+			return get_visible_enemy_cities(observer, target) if level >= 1 else []
+	return null
+
+
+func is_zhou_faction(faction_id: String) -> bool:
+	return faction_id == "zhou"
+
+
+func is_zhou_destroyed() -> bool:
+	return CityManager.is_faction_eliminated("zhou")
+
+
+func get_declare_war_type(attacker: String, defender: String) -> String:
+	if get_intelligence_points(defender, attacker) >= 60:
+		return "declare"
+	return "surprise"
+
+
 func get_all_opinions_for(faction_id: String) -> Dictionary:
 	return _opinions.get(faction_id, {})
+
+
+func get_save_data() -> Dictionary:
+	return {
+		"opinions": _opinions.duplicate(true),
+		"reputation": _reputation.duplicate(true),
+		"treaties": _treaties.duplicate(true),
+		"at_war": _at_war.duplicate(true),
+		"vassals": _vassals.duplicate(true),
+		"trade_routes": _trade_routes.duplicate(true),
+		"military_access": _military_access.duplicate(true),
+		"tribute": _tribute.duplicate(true),
+		"hostages": _hostages.duplicate(true),
+		"prisoners": _prisoners.duplicate(true),
+		"intelligence": _intelligence.duplicate(true),
+		"strategist_abilities": _strategist_abilities.duplicate(true),
+		"hezong_alliance": _hezong_alliance.duplicate(true),
+		"lianheng_alliance": _lianheng_alliance.duplicate(true),
+		"event_chain_flags": _event_chain_flags.duplicate(true),
+		"decay_counter": _decay_counter,
+	}
+
+
+func load_save_data(data: Dictionary) -> void:
+	_opinions = (data.get("opinions", {}) as Dictionary).duplicate(true)
+	_reputation = (data.get("reputation", {}) as Dictionary).duplicate(true)
+	_treaties = (data.get("treaties", {}) as Dictionary).duplicate(true)
+	_at_war = (data.get("at_war", {}) as Dictionary).duplicate(true)
+	_vassals = (data.get("vassals", {}) as Dictionary).duplicate(true)
+	_trade_routes = (data.get("trade_routes", {}) as Dictionary).duplicate(true)
+	_military_access = (data.get("military_access", {}) as Dictionary).duplicate(true)
+	_tribute = (data.get("tribute", {}) as Dictionary).duplicate(true)
+	_hostages = (data.get("hostages", {}) as Dictionary).duplicate(true)
+	_prisoners = (data.get("prisoners", {}) as Dictionary).duplicate(true)
+	_intelligence = (data.get("intelligence", {}) as Dictionary).duplicate(true)
+	_strategist_abilities = (data.get("strategist_abilities", {}) as Dictionary).duplicate(true)
+	_hezong_alliance = (data.get("hezong_alliance", {}) as Dictionary).duplicate(true)
+	_lianheng_alliance = (data.get("lianheng_alliance", {}) as Dictionary).duplicate(true)
+	_event_chain_flags = (data.get("event_chain_flags", {}) as Dictionary).duplicate(true)
+	_decay_counter = int(data.get("decay_counter", 0))
+
+
+func add_prisoner(owner_faction: String, minister_id: String) -> void:
+	if owner_faction == "" or minister_id == "":
+		return
+	if not _prisoners.has(owner_faction):
+		_prisoners[owner_faction] = []
+	var prisoners: Array = _prisoners[owner_faction]
+	if not prisoners.has(minister_id):
+		prisoners.append(minister_id)
+
+
+func set_intelligence_points(observer: String, target: String, points: int, suppress_turns: int = 0) -> void:
+	if observer == "" or target == "":
+		return
+	if not _intelligence.has(observer):
+		_intelligence[observer] = {}
+	(_intelligence[observer] as Dictionary)[target] = {
+		"points": maxi(0, points),
+		"suppress_turns": maxi(0, suppress_turns),
+	}
+
+
+func add_intelligence_points(observer: String, target: String, points: int, suppress_turns: int = 0) -> void:
+	if observer == "" or target == "" or points == 0:
+		return
+	var state: Dictionary = _get_intelligence_state(observer, target)
+	var base_points: int = int(state.get("points", 0))
+	var next_points: int = maxi(0, base_points + points)
+	var next_suppress: int = maxi(int(state.get("suppress_turns", 0)), suppress_turns)
+	set_intelligence_points(observer, target, next_points, next_suppress)
 
 
 # ============= 公共操作接口（供事件系统调用） =============
@@ -187,6 +402,13 @@ var _event_chain_flags: Dictionary = {}
 
 func get_all_faction_ids() -> Array:
 	return _opinions.keys()
+
+
+func _get_intelligence_state(observer: String, target: String) -> Dictionary:
+	if not _intelligence.has(observer):
+		return {}
+	var obs_intel: Dictionary = _intelligence.get(observer, {}) as Dictionary
+	return obs_intel.get(target, {}) as Dictionary
 
 
 ## 公共好感度修改（供事件系统调用）
@@ -247,6 +469,7 @@ func declare_war(attacker: String, defender: String) -> Dictionary:
 
 	# 执行宣战
 	_at_war[key] = {"start_turn": GameManager.get_current_turn(), "cooldown_until": 0}
+	_set_intelligence_war_state(attacker, defender)
 
 	# 好感度变化
 	var effects: Dictionary = DataManager.get_action_effects("declare_war")
@@ -307,6 +530,7 @@ func accept_ceasefire(faction_a: String, faction_b: String, terms: Dictionary) -
 	var reverse_key := _relation_key(faction_b, faction_a)
 	if _at_war.has(reverse_key):
 		_at_war.erase(reverse_key)
+	_set_intelligence_war_recovery(faction_a, faction_b)
 
 	# 好感度恢复
 	var effects: Dictionary = DataManager.get_action_effects("ceasefire")
@@ -458,6 +682,164 @@ func request_annex_neutral(requester: String, city_id: String) -> Dictionary:
 	SignalBus.vassal_established.emit(city_id, requester)
 	SignalBus.diplomacy_action_performed.emit("annex_neutral", requester, city_id)
 	return {"success": true}
+
+
+func request_vassalage(requester: String, target: String) -> Dictionary:
+	if requester == "" or target == "" or requester == target:
+		return {"success": false, "reason": "invalid_target"}
+	if is_vassal(requester):
+		return {"success": false, "reason": "already_vassal"}
+	if are_at_war(requester, target):
+		return {"success": false, "reason": "at_war"}
+	var opinion: int = get_opinion(requester, target)
+	var reputation_gap: int = get_reputation(target) - get_reputation(requester)
+	var power_ratio: float = get_power_score(target) / maxf(get_power_score(requester), 1.0)
+	var req: Dictionary = DataManager.get_diplomacy_param("vassal")
+	if opinion < int(req.get("request_min_opinion", 50)):
+		return {"success": false, "reason": "opinion_too_low"}
+	if reputation_gap < int(req.get("request_reputation_gap", 20)):
+		return {"success": false, "reason": "reputation_gap_too_low"}
+	if power_ratio < float(req.get("request_power_ratio", 2.5)):
+		return {"success": false, "reason": "power_ratio_too_low"}
+	_establish_vassal(requester, target)
+	_change_opinion(requester, target, 10)
+	_change_reputation(target, 5)
+	return {"success": true}
+
+
+func send_tribute(sender: String, tier: String) -> Dictionary:
+	if sender == "" or is_zhou_destroyed():
+		return {"success": false, "reason": "tribute_locked"}
+	var tribute_cfg: Dictionary = DataManager.get_tribute_params()
+	if not tribute_cfg.has(tier):
+		return {"success": false, "reason": "invalid_tier"}
+	var tier_cfg: Dictionary = tribute_cfg.get(tier, {})
+	var gold_cost: int = int(tier_cfg.get("cost_gold", 0))
+	var food_cost: int = int(tier_cfg.get("cost_food", 0))
+	if GameManager.get_faction_resource(sender, "gold") < gold_cost or GameManager.get_faction_resource(sender, "food") < food_cost:
+		return {"success": false, "reason": "not_enough_resources"}
+	GameManager.apply_faction_resource_delta(sender, "gold", -gold_cost)
+	GameManager.apply_faction_resource_delta(sender, "food", -food_cost)
+	var old_tribute: int = get_tribute(sender)
+	var tribute_delta: int = int(tier_cfg.get("tribute_change", 0))
+	_tribute[sender] = clampi(old_tribute + tribute_delta, 0, 100)
+	var effects: Dictionary = DataManager.get_action_effects("tribute")
+	_change_reputation(sender, int(tier_cfg.get("reputation_change", int(effects.get("reputation_change", 0)))))
+	_change_opinion(sender, "zhou", int(effects.get("opinion_change_target", 10)))
+	SignalBus.diplomacy_action_performed.emit("tribute", sender, "zhou")
+	return {"success": true, "tribute": get_tribute(sender)}
+
+
+func request_enfeoffment(faction_id: String, type: String) -> Dictionary:
+	if faction_id == "" or is_zhou_destroyed():
+		return {"success": false, "reason": "tribute_locked"}
+	var params: Dictionary = DataManager.get_enfeoffment_params()
+	if not params.has(type):
+		return {"success": false, "reason": "invalid_type"}
+	var type_cfg: Dictionary = params.get(type, {})
+	if get_tribute(faction_id) < int(type_cfg.get("tribute_threshold", 0)):
+		return {"success": false, "reason": "tribute_too_low"}
+	var rep_boost: int = int(type_cfg.get("reputation_boost", 0))
+	_change_reputation(faction_id, rep_boost)
+	_change_opinion(faction_id, "zhou", int(type_cfg.get("opinion_boost_zhou", 0)))
+	SignalBus.diplomacy_action_performed.emit("enfeoffment", faction_id, type)
+	return {"success": true}
+
+
+func send_hostage(sender: String, receiver: String, minister_id: String) -> Dictionary:
+	if sender == "" or receiver == "" or minister_id == "":
+		return {"success": false, "reason": "invalid_args"}
+	var hostage_cfg: Dictionary = DataManager.get_hostage_params()
+	if has_hostage(sender):
+		return {"success": false, "reason": "already_has_hostage"}
+	if is_hostage_of(receiver):
+		return {"success": false, "reason": "receiver_already_has_hostage"}
+	if get_opinion(sender, receiver) < int(hostage_cfg.get("min_opinion_to_send", 20)):
+		return {"success": false, "reason": "opinion_too_low"}
+	var minister: Dictionary = MinisterManager.get_minister(minister_id)
+	if minister.is_empty():
+		return {"success": false, "reason": "invalid_minister"}
+	if str(minister.get("faction_id", "")) != sender:
+		return {"success": false, "reason": "wrong_owner"}
+	if str(minister.get("status", "")) != "idle":
+		return {"success": false, "reason": "minister_busy"}
+	_hostages[sender] = {
+		"receiver": receiver,
+		"minister_id": minister_id,
+		"turns_left": int(DataManager.get_balance_param("minister.fate.diplomat_lifespan_turns")),
+		"quality": str(minister.get("quality", "common")),
+	}
+	_change_opinion(sender, receiver, int(DataManager.get_action_effects("send_hostage").get("opinion_change_target", int(hostage_cfg.get("opinion_boost_on_send", 20)))))
+	MinisterManager.send_minister_hostage(minister_id, receiver)
+	SignalBus.diplomacy_action_performed.emit("send_hostage", sender, receiver)
+	return {"success": true}
+
+
+func recall_hostage(faction_id: String) -> Dictionary:
+	if not has_hostage(faction_id):
+		return {"success": false, "reason": "no_hostage"}
+	var hostage: Dictionary = _hostages.get(faction_id, {})
+	var receiver: String = str(hostage.get("receiver", ""))
+	var hostage_cfg: Dictionary = DataManager.get_hostage_params()
+	_hostages.erase(faction_id)
+	_change_opinion(faction_id, receiver, int(DataManager.get_action_effects("recall_hostage").get("opinion_change_target", int(hostage_cfg.get("opinion_penalty_on_recall", -15)))))
+	_change_reputation(faction_id, int(DataManager.get_action_effects("recall_hostage").get("reputation_change", int(hostage_cfg.get("reputation_penalty_on_recall", -5)))))
+	SignalBus.diplomacy_action_performed.emit("recall_hostage", faction_id, receiver)
+	return {"success": true}
+
+
+func return_hostage(returner: String, owner: String) -> Dictionary:
+	if returner == "" or owner == "":
+		return {"success": false, "reason": "invalid_args"}
+	var hostage_id: String = ""
+	for sender in _hostages:
+		var hostage: Dictionary = _hostages[sender]
+		if str(hostage.get("receiver", "")) == returner and sender == owner:
+			hostage_id = sender
+			break
+	if hostage_id == "":
+		return {"success": false, "reason": "no_hostage"}
+	var hostage_data: Dictionary = _hostages[hostage_id]
+	_hostages.erase(hostage_id)
+	_change_opinion(returner, owner, int(DataManager.get_action_effects("release_hostage").get("opinion_change_target", 10)))
+	_change_reputation(returner, int(DataManager.get_action_effects("release_hostage").get("reputation_change", 5)))
+	SignalBus.diplomacy_action_performed.emit("return_hostage", returner, owner)
+	return {"success": true, "hostage": hostage_data}
+
+
+func release_prisoners(releaser: String, target: String) -> Dictionary:
+	if releaser == "" or target == "":
+		return {"success": false, "reason": "invalid_args"}
+	var prisoners: Array = _prisoners.get(target, [])
+	if prisoners.is_empty():
+		return {"success": false, "reason": "no_prisoners"}
+	_prisoners[target] = []
+	var host_cfg: Dictionary = DataManager.get_hostage_params()
+	_change_opinion(releaser, target, int(DataManager.get_action_effects("release_hostage").get("opinion_change_target", int(host_cfg.get("opinion_boost_on_return", 10)))))
+	_change_reputation(releaser, int(DataManager.get_action_effects("release_hostage").get("reputation_change", 5)))
+	SignalBus.diplomacy_action_performed.emit("release_prisoners", releaser, target)
+	return {"success": true, "prisoners": prisoners}
+
+
+func _tick_hostages() -> void:
+	var expired: Array[String] = []
+	for sender in _hostages:
+		var hostage: Dictionary = _hostages[sender]
+		var turns_left: int = int(hostage.get("turns_left", 0))
+		if turns_left > 0:
+			hostage["turns_left"] = turns_left - 1
+			if turns_left - 1 <= 0:
+				expired.append(sender)
+	for sender in expired:
+		var hostage: Dictionary = _hostages[sender]
+		var receiver: String = str(hostage.get("receiver", ""))
+		var minister_id: String = str(hostage.get("minister_id", ""))
+		_hostages.erase(sender)
+		if minister_id != "":
+			MinisterManager.release_minister_hostage(minister_id)
+		if receiver != "":
+			_change_opinion(sender, receiver, int(DataManager.get_action_effects("return_hostage").get("opinion_change_target", 10)))
+			_change_reputation(sender, int(DataManager.get_action_effects("return_hostage").get("reputation_change", 5)))
 
 
 func request_gate_open(requester: String, target: String) -> Dictionary:
@@ -634,6 +1016,21 @@ func _update_war_cooldowns() -> void:
 		_at_war.erase(key)
 
 
+func _tick_intelligence() -> void:
+	var recover_turns: int = int(DataManager.get_diplomacy_param("intelligence.surprise_war_penalty_duration"))
+	for observer in _intelligence:
+		for target in (_intelligence[observer] as Dictionary):
+			var state: Dictionary = (_intelligence[observer] as Dictionary)[target] as Dictionary
+			var suppress_turns: int = int(state.get("suppress_turns", 0))
+			if suppress_turns > 0:
+				state["suppress_turns"] = suppress_turns - 1
+				if int(state.get("suppress_turns", 0)) <= 0:
+					if recover_turns > 0:
+						state["points"] = int(state.get("war_restore_points", state.get("points", 0)))
+					state.erase("war_restore_points")
+				(_intelligence[observer] as Dictionary)[target] = state
+
+
 func _settle_vassal_tribute() -> void:
 	var rate: float = DataManager.get_diplomacy_param("vassal.tribute_rate")
 	for vid in _vassals:
@@ -680,6 +1077,38 @@ func _apply_building_diplomacy_effects() -> void:
 			# 长城: diplomacy_opinion_neighbor
 			# 这些效果在阶段2暂不逐城市追踪，留待阶段3完善
 			pass
+
+
+func _set_intelligence_war_state(attacker: String, defender: String) -> void:
+	var attacker_state: Dictionary = _get_intelligence_state(attacker, defender)
+	var defender_state: Dictionary = _get_intelligence_state(defender, attacker)
+	_set_intelligence_state(attacker, defender, 0, 0, int(attacker_state.get("points", 0)))
+	_set_intelligence_state(defender, attacker, 0, 0, int(defender_state.get("points", 0)))
+
+
+func _set_intelligence_war_recovery(faction_a: String, faction_b: String) -> void:
+	var penalty_points: int = int(DataManager.get_diplomacy_param("intelligence.surprise_war_penalty_points"))
+	var penalty_turns: int = int(DataManager.get_diplomacy_param("intelligence.surprise_war_penalty_duration"))
+	var a_restore: int = int(_get_intelligence_state(faction_a, faction_b).get("war_restore_points", 0))
+	var b_restore: int = int(_get_intelligence_state(faction_b, faction_a).get("war_restore_points", 0))
+	if a_restore <= 0:
+		a_restore = int(_get_intelligence_state(faction_a, faction_b).get("points", 0))
+	if b_restore <= 0:
+		b_restore = int(_get_intelligence_state(faction_b, faction_a).get("points", 0))
+	_set_intelligence_state(faction_a, faction_b, maxi(0, a_restore + penalty_points), penalty_turns, a_restore)
+	_set_intelligence_state(faction_b, faction_a, maxi(0, b_restore + penalty_points), penalty_turns, b_restore)
+
+
+func _set_intelligence_state(observer: String, target: String, points: float, suppress_turns: int, restore_points: int = 0) -> void:
+	if observer == "" or target == "":
+		return
+	if not _intelligence.has(observer):
+		_intelligence[observer] = {}
+	(_intelligence[observer] as Dictionary)[target] = {
+		"points": maxi(0, int(points)),
+		"suppress_turns": maxi(0, suppress_turns),
+		"war_restore_points": maxi(0, restore_points),
+	}
 
 
 # ============= 重置 =============

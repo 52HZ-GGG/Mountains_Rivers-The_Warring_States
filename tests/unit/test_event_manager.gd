@@ -12,6 +12,9 @@ extends GutTest
 
 func before_each() -> void:
 	EventManager.reset()
+	GameManager.reset()
+	CityManager.reset()
+	SchoolManager.reset()
 
 
 # ============= 冷却机制 =============
@@ -159,6 +162,39 @@ func test_load_save_data_restores_state() -> void:
 	assert_eq(EventManager._chain_states["chain_b"]["current_index"], 3, "读档应恢复链状态")
 
 
+func test_recent_events_track_trigger_and_resolution() -> void:
+	var evt: Dictionary = {
+		"id": "test_runtime_evt",
+		"category": "economy",
+		"title": "运行态事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": null,
+		"options": [
+			{"id": "A", "text": "执行", "cost": {}, "outcomes": {"food_delta": 0}}
+		]
+	}
+	EventManager._trigger_event(evt, "qin")
+	assert_eq(EventManager.get_recent_events().size(), 1, "触发事件后应记录最近事件")
+	assert_eq(EventManager.get_recent_events()[0].get("status", ""), "triggered", "首次记录状态应为 triggered")
+	EventManager._record_recent_event(evt, "resolved", "A")
+	assert_eq(EventManager.get_recent_events().size(), 2, "结算事件后应继续写入最近事件记录")
+	assert_eq(EventManager.get_recent_events()[0].get("status", ""), "resolved", "最新记录状态应为 resolved")
+	assert_eq(EventManager.get_recent_events()[0].get("choice_id", ""), "A", "结算记录应保留玩家选择")
+
+
+func test_chain_progress_snapshot_uses_data_and_runtime_state() -> void:
+	EventManager._chain_states["chain_zhangyi_lianheng"] = {"current_index": 1}
+	var snapshot: Array[Dictionary] = EventManager.get_chain_progress_snapshot()
+	var found: Dictionary = {}
+	for item: Dictionary in snapshot:
+		if str(item.get("chain_id", "")) == "chain_zhangyi_lianheng":
+			found = item
+			break
+	assert_false(found.is_empty(), "事件链快照应包含张仪连横")
+	assert_eq(int(found.get("current_index", -1)), 1, "事件链快照应反映运行时 current_index")
+	assert_eq(str(found.get("next_title", "")), "连横之策", "事件链快照应展示下一步事件标题")
+
+
 # ============= 条件判定 =============
 
 func test_turn_min_condition_blocks_early_turns() -> void:
@@ -195,6 +231,13 @@ func test_empty_conditions_always_pass() -> void:
 	var conditions: Dictionary = {}
 	var result: bool = EventManager._check_conditions(conditions, 1, "qin")
 	assert_true(result, "空条件应始终通过")
+
+
+func test_school_level_condition_uses_runtime_school_state() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	SchoolManager.add_school_exp("qin", 60)
+	assert_true(EventManager._check_conditions({"school_level": 2}, 1, "qin"), "运行时学派等级达到 2 时应满足 school_level 条件")
+	assert_false(EventManager._check_conditions({"school_level": 3}, 1, "qin"), "未达到 3 级时不应满足 school_level 条件")
 
 
 func test_morale_max_condition() -> void:

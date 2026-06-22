@@ -82,3 +82,10 @@ signal stability_changed(city_id: String, old_value: int, new_value: int)
 signal revolt_occurred(city_id: String, stability: int)
 signal city_revolted(city_id: String, old_faction: String)
 signal garrison_changed(city_id: String, old_value: int, new_value: int)
+
+# ============= 学派系统 =============
+signal school_exp_gained(amount: int)
+signal school_level_changed(school_id: String, old_level: int, new_level: int)
+signal school_policy_activated(school_id: String, policy_id: String)
+signal school_policy_expired(school_id: String, policy_id: String)
+signal school_switched(faction_id: String, old_school: String, new_school: String)

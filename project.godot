@@ -12,7 +12,7 @@ config_version=5
 
 config/name="山河策"
 config/description="战国回合制策略游戏 — 三人合作开发，Godot 4.3.stable"
-run/main_scene="res://scenes/main/main.tscn"
+run/main_scene="res://scenes/ui/splash/splash_screen.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -24,9 +24,13 @@ StartupFlow="*res://scripts/autoload/startup_flow.gd"
 EventManager="*res://scripts/autoload/event_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 CityManager="*res://scripts/autoload/city_manager.gd"
+MinisterManager="*res://scripts/autoload/minister_manager.gd"
+SchoolManager="*res://scripts/autoload/school_manager.gd"
+WonderManager="*res://scripts/autoload/wonder_manager.gd"
 DiplomacySystem="*res://scripts/autoload/diplomacy_system.gd"
 TechSystem="*res://scripts/systems/tech_system.gd"
 TacticalSkirmishManager="*res://scripts/autoload/tactical_skirmish_manager.gd"
+DemoFlow="*res://scripts/autoload/demo_flow.gd"
 
 [display]
 

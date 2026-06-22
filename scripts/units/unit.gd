@@ -5,7 +5,7 @@ class_name Unit
 enum AnimState { IDLE, MOVE, ATTACK, HURT, DEATH }
 
 ## 单位类型
-@export var unit_type: String = "unit_infantry"
+@export var unit_type: String = "infantry"
 @export var faction: String = "base"  # base, qin, zhao, qi, chu, wei, yan, han
 
 ## 当前位置（六角网格坐标）
@@ -41,23 +41,28 @@ func _process(delta: float) -> void:
 
 ## 加载 SpriteFrames 资源
 func _load_sprite_frames() -> void:
-	var path := "res://assets/sprites/units/%s/%s/unit_frames.tres" % [faction, unit_type]
-	if ResourceLoader.exists(path):
-		sprite_frames = load(path)
-		if sprite_frames:
-			animated_sprite.sprite_frames = sprite_frames
-	else:
-		# 如果没有预生成的 SpriteFrames，尝试动态创建
-		_create_sprite_frames_from_files()
+	for base_path: String in _sprite_base_paths():
+		var path: String = base_path + "unit_frames.tres"
+		if ResourceLoader.exists(path):
+			sprite_frames = load(path)
+			if sprite_frames:
+				animated_sprite.sprite_frames = sprite_frames
+				return
+	# 如果没有预生成的 SpriteFrames，尝试动态创建
+	_create_sprite_frames_from_files()
 
 
 ## 从文件动态创建 SpriteFrames
 func _create_sprite_frames_from_files() -> void:
-	var base_path := "res://assets/sprites/units/%s/%s/" % [faction, unit_type]
-	var dir := DirAccess.open(base_path)
-
+	var base_path: String = ""
+	var dir: DirAccess = null
+	for candidate: String in _sprite_base_paths():
+		dir = DirAccess.open(candidate)
+		if dir:
+			base_path = candidate
+			break
 	if not dir:
-		push_warning("Unit: Cannot open directory %s" % base_path)
+		push_warning("Unit: Cannot open sprite directory for %s/%s" % [faction, unit_type])
 		return
 
 	sprite_frames = SpriteFrames.new()
@@ -99,6 +104,21 @@ func _create_sprite_frames_from_files() -> void:
 	if sprite_frames:
 		animated_sprite.sprite_frames = sprite_frames
 		print("Unit: Created SpriteFrames for %s/%s (%d animations)" % [faction, unit_type, sprite_frames.get_animation_names().size()])
+
+
+func _normalized_unit_id(unit_id: String) -> String:
+	return unit_id.trim_prefix("unit_")
+
+
+func _sprite_base_paths() -> Array[String]:
+	var normalized_id: String = _normalized_unit_id(unit_type)
+	var unit_dir: String = "unit_%s" % normalized_id
+	return [
+		"res://assets/sprites/units/%s/%s/" % [faction, unit_type],
+		"res://assets/sprites/units/%s/%s/" % [faction, unit_dir],
+		"res://assets/sprites/units/base/%s/" % unit_type,
+		"res://assets/sprites/units/base/%s/" % unit_dir,
+	]
 
 
 ## 播放动画

@@ -1,7 +1,20 @@
 {
 	"schema_version": "1.0",
-	"description": "大地图政治统治范围覆盖层；未覆盖格按城市 jurisdiction_radius 自动推导",
+	"description": "大地图政治统治范围覆盖层；未覆盖格按城市控制者、等级、首都、发展度推导临时影响圈",
 	"map_width": 100,
 	"map_height": 70,
+	"derived_radius_rules": {
+		"level_radii": {
+			"1": 4,
+			"2": 5,
+			"3": 6,
+			"4": 7,
+			"5": 8
+		},
+		"capital_bonus_radius": 2,
+		"development_bonus_threshold": 50,
+		"development_bonus_radius": 1,
+		"neutral_radius": 2
+	},
 	"overrides": []
 }

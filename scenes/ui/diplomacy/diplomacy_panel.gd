@@ -16,17 +16,6 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
-	# 背景图
-	var bg_tex: Texture2D = SkirmishTileTextures.panel_texture("diplomacy")
-	if bg_tex != null:
-		var bg := TextureRect.new()
-		bg.name = "Background"
-		bg.texture = bg_tex
-		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(bg)
-
 	# 主布局
 	var main_vbox := VBoxContainer.new()
 	main_vbox.name = "MainVBox"
@@ -223,12 +212,10 @@ func _on_close_pressed() -> void:
 
 
 func open() -> void:
-	print("[Diplomacy] open() 开始")
 	_populate_faction_list()
 	if _selected_faction.is_empty() and GameManager.FACTION_IDS.size() > 1:
 		_selected_faction = GameManager.FACTION_IDS[0] if GameManager.FACTION_IDS[0] != GameManager.get_player_faction() else GameManager.FACTION_IDS[1]
 	_update_detail_panel()
-	print("[Diplomacy] open() 完成, panel size: %s, children: %d" % [str(size), get_child_count()])
 
 
 # ============= 外交动作 =============

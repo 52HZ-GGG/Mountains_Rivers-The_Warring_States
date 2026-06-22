@@ -103,6 +103,24 @@ func test_recruit_keeps_minimum_resource_reserve() -> void:
 		"AI 不应动用最低资源储备征兵")
 
 
+func test_recruit_respects_city_unlocks() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.end_current_turn()  # qin
+	for city in CityManager.get_faction_city_states("qin"):
+		city["conscription_pool"] = 0
+	var city_id: String = CityManager.get_faction_city_states("qin")[0]["id"]
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	city["city_level"] = 1
+	city["buildings"] = []
+	city["conscription_pool"] = 50
+	GameManager.apply_faction_resource_delta("qin", "gold", 10000)
+	GameManager.apply_faction_resource_delta("qin", "food", 10000)
+	MilitaryLib._evaluate_recruitment("qin")
+	var comp: Dictionary = GameManager.get_unit_composition("qin")
+	assert_false(comp.is_empty(), "资源与征兵池充足时 AI 应完成征兵")
+	assert_eq(comp.keys(), ["militia"], "AI 招募不应绕过城市兵种解锁")
+
+
 func test_select_unit_prefers_infantry() -> void:
 	# 平衡性格（aggression=2, greed=2）多次选兵种，步兵概率应最高
 	var counts: Dictionary = {"infantry": 0, "cavalry": 0, "archer": 0, "siege": 0}

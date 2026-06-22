@@ -3,6 +3,20 @@ extends GutTest
 const PoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 const HexAxial := preload("res://scripts/systems/hex_axial.gd")
 
+const _TEST_RADIUS_RULES: Dictionary = {
+	"level_radii": {
+		"1": 4,
+		"2": 5,
+		"3": 6,
+		"4": 7,
+		"5": 8,
+	},
+	"capital_bonus_radius": 2,
+	"development_bonus_threshold": 50,
+	"development_bonus_radius": 1,
+	"neutral_radius": 2,
+}
+
 
 func test_single_city_claims_tiles_within_radius() -> void:
 	var city_offset: Vector2i = HexAxial.axial_to_offset_odd_r(10, 10)
@@ -17,6 +31,56 @@ func test_single_city_claims_tiles_within_radius() -> void:
 	}]
 	var owner: Variant = PoliticalControl.resolve_owner_for_axial(10, 11, cities, {})
 	assert_eq(owner, "qin")
+
+
+func test_level_and_capital_expand_authored_radius() -> void:
+	var city_offset: Vector2i = HexAxial.axial_to_offset_odd_r(10, 10)
+	var cities: Array = [{
+		"id": "xianyang",
+		"faction_id": "qin",
+		"hex_q": city_offset.x,
+		"hex_r": city_offset.y,
+		"jurisdiction_radius": 1,
+		"is_capital": true,
+		"city_level": 5,
+		"development": 75,
+	}]
+	var owner: Variant = PoliticalControl.resolve_owner_for_axial(20, 10, cities, {}, _TEST_RADIUS_RULES)
+	assert_eq(owner, "qin", "首都与高发展城市应以推导半径形成大地图势力范围")
+
+
+func test_current_faction_controls_derived_political_owner() -> void:
+	var city_offset: Vector2i = HexAxial.axial_to_offset_odd_r(10, 10)
+	var cities: Array = [{
+		"id": "luoyi",
+		"faction_id": "neutral",
+		"current_faction_id": "qin",
+		"hex_q": city_offset.x,
+		"hex_r": city_offset.y,
+		"jurisdiction_radius": 1,
+		"is_capital": false,
+		"city_level": 3,
+	}]
+	var owner: Variant = PoliticalControl.resolve_owner_for_axial(14, 10, cities, {}, _TEST_RADIUS_RULES)
+	assert_eq(owner, "qin", "城市易主后政治地图应使用 current_faction_id")
+
+
+func test_neutral_city_uses_smaller_temporary_radius() -> void:
+	var city_offset: Vector2i = HexAxial.axial_to_offset_odd_r(10, 10)
+	var cities: Array = [{
+		"id": "luoyi",
+		"faction_id": "neutral",
+		"current_faction_id": "neutral",
+		"hex_q": city_offset.x,
+		"hex_r": city_offset.y,
+		"jurisdiction_radius": 1,
+		"is_capital": false,
+		"city_level": 5,
+	}]
+	var near_owner: Variant = PoliticalControl.resolve_owner_for_axial(12, 10, cities, {}, _TEST_RADIUS_RULES)
+	var far_owner: Variant = PoliticalControl.resolve_owner_for_axial(13, 10, cities, {}, _TEST_RADIUS_RULES)
+	assert_eq(near_owner, "neutral")
+	assert_eq(far_owner, null)
 
 
 func test_nearest_city_wins_before_other_rules() -> void:
