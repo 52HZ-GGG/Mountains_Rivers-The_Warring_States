@@ -1,6 +1,6 @@
 # 山河策
 
-![游戏开场 logo](assets/ui/logo/logo.png)
+<img src="assets/ui/logo/logo.png" alt="游戏开场 logo" width="360">
 
 **寸土必争，变法图强 —— 一款轻量级战国回合制策略游戏**
 
