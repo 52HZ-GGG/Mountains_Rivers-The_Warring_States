@@ -1453,12 +1453,13 @@ func _is_siege_unit(unit_type_id: String) -> bool:
 func _damage_pass_structure(cell: Vector2i, attacker_type_id: String, effective_atk: float) -> void:
 	if not _pass_hp.has(cell):
 		return
-	var def_v: Variant = DataManager.get_balance_param("fortification.pass_defense")
-	var pass_def: float = float(def_v) if def_v != null else 100.0
+	var struct_def_v: Variant = DataManager.get_balance_param("fortification.pass_struct_def")
+	var pass_struct_def: float = float(struct_def_v) if struct_def_v != null else 10.0
 	var mult_v: Variant = DataManager.get_balance_param("fortification.siege_damage_multiplier")
 	var siege_mult: float = float(mult_v) if mult_v != null else 3.0
 	var dmg_mult: float = siege_mult if _is_siege_unit(attacker_type_id) else 1.0
-	var struct_dmg: int = maxi(1, int((effective_atk * dmg_mult) - pass_def))
+	var coeff: float = 20.0
+	var struct_dmg: int = maxi(1, int(effective_atk * dmg_mult * coeff / (coeff + pass_struct_def)))
 	var old_hp: int = int(_pass_hp[cell])
 	_pass_hp[cell] = maxi(0, old_hp - struct_dmg)
 	_pass_attacked[cell] = true
@@ -1546,10 +1547,11 @@ func _process_arrow_towers() -> void:
 			var dist: int = HexLib.hex_distance_hex(cell, target_cell)
 			if dist < 1 or dist > tower_range:
 				continue
-			# 伤害 = tower_attack - target_defense，最低 1
+			# 伤害 = tower_atk × COEFF / (COEFF + target_def)，最低 1
 			var target_udata: Dictionary = DataManager.get_unit_type(str(target["unit_type_id"]))
 			var target_def: int = int(target_udata.get("defense", 5))
-			var tower_dmg: int = maxi(1, tower_atk - target_def)
+			var coeff: float = 20.0
+			var tower_dmg: int = maxi(1, int(float(tower_atk) * coeff / (coeff + float(target_def))))
 			tower_dmg = mini(tower_dmg, int(target["hp"]))
 			target["hp"] = int(target["hp"]) - tower_dmg
 			_append_log("城市 (%d,%d) 箭塔攻击 %s，造成 %d 伤害" % [cell.x, cell.y, str(target["id"]), tower_dmg])

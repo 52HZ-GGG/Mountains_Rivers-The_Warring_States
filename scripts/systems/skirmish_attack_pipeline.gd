@@ -146,7 +146,16 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 		var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
 		var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
 		var siege_factor: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
-		var wall_dmg: int = maxi(1, int(float(dmg) * split_wall * siege_factor))
+		var city_lv: int = int(m._city_level.get(def_cell, 3))
+		var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
+		var wall_struct_def: float = 8.0
+		if wsdef_v is Dictionary:
+			var wsdef_dict: Dictionary = wsdef_v as Dictionary
+			var lv_val: Variant = wsdef_dict.get(str(city_lv), null)
+			if lv_val != null:
+				wall_struct_def = float(lv_val)
+		var coeff: float = 20.0
+		var wall_dmg: int = maxi(1, int(float(dmg) * split_wall * siege_factor * coeff / (coeff + wall_struct_def)))
 		var unit_dmg: int = dmg - wall_dmg
 		unit_dmg = mini(unit_dmg, int(d["hp"]))
 		d["hp"] = int(d["hp"]) - unit_dmg
@@ -297,9 +306,16 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 	var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
 	var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
 	var siege_factor: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
-	var split_wall_v: Variant = DataManager.get_balance_param("city_combat.damage_split_wall")
-	var split_wall: float = float(split_wall_v) if split_wall_v != null else 0.5
-	var wall_dmg: int = maxi(1, int(eff_atk * split_wall * siege_factor))
+	var city_lv: int = int(m._city_level.get(cell, 3))
+	var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
+	var wall_struct_def: float = 8.0
+	if wsdef_v is Dictionary:
+		var wsdef_dict: Dictionary = wsdef_v as Dictionary
+		var lv_val: Variant = wsdef_dict.get(str(city_lv), null)
+		if lv_val != null:
+			wall_struct_def = float(lv_val)
+	var coeff: float = 20.0
+	var wall_dmg: int = maxi(1, int(eff_atk * siege_factor * coeff / (coeff + wall_struct_def)))
 	m._damage_city_wall(cell, wall_dmg)
 	m._city_attacked[cell] = true
 	a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost

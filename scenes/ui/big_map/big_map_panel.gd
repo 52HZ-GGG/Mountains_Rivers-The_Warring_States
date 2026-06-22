@@ -444,7 +444,8 @@ func _refresh_display() -> void:
 
 
 func _cell_top_left(cell_axial: Vector2i) -> Vector2:
-	var tl: Vector2 = _HexAxial.axial_flat_top_cell_top_left(cell_axial.x, cell_axial.y, _cell_radius_px)
+	var offset: Vector2i = _HexAxial.axial_to_offset_odd_r(cell_axial.x, cell_axial.y)
+	var tl: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left_rect(offset.x, offset.y, _cell_radius_px)
 	return tl - _board_origin_shift + Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX)
 
 

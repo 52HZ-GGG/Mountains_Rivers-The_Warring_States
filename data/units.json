@@ -4,7 +4,7 @@
     {
       "id": "militia",
       "name": "民兵",
-      "attack": 10,
+      "attack": 16,
       "defense": 4,
       "hp": 80,
       "speed": 3,
@@ -22,7 +22,7 @@
     {
       "id": "infantry",
       "name": "步兵",
-      "attack": 20,
+      "attack": 27,
       "defense": 10,
       "hp": 100,
       "speed": 3,
@@ -40,8 +40,8 @@
     {
       "id": "spear",
       "name": "枪刺兵",
-      "attack": 18,
-      "defense": 11,
+      "attack": 27,
+      "defense": 10,
       "hp": 100,
       "speed": 3,
       "range": 1,
@@ -60,7 +60,7 @@
     {
       "id": "scout_team",
       "name": "斥候小队",
-      "attack": 10,
+      "attack": 16,
       "defense": 5,
       "hp": 80,
       "speed": 4,
@@ -78,7 +78,7 @@
     {
       "id": "iron_armored",
       "name": "铁甲兵",
-      "attack": 25,
+      "attack": 37,
       "defense": 18,
       "hp": 120,
       "speed": 2,
@@ -98,8 +98,8 @@
     {
       "id": "scout_cavalry",
       "name": "斥候骑兵",
-      "attack": 12,
-      "defense": 6,
+      "attack": 16,
+      "defense": 5,
       "hp": 80,
       "speed": 5,
       "range": 1,
@@ -119,8 +119,8 @@
     {
       "id": "cavalry",
       "name": "护卫骑兵",
-      "attack": 20,
-      "defense": 12,
+      "attack": 24,
+      "defense": 11,
       "hp": 90,
       "speed": 5,
       "range": 1,
@@ -140,7 +140,7 @@
     {
       "id": "chariot",
       "name": "战车",
-      "attack": 18,
+      "attack": 27,
       "defense": 12,
       "hp": 100,
       "speed": 4,
@@ -159,8 +159,8 @@
     {
       "id": "shock_cavalry",
       "name": "突击骑兵",
-      "attack": 25,
-      "defense": 8,
+      "attack": 23,
+      "defense": 7,
       "hp": 90,
       "speed": 5,
       "range": 1,
@@ -180,8 +180,8 @@
     {
       "id": "heavy_cavalry",
       "name": "重骑兵",
-      "attack": 30,
-      "defense": 20,
+      "attack": 34,
+      "defense": 18,
       "hp": 130,
       "speed": 3,
       "range": 1,
@@ -201,7 +201,7 @@
     {
       "id": "archer",
       "name": "弓兵",
-      "attack": 20,
+      "attack": 16,
       "melee_attack": 10,
       "defense": 6,
       "hp": 75,
@@ -217,12 +217,12 @@
       "cost_wood": 0,
       "cost_craftsmen": 0,
       "ranged_attack_mode": "no_counter",
-      "special_description": "远程攻击=20（不触发反击），近战反击=10"
+      "special_description": "远程攻击=16（不触发反击），近战反击=10"
     },
     {
       "id": "crossbow",
       "name": "弩兵",
-      "attack": 24,
+      "attack": 18,
       "melee_attack": 12,
       "defense": 8,
       "hp": 75,
@@ -239,12 +239,12 @@
       "cost_wood": 0,
       "cost_craftsmen": 0,
       "ranged_attack_mode": "no_counter",
-      "special_description": "远程攻击=22（不触发反击），近战反击=10，弩机精度高于弓兵"
+      "special_description": "远程攻击=18（不触发反击），近战反击=12，弩机精度高于弓兵"
     },
     {
       "id": "horse_archer",
       "name": "弓骑兵",
-      "attack": 18,
+      "attack": 15,
       "melee_attack": 10,
       "defense": 5,
       "hp": 70,
@@ -263,12 +263,12 @@
       "cost_craftsmen": 0,
       "ranged_attack_mode": "no_counter",
       "is_mounted": true,
-      "special_description": "骑射单位，远程攻击=18（不触发反击），近战反击=10"
+      "special_description": "骑射单位，远程攻击=15（不触发反击），近战反击=10"
     },
     {
       "id": "battering_ram",
       "name": "冲车",
-      "attack": 10,
+      "attack": 15,
       "defense": 10,
       "hp": 100,
       "speed": 2,
@@ -327,7 +327,7 @@
     {
       "id": "mengchong",
       "name": "蒙冲",
-      "attack": 15,
+      "attack": 22,
       "defense": 10,
       "hp": 90,
       "speed": 4,
@@ -346,7 +346,7 @@
     {
       "id": "great_wing",
       "name": "大翼",
-      "attack": 20,
+      "attack": 28,
       "defense": 14,
       "hp": 110,
       "speed": 5,
@@ -365,7 +365,7 @@
     {
       "id": "tower_ship",
       "name": "楼船",
-      "attack": 25,
+      "attack": 34,
       "defense": 18,
       "hp": 130,
       "speed": 3,
@@ -391,7 +391,7 @@
       "variant_id": "rushi",
       "variant_name": "锐士",
       "stat_overrides": {
-        "attack": 24,
+        "attack": 32,
         "defense": 12,
         "cost_gold": 75
       },
@@ -455,7 +455,7 @@
       "variant_id": "shenxi_zhishi",
       "variant_name": "申息之师",
       "stat_overrides": {
-        "attack": 18,
+        "attack": 24,
         "defense": 9
       },
       "special_description": "混合兵种（步+弓），山地move_cost-2（3→1）",
@@ -479,7 +479,7 @@
       "variant_id": "wuzu",
       "variant_name": "武卒",
       "stat_overrides": {
-        "attack": 22,
+        "attack": 29,
         "defense": 11,
         "hp": 110
       },
@@ -504,12 +504,9 @@
       "variant_id": "liaodong_gongqi",
       "variant_name": "辽东弓骑",
       "stat_overrides": {
-        "attack": 20,
-        "melee_attack": 10,
-        "defense": 10,
         "range": 2
       },
-      "special_description": "骑射单位，远程攻击=20，近战反击=10，攻击消耗2移动力后可继续移动，每回合限攻击1次",
+      "special_description": "骑射单位，远程攻击=24，近战反击=12，攻击消耗2移动力后可继续移动，每回合限攻击1次",
       "skills": [
         {
           "id": "hit_and_run",

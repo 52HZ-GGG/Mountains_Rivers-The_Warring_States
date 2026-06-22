@@ -18,7 +18,8 @@
     "accuracy_spread_factor": 0.001,
     "momentum_max_bonus": 0.25,
     "attack_ends_turn": true,
-    "fog_enemy_stops_movement": true
+    "fog_enemy_stops_movement": true,
+    "defense_coefficient": 20
   },
   "unit_skills": {
     "description": "兵种技能系统。技能定义在 units.json → skills 数组中，运行时按 type 分发到对应系统处理。",
@@ -502,6 +503,7 @@
   "fortification": {
     "pass_hp": 500,
     "pass_defense": 100,
+    "pass_struct_def": 10,
     "siege_damage_multiplier": 3,
     "hp_type": "fortification"
   },
@@ -953,10 +955,10 @@
   "city_levels": {
     "1": {
       "name": "村",
-      "hp": 300,
+      "hp": 150,
       "attack": 5,
       "attack_range": 1,
-      "city_defense": 10,
+      "city_defense": 2,
       "building_slots": 1,
       "base_food": 3,
       "base_gold": 5,
@@ -966,10 +968,10 @@
     },
     "2": {
       "name": "镇",
-      "hp": 600,
+      "hp": 250,
       "attack": 10,
       "attack_range": 1,
-      "city_defense": 25,
+      "city_defense": 4,
       "building_slots": 2,
       "base_food": 6,
       "base_gold": 10,
@@ -979,10 +981,10 @@
     },
     "3": {
       "name": "城",
-      "hp": 1000,
+      "hp": 400,
       "attack": 15,
       "attack_range": 1,
-      "city_defense": 45,
+      "city_defense": 6,
       "building_slots": 3,
       "base_food": 10,
       "base_gold": 15,
@@ -992,10 +994,10 @@
     },
     "4": {
       "name": "府",
-      "hp": 1500,
+      "hp": 600,
       "attack": 20,
       "attack_range": 2,
-      "city_defense": 70,
+      "city_defense": 8,
       "building_slots": 4,
       "base_food": 15,
       "base_gold": 25,
@@ -1005,10 +1007,10 @@
     },
     "5": {
       "name": "都",
-      "hp": 2000,
+      "hp": 800,
       "attack": 25,
       "attack_range": 2,
-      "city_defense": 100,
+      "city_defense": 10,
       "building_slots": 5,
       "base_food": 20,
       "base_gold": 35,
@@ -1036,7 +1038,13 @@
     "building_occupy_turns": 1,
     "demolish_turns": 1,
     "wall_defense_hp_scaling": true,
-    "wall_defense_min_ratio": 0.5
+    "wall_defense_min_ratio": 0.5,
+    "wall_struct_def_by_level": {
+      "1": 5,
+      "2": 8,
+      "3": 12
+    },
+    "arrow_tower_formula": "multiplicative"
   },
   "building_effects": {
     "revolt_suppression_per_level": {

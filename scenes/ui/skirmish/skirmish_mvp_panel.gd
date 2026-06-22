@@ -657,7 +657,7 @@ func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	while row_scan < h:
 		var col_scan: int = 0
 		while col_scan < w:
-			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_scan, row_scan, radius)
+			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left_rect(col_scan, row_scan, radius)
 			min_tl_x = minf(min_tl_x, tl_scan.x)
 			min_tl_y = minf(min_tl_y, tl_scan.y)
 			max_br_x = maxf(max_br_x, tl_scan.x + cell_w)
