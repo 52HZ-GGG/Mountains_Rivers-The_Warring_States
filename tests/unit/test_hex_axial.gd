@@ -65,3 +65,40 @@ func test_offset_odd_r_flat_top_chain_matches_axial() -> void:
 	var ax: Vector2i = HexLib.offset_odd_r_to_axial(2, 3)
 	var tl_direct: Vector2 = HexLib.axial_flat_top_cell_top_left(ax.x, ax.y, R)
 	assert_eq(tl_via_offset, tl_direct, "odd-R→轴向→平顶像素 须与直接轴向一致")
+
+
+## 矩形布局：同列相邻行的 x 坐标应相同（无 q 偏移）
+func test_rect_layout_same_col_same_x() -> void:
+	var R: float = 40.0
+	var tl0: Vector2 = HexLib.offset_odd_r_flat_top_cell_top_left_rect(3, 0, R)
+	var tl1: Vector2 = HexLib.offset_odd_r_flat_top_cell_top_left_rect(3, 1, R)
+	assert_almost_eq(tl0.x, tl1.x, 0.02, "矩形布局同列相邻行 x 应相同")
+
+
+## 矩形布局：奇数列相对偶数列应下移 √3·R/2
+func test_rect_layout_odd_col_shifts_down() -> void:
+	var R: float = 40.0
+	var sqrt3: float = sqrt(3.0)
+	var tl_even: Vector2 = HexLib.offset_odd_r_flat_top_cell_top_left_rect(2, 0, R)
+	var tl_odd: Vector2 = HexLib.offset_odd_r_flat_top_cell_top_left_rect(3, 0, R)
+	var expected_dy: float = sqrt3 * R * 0.5
+	assert_almost_eq(tl_odd.y - tl_even.y, expected_dy, 0.02, "奇数列应下移 √3·R/2")
+
+
+## 矩形布局：同行相邻列水平节距应为 1.5·R
+func test_rect_layout_horizontal_pitch() -> void:
+	var R: float = 40.0
+	var tl0: Vector2 = HexLib.offset_odd_r_flat_top_cell_top_left_rect(0, 0, R)
+	var tl1: Vector2 = HexLib.offset_odd_r_flat_top_cell_top_left_rect(1, 0, R)
+	var dx: float = tl1.x - tl0.x
+	assert_almost_eq(dx, R * 1.5, 0.02, "同行相邻列水平节距应为 1.5·R")
+
+
+## rect_neighbor_pixel_delta：右侧邻居应为 (1.5R, ±√3·R/2)
+func test_rect_neighbor_delta_right() -> void:
+	var R: float = 40.0
+	var sqrt3: float = sqrt(3.0)
+	# 偶数列 (0,0) 右侧邻居 (1,0)：offset 列 1 为奇数列，应下移
+	var delta: Vector2 = HexLib.rect_neighbor_pixel_delta(0, 0, 1, 0, R)
+	assert_almost_eq(delta.x, R * 1.5, 0.02, "右侧邻居 dx 应为 1.5R")
+	assert_almost_eq(delta.y, sqrt3 * R * 0.5, 0.02, "偶数列右侧邻居 dy 应为 √3·R/2")

@@ -113,12 +113,8 @@ func _poly_bleed_outward(poly: PackedVector2Array) -> PackedVector2Array:
 
 
 func _pixel_delta_axial(dq: int, dr: int) -> Vector2:
-	## 与 axial_flat_top_cell_top_left 一致的平顶轴向邻格像素位移（Red Blob flat-top）
-	var sqrt3: float = sqrt(3.0)
-	return Vector2(
-		circumradius * 1.5 * float(dq),
-		circumradius * sqrt3 * (float(dr) + float(dq) * 0.5)
-	)
+	## 矩形布局下平顶轴向邻格像素位移
+	return _HexAxial.rect_neighbor_pixel_delta(cell_q, cell_r, dq, dr, circumradius)
 
 
 func _neighbor_axial_for_edge(edge_i: int) -> Vector2i:

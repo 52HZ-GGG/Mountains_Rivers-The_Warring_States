@@ -169,9 +169,10 @@ func _finish_movement() -> void:
 
 ## 六角格坐标转像素位置（需要根据实际地图调整）
 func _hex_to_pixel(hex: Vector2i) -> Vector2:
-	# 使用 hex_axial.gd 的转换函数
+	# 使用 hex_axial.gd 的矩形布局转换函数
 	var circumradius := 32.0  # 六角格外接圆半径，根据实际大小调整
-	var top_left := HexAxial.axial_flat_top_cell_top_left(hex.x, hex.y, circumradius)
+	var offset := HexAxial.axial_to_offset_odd_r(hex.x, hex.y)
+	var top_left := HexAxial.offset_odd_r_flat_top_cell_top_left_rect(offset.x, offset.y, circumradius)
 	return top_left + Vector2(circumradius, circumradius * sqrt(3.0) * 0.5)
 
 

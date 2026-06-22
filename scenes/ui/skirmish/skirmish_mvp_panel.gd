@@ -157,20 +157,18 @@ func _ensure_hex_buttons() -> void:
 	var pad: float = _HEX_BOARD_PAD_PX
 	var radius_px: float = _compute_hex_radius_px(w, h, pad)
 	var sqrt3: float = sqrt(3.0)
-	## 尖顶六角外包：宽 √3·R、高 2R
-	var cell_w: float = radius_px * sqrt3
-	var cell_h: float = radius_px * 2.0
+	## 平顶六角外包：宽 2R、高 √3·R
+	var cell_w: float = radius_px * 2.0
+	var cell_h: float = radius_px * sqrt3
 	var min_tl_x: float = INF
 	var min_tl_y: float = INF
 	var max_br_x: float = -INF
 	var max_br_y: float = -INF
 	var row_scan: int = 0
 	while row_scan < h:
-		var axial_col_shift_s: int = (row_scan - (row_scan & 1)) / 2
 		var col_scan: int = 0
 		while col_scan < w:
-			var ax_s: Vector2i = Vector2i(col_scan - axial_col_shift_s, row_scan)
-			var tl_s: Vector2 = _HexAxial.axial_flat_top_cell_top_left(ax_s.x, ax_s.y, radius_px)
+			var tl_s: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left_rect(col_scan, row_scan, radius_px)
 			min_tl_x = minf(min_tl_x, tl_s.x)
 			min_tl_y = minf(min_tl_y, tl_s.y)
 			max_br_x = maxf(max_br_x, tl_s.x + cell_w)
@@ -180,11 +178,10 @@ func _ensure_hex_buttons() -> void:
 	var origin_shift: Vector2 = Vector2(min_tl_x, min_tl_y)
 	var row_var: int = 0
 	while row_var < h:
-		var axial_col_shift: int = (row_var - (row_var & 1)) / 2
 		var col_var: int = 0
 		while col_var < w:
-			var axial_pos: Vector2i = Vector2i(col_var - axial_col_shift, row_var)
-			var tl: Vector2 = _HexAxial.axial_flat_top_cell_top_left(axial_pos.x, axial_pos.y, radius_px)
+			var axial_pos: Vector2i = _HexAxial.offset_odd_r_to_axial(col_var, row_var)
+			var tl: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left_rect(col_var, row_var, radius_px)
 			var cell: SkirmishHexCell = SkirmishHexCell.new()
 			cell.configure(axial_pos.x, axial_pos.y, radius_px, cell_w, cell_h)
 			cell.set_board_bounds(w, h)

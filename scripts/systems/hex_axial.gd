@@ -55,6 +55,28 @@ static func offset_odd_r_flat_top_cell_top_left(col: int, row: int, circumradius
 	return axial_flat_top_cell_top_left(ax.x, ax.y, circumradius_px)
 
 
+## odd-R + 平顶矩形布局：列/行 → 六角控件左上角（像素）。
+## 奇数列下移 √3·R/2，行间无 q 偏移 → 视觉为矩形（类文明系列）。
+static func offset_odd_r_flat_top_cell_top_left_rect(col: int, row: int, circumradius_px: float) -> Vector2:
+	var sqrt3: float = sqrt(3.0)
+	var cx: float = circumradius_px * 1.5 * float(col)
+	var cy: float = circumradius_px * sqrt3 * (float(row) + 0.5 * float(col & 1))
+	var bw: float = circumradius_px * 2.0
+	var bh: float = circumradius_px * sqrt3
+	return Vector2(cx - bw * 0.5, cy - bh * 0.5)
+
+
+## 矩形布局下轴向邻格的像素位移（供 SkirmishHexCell 邻格边检测使用）
+static func rect_neighbor_pixel_delta(q: int, r: int, dq: int, dr: int, circumradius_px: float) -> Vector2:
+	var cur_col: int = q + int((r - (r & 1)) / 2)
+	var cur: Vector2 = offset_odd_r_flat_top_cell_top_left_rect(cur_col, r, circumradius_px)
+	var nq: int = q + dq
+	var nr: int = r + dr
+	var n_col: int = nq + int((nr - (nr & 1)) / 2)
+	var nbr: Vector2 = offset_odd_r_flat_top_cell_top_left_rect(n_col, nr, circumradius_px)
+	return nbr - cur
+
+
 const DIRECTIONS: Array[Vector2i] = [
 	Vector2i(1, 0),
 	Vector2i(0, 1),

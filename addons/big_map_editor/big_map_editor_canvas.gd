@@ -196,7 +196,7 @@ func _cell_top_left(col: int, row: int) -> Vector2:
 
 
 func _raw_cell_top_left(col: int, row: int, radius: float) -> Vector2:
-	return HexAxial.offset_odd_r_flat_top_cell_top_left(col, row, radius)
+	return HexAxial.offset_odd_r_flat_top_cell_top_left_rect(col, row, radius)
 
 
 func _radius() -> float:

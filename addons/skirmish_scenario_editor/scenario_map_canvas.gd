@@ -184,7 +184,7 @@ func _build_hex_polygon(top_left: Vector2) -> PackedVector2Array:
 
 
 func _cell_top_left(col: int, row: int) -> Vector2:
-	return _PADDING + HexLib.offset_odd_r_flat_top_cell_top_left(col, row, _RADIUS)
+	return _PADDING + HexLib.offset_odd_r_flat_top_cell_top_left_rect(col, row, _RADIUS)
 
 
 func _gui_input(event: InputEvent) -> void:

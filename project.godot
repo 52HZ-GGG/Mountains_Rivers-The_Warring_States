@@ -34,6 +34,10 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 
+[dotnet]
+
+project/assembly_name="山河策"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/skirmish_scenario_editor/plugin.cfg", "res://addons/big_map_editor/plugin.cfg")
