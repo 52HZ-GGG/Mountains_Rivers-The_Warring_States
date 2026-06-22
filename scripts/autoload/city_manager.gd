@@ -1,5 +1,7 @@
 extends Node
 
+const HexAxial := preload("res://scripts/systems/hex_axial.gd")
+
 ## 城市管理器（CityManager）
 ##
 ## 维护 50 城的运行时状态，提供查询、建造、升级、拆除、归属变更、回合结算等接口。
@@ -62,6 +64,14 @@ const REASON_INSUFFICIENT_TROOPS := "INSUFFICIENT_TROOPS"
 const REASON_SPECIAL_RESOURCE_REQUIRED := "SPECIAL_RESOURCE_REQUIRED"
 const REASON_TERRAIN_REQUIRED := "TERRAIN_REQUIRED"
 
+const CITY_LEVEL_RECRUIT_UNLOCKS: Dictionary = {
+	1: ["militia"],
+	2: ["militia", "scout_team"],
+	3: ["militia", "scout_team", "infantry"],
+	4: ["militia", "scout_team", "infantry", "spear", "archer"],
+	5: ["militia", "scout_team", "infantry", "spear", "archer", "battering_ram"],
+}
+
 # ============= 私有状态 =============
 
 var _city_states: Dictionary = {}              # city_id (String) → city_state (Dictionary)
@@ -109,6 +119,42 @@ func get_capital_state(faction_id: String) -> Dictionary:
 	return {}
 
 
+func get_city_culture(city_id: String) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {}
+	return (city.get("culture", {}) as Dictionary).duplicate(true)
+
+
+func get_mainstream_culture(city_id: String) -> String:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return ""
+	return str(city.get("mainstream_culture", ""))
+
+
+func has_culture_mismatch(city_id: String) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	var mainstream_culture: String = str(city.get("mainstream_culture", ""))
+	if mainstream_culture == "":
+		return false
+	return mainstream_culture != str(city.get("current_faction_id", ""))
+
+
+func get_culture_coverage_ratio(faction_id: String) -> float:
+	var total_cities: int = get_all_city_states().size()
+	if total_cities <= 0:
+		return 0.0
+	var covered: int = 0
+	for city in get_all_city_states():
+		var state: Dictionary = city as Dictionary
+		if str(state.get("mainstream_culture", "")) == faction_id:
+			covered += 1
+	return float(covered) / float(total_cities)
+
+
 ## 获取城市当前征兵池容量。
 func get_conscription_pool(city_id: String) -> int:
 	var city: Dictionary = _city_states.get(city_id, {})
@@ -141,6 +187,33 @@ func conscribe(city_id: String, amount: int) -> Dictionary:
 	city["conscription_pool"] = pool - recruited
 	city["current_population"] = pop - recruited
 	return {"recruited": recruited, "reason": REASON_OK}
+
+
+## 获取城市当前可招募兵种：城市等级基础兵种 + 军事生产建筑解锁兵种。
+func get_recruitable_units(city_id: String) -> Array[String]:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return []
+	var city_level: int = int(city.get("city_level", 1))
+	var units: Array[String] = []
+	for unit_id: String in CITY_LEVEL_RECRUIT_UNLOCKS.get(city_level, []):
+		_add_recruitable_unit(units, unit_id)
+	for building in city.get("buildings", []):
+		var b: Dictionary = building as Dictionary
+		var bdata: Dictionary = DataManager.get_building(str(b.get("building_id", "")))
+		if bdata.is_empty():
+			continue
+		var levels: Array = bdata.get("levels", [])
+		var level: int = int(b.get("level", 1))
+		if level < 1 or level > levels.size():
+			continue
+		var effects: Dictionary = (levels[level - 1] as Dictionary).get("effects", {})
+		for key in effects:
+			if not str(key).begins_with("unlock_"):
+				continue
+			for unit_id in effects[key]:
+				_add_recruitable_unit(units, str(unit_id))
+	return units
 
 
 # ============= 城池 HP 系统（Phase 4） =============
@@ -192,6 +265,8 @@ func get_city_defense(city_id: String) -> int:
 	var garrison_count: int = int(city.get("garrison", 0))
 	var garrison_def_per: float = float(DataManager.get_balance_param("stability.garrison_def_per_unit"))
 	base_total += int(garrison_count * garrison_def_per)
+	if has_culture_mismatch(city_id):
+		base_total = int(round(float(base_total) * (1.0 + float(DataManager.get_balance_param("culture.culture_mismatch_garrison_def_penalty")))))
 	return base_total
 
 
@@ -223,6 +298,8 @@ func get_city_attack(city_id: String) -> int:
 	var garrison_count_atk: int = int(city.get("garrison", 0))
 	var garrison_atk_per: float = float(DataManager.get_balance_param("stability.garrison_atk_per_unit"))
 	base_total_atk += int(garrison_count_atk * garrison_atk_per)
+	if has_culture_mismatch(city_id):
+		base_total_atk = int(round(float(base_total_atk) * (1.0 + float(DataManager.get_balance_param("culture.culture_mismatch_garrison_atk_penalty")))))
 	return base_total_atk
 
 
@@ -258,6 +335,7 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 	# 变更归属
 	city["current_faction_id"] = new_faction_id
 	city["is_capital"] = false
+	_apply_military_occupation_culture(city, old_faction, new_faction_id)
 	# HP 恢复 50%
 	var max_hp: int = get_city_max_hp(city_id)
 	city["current_hp"] = max_hp / 2
@@ -273,6 +351,7 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 	city["garrison"] = 0
 	# 更新 faction 索引
 	_move_city_in_faction_index(city, old_faction, new_faction_id)
+	MinisterManager.handle_city_lost(city_id, old_faction, new_faction_id)
 	SignalBus.city_occupied.emit(city_id, old_faction, new_faction_id)
 	return true
 
@@ -334,8 +413,14 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 
 	var levels: Array = building.get("levels", [])
 	var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
-	var cost_gold: int = int(lv0.get("cost_gold", 0))
-	var cost_wood: int = int(lv0.get("cost_wood", 0))
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	var costs: Array[int] = _apply_build_cost_reduction(
+		faction_id,
+		int(lv0.get("cost_gold", 0)),
+		int(lv0.get("cost_wood", 0))
+	)
+	var cost_gold: int = costs[0]
+	var cost_wood: int = costs[1]
 	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_wood() < cost_wood:
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
@@ -353,17 +438,26 @@ func start_build(city_id: String, building_id: String) -> bool:
 	var building: Dictionary = DataManager.get_building(building_id)
 	var levels: Array = building.get("levels", [])
 	var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
-	var cost_gold: int = int(lv0.get("cost_gold", 0))
-	var cost_wood: int = int(lv0.get("cost_wood", 0))
+	var city: Dictionary = _city_states[city_id]
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	var costs: Array[int] = _apply_build_cost_reduction(
+		faction_id,
+		int(lv0.get("cost_gold", 0)),
+		int(lv0.get("cost_wood", 0))
+	)
+	var cost_gold: int = costs[0]
+	var cost_wood: int = costs[1]
 	var build_turns: int = int(lv0.get("build_turns", 1))
 
 	GameManager.apply_gold_delta(-cost_gold)
 	GameManager.apply_wood_delta(-cost_wood)
 
-	var city: Dictionary = _city_states[city_id]
 	(city["build_queue"] as Array).append({
 		"building_id": building_id,
 		"turns_remaining": build_turns,
+		"cost_gold": cost_gold,
+		"cost_wood": cost_wood,
+		"is_upgrade": false,
 	})
 	return true
 
@@ -398,7 +492,8 @@ func can_upgrade(city_id: String, building_id: String) -> Dictionary:
 	if current_level >= max_level:
 		return {"allowed": false, "reason": REASON_MAX_LEVEL_REACHED}
 
-	var costs: Array = _calculate_upgrade_cost(building, current_level)
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	var costs: Array[int] = _calculate_upgrade_cost(building, current_level, faction_id)
 	if GameManager.get_player_gold() < int(costs[0]) or GameManager.get_player_wood() < int(costs[1]):
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
@@ -417,7 +512,8 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 	var building: Dictionary = DataManager.get_building(building_id)
 	var city: Dictionary = _city_states[city_id]
 	var current_level: int = _city_building_level(city, building_id)
-	var costs: Array = _calculate_upgrade_cost(building, current_level)
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	var costs: Array[int] = _calculate_upgrade_cost(building, current_level, faction_id)
 	var levels: Array = building.get("levels", [])
 	var target_lv: Dictionary = levels[current_level] if current_level < levels.size() else {}
 	var build_turns: int = int(target_lv.get("build_turns", 1))
@@ -428,6 +524,9 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 	(city["build_queue"] as Array).append({
 		"building_id": building_id,
 		"turns_remaining": build_turns,
+		"cost_gold": int(costs[0]),
+		"cost_wood": int(costs[1]),
+		"is_upgrade": true,
 	})
 	return true
 
@@ -496,8 +595,13 @@ func cancel_build(city_id: String, queue_index: int) -> bool:
 	var building: Dictionary = DataManager.get_building(bid)
 	if not building.is_empty():
 		# 退还全部建造费用
-		var cost_gold: int = int(building.get("cost_gold", 0))
-		var cost_wood: int = int(building.get("cost_wood", 0))
+		var cost_gold: int = int(entry.get("cost_gold", 0))
+		var cost_wood: int = int(entry.get("cost_wood", 0))
+		if cost_gold == 0 and cost_wood == 0:
+			var levels: Array = building.get("levels", [])
+			var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
+			cost_gold = int(lv0.get("cost_gold", 0))
+			cost_wood = int(lv0.get("cost_wood", 0))
 		if cost_gold > 0:
 			GameManager.apply_gold_delta(cost_gold)
 		if cost_wood > 0:
@@ -540,6 +644,7 @@ func change_ownership(city_id: String, new_faction_id: String) -> bool:
 	city["current_faction_id"] = new_faction_id
 	(city["build_queue"] as Array).clear()
 	_move_city_in_faction_index(city, old_faction_id, new_faction_id)
+	MinisterManager.handle_city_lost(city_id, old_faction_id, new_faction_id)
 
 	if was_capital:
 		# 首都被占 → 城市失去首都身份（不变量：每国最多 1 个 is_capital=true）。
@@ -598,6 +703,7 @@ func revoke_to_neutral(city_id: String) -> Dictionary:
 	# 更新归属为 neutral
 	city["current_faction_id"] = "neutral"
 	_move_city_in_faction_index(city, old_faction, "neutral")
+	MinisterManager.handle_city_lost(city_id, old_faction, "neutral")
 
 	SignalBus.city_revolted.emit(city_id, old_faction)
 	return {
@@ -733,8 +839,15 @@ func process_turn(faction_id: String) -> Dictionary:
 		_process_build_queue(city_id, events)
 		_process_population_growth(city_id)
 		_process_conscription_fill(city_id)
+	for city in cities:
+		var city_id: String = str(city["id"])
 		_process_stability(city_id, faction_id)
 	return events
+
+
+## 全国文化结算：按整轮处理所有城市文化。
+func process_culture_turn() -> void:
+	_process_culture_turn_batch()
 
 
 ## 递减建造队列，turns_remaining <= 0 时自动完成建造/升级。
@@ -777,7 +890,7 @@ func _process_build_queue(city_id: String, events: Dictionary) -> void:
 ##   season_mod: spring 1.0 / summer 1.0 / autumn 1.2 / winter 0.7
 ##   stability_mod = growth_stability_base + stability × growth_stability_per_point
 ## 每回合 progress += 1/period，满 1.0 则 pop += 1。
-## 饥荒：粮食净产出 < 0 时每回合减 famine_pop_loss 人口（最低 1）。
+## 饥荒：粮食毛产出 < 人口自耗时每回合减 famine_pop_loss 人口（最低 1）。
 func _process_population_growth(city_id: String) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
@@ -786,16 +899,24 @@ func _process_population_growth(city_id: String) -> void:
 	if pop <= 0:
 		return
 
-	# 计算城市粮食净产出
+	# 计算城市粮食产出
 	var prod: Dictionary = get_city_production(city_id)
 	var season: String = get_current_season(GameManager.get_current_turn())
 	var season_prod: Dictionary = _apply_season_modifier(prod, season)
 	var net_food: int = int(season_prod.get("food", 0))
+	var gross_food: int = int(season_prod.get("food_gross", 0))
+	var food_consumption: int = int(season_prod.get("food_consumption", 0))
 
-	# 饥荒检测：净产出 < 0
-	if net_food < 0:
+	# 饥荒检测：毛产出不足以覆盖人口自耗
+	if gross_food < food_consumption:
 		var famine_loss: int = int(DataManager.get_balance_param("population.famine_pop_loss"))
 		city["current_population"] = max(1, pop - famine_loss)
+		var stability_loss: int = int(DataManager.get_balance_param("population.famine_stability_loss"))
+		var old_stability: int = int(city.get("stability", 50))
+		var new_stability: int = clampi(old_stability - stability_loss, 0, 100)
+		city["stability"] = new_stability
+		if new_stability != old_stability:
+			SignalBus.stability_changed.emit(city_id, old_stability, new_stability)
 		city["growth_progress"] = 0.0
 		return
 
@@ -824,10 +945,12 @@ func _process_population_growth(city_id: String) -> void:
 	var stability_val: float = float(int(city.get("stability", 50)))
 	var stability_mod: float = stability_base + stability_val * stability_per_point
 	stability_mod = maxf(stability_mod, 0.1)
+	var service_effect: Dictionary = GameManager.get_service_penalty_effect(str(city.get("current_faction_id", "")))
+	var service_growth_mod: float = float(service_effect.get("growth_mod", 1.0))
 
 	# 增长周期
 	var base_period: float = float(DataManager.get_balance_param("population.growth_base_period"))
-	var period: float = base_period * (1.0 / food_ratio) * (1.0 / season_mod) * (1.0 / stability_mod)
+	var period: float = base_period * (1.0 / food_ratio) * (1.0 / season_mod) * (1.0 / stability_mod) * (1.0 / maxf(service_growth_mod, 0.1))
 	period = clampf(period, 2.0, 20.0)
 
 	# 进度累加
@@ -850,10 +973,234 @@ func _process_conscription_fill(city_id: String) -> void:
 		return
 	var fill_rate: float = float(DataManager.get_balance_param("population.conscription_fill_rate"))
 	var max_rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
-	var fill: int = int(pop * fill_rate)
+	var recruit_mod: float = 1.0
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	if GameManager.is_player_faction(faction_id):
+		recruit_mod = float(GameManager.get_morale_threshold_effect().get("recruit_mod", 1.0))
+	var fill: int = int(pop * fill_rate * recruit_mod)
 	var cap: int = int(pop * max_rate)
 	var pool: int = int(city.get("conscription_pool", 0))
 	city["conscription_pool"] = mini(pool + fill, cap)
+
+
+func _process_culture_turn_batch() -> void:
+	var cities: Array = get_all_city_states()
+	for city in cities:
+		_ensure_city_culture(city as Dictionary)
+
+	var incoming: Dictionary = {}
+	var total_cities: Array = get_all_city_states()
+	var season: String = get_current_season(GameManager.get_current_turn())
+	var season_mod: float = float(DataManager.get_balance_param("culture.winter_spread_mod")) if season == "winter" else 1.0
+	var spread_rate: float = float(DataManager.get_balance_param("culture.spread_rate"))
+	var distance_decay: Dictionary = DataManager.get_balance_param("culture.distance_decay")
+	for target_v in total_cities:
+		var target_city: Dictionary = target_v as Dictionary
+		var target_id: String = str(target_city.get("id", ""))
+		var target_owner: String = str(target_city.get("current_faction_id", ""))
+		var target_culture: Dictionary = _ensure_city_culture(target_city)
+		for source_v in total_cities:
+			var source_city: Dictionary = source_v as Dictionary
+			var source_id: String = str(source_city.get("id", ""))
+			if source_id == target_id:
+				continue
+			var dist: int = _hex_distance_from_city(target_city, source_city)
+			if dist <= 0 or dist > 4:
+				continue
+			var distance_mod: float = float(distance_decay.get(str(dist), 0.0))
+			if distance_mod <= 0.0:
+				continue
+			var source_culture: Dictionary = _ensure_city_culture(source_city)
+			for faction_key in source_culture:
+				var faction_culture: float = float(source_culture.get(faction_key, 0.0))
+				if faction_culture <= 0.0:
+					continue
+				var spread: float = faction_culture * spread_rate * distance_mod * season_mod
+				spread *= _get_culture_spread_bonus(str(source_city.get("current_faction_id", "")))
+				spread *= _get_trade_route_culture_multiplier(str(source_city.get("current_faction_id", "")), str(target_city.get("current_faction_id", "")))
+				spread *= _get_culture_incoming_modifier(target_owner)
+				if spread <= 0.0:
+					continue
+				var target_map: Dictionary = incoming.get(target_id, {})
+				target_map[str(faction_key)] = float(target_map.get(str(faction_key), 0.0)) + spread
+				incoming[target_id] = target_map
+
+	for city_v in total_cities:
+		var city: Dictionary = city_v as Dictionary
+		var city_id: String = str(city.get("id", ""))
+		var culture_map: Dictionary = _ensure_city_culture(city)
+		var owner: String = str(city.get("current_faction_id", ""))
+		var base_culture: float = float(int(city.get("city_level", 1)) * int(DataManager.get_balance_param("culture.base_culture_per_level")))
+		var production_bonus: float = _get_culture_production_bonus(owner, city)
+		var total_inflow: Dictionary = incoming.get(city_id, {})
+		var next_map: Dictionary = {}
+		for faction_key in _get_all_culture_factions():
+			var old_value: float = float(culture_map.get(faction_key, 0.0))
+			var inflow_value: float = float(total_inflow.get(faction_key, 0.0))
+			var radiation_input: float = minf(inflow_value / maxf(base_culture, 1.0), float(DataManager.get_balance_param("culture.decay.radiation_input_max")))
+			var after_decay: float = old_value * (1.0 - _get_culture_decay_rate(owner, radiation_input))
+			if str(faction_key) == owner:
+				after_decay += base_culture + production_bonus
+			if total_inflow.has(faction_key):
+				after_decay += inflow_value
+			after_decay = maxf(after_decay, 0.0)
+			next_map[str(faction_key)] = after_decay
+		var mainstream_culture: String = _get_mainstream_culture(next_map)
+		if mainstream_culture != "" and mainstream_culture != owner:
+			_apply_culture_flip(city, mainstream_culture, next_map)
+			continue
+		city["culture"] = next_map
+		city["mainstream_culture"] = mainstream_culture
+		_apply_culture_mismatch_effects(city)
+
+
+func _ensure_city_culture(city: Dictionary) -> Dictionary:
+	if city.is_empty():
+		return {}
+	if not city.has("culture") or not (city["culture"] is Dictionary):
+		var init_map: Dictionary = {}
+		for faction_id in _get_all_culture_factions():
+			init_map[faction_id] = 0.0
+		init_map[str(city.get("current_faction_id", city.get("faction_id", "")))] = 10.0
+		city["culture"] = init_map
+		city["mainstream_culture"] = _get_mainstream_culture(init_map)
+		return init_map
+	var culture_map: Dictionary = city["culture"]
+	for faction_id in _get_all_culture_factions():
+		if not culture_map.has(faction_id):
+			culture_map[faction_id] = 0.0
+	return culture_map
+
+
+func _get_all_culture_factions() -> Array[String]:
+	var out: Array[String] = []
+	for faction in DataManager.get_all_factions():
+		out.append(str((faction as Dictionary).get("id", "")))
+	return out
+
+
+func _get_mainstream_culture(culture_map: Dictionary) -> String:
+	var total: float = 0.0
+	var best_faction: String = ""
+	var best_value: float = 0.0
+	for faction_id in culture_map:
+		var value: float = float(culture_map.get(faction_id, 0.0))
+		total += value
+		if value > best_value:
+			best_value = value
+			best_faction = str(faction_id)
+	if total <= 0.0:
+		return ""
+	var flip_threshold: float = float(DataManager.get_balance_param("culture.flip_threshold"))
+	if best_value / total > flip_threshold:
+		return best_faction
+	return ""
+
+
+func _get_culture_decay_rate(owner: String, radiation_input: float) -> float:
+	var base_decay: float = float(DataManager.get_balance_param("culture.decay.base_decay_rate"))
+	var decay_reduction: float = float(DataManager.get_balance_param("culture.decay.decay_reduction"))
+	var decay_rate: float = base_decay - decay_reduction * clampf(radiation_input, 0.0, 1.0)
+	if SchoolManager.get_current_school(owner) == "daoism":
+		decay_rate *= 1.0 - _get_school_culture_effect(owner, "self_culture_decay_reduction")
+	return clampf(decay_rate, base_decay - decay_reduction, base_decay)
+
+
+func _get_culture_production_bonus(owner: String, city: Dictionary) -> float:
+	var bonus: float = 0.0
+	bonus += SchoolManager.get_effect_float(owner, "culture_spread_rate")
+	bonus += TechSystem.get_culture_bonus()
+	bonus += WonderManager.get_effect_float(owner, "culture_production_national")
+	bonus += _get_school_culture_effect(owner, "culture_production_bonus")
+	if str(city.get("special_resource", "")) == "culture":
+		var sr_mods: Dictionary = DataManager.get_balance_param("resources.special_resource_mod")
+		var culture_mod: Dictionary = sr_mods.get("culture", {})
+		bonus += float(culture_mod.get("culture_production", 0.0))
+		var academy_effect_bonus: float = float(culture_mod.get("academy_effect_bonus", 0.0))
+		for building in city.get("buildings", []):
+			if str((building as Dictionary).get("building_id", "")) == "academy":
+				bonus += academy_effect_bonus
+				break
+	return bonus
+
+
+func _get_culture_spread_bonus(owner: String) -> float:
+	return 1.0 + SchoolManager.get_effect_float(owner, "culture_spread_rate") + _get_school_culture_effect(owner, "culture_spread_rate")
+
+
+func _get_trade_route_culture_multiplier(owner: String, target_owner: String) -> float:
+	if owner == "" or target_owner == "" or owner == target_owner:
+		return 1.0
+	if not DiplomacySystem.have_trade_route(owner, target_owner):
+		return 1.0
+	var bonus: float = float(DataManager.get_balance_param("culture.trade_route.culture_spread_multiplier")) - 1.0
+	bonus += SchoolManager.get_effect_float(owner, "trade_route_culture_bonus")
+	bonus += _get_school_culture_effect(owner, "trade_route_culture_bonus")
+	return maxf(1.0 + bonus, 1.0)
+
+
+func _get_culture_incoming_modifier(owner: String) -> float:
+	var modifier: float = 1.0
+	modifier *= 1.0 - SchoolManager.get_effect_float(owner, "foreign_culture_resistance")
+	modifier *= 1.0 - SchoolManager.get_effect_float(owner, "culture_defense_bonus")
+	modifier *= 1.0 - SchoolManager.get_effect_float(owner, "culture_incoming_reduction")
+	modifier *= 1.0 - _get_school_culture_effect(owner, "foreign_culture_resistance")
+	modifier *= 1.0 - _get_school_culture_effect(owner, "culture_defense_bonus")
+	modifier *= 1.0 - _get_school_culture_effect(owner, "culture_incoming_reduction")
+	return maxf(modifier, 0.0)
+
+
+func _get_school_culture_effect(owner: String, effect_key: String) -> float:
+	var school_id: String = SchoolManager.get_current_school(owner)
+	var effects: Dictionary = DataManager.get_balance_param("culture.school_culture_effects")
+	var school_effects: Dictionary = effects.get(school_id, {})
+	return float(school_effects.get(effect_key, 0.0))
+
+
+func _hex_distance_from_city(a: Dictionary, b: Dictionary) -> int:
+	return HexAxial.hex_distance_hex(Vector2i(int(a.get("hex_q", 0)), int(a.get("hex_r", 0))), Vector2i(int(b.get("hex_q", 0)), int(b.get("hex_r", 0))))
+
+
+func _apply_culture_mismatch_effects(city: Dictionary) -> void:
+	var mainstream_culture: String = str(city.get("mainstream_culture", ""))
+	if mainstream_culture == "" or mainstream_culture == str(city.get("current_faction_id", "")):
+		return
+	var owner: String = str(city.get("current_faction_id", ""))
+	var old_stability: int = int(city.get("stability", 50))
+	var mismatch_penalty: int = int(DataManager.get_balance_param("stability.culture_mismatch_penalty"))
+	var new_stability: int = clampi(old_stability + mismatch_penalty, 0, 100)
+	city["stability"] = new_stability
+	if new_stability != old_stability:
+		SignalBus.stability_changed.emit(str(city.get("id", "")), old_stability, new_stability)
+	if bool(city.get("is_capital", false)):
+		GameManager.apply_faction_resource_delta(owner, "morale", int(DataManager.get_balance_param("culture.culture_mismatch_capital_morale_penalty")))
+
+
+func _apply_culture_flip(city: Dictionary, new_owner: String, culture_map: Dictionary) -> void:
+	var city_id: String = str(city.get("id", ""))
+	var old_owner: String = str(city.get("current_faction_id", ""))
+	if city_id == "" or old_owner == "" or new_owner == "" or old_owner == new_owner:
+		return
+	change_ownership(city_id, new_owner)
+	var retained: Dictionary = {}
+	for faction_id in _get_all_culture_factions():
+		retained[faction_id] = 0.0
+	retained[new_owner] = float(culture_map.get(new_owner, 0.0))
+	city["culture"] = retained
+	city["mainstream_culture"] = new_owner
+
+
+func _apply_military_occupation_culture(city: Dictionary, old_faction: String, new_faction: String) -> void:
+	var culture_map: Dictionary = _ensure_city_culture(city)
+	for faction_id in _get_all_culture_factions():
+		if faction_id == new_faction:
+			culture_map[faction_id] = float(DataManager.get_balance_param("culture.military_occupation.forced_culture_amount"))
+		elif faction_id == old_faction:
+			culture_map[faction_id] = maxf(float(culture_map.get(faction_id, 0.0)) - float(DataManager.get_balance_param("culture.military_occupation.culture_reduction_amount")), 0.0)
+		else:
+			culture_map[faction_id] = float(culture_map.get(faction_id, 0.0)) * 0.5
+	city["culture"] = culture_map
+	city["mainstream_culture"] = _get_mainstream_culture(culture_map)
 
 
 # ============= 驻军系统（Phase 5） =============
@@ -1026,6 +1373,8 @@ func _process_stability(city_id: String, faction_id: String) -> void:
 	var low_morale_threshold: int = int(stab_cfg.get("low_morale_threshold", 30))
 	if morale < low_morale_threshold:
 		delta += float(stab_cfg.get("low_morale_stability_penalty", -3))
+	delta += float(MinisterManager.get_city_stability_bonus(city_id))
+	delta += float(MinisterManager.get_city_stability_regen_bonus(city_id))
 
 	# 应用并 clamp
 	var new_stability: int = clampi(old_stability + int(delta), 0, 100)
@@ -1063,11 +1412,12 @@ func get_city_production(city_id: String) -> Dictionary:
 	var prod: Dictionary = {
 		"food": 0, "gold": 0, "wood": 0,
 		"horse": 0, "refined_iron": 0,
-		"craftsmen": 0, "building_materials": 0,
+		"craftsmen": 0, "building_materials": 0, "silk_books": 0,
 		"morale_bonus": 0, "defense_bonus": 0.0,
 		"recruit_speed_bonus": 0.0, "tax_bonus": 0.0,
 		"culture_production": 0,
 		"max_food_production": 0, "national_grain_cap": 0,
+		"food_gross": 0, "food_consumption": 0,
 	}
 	# 基础产出（路径来自 balance_params.json 实际结构）
 	var pop: int = int(city.get("current_population", 0))
@@ -1106,6 +1456,13 @@ func get_city_production(city_id: String) -> Dictionary:
 	# 应用百分比加成（基础值 × 累加倍率）
 	prod["food"] = int(base_food * (1.0 + food_bonus))
 	prod["gold"] = int(base_gold * (1.0 + gold_bonus))
+	prod["food"] += MinisterManager.get_city_food_flat_bonus(city_id)
+	prod["gold"] += MinisterManager.get_city_gold_flat_bonus(city_id)
+	prod["gold"] = int(round(float(prod["gold"]) * (1.0 + MinisterManager.get_city_gold_bonus(city_id))))
+	var minister_output_bonus: float = MinisterManager.get_city_output_bonus(city_id)
+	if minister_output_bonus > 0.0:
+		for resource in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books"]:
+			prod[resource] = int(round(float(prod.get(resource, 0)) * (1.0 + minister_output_bonus)))
 	# 粮仓 max_food_production 上限截断
 	var max_fp: int = int(prod.get("max_food_production", 0))
 	if max_fp > 0 and prod["food"] > max_fp:
@@ -1114,16 +1471,31 @@ func get_city_production(city_id: String) -> Dictionary:
 	var sr: Variant = city.get("special_resource", null)
 	if sr != null:
 		_apply_special_resource_modifier(prod, str(sr))
-	# 粮食消耗（人口吃饭）
-	var food_consume_per_pop: int = int(DataManager.get_balance_param("population.food_consume_per_pop"))
-	prod["food"] -= pop * food_consume_per_pop
 	# 安定度修正
 	var stability: int = int(city.get("stability", 50))
 	var stab_effect: Dictionary = get_stability_threshold_effect(stability)
 	var stab_mod: float = float(stab_effect.get("production_mod", 1.0))
+	var service_effect: Dictionary = GameManager.get_service_penalty_effect(str(city.get("current_faction_id", "")))
+	var service_food_mod: float = float(service_effect.get("food_mod", 1.0))
+	var service_gold_mod: float = float(service_effect.get("gold_mod", 1.0))
 	prod["food"] = int(prod["food"] * stab_mod)
 	prod["gold"] = int(prod["gold"] * stab_mod)
 	prod["wood"] = int(prod["wood"] * stab_mod)
+	prod["food"] = int(prod["food"] * service_food_mod)
+	prod["gold"] = int(prod["gold"] * service_gold_mod)
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	var all_output_bonus: float = SchoolManager.get_effect_float(faction_id, "all_output_bonus")
+	all_output_bonus += GameManager._get_confucian_prosperity_bonus(faction_id)
+	if all_output_bonus > 0.0:
+		for resource in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books"]:
+			prod[resource] = int(round(float(prod.get(resource, 0)) * (1.0 + all_output_bonus)))
+	var base_food_consume_per_pop: float = float(DataManager.get_balance_param("population.food_consume_per_pop"))
+	var food_consumption_reduction: float = GameManager.get_food_consumption_reduction(faction_id)
+	var food_consume_per_pop: int = int(round(base_food_consume_per_pop * (1.0 - food_consumption_reduction)))
+	food_consume_per_pop = maxi(0, food_consume_per_pop)
+	prod["food_gross"] = int(prod["food"])
+	prod["food_consumption"] = pop * food_consume_per_pop
+	prod["food"] = int(prod["food_gross"]) - int(prod["food_consumption"])
 	return prod
 
 
@@ -1132,7 +1504,7 @@ func get_faction_total_production(faction_id: String) -> Dictionary:
 	var total: Dictionary = {
 		"food": 0, "gold": 0, "wood": 0,
 		"horse": 0, "refined_iron": 0,
-		"craftsmen": 0, "building_materials": 0,
+		"craftsmen": 0, "building_materials": 0, "silk_books": 0,
 	}
 	var season: String = get_current_season(GameManager.get_current_turn())
 	var cities: Array = get_faction_city_states(faction_id)
@@ -1148,6 +1520,7 @@ func get_faction_total_production(faction_id: String) -> Dictionary:
 		total["refined_iron"] += int(season_prod.get("refined_iron", 0))
 		total["craftsmen"] += int(season_prod.get("craftsmen", 0))
 		total["building_materials"] += int(season_prod.get("building_materials", 0))
+		total["silk_books"] += int(season_prod.get("silk_books", 0))
 	return total
 
 
@@ -1167,7 +1540,12 @@ func _apply_season_modifier(prod: Dictionary, season: String) -> Dictionary:
 	var wood_mod: Dictionary = DataManager.get_balance_param("resources.season_wood_mod")
 	var craftsmen_mod: Dictionary = DataManager.get_balance_param("resources.season_craftsmen_mod")
 	var bm_mod: Dictionary = DataManager.get_balance_param("resources.season_building_materials_mod")
-	result["food"] = int(result["food"] * float(food_mod.get(season, 1.0)))
+	var season_food_mod: float = float(food_mod.get(season, 1.0))
+	if result.has("food_gross") and result.has("food_consumption"):
+		result["food_gross"] = int(result["food_gross"] * season_food_mod)
+		result["food"] = int(result["food_gross"]) - int(result["food_consumption"])
+	else:
+		result["food"] = int(result["food"] * season_food_mod)
 	result["gold"] = int(result["gold"] * float(gold_mod.get(season, 1.0)))
 	result["wood"] = int(result["wood"] * float(wood_mod.get(season, 1.0)))
 	result["craftsmen"] = int(result["craftsmen"] * float(craftsmen_mod.get(season, 1.0)))
@@ -1189,6 +1567,22 @@ func _apply_special_resource_modifier(prod: Dictionary, special_resource: String
 		var sr_data: Dictionary = sr_production[special_resource]
 		if not prod.has(special_resource):
 			prod[special_resource] = int(sr_data.get("city_base_production", 0))
+
+
+func _add_recruitable_unit(units: Array[String], unit_id: String) -> void:
+	if units.has(unit_id):
+		return
+	if _unit_requires_tech(unit_id) and not TechSystem.is_unit_unlocked(unit_id):
+		return
+	units.append(unit_id)
+
+
+func _unit_requires_tech(unit_id: String) -> bool:
+	for tech in DataManager.get_all_techs():
+		var effect: Dictionary = (tech as Dictionary).get("effects", {})
+		if effect.get("type", "") == "unlock_unit" and str(effect.get("unit_id", "")) == unit_id:
+			return true
+	return false
 
 
 # ============= 内部 =============
@@ -1274,12 +1668,24 @@ func _city_building_level(city: Dictionary, building_id: String) -> int:
 
 ## 升级到下一级的成本（从 levels[current_level] 读取）。
 ## 返回 [cost_gold, cost_wood]。
-func _calculate_upgrade_cost(building: Dictionary, current_level: int) -> Array:
+func _calculate_upgrade_cost(building: Dictionary, current_level: int, faction_id: String = "") -> Array[int]:
 	var levels: Array = building.get("levels", [])
 	if current_level >= levels.size():
 		return [0, 0]
 	var lv: Dictionary = levels[current_level]
-	return [int(lv.get("cost_gold", 0)), int(lv.get("cost_wood", 0))]
+	return _apply_build_cost_reduction(
+		faction_id,
+		int(lv.get("cost_gold", 0)),
+		int(lv.get("cost_wood", 0))
+	)
+
+
+func _apply_build_cost_reduction(faction_id: String, cost_gold: int, cost_wood: int) -> Array[int]:
+	var reduction: float = clampf(SchoolManager.get_effect_float(faction_id, "build_cost_reduction"), 0.0, 0.95)
+	return [
+		int(round(float(cost_gold) * (1.0 - reduction))),
+		int(round(float(cost_wood) * (1.0 - reduction)))
+	]
 
 
 ## 该城市 build_queue 中「新建」类型的项数（即 building_id 未在 buildings 中）。

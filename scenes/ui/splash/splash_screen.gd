@@ -5,25 +5,45 @@ extends Control
 @onready var logo: TextureRect = $LogoContainer/Logo
 @onready var anim: AnimationPlayer = $AnimationPlayer
 
+const SPLASH_BG_COLOR: Color = Color(0.055, 0.059, 0.063, 1.0)
+
 var _finished := false
 
+func _debug_log(message: String) -> void:
+	if OS.has_feature("debug"):
+		print(message)
+
+
 func _ready() -> void:
-	print("[Splash] _ready 执行")
-	bg.color = Color.BLACK
+	_debug_log("[Splash] _ready 执行")
+	bg.color = SPLASH_BG_COLOR
 	logo.modulate.a = 0.0
 
 	# 绑定 Logo 纹理
-	var logo_path := "res://photos/logo/logo_shanhece.png"
+	var logo_path := "res://assets/ui/logo/logo.png"
 	if ResourceLoader.exists(logo_path):
 		var tex: Texture2D = load(logo_path) as Texture2D
 		logo.texture = tex
-		print("[Splash] Logo 已加载: %s" % str(tex.get_size()))
+		_apply_logo_size(tex)
+		_debug_log("[Splash] Logo 已加载: %s" % str(tex.get_size()))
 	else:
-		print("[Splash] Logo 文件不存在")
+		_debug_log("[Splash] Logo 文件不存在")
 
 	# 创建简单动画
 	_create_animation()
 	anim.play("splash")
+
+func _apply_logo_size(tex: Texture2D) -> void:
+	var texture_size: Vector2 = tex.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var max_width: float = viewport_size.x * 0.72
+	var max_height: float = viewport_size.y * 0.32
+	var scale_ratio: float = min(max_width / texture_size.x, max_height / texture_size.y, 1.0)
+
+	logo.custom_minimum_size = texture_size * scale_ratio
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and not _finished:
@@ -49,8 +69,8 @@ func _create_animation() -> void:
 	# 背景淡出
 	var track_bg := lib.add_track(Animation.TYPE_VALUE)
 	lib.track_set_path(track_bg, "Background:color")
-	lib.track_insert_key(track_bg, 0.0, Color.BLACK)
-	lib.track_insert_key(track_bg, 3.5, Color.BLACK)
+	lib.track_insert_key(track_bg, 0.0, SPLASH_BG_COLOR)
+	lib.track_insert_key(track_bg, 3.5, SPLASH_BG_COLOR)
 	lib.track_insert_key(track_bg, 4.5, Color(0, 0, 0, 0))
 
 	# 动画结束回调

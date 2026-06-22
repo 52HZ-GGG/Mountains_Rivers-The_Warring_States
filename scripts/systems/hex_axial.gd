@@ -49,6 +49,15 @@ static func axial_flat_top_cell_top_left(q: int, r: int, circumradius_px: float)
 	return Vector2(cx - bw * 0.5, cy - bh * 0.5)
 
 
+## 平顶六角 + 轴向：像素中心坐标 -> 轴向坐标（cube rounding）。
+static func pixel_flat_top_to_axial(point: Vector2, circumradius_px: float) -> Vector2i:
+	if circumradius_px <= 0.0:
+		return Vector2i.ZERO
+	var qf: float = (2.0 / 3.0 * point.x) / circumradius_px
+	var rf: float = ((-1.0 / 3.0) * point.x + (sqrt(3.0) / 3.0) * point.y) / circumradius_px
+	return _round_axial(qf, rf)
+
+
 ## 战术盘面摆放：JSON 列/行 → 轴向 → 平顶像素左上角（与蜂窝朝向一致）
 static func offset_odd_r_flat_top_cell_top_left(col: int, row: int, circumradius_px: float) -> Vector2:
 	var ax: Vector2i = offset_odd_r_to_axial(col, row)
@@ -116,3 +125,18 @@ static func iter_rect(q_min: int, q_max: int, r_min: int, r_max: int) -> Array[V
 			r += 1
 		q += 1
 	return cells
+
+
+static func _round_axial(qf: float, rf: float) -> Vector2i:
+	var sf: float = -qf - rf
+	var q: int = int(round(qf))
+	var r: int = int(round(rf))
+	var s: int = int(round(sf))
+	var q_diff: float = absf(float(q) - qf)
+	var r_diff: float = absf(float(r) - rf)
+	var s_diff: float = absf(float(s) - sf)
+	if q_diff > r_diff and q_diff > s_diff:
+		q = -r - s
+	elif r_diff > s_diff:
+		r = -q - s
+	return Vector2i(q, r)

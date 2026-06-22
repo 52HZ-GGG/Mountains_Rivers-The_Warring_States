@@ -537,9 +537,22 @@ func _normalize_docs() -> void:
 func _build_default_control_doc() -> Dictionary:
 	return {
 		"schema_version": "1.0",
-		"description": "大地图政治统治范围覆盖层；未覆盖格按城市 jurisdiction_radius 自动推导",
+		"description": "大地图政治统治范围覆盖层；未覆盖格按城市控制者、等级、首都、发展度推导临时影响圈",
 		"map_width": int(_terrain_doc.get("map_width", 0)),
 		"map_height": int(_terrain_doc.get("map_height", 0)),
+		"derived_radius_rules": {
+			"level_radii": {
+				"1": 4,
+				"2": 5,
+				"3": 6,
+				"4": 7,
+				"5": 8,
+			},
+			"capital_bonus_radius": 2,
+			"development_bonus_threshold": 50,
+			"development_bonus_radius": 1,
+			"neutral_radius": 2,
+		},
 		"overrides": [],
 	}
 
@@ -577,6 +590,7 @@ func _build_control_save_doc() -> Dictionary:
 		"description": str(_control_doc.get("description", "")),
 		"map_width": get_map_width(),
 		"map_height": get_map_height(),
+		"derived_radius_rules": (_control_doc.get("derived_radius_rules", {}) as Dictionary).duplicate(true),
 		"overrides": overrides,
 	}
 
@@ -648,7 +662,8 @@ func _ensure_resolved_control() -> void:
 	_resolved_control_cache = BigMapPoliticalControl.build_resolved_control_grid(
 		get_all_cities(),
 		get_overrides(),
-		get_map_size()
+		get_map_size(),
+		_control_doc.get("derived_radius_rules", {})
 	)
 	_resolved_control_dirty = false
 

@@ -16,6 +16,10 @@ func before_each() -> void:
 	GameManager.reset()
 	# 子任务 4 后 check_victory 依赖 CityManager 状态；同步重置防止跨脚本污染。
 	CityManager.reset()
+	MinisterManager.reset()
+	TechSystem.reset()
+	SchoolManager.reset()
+	WonderManager.reset()
 	# Phase 2：防止随机事件干扰民心测试
 	EventManager.set_muted(true)
 
@@ -122,9 +126,9 @@ func test_season_morale_summer() -> void:
 	# 跑完一轮到 turn 2 = summer
 	GameManager.end_current_turn()  # qin → zhao
 	GameManager.end_current_turn()  # zhao → turn 2, summer
-	# 55 + summer(-5) = 50
-	assert_eq(GameManager.get_player_morale(), 50,
-		"夏季民心应为 50（55 + summer -5）")
+	# 55 + base_drift(-1) + summer(-5) = 49
+	assert_eq(GameManager.get_player_morale(), 49,
+		"夏季民心应为 49（55 + base_drift -1 + summer -5）")
 
 
 func test_season_morale_autumn() -> void:
@@ -142,9 +146,9 @@ func test_season_morale_winter() -> void:
 	# 跑到 turn 4 = winter
 	for i in 6:
 		GameManager.end_current_turn()
-	# 60 + winter(-10) = 50
-	assert_eq(GameManager.get_player_morale(), 50,
-		"冬季民心应为 50（60 + winter -10）")
+	# 60 + base_drift(-1) + winter(-10) = 49
+	assert_eq(GameManager.get_player_morale(), 49,
+		"冬季民心应为 49（60 + base_drift -1 + winter -10）")
 
 
 func test_season_morale_cycle_returns_to_start() -> void:
@@ -168,12 +172,24 @@ func test_default_tax_rate_is_0_3() -> void:
 func test_set_tax_rate_valid() -> void:
 	assert_true(GameManager.set_tax_rate(0.1), "设置轻税 10% 应成功")
 	assert_eq(GameManager.get_tax_rate(), 0.1)
-	assert_true(GameManager.set_tax_rate(0.5), "设置苛税 50% 应成功")
+
+
+func test_set_tax_rate_applies_one_time_morale_change_and_cooldown() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var morale_before: int = GameManager.get_player_morale()
+	assert_true(GameManager.set_tax_rate(0.1), "首次改税应成功")
+	assert_eq(GameManager.get_player_morale(), morale_before + 15, "轻税应一次性提升民心")
+	assert_false(GameManager.set_tax_rate(0.5), "冷却中不应再次改税")
+	assert_eq(GameManager.get_tax_rate(), 0.1, "冷却中税率应保持不变")
+
+
+func test_tax_rate_cooldown_expires_after_turns() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	assert_true(GameManager.set_tax_rate(0.1))
+	for i in 20:
+		GameManager.end_current_turn()
+	assert_true(GameManager.set_tax_rate(0.5), "冷却结束后应允许再次改税")
 	assert_eq(GameManager.get_tax_rate(), 0.5)
-	assert_true(GameManager.set_tax_rate(0.2), "设置低税 20% 应成功")
-	assert_eq(GameManager.get_tax_rate(), 0.2)
-	assert_true(GameManager.set_tax_rate(0.4), "设置重税 40% 应成功")
-	assert_eq(GameManager.get_tax_rate(), 0.4)
 
 
 func test_set_tax_rate_out_of_range_rejected() -> void:
@@ -199,13 +215,112 @@ func test_national_grain_pool_reset() -> void:
 	assert_eq(GameManager.get_national_grain_pool(), 0, "reset 后粮仓应为 0")
 
 
+func test_national_grain_cap_includes_storage_buildings() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var city_id: String = str(CityManager.get_capital_state("qin")["id"])
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	(city["buildings"] as Array).append({"building_id": "granary", "level": 1})
+	(city["buildings"] as Array).append({"building_id": "warehouse", "level": 2})
+	assert_eq(GameManager.get_national_grain_cap("qin"), 330,
+		"国家粮仓上限应为基础 200 + 粮仓 50 + 仓库 80")
+
+
+func test_process_production_applies_tax_rate_to_food_and_gold() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager.set_tax_rate(0.1)
+	var total: Dictionary = CityManager.get_faction_total_production("qin")
+	GameManager._process_production("qin")
+	assert_eq(GameManager.get_player_food(), int(total["food"] * 0.1), "粮食应按税率入库")
+	assert_eq(GameManager.get_player_gold(), int(total["gold"] * 0.1), "金钱应按税率入库")
+
+
+func test_preview_faction_turn_income_matches_production_and_upkeep() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager.apply_wood_delta(-GameManager.get_player_wood())
+	GameManager.set_tax_rate(0.1)
+	var preview: Dictionary = GameManager.preview_faction_turn_income("qin")
+	var deltas: Dictionary = preview.get("deltas", {})
+	GameManager._process_production("qin")
+	GameManager._apply_upkeep("qin")
+	assert_eq(GameManager.get_player_food(), int(deltas.get("food", 0)), "资源栏预览粮食变化应匹配真实产出与维护")
+	assert_eq(GameManager.get_player_gold(), int(deltas.get("gold", 0)), "资源栏预览金币变化应匹配真实产出与维护")
+	assert_eq(GameManager.get_player_wood(), int(deltas.get("wood", 0)), "资源栏预览木材变化应匹配真实产出")
+
+
+func test_process_production_applies_morale_tax_efficiency() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager.apply_morale_delta(45)
+	GameManager.set_tax_rate(0.3)
+	var total: Dictionary = CityManager.get_faction_total_production("qin")
+	GameManager._process_production("qin")
+	assert_eq(GameManager.get_player_gold(), int(total["gold"] * 0.3 * 1.2),
+		"高民心应提升税收效率")
+
+
+func test_process_production_applies_corruption_tax_penalty() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	var qin_cities: Array = CityManager.get_faction_city_states("qin")
+	while qin_cities.size() < 9:
+		var clone: Dictionary = qin_cities[0].duplicate(true)
+		clone["id"] = "temp_%d" % qin_cities.size()
+		clone["current_faction_id"] = "qin"
+		clone["current_population"] = 30
+		clone["hex_q"] = 50 + qin_cities.size()
+		clone["hex_r"] = 50
+		CityManager._city_states[clone["id"]] = clone
+		qin_cities = CityManager.get_faction_city_states("qin")
+	var total: Dictionary = CityManager.get_faction_total_production("qin")
+	GameManager._process_production("qin")
+	assert_lt(GameManager.get_player_gold(), int(total["gold"] * 0.3), "高腐败应压低税收效率")
+
+
+func test_process_production_clamps_gold_and_wood_to_caps() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager.apply_wood_delta(-GameManager.get_player_wood())
+	GameManager.apply_gold_delta(490)
+	GameManager.apply_wood_delta(195)
+	GameManager._process_production("qin")
+	assert_eq(GameManager.get_player_gold(), GameManager.get_resource_cap("gold", "qin"), "金钱应受国家上限限制")
+	assert_eq(GameManager.get_player_wood(), GameManager.get_resource_cap("wood", "qin"), "木材应受国家上限限制")
+
+
+func test_process_production_adds_silk_books_from_scriptorium() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_silk_books_delta(-GameManager.get_player_silk_books())
+	var city_id: String = str(CityManager.get_capital_state("qin")["id"])
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	(city["buildings"] as Array).append({"building_id": "scriptorium", "level": 1})
+	GameManager._process_production("qin")
+	assert_eq(GameManager.get_player_silk_books(), 5, "藏书阁应把帛书产出入国家资源池")
+
+
+func test_process_production_clamps_silk_books_to_cap() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var city_id: String = str(CityManager.get_capital_state("qin")["id"])
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	(city["buildings"] as Array).append({"building_id": "scriptorium", "level": 1})
+	GameManager.apply_silk_books_delta(GameManager.get_resource_cap("silk_books", "qin") - 2)
+	GameManager._process_production("qin")
+	assert_eq(GameManager.get_player_silk_books(), GameManager.get_resource_cap("silk_books", "qin"), "帛书应受国家上限限制")
+
+
 # ============= 民心阈值效果（Phase 2） =============
 
 func test_morale_threshold_high() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 初始民心 50 + spring +5 = 55 → 40-59 区间（民心低落）
+	# 初始民心 50 + spring +5 = 55 → 中档
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
-	assert_eq(effect["production_mod"], 0.9, "民心 55 应为产出 -10%（40-59 区间）")
+	assert_eq(effect["tax_mod"], 1.0, "民心 55 税收效率应正常")
+	assert_eq(effect["recruit_mod"], 1.0, "民心 55 征兵速度应正常")
 
 
 func test_morale_threshold_very_high() -> void:
@@ -214,7 +329,8 @@ func test_morale_threshold_very_high() -> void:
 	for i in 6:
 		GameManager.apply_morale_delta(5)  # 55 + 30 = 85
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
-	assert_eq(effect["production_mod"], 1.1, "民心 85 应为产出 +10%")
+	assert_eq(effect["tax_mod"], 1.2, "民心 85 税收效率应 +20%")
+	assert_eq(effect["recruit_mod"], 1.3, "民心 85 征兵速度应 +30%")
 
 
 func test_morale_threshold_low() -> void:
@@ -222,21 +338,24 @@ func test_morale_threshold_low() -> void:
 	# 降到 40-59 区间
 	GameManager.apply_morale_delta(-10)  # 55 - 10 = 45
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
-	assert_eq(effect["production_mod"], 0.9, "民心 45 应为产出 -10%")
+	assert_eq(effect["tax_mod"], 0.8, "民心 45 税收效率应 -20%")
+	assert_eq(effect["recruit_mod"], 0.8, "民心 45 征兵速度应 -20%")
 
 
 func test_morale_threshold_very_low() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	GameManager.apply_morale_delta(-30)  # 55 - 30 = 25
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
-	assert_eq(effect["production_mod"], 0.75, "民心 25 应为产出 -25%")
+	assert_eq(effect["tax_mod"], 0.5, "民心 25 税收效率应 -50%")
+	assert_eq(effect["recruit_mod"], 0.8, "民心 25 征兵速度应 -20%")
 
 
 func test_morale_threshold_rebellion() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	GameManager.apply_morale_delta(-55)  # 55 - 55 = 0
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
-	assert_eq(effect["production_mod"], 0.5, "民心 0 应为产出 -50%（叛乱风险）")
+	assert_eq(effect["tax_mod"], 0.5, "民心 0 税收效率应 -50%")
+	assert_eq(effect["morale_atk_mod"], 0.7, "民心 0 战斗攻击修正应为 70%")
 
 
 # ============= 兵种构成系统（Phase 3） =============
@@ -316,6 +435,19 @@ func test_conscription_pool_fills_on_turn() -> void:
 	assert_eq(pool, expected_fill, "征兵池应为 pop × 0.1")
 
 
+func test_high_morale_accelerates_conscription_fill() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	CityManager.conscribe(city_id, CityManager.get_conscription_pool(city_id))
+	GameManager.apply_morale_delta(45)
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	var pop: int = int(CityManager.get_city_state(city_id).get("current_population", 0))
+	var expected_fill: int = int(pop * 0.1 * 1.3)
+	assert_eq(CityManager.get_conscription_pool(city_id), expected_fill, "高民心应提升征兵池填充速度")
+
+
 func test_conscription_pool_cap() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	var capital: Dictionary = CityManager.get_capital_state("qin")
@@ -359,6 +491,279 @@ func test_faction_conscription_pool_sum() -> void:
 	# 首回合后各城已填充
 	var total: int = CityManager.get_faction_conscription_pool("qin")
 	assert_gt(total, 0, "faction 征兵池总和应大于 0")
+
+
+func test_city_level_unlocks_basic_recruit_units() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var units: Array[String] = CityManager.get_recruitable_units(str(capital["id"]))
+	assert_true(units.has("militia"), "城市等级应至少解锁民兵")
+	assert_true(units.has("infantry"), "高等级城市应按等级解锁步兵")
+
+
+func test_military_building_unlocks_recruit_units() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	var state: Dictionary = CityManager.get_city_state(city_id)
+	state["city_level"] = 1
+	(state["buildings"] as Array).append({"building_id": "barracks", "level": 2})
+	var units: Array[String] = CityManager.get_recruitable_units(city_id)
+	assert_true(units.has("spear"), "二级兵营应解锁枪刺兵")
+
+
+func test_recruit_unit_from_city_consumes_pool_population_resources_and_adds_units() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	var pop_before: int = int(capital["current_population"])
+	var food_before: int = GameManager.get_player_food()
+	var gold_before: int = GameManager.get_player_gold()
+	var result: Dictionary = GameManager.recruit_unit_from_city(city_id, "militia", 1)
+	assert_true(result["success"], "民兵招募应成功")
+	assert_eq(result["recruited"], 1, "应招募 1 队民兵")
+	assert_eq(GameManager.get_unit_composition("qin").get("militia", 0), 1, "兵种构成应增加民兵")
+	assert_eq(int(CityManager.get_city_state(city_id).get("current_population")), pop_before - 1, "征兵应减少城市人口")
+	assert_eq(GameManager.get_player_population(), maxi(0, 10 - 1), "征兵应同步减少国家人口")
+	assert_eq(GameManager.get_player_gold(), gold_before - 20, "应扣除民兵金钱成本")
+	assert_eq(GameManager.get_player_food(), food_before - 5, "应扣除民兵粮食成本")
+
+
+func test_service_penalty_reduces_city_food_and_gold_output() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	var before: Dictionary = CityManager.get_city_production(city_id)
+	GameManager.add_units("qin", "infantry", 2)
+	var after: Dictionary = CityManager.get_city_production(city_id)
+	assert_lt(int(after["food"]), int(before["food"]), "服役比例过高应降低粮食产出")
+	assert_lt(int(after["gold"]), int(before["gold"]), "服役比例过高应降低金钱产出")
+
+
+func test_service_penalty_reduces_population_growth_progress() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	var state: Dictionary = CityManager.get_city_state(city_id)
+	state["growth_progress"] = 0.0
+	CityManager.process_turn("qin")
+	var normal_progress: float = float(CityManager.get_city_state(city_id).get("growth_progress", 0.0))
+	CityManager.reset()
+	GameManager.reset()
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	state = CityManager.get_city_state(city_id)
+	state["growth_progress"] = 0.0
+	GameManager.add_units("qin", "infantry", 2)
+	CityManager.process_turn("qin")
+	var penalized_progress: float = float(CityManager.get_city_state(city_id).get("growth_progress", 0.0))
+	assert_lt(penalized_progress, normal_progress, "服役比例过高应降低人口增长进度")
+
+
+func test_city_famine_reduces_population_and_stability() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	var state: Dictionary = CityManager.get_city_state(city_id)
+	state["current_population"] = 100
+	state["stability"] = 50
+	CityManager.process_turn("qin")
+	var after: Dictionary = CityManager.get_city_state(city_id)
+	assert_eq(int(after["current_population"]), 99, "城市饥荒应损失 1 人口")
+	assert_eq(CityManager.get_city_stability(city_id), 40, "城市饥荒应降低 10 安定度")
+
+
+func test_city_food_consumption_is_not_scaled_by_stability() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var capital: Dictionary = CityManager.get_capital_state("qin")
+	var city_id: String = str(capital["id"])
+	var state: Dictionary = CityManager.get_city_state(city_id)
+	state["current_population"] = 10
+	state["stability"] = 85
+	var high: Dictionary = CityManager.get_city_production(city_id)
+	state["stability"] = 20
+	var low: Dictionary = CityManager.get_city_production(city_id)
+	assert_eq(int(high["food_consumption"]), int(low["food_consumption"]), "人口自耗不应受安定度修正")
+	assert_eq(int(low["food"]), int(low["food_gross"]) - int(low["food_consumption"]), "净粮食应为修正后毛产出减人口自耗")
+
+
+func test_grain_shortage_reduces_morale_and_sets_combat_mods() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.add_units("qin", "infantry", 1)
+	var morale_before: int = GameManager.get_player_morale()
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_true(GameManager.has_grain_shortage("qin"), "军粮不足应记录断粮状态")
+	assert_eq(GameManager.get_player_morale(), morale_before - 11, "军粮不足应与夏季/base_drift一并结算民心")
+	assert_eq(GameManager.get_grain_shortage_attack_mod("qin"), 0.8, "断粮攻击修正应为 0.8")
+	assert_eq(GameManager.get_grain_shortage_defense_mod("qin"), 0.8, "断粮防御修正应为 0.8")
+
+
+func test_apply_upkeep_charges_building_upkeep() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager.apply_gold_delta(100)
+	var city_id: String = str(CityManager.get_capital_state("qin")["id"])
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	(city["buildings"] as Array).append({"building_id": "market", "level": 2})
+	GameManager._apply_upkeep("qin")
+	assert_eq(GameManager.get_player_gold(), 84, "二级市集应收取 16 金维护费")
+
+
+func test_food_consumption_reduction_reduces_city_consumption() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var city_id: String = str(CityManager.get_capital_state("chu")["id"])
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	city["current_population"] = 10
+	city["current_faction_id"] = "chu"
+	var production: Dictionary = CityManager.get_city_production(city_id)
+	assert_eq(int(production["food_consumption"]), 10, "当前实现按整型回合资源结算，道家一级 5% 不应产生额外向下取整损失")
+
+
+func test_base_drift_moves_morale_toward_50() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_morale_delta(25) # 55 -> 80
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 74, "高于 50 时应受 base_drift 影响逐回回落")
+
+
+func test_war_weariness_applies_after_threshold() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	DiplomacySystem.declare_war("qin", "zhao")
+	for i in 40:
+		GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 45, "战争超过 20 回合后应开始每回合 -2 厌战")
+
+
+func test_victory_bonus_applies_for_three_turns_after_capital_capture() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var zhao_capital_id: String = str(CityManager.get_capital_state("zhao").get("id", ""))
+	CityManager.change_ownership(zhao_capital_id, "qin")
+	assert_eq(GameManager.get_player_morale(), 55, "攻陷敌都不应立即改变攻方当前民心")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 56, "第 1 个玩家新回合应叠加季节/基础漂移后再结算一次胜利激励")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 72, "第 2 个玩家新回合应继续结算胜利激励")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 68, "第 3 个玩家新回合应结算最后一次胜利激励")
+
+
+func test_capital_captured_recovery_restores_morale_until_cap() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var qin_capital_id: String = str(CityManager.get_capital_state("qin").get("id", ""))
+	CityManager.change_ownership(qin_capital_id, "zhao")
+	assert_eq(GameManager.get_player_morale(), 35, "首都失守应立即 -20 民心")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 33, "失都后恢复应与季节/基础漂移共同结算")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 40, "第 2 个玩家新回合仍应继续恢复")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 47, "恢复到上限前仍应继续结算，且受冬季修正影响")
+
+
+func test_war_weariness_recovers_after_ceasefire() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	DiplomacySystem.declare_war("qin", "zhao")
+	for i in 40:
+		GameManager.end_current_turn()
+	DiplomacySystem.accept_ceasefire("qin", "zhao", {})
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_gt(GameManager.get_player_morale(), 45, "停战后厌战惩罚应逐步恢复")
+
+
+func test_wonder_food_bonus_applies_to_production() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager._process_production("qin")
+	var baseline_food: int = GameManager.get_player_food()
+	WonderManager.set_wonder_owner("dujiangyan", "qin")
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager._process_production("qin")
+	assert_gt(GameManager.get_player_food(), baseline_food, "都江堰应提高粮食税入")
+
+
+func test_wonder_gold_bonus_applies_to_production() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager._process_production("qin")
+	var baseline_gold: int = GameManager.get_player_gold()
+	WonderManager.set_wonder_owner("honggou", "qin")
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager._process_production("qin")
+	assert_gt(GameManager.get_player_gold(), baseline_gold, "鸿沟应提高金钱税入")
+
+
+func test_confucian_morale_cap_allows_runtime_over_100() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	SchoolManager.set_current_school("qin", "confucianism")
+	SchoolManager.add_school_exp("qin", 130)
+	GameManager.apply_morale_delta(200)
+	assert_eq(GameManager.get_player_morale(), 120, "儒家 3 级时民心应允许达到运行时上限 120")
+
+
+func test_wonder_tax_bonus_and_morale_bonus_apply() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager._process_production("qin")
+	var baseline_gold: int = GameManager.get_player_gold()
+	GameManager.reset()
+	CityManager.reset()
+	MinisterManager.reset()
+	TechSystem.reset()
+	SchoolManager.reset()
+	WonderManager.reset()
+	EventManager.set_muted(true)
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	WonderManager.set_wonder_owner("honggou", "qin")
+	WonderManager.set_wonder_owner("terracotta_army", "qin")
+	GameManager._process_production("qin")
+	assert_gt(GameManager.get_player_gold(), baseline_gold, "鸿沟应同时提高金钱产出与税收效率")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_player_morale(), 59, "兵马俑全国民心应在下一次玩家民心结算中生效")
+
+
+func test_wonder_corruption_reduction_applies() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	var before: float = GameManager.get_corruption_value("qin")
+	WonderManager.set_wonder_owner("jixia_academy", "qin")
+	var after: float = GameManager.get_corruption_value("qin")
+	assert_lt(after, before, "稷下学宫应降低全国腐败值")
+
+
+func test_cultural_victory_counter_exists_after_start() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	assert_eq(GameManager.check_victory(), "", "开局不应直接触发胜利")
+
+
+func test_cultural_victory_counter_ticks_once_per_full_round() -> void:
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	for city_v in CityManager.get_all_city_states():
+		var city: Dictionary = city_v as Dictionary
+		city["mainstream_culture"] = "qin"
+	GameManager._cultural_victory_turns["qin"] = 0
+	var before: int = int(GameManager._cultural_victory_turns.get("qin", 0))
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	var after_first_round: int = int(GameManager._cultural_victory_turns.get("qin", 0))
+	assert_eq(after_first_round, before + 1, "完整大回合应只推进一次文化胜利计数")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	var after_second_round: int = int(GameManager._cultural_victory_turns.get("qin", 0))
+	assert_eq(after_second_round, before + 2, "两个完整大回合应累计推进两次")
 
 
 # ============= 城池 HP 系统（Phase 4） =============

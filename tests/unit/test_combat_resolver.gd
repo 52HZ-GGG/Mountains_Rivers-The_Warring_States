@@ -193,6 +193,20 @@ func test_compute_damage_with_context() -> void:
 	)
 	assert_true(int(res.get("damage", 0)) >= 1)
 
+
+func test_compute_damage_national_morale_attack_modifier() -> void:
+	var rng2: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng2.seed = 42
+	var low: Dictionary = _combat.compute_damage(
+		"infantry", "infantry", "plains", 100, 100, rng2, {"faction_atk": -0.3},
+	)
+	rng2.seed = 42
+	var normal: Dictionary = _combat.compute_damage(
+		"infantry", "infantry", "plains", 100, 100, rng2,
+	)
+	assert_true(int(low.get("damage", 0)) < int(normal.get("damage", 0)),
+		"低民心映射到国家攻击修正后应降低伤害")
+
 func test_compute_damage_broken_morale_reduced() -> void:
 	var rng2: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng2.seed = 42

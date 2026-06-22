@@ -8,20 +8,21 @@ signal faction_selected(faction_id: String)
 @onready var title_label: Label = $TitleLabel
 @onready var cards_container: HBoxContainer = $CardsContainer
 @onready var detail_panel: PanelContainer = $DetailPanel
-@onready var portrait_rect: TextureRect = $DetailPanel/HBox/Portrait
-@onready var info_label: Label = $DetailPanel/HBox/Info
+@onready var portrait_rect: TextureRect = $DetailPanel/VBox/HBox/Portrait
+@onready var info_label: Label = $DetailPanel/VBox/HBox/Info
+@onready var history_label: Label = $DetailPanel/VBox/History
 @onready var back_btn: Button = $Buttons/BackButton
 @onready var start_btn: Button = $Buttons/StartButton
 
 # 势力数据（从 factions.json 运行时读取，或硬编码作为 fallback）
 const FACTIONS := [
-	{"id": "qin",  "name": "秦国", "desc": "虎狼之秦，变法图强", "unit": "锐士",     "bonus": "攻击力+15%"},
-	{"id": "zhao", "name": "赵国", "desc": "胡服骑射，尚武之邦", "unit": "胡服骑兵", "bonus": "骑兵移动力+1"},
-	{"id": "qi",   "name": "齐国", "desc": "文风鼎盛，稷下学宫", "unit": "技击手",   "bonus": "金钱收入+20%"},
-	{"id": "chu",  "name": "楚国", "desc": "浪漫主义，地广人众", "unit": "申息之师", "bonus": "人口增长+10%"},
-	{"id": "wei",  "name": "魏国", "desc": "武卒传统，变法先驱", "unit": "武卒",     "bonus": "防御力+15%"},
-	{"id": "yan",  "name": "燕国", "desc": "复仇情结，坚韧不拔", "unit": "辽东弓骑", "bonus": "视野+1"},
-	{"id": "han",  "name": "韩国", "desc": "精工巧匠，劲弩之国", "unit": "劲弩",     "bonus": "攻城伤害+20%"},
+	{"id": "qin",  "name": "秦国", "desc": "虎狼之秦，变法图强", "unit": "锐士",     "bonus": "攻击力+15%", "history": "战国初期的秦国仍居西陲，凭关中沃土与函谷险要自守。魏国一度强压秦东线，但秦廷已经开始重视法制、军功与集权，正处在由守转攻的临界点。"},
+	{"id": "zhao", "name": "赵国", "desc": "胡服骑射，尚武之邦", "unit": "胡服骑兵", "bonus": "骑兵移动力+1", "history": "战国初期的赵国刚从三家分晋的格局中站稳脚跟，北面接胡地、南面争中原，兼具边地骑战压力与中原争霸野心，是一支正在成形的强军国家。"},
+	{"id": "qi",   "name": "齐国", "desc": "文风鼎盛，稷下学宫", "unit": "技击手",   "bonus": "金钱收入+20%", "history": "齐国据东方海岱之利，工商与盐铁富庶，临淄繁华。战国初期的齐国尚未完全卷入西方连年大战，更像一位财力深厚、谋而后动的东方霸主候选者。"},
+	{"id": "chu",  "name": "楚国", "desc": "浪漫主义，地广人众", "unit": "申息之师", "bonus": "人口增长+10%", "history": "楚国在战国初期版图最广、腹地最深，从江汉到淮泗都拥有影响力。它兵源丰厚、地方色彩浓重，强在纵深与人口，但也常因疆域过大而显得调度迟缓。"},
+	{"id": "wei",  "name": "魏国", "desc": "武卒传统，变法先驱", "unit": "武卒",     "bonus": "防御力+15%", "history": "战国初期的魏国是最先完成强国转型的一员。凭借李悝变法与魏武卒，它率先压制诸侯、据有河东河内，是中原秩序的主导者，也是秦赵韩共同警惕的对象。"},
+	{"id": "yan",  "name": "燕国", "desc": "复仇情结，坚韧不拔", "unit": "辽东弓骑", "bonus": "视野+1", "history": "燕国地处北方边缘，核心在蓟城，既要防范山戎胡骑，也要提防齐赵压力。战国初期的燕国国力不及中原强邻，但边地经验丰富，适合以韧性与机动寻找生机。"},
+	{"id": "han",  "name": "韩国", "desc": "精工巧匠，劲弩之国", "unit": "劲弩",     "bonus": "攻城伤害+20%", "history": "韩国处在天下腹心，也是三晋中疆域最小的一国。战国初期它凭借弩兵、冶铁与工匠传统维持竞争力，却必须在魏楚秦赵夹缝中精打细算，每一步都很关键。"},
 ]
 
 var _selected_faction: String = ""
@@ -31,8 +32,7 @@ func _ready() -> void:
 	SkirmishTileTextures.style_scene_button(back_btn)
 	SkirmishTileTextures.style_scene_button(start_btn)
 	back_btn.pressed.connect(func():
-		StartupFlow.is_startup_flow_active = false
-		get_tree().change_scene_to_file("res://scenes/main/main.tscn")
+		StartupFlow.goto_mode_select()
 	)
 	start_btn.pressed.connect(_on_start)
 	start_btn.disabled = true
@@ -61,11 +61,13 @@ func _create_cards() -> void:
 func _select_faction(faction_id: String) -> void:
 	_selected_faction = faction_id
 	start_btn.disabled = false
+	detail_panel.visible = true
 
 	# 更新详情面板
 	var f := _get_faction(faction_id)
 	if f:
 		info_label.text = "%s\n%s\n\n特色兵种：%s\n势力加成：%s" % [f["name"], f["desc"], f["unit"], f["bonus"]]
+		history_label.text = "时代背景（战国初期）\n%s" % str(f.get("history", ""))
 
 	# 加载头像
 	var portrait_path := "res://photos/portrait/portrait_monarch_%s_hires.png" % faction_id

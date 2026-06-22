@@ -26,6 +26,7 @@ var _cooldowns: Dictionary = {}  # event_id -> remaining_cooldown_turns
 var _chain_states: Dictionary = {}  # chain_id -> { "current_index": int }
 var _triggered_categories: Dictionary = {}  # category -> true（本回合已触发的类型）
 var _muted: bool = false
+var _recent_events: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -194,6 +195,9 @@ func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: Str
 		var current_school: String = GameManager.get_current_school()
 		if current_school != conditions["school"]:
 			return false
+	if conditions.has("school_level"):
+		if SchoolManager.get_school_level(GameManager.get_player_faction()) < int(conditions["school_level"]):
+			return false
 
 	# 新增条件：at_war
 	if conditions.has("at_war"):
@@ -221,6 +225,7 @@ func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: Str
 func _trigger_event(evt: Dictionary, _faction_id: String) -> void:
 	var cooldown_turns: int = _get_cooldown_for_event(evt)
 	_cooldowns[evt["id"]] = cooldown_turns
+	_record_recent_event(evt, "triggered")
 
 	if evt.get("options") != null:
 		SignalBus.event_triggered.emit(evt)
@@ -278,6 +283,7 @@ func resolve_event_choice(event_id: String, choice_id: String) -> bool:
 			if not cost.is_empty():
 				_deduct_cost(cost)
 			_apply_effects(opt["outcomes"])
+			_record_recent_event(evt, "resolved", choice_id)
 			SignalBus.event_resolved.emit(event_id, choice_id)
 			return true
 	push_warning("EventManager: 事件 %s 中未找到选项 %s" % [event_id, choice_id])
@@ -399,6 +405,19 @@ func _apply_effects(effects: Dictionary) -> void:
 		DiplomacySystem.set_event_chain_flag("zhou_aid", true)
 
 
+func _record_recent_event(evt: Dictionary, status: String, choice_id: String = "") -> void:
+	var record: Dictionary = {
+		"id": str(evt.get("id", "")),
+		"title": str(evt.get("title", "未命名事件")),
+		"category": str(evt.get("category", "uncategorized")),
+		"status": status,
+		"choice_id": choice_id,
+	}
+	_recent_events.push_front(record)
+	if _recent_events.size() > 8:
+		_recent_events.resize(8)
+
+
 # ============= 公共接口 =============
 
 ## 获取当前激活的事件链状态
@@ -406,6 +425,36 @@ func get_active_chains() -> Array:
 	var result: Array = []
 	for chain_id in _chain_states:
 		result.append({"chain_id": chain_id, "state": _chain_states[chain_id]})
+	return result
+
+
+func get_recent_events() -> Array[Dictionary]:
+	return _recent_events.duplicate(true)
+
+
+func get_chain_progress_snapshot() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var chains: Array = DataManager.get_event_chains()
+	for raw_chain: Variant in chains:
+		var chain: Dictionary = raw_chain as Dictionary
+		var chain_id: String = str(chain.get("id", ""))
+		if chain_id == "":
+			continue
+		var state: Dictionary = _chain_states.get(chain_id, {"current_index": 0}) as Dictionary
+		var current_index: int = int(state.get("current_index", 0))
+		var nodes: Array = chain.get("nodes", []) as Array
+		var next_title: String = "已完成"
+		if current_index < nodes.size():
+			var node: Dictionary = nodes[current_index] as Dictionary
+			var next_event: Dictionary = DataManager.get_event(str(node.get("event_id", "")))
+			next_title = str(next_event.get("title", node.get("event_id", "未命名事件")))
+		result.append({
+			"chain_id": chain_id,
+			"name": str(chain.get("name", chain_id)),
+			"current_index": current_index,
+			"total_nodes": nodes.size(),
+			"next_title": next_title,
+		})
 	return result
 
 
@@ -436,6 +485,7 @@ func reset() -> void:
 	_chain_states.clear()
 	_triggered_categories.clear()
 	_muted = false
+	_recent_events.clear()
 
 
 func set_muted(muted: bool) -> void:

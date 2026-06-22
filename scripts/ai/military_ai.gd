@@ -45,18 +45,10 @@ static func _evaluate_recruitment(faction_id: String) -> void:
 		var unit_id: String = _select_recruit_unit(faction_id, city_id)
 		if unit_id == "":
 			continue
-		# 检查资源
-		if not _can_afford_unit(faction_id, unit_id, recruit_count):
-			# 尝试减量
-			recruit_count = _find_affordable_count(faction_id, unit_id, recruit_count)
-			if recruit_count <= 0:
-				continue
-		# 执行征兵
-		var result: Dictionary = CityManager.conscribe(city_id, recruit_count)
+		var result: Dictionary = GameManager.recruit_unit_from_city(city_id, unit_id, recruit_count)
 		var actual: int = int(result.get("recruited", 0))
-		if actual > 0:
-			GameManager.add_units(faction_id, unit_id, actual)
-			_deduct_recruit_cost(faction_id, unit_id, actual)
+		if actual <= 0:
+			continue
 
 
 ## 按性格加权随机选兵种类别，再从 units.json 找最便宜的对应兵种。
@@ -77,67 +69,36 @@ static func _select_recruit_unit(faction_id: String, _city_id: String) -> String
 	for c in categories:
 		w.append(weights[c])
 	var picked: String = _weighted_random_pick(categories, w)
-	return _cheapest_unit_in_category(picked)
+	return _cheapest_unit_in_category(picked, _city_id)
 
 
 ## 从 units.json 中找指定类别下最便宜的兵种 ID。
-static func _cheapest_unit_in_category(category: String) -> String:
+static func _cheapest_unit_in_category(category: String, city_id: String = "") -> String:
+	var recruitable_units: Array[String] = CityManager.get_recruitable_units(city_id) if city_id != "" else []
 	var best_id: String = ""
 	var best_cost: int = 999999
 	for unit in DataManager.get_all_unit_types():
+		var unit_id: String = str(unit.get("id", ""))
+		if not recruitable_units.is_empty() and not recruitable_units.has(unit_id):
+			continue
 		if unit.get("category", "") != category:
 			continue
 		var cost: int = int(unit.get("cost_gold", 0)) + int(unit.get("cost_food", 0))
 		if cost < best_cost:
 			best_cost = cost
-			best_id = unit["id"]
-	# 若该类别无兵种，回退到第一个可用兵种
+			best_id = unit_id
+	if best_id == "" and not recruitable_units.is_empty():
+		for unit_id in recruitable_units:
+			var unit_data: Dictionary = DataManager.get_unit_type(unit_id)
+			var cost: int = int(unit_data.get("cost_gold", 0)) + int(unit_data.get("cost_food", 0))
+			if cost < best_cost:
+				best_cost = cost
+				best_id = unit_id
 	if best_id == "":
 		var all_units: Array = DataManager.get_all_unit_types()
 		if not all_units.is_empty():
 			best_id = all_units[0]["id"]
 	return best_id
-
-
-static func _can_afford_unit(faction_id: String, unit_id: String, count: int) -> bool:
-	var unit_data: Dictionary = DataManager.get_unit_type(unit_id)
-	if unit_data.is_empty():
-		return false
-	var params: Dictionary = DataManager.get_balance_param("ai_military.recruitment")
-	var res: Dictionary = GameManager.get_faction_resources(faction_id)
-	var gold_need: int = int(unit_data.get("cost_gold", 0)) * count
-	var food_need: int = int(unit_data.get("cost_food", 0)) * count
-	var horse_need: int = int(unit_data.get("cost_horse", 0)) * count
-	var iron_need: int = int(unit_data.get("cost_refined_iron", 0)) * count
-	var min_gold_reserve: int = int(params.get("min_gold_reserve", 0))
-	var min_food_reserve: int = int(params.get("min_food_reserve", 0))
-	return (res.get("gold", 0) - gold_need >= min_gold_reserve and
-			res.get("food", 0) - food_need >= min_food_reserve and
-			res.get("horse", 0) >= horse_need and
-			res.get("refined_iron", 0) >= iron_need)
-
-
-## 二分查找最大可负担数量。
-static func _find_affordable_count(faction_id: String, unit_id: String, max_count: int) -> int:
-	var lo: int = 0
-	var hi: int = max_count
-	while lo < hi:
-		var mid: int = (lo + hi + 1) / 2
-		if _can_afford_unit(faction_id, unit_id, mid):
-			lo = mid
-		else:
-			hi = mid - 1
-	return lo
-
-
-static func _deduct_recruit_cost(faction_id: String, unit_id: String, count: int) -> void:
-	var unit_data: Dictionary = DataManager.get_unit_type(unit_id)
-	if unit_data.is_empty():
-		return
-	GameManager.apply_faction_resource_delta(faction_id, "gold", -int(unit_data.get("cost_gold", 0)) * count)
-	GameManager.apply_faction_resource_delta(faction_id, "food", -int(unit_data.get("cost_food", 0)) * count)
-	GameManager.apply_faction_resource_delta(faction_id, "horse", -int(unit_data.get("cost_horse", 0)) * count)
-	GameManager.apply_faction_resource_delta(faction_id, "refined_iron", -int(unit_data.get("cost_refined_iron", 0)) * count)
 
 
 # ============= 攻城子系统（自动结算） =============

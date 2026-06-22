@@ -9,9 +9,12 @@ var _city_id: String = ""
 var _main_vbox: VBoxContainer
 var _city_name_label: Label
 var _info_label: Label
+var _status_label: Label
+var _back_button: Button
 var _buildings_list: VBoxContainer
 var _queue_list: VBoxContainer
 var _build_list: VBoxContainer
+var _recruit_list: VBoxContainer
 var _detail_label: RichTextLabel
 var _selected_building_id: String = ""
 var _refresh_pending: bool = false
@@ -62,6 +65,19 @@ func get_resource_bar_slot() -> VBoxContainer:
 	return _main_vbox
 
 
+func get_city_id() -> String:
+	return _city_id
+
+
+func refresh() -> void:
+	_refresh_all()
+
+
+func set_back_button_text(text: String) -> void:
+	if _back_button != null:
+		_back_button.text = text
+
+
 # ── UI 骨架 ──────────────────────────────────────
 
 func _build_ui() -> void:
@@ -102,13 +118,17 @@ func _build_ui() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_bar.add_child(spacer)
 
-	var back_btn := SkirmishTileTextures.styled_button("返回大地图")
-	back_btn.pressed.connect(_on_back_pressed)
-	title_bar.add_child(back_btn)
+	_back_button = SkirmishTileTextures.styled_button("返回大地图")
+	_back_button.pressed.connect(_on_back_pressed)
+	title_bar.add_child(_back_button)
 
-	var close_btn := SkirmishTileTextures.styled_button("关闭")
-	close_btn.pressed.connect(_on_close_pressed)
-	title_bar.add_child(close_btn)
+	_status_label = Label.new()
+	_status_label.name = "CityStatusLabel"
+	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.add_theme_font_size_override("font_size", 14)
+	_status_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.55, 1))
+	_status_label.text = "提示：右侧“可征兵”区域点击“征 1 队”即可征兵；建筑/征兵会立即刷新顶部资源栏。"
+	_main_vbox.add_child(_status_label)
 
 	# 内容区：左右分栏
 	var split := HSplitContainer.new()
@@ -125,6 +145,7 @@ func _build_ui() -> void:
 
 	# 城市信息
 	_info_label = Label.new()
+	_info_label.name = "CityInfoLabel"
 	_info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_info_label.add_theme_font_size_override("font_size", 14)
 	_info_label.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95, 1))
@@ -180,6 +201,30 @@ func _build_ui() -> void:
 	_build_list.add_theme_constant_override("separation", 4)
 	build_scroll.add_child(_build_list)
 
+	var recruit_title := Label.new()
+	recruit_title.text = "── 可征兵 ──"
+	recruit_title.add_theme_font_size_override("font_size", 15)
+	recruit_title.add_theme_color_override("font_color", Color(0.85, 0.7, 0.55, 1))
+	right_pane.add_child(recruit_title)
+
+	var recruit_help := Label.new()
+	recruit_help.name = "RecruitHelpLabel"
+	recruit_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	recruit_help.text = "征兵池是本城本回合可转化为部队的人口额度，显示在下方第一行“征兵池”。征 1 队会消耗：征兵池 1、人口 1、该兵种列出的金/粮/木/马/铁/工匠。征兵池为 0 时点击按钮会提示原因；结束回合后由城市经营结算补充。"
+	recruit_help.add_theme_font_size_override("font_size", 12)
+	recruit_help.add_theme_color_override("font_color", Color(0.78, 0.78, 0.7, 1))
+	right_pane.add_child(recruit_help)
+
+	var recruit_scroll := ScrollContainer.new()
+	recruit_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	recruit_scroll.custom_minimum_size = Vector2(0, 120)
+	right_pane.add_child(recruit_scroll)
+
+	_recruit_list = VBoxContainer.new()
+	_recruit_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recruit_list.add_theme_constant_override("separation", 4)
+	recruit_scroll.add_child(_recruit_list)
+
 	# 详情
 	var detail_title := Label.new()
 	detail_title.text = "── 建筑详情 ──"
@@ -202,6 +247,7 @@ func _refresh_all() -> void:
 	_refresh_buildings()
 	_refresh_queue()
 	_refresh_build_list()
+	_refresh_recruit_list()
 	_show_default_detail()
 
 
@@ -242,8 +288,11 @@ func _refresh_info() -> void:
 	var sr: Variant = city.get("special_resource", null)
 	var sr_str: String = "\n特产：%s" % _special_resource_name(str(sr)) if sr != null else ""
 	var prod: Dictionary = CityManager.get_city_production(_city_id)
+	var preview: Dictionary = GameManager.preview_faction_turn_income(fid)
+	var national_prod: Dictionary = preview.get("production", {})
+	var national_delta: Dictionary = preview.get("deltas", {})
 
-	_info_label.text = "势力：%s\n人口：%s\n发展度：%d\n建筑槽位：%d / %d%s\n\n每回合产出：\n  粮食 +%d  金币 +%d  木材 +%d  工匠 +%d  建材 +%d" % [
+	_info_label.text = "势力：%s\n人口：%s\n发展度：%d\n建筑槽位：%d / %d%s\n\n本城产出（结算前）：\n  粮食 %+d  金币 %+d  木材 %+d  工匠 %+d  建材 %+d\n\n预计国家入库（税后/维护后）：\n  粮食 %+d  金币 %+d  木材 %+d  工匠 %+d  建材 %+d\n  税率 %.0f%%  税收效率 %.0f%%" % [
 		fname,
 		_format_pop(pop),
 		dev,
@@ -251,6 +300,10 @@ func _refresh_info() -> void:
 		sr_str,
 		prod.get("food", 0), prod.get("gold", 0), prod.get("wood", 0),
 		prod.get("craftsmen", 0), prod.get("building_materials", 0),
+		national_delta.get("food", 0), national_delta.get("gold", 0), national_prod.get("wood", 0),
+		national_prod.get("craftsmen", 0), national_prod.get("building_materials", 0),
+		float(preview.get("tax_rate", 0.0)) * 100.0,
+		float(preview.get("tax_efficiency", 0.0)) * 100.0,
 	]
 
 
@@ -267,7 +320,7 @@ func _refresh_buildings() -> void:
 		var level: int = int(b.get("level", 1))
 		var bdata: Dictionary = DataManager.get_building(bid)
 		var bname: String = str(bdata.get("name", bid))
-		var effects_str: String = _effects_summary(bdata.get("effects", {}), level)
+		var effects_str: String = _effects_summary(_building_level_data(bdata, level).get("effects", {}), 1)
 
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
@@ -301,10 +354,9 @@ func _refresh_buildings() -> void:
 		if up_btn.disabled:
 			up_btn.tooltip_text = _reason_text(upgrade_check["reason"])
 		else:
-			var multiplier: float = float(bdata.get("upgrade_cost_multiplier", 1.5))
-			var factor: float = pow(multiplier, level)
-			var up_gold: int = int(round(float(bdata.get("cost_gold", 0)) * factor))
-			var up_wood: int = int(round(float(bdata.get("cost_wood", 0)) * factor))
+			var next_level: Dictionary = _building_level_data(bdata, level + 1)
+			var up_gold: int = int(next_level.get("cost_gold", 0))
+			var up_wood: int = int(next_level.get("cost_wood", 0))
 			up_btn.tooltip_text = "费用：%d金 %d木材" % [up_gold, up_wood]
 		up_btn.pressed.connect(_on_upgrade_pressed.bind(bid))
 		row.add_child(up_btn)
@@ -362,7 +414,6 @@ func _refresh_build_list() -> void:
 		ch.queue_free()
 
 	var all_buildings: Array = DataManager.get_all_buildings()
-	print("[CityPanel] _refresh_build_list: %d buildings, city_id=%s" % [all_buildings.size(), _city_id])
 	for bdata in all_buildings:
 		var bid: String = str(bdata["id"])
 		var bname: String = str(bdata.get("name", bid))
@@ -409,8 +460,83 @@ func _refresh_build_list() -> void:
 		row.add_child(info_btn)
 
 
+func _refresh_recruit_list() -> void:
+	for ch in _recruit_list.get_children():
+		ch.queue_free()
+
+	var city: Dictionary = CityManager.get_city_state(_city_id)
+	if city.is_empty():
+		return
+
+	var faction_id: String = str(city.get("current_faction_id", ""))
+	var pool: int = CityManager.get_conscription_pool(_city_id)
+	var pool_label := Label.new()
+	pool_label.name = "RecruitPoolLabel"
+	pool_label.text = "征兵池：%s  现有兵力：%s  点击兵种右侧按钮征 1 队" % [
+		_format_pop(pool),
+		_format_pop(GameManager.get_total_troops(faction_id)),
+	]
+	pool_label.add_theme_font_size_override("font_size", 13)
+	pool_label.add_theme_color_override("font_color", Color(0.88, 0.84, 0.74, 1))
+	_recruit_list.add_child(pool_label)
+
+	var recruitable_units: Array[String] = CityManager.get_recruitable_units(_city_id)
+	if recruitable_units.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "（当前城市没有可征兵种）"
+		empty_lbl.add_theme_font_size_override("font_size", 13)
+		empty_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55, 1))
+		_recruit_list.add_child(empty_lbl)
+		return
+
+	for unit_id: String in recruitable_units:
+		var unit_data: Dictionary = DataManager.get_unit_type(unit_id)
+		if unit_data.is_empty():
+			continue
+		var unit_name: String = str(unit_data.get("name", unit_id))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		_recruit_list.add_child(row)
+
+		var info := Label.new()
+		info.text = "%s  金%d 粮%d 木%d 马%d 铁%d 工匠%d" % [
+			unit_name,
+			int(unit_data.get("cost_gold", 0)),
+			int(unit_data.get("cost_food", 0)),
+			int(unit_data.get("cost_wood", 0)),
+			int(unit_data.get("cost_horse", 0)),
+			int(unit_data.get("cost_refined_iron", 0)),
+			int(unit_data.get("cost_craftsmen", 0)),
+		]
+		info.add_theme_font_size_override("font_size", 13)
+		info.add_theme_color_override("font_color", Color(0.9, 0.88, 0.8, 1))
+		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info)
+
+		var current_count: int = int(GameManager.get_unit_composition(faction_id).get(unit_id, 0))
+		var count_label := Label.new()
+		count_label.text = "已有 %d" % current_count
+		count_label.add_theme_font_size_override("font_size", 12)
+		count_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.72, 1))
+		row.add_child(count_label)
+
+		var recruit_btn := SkirmishTileTextures.styled_button("征 1 队")
+		recruit_btn.name = "RecruitButton_%s" % unit_id
+		recruit_btn.add_theme_font_size_override("font_size", 12)
+		recruit_btn.disabled = not GameManager.is_player_faction(faction_id)
+		if recruit_btn.disabled:
+			recruit_btn.tooltip_text = "只有玩家城市可征兵"
+		elif pool <= 0:
+			recruit_btn.tooltip_text = "征兵池不足；仍可点击查看原因，结束回合后会随正式经营回合补充"
+		else:
+			recruit_btn.tooltip_text = "从本城征兵池征发 1 队 %s" % unit_name
+		SkirmishTileTextures.update_button_disabled(recruit_btn)
+		recruit_btn.pressed.connect(_on_recruit_pressed.bind(unit_id))
+		row.add_child(recruit_btn)
+
+
 func _show_default_detail() -> void:
-	_detail_label.text = "点击建筑按钮查看详细信息。"
+	_detail_label.text = "点击建筑按钮查看详细信息；右侧征兵区使用正式人口、资源与兵种构成逻辑。"
 
 
 func _show_building_detail(building_id: String) -> void:
@@ -423,12 +549,13 @@ func _show_building_detail(building_id: String) -> void:
 	var bname: String = str(bdata.get("name", building_id))
 	var desc: String = str(bdata.get("description", ""))
 	var category: String = _category_name(str(bdata.get("category", "")))
-	var cost_gold: int = int(bdata.get("cost_gold", 0))
-	var cost_wood: int = int(bdata.get("cost_wood", 0))
-	var build_turns: int = int(bdata.get("build_turns", 1))
+	var lv1: Dictionary = _building_level_data(bdata, 1)
+	var cost_gold: int = int(lv1.get("cost_gold", 0))
+	var cost_wood: int = int(lv1.get("cost_wood", 0))
+	var build_turns: int = int(lv1.get("build_turns", 1))
 	var max_level: int = int(bdata.get("max_level", 1))
 	var upkeep: int = int(bdata.get("upkeep_gold", 0))
-	var effects: Dictionary = bdata.get("effects", {})
+	var effects: Dictionary = lv1.get("effects", {})
 	var max_nat: Variant = bdata.get("max_national_count")
 
 	var lines: PackedStringArray = []
@@ -440,8 +567,11 @@ func _show_building_detail(building_id: String) -> void:
 	lines.append("维护费：%d 金/回合" % upkeep)
 	lines.append("")
 	lines.append("效果：")
-	for key in effects:
-		lines.append("  %s: %s" % [_effect_display_name(key), str(effects[key])])
+	if effects.is_empty():
+		lines.append("  （无直接数值效果）")
+	else:
+		for key in effects:
+			lines.append("  %s: %s" % [_effect_display_name(key), _format_effect_value(key, effects[key])])
 	if max_nat != null:
 		lines.append("")
 		lines.append("每国限建：%d" % int(max_nat))
@@ -461,8 +591,11 @@ func _on_back_pressed() -> void:
 
 func _on_build_pressed(building_id: String) -> void:
 	if CityManager.start_build(_city_id, building_id):
+		_status_label.text = "已加入建造队列：%s。资源栏已扣除建造费用。" % str(DataManager.get_building(building_id).get("name", building_id))
 		_refresh_all()
 		_refresh_resource_bar()
+	else:
+		_status_label.text = "建造失败：%s" % _reason_text(str(CityManager.can_build(_city_id, building_id).get("reason", "UNKNOWN")))
 
 
 func _on_upgrade_pressed(building_id: String) -> void:
@@ -483,8 +616,32 @@ func _on_detail_pressed(building_id: String) -> void:
 
 func _on_cancel_build_pressed(queue_index: int) -> void:
 	if CityManager.cancel_build(_city_id, queue_index):
+		_status_label.text = "已取消建造，建造费用已返还。"
 		_refresh_all()
 		_refresh_resource_bar()
+
+
+func _on_recruit_pressed(unit_id: String) -> void:
+	var result: Dictionary = GameManager.recruit_unit_from_city(_city_id, unit_id, 1)
+	var message: String = ""
+	if bool(result.get("success", false)):
+		var deployed: Dictionary = {}
+		if DemoFlow.is_tutorial_enabled() and TacticalSkirmishManager.is_active():
+			deployed = TacticalSkirmishManager.add_player_recruited_unit(unit_id)
+		message = "已征发 %d 队 %s。" % [
+			int(result.get("recruited", 0)),
+			str(DataManager.get_unit_type(unit_id).get("name", unit_id)),
+		]
+		if not deployed.is_empty() and bool(deployed.get("ok", false)):
+			message += " 新部队已进入演武地图。"
+		elif not deployed.is_empty():
+			message += " 但演武地图布置失败：%s。" % str(deployed.get("reason", "UNKNOWN"))
+	else:
+		message = "征兵失败：%s" % _reason_text(str(result.get("reason", "UNKNOWN")))
+	_refresh_all()
+	_status_label.text = message
+	_detail_label.text = message
+	_refresh_resource_bar()
 
 
 func _on_building_completed(_cid: String, _bid: String, _level: int) -> void:
@@ -493,9 +650,9 @@ func _on_building_completed(_cid: String, _bid: String, _level: int) -> void:
 
 
 func _refresh_resource_bar() -> void:
-	var bar := get_tree().get_first_node_in_group("resource_bar")
-	if bar != null and bar.has_method("refresh"):
-		bar.refresh()
+	for bar: Node in get_tree().get_nodes_in_group("resource_bar"):
+		if bar != null and bar.has_method("refresh"):
+			bar.refresh()
 
 
 # ── 工具函数 ──────────────────────────────────────
@@ -531,8 +688,27 @@ func _effects_summary(effects: Dictionary, level: int) -> String:
 	for key in effects:
 		var val: Variant = effects[key]
 		if val is int or val is float:
-			parts.append("%s+%s" % [_effect_display_name(key), str(val * level)])
+			parts.append("%s+%s" % [_effect_display_name(key), _format_effect_value(key, val)])
 	return "(%s)" % ", ".join(parts) if parts.size() > 0 else ""
+
+
+func _building_level_data(bdata: Dictionary, level: int) -> Dictionary:
+	var levels: Array = bdata.get("levels", [])
+	if levels.is_empty():
+		return {}
+	var index: int = clampi(level - 1, 0, levels.size() - 1)
+	return levels[index] as Dictionary
+
+
+func _format_effect_value(key: String, value: Variant) -> String:
+	if value is float:
+		var f: float = float(value)
+		if key.ends_with("_bonus") or key.contains("reduction") or absf(f) < 1.0:
+			return "%+d%%" % int(round(f * 100.0))
+		return "%+g" % f
+	if value is int:
+		return "%+d" % int(value)
+	return str(value)
 
 
 func _effect_display_name(key: String) -> String:

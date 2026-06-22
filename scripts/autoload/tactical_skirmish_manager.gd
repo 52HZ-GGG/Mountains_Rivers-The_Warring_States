@@ -39,12 +39,18 @@ var _city_wall_max_hp: Dictionary = {} # Vector2i → int
 var _city_level: Dictionary = {}       # Vector2i → int (1-5)
 var _city_attacked: Dictionary = {}    # Vector2i → bool
 var _city_tower_hp: Dictionary = {}    # Vector2i → int（箭塔 HP，0 = 无箭塔）
+var _demo_attack_multiplier: float = 1.0
 
 
 func _ready() -> void:
 	_rng.randomize()
 	_ai.initialize(self)
 	_attack.initialize(self)
+
+
+func _debug_log(message: String) -> void:
+	if OS.has_feature("debug"):
+		print(message)
 
 
 func is_active() -> bool:
@@ -69,6 +75,15 @@ func get_player_city() -> Vector2i:
 
 func get_enemy_city() -> Vector2i:
 	return _enemy_city
+
+
+func set_demo_attack_multiplier(multiplier: float) -> void:
+	_demo_attack_multiplier = maxf(multiplier, 1.0)
+	state_changed.emit()
+
+
+func get_demo_attack_multiplier() -> float:
+	return _demo_attack_multiplier
 
 
 func get_active_config() -> Dictionary:
@@ -125,12 +140,12 @@ func start_skirmish() -> void:
 
 ## 以指定配置和季节开始演武（供场景选择器调用）
 func start_skirmish_with_config(cfg: Dictionary, season: String = "summer") -> void:
-	print("[TSM] guard check: _skirmish_active=%s" % str(_skirmish_active))
+	_debug_log("[TSM] guard check: _skirmish_active=%s" % str(_skirmish_active))
 	if _skirmish_active:
 		push_warning("TacticalSkirmishManager: 演武已在进行中，忽略重复启动")
-		print("[TSM] 已阻止重复启动")
+		_debug_log("[TSM] 已阻止重复启动")
 		return
-	print("[TSM] start_skirmish_with_config: name=%s season=%s" % [str(cfg.get("name", "???")), season])
+	_debug_log("[TSM] start_skirmish_with_config: name=%s season=%s" % [str(cfg.get("name", "???")), season])
 	_cfg = cfg
 	_current_season = season
 	_player_faction = str(_cfg.get("player_faction_id", "qin"))
@@ -141,18 +156,17 @@ func start_skirmish_with_config(cfg: Dictionary, season: String = "summer") -> v
 	_player_city = HexLib.offset_odd_r_to_axial(int(pc.get("q", 0)), int(pc.get("r", 0)))
 	_enemy_city = HexLib.offset_odd_r_to_axial(int(ec.get("q", 0)), int(ec.get("r", 0)))
 	_build_tiles()
-	print("[TSM] _build_tiles 完成, tiles=%d" % _tiles.size())
+	_debug_log("[TSM] _build_tiles 完成, tiles=%d" % _tiles.size())
 	_spawn_units()
-	print("[TSM] _spawn_units 完成, units=%d" % _units.size())
+	_debug_log("[TSM] _spawn_units 完成, units=%d" % _units.size())
 	_skirmish_active = true
 	_append_log("演武开始：%s 对 %s（%s），攻占对方城格获胜。" % [_player_faction, _enemy_faction, _current_season])
 	begin_player_phase()
-	print("[TSM] begin_player_phase 完成, active=%s" % str(_skirmish_active))
+	_debug_log("[TSM] begin_player_phase 完成, active=%s" % str(_skirmish_active))
 
 
 func reset_skirmish() -> void:
-	print("[TSM] reset_skirmish 被调用! 堆栈追踪:")
-	print_stack()
+	_debug_log("[TSM] reset_skirmish 被调用")
 	_skirmish_active = false
 	_units.clear()
 	_tiles.clear()
@@ -167,6 +181,7 @@ func reset_skirmish() -> void:
 	_city_level.clear()
 	_city_attacked.clear()
 	_city_tower_hp.clear()
+	_demo_attack_multiplier = 1.0
 	state_changed.emit()
 
 
@@ -318,6 +333,12 @@ func get_unit_by_id(unit_id: String) -> Dictionary:
 	return {}
 
 
+func add_player_recruited_unit(unit_type_id: String) -> Dictionary:
+	if not _skirmish_active:
+		return {"ok": false, "reason": "inactive"}
+	return _add_recruited_unit(_player_faction, unit_type_id, _player_city)
+
+
 ## 可移动到达的格子（累计移耗 ≤ 本回合剩余 mp_remaining），不含友军占据格
 func get_reachable_cells(unit_id: String) -> Dictionary:
 	var u: Dictionary = get_unit_by_id(unit_id)
@@ -354,9 +375,10 @@ func try_move_unit(unit_id: String, dest: Vector2i) -> Dictionary:
 	u["mp_remaining"] = mp_after
 	u["acted"] = false
 	_append_log("%s 移动至 (%d,%d)，剩余移动力 %d" % [unit_id, dest.x, dest.y, mp_after])
+	var capture_winner: String = check_victory()
 	_check_enter_city(u)
 	state_changed.emit()
-	var w: String = check_victory()
+	var w: String = capture_winner if capture_winner != "" else check_victory()
 	if w != "":
 		_finish(w)
 	return {"ok": true, "reason": "OK"}
@@ -499,7 +521,7 @@ func _enemy_pass_blocks(attacker_faction: String) -> bool:
 # ============= 内部 =============
 
 func _finish(winner: String) -> void:
-	print("[TSM] _finish 被调用, winner=%s" % winner)
+	_debug_log("[TSM] _finish 被调用, winner=%s" % winner)
 	_skirmish_active = false
 	_append_log("演武结束，获胜方：%s" % winner)
 	skirmish_ended.emit(winner)
@@ -584,6 +606,60 @@ func _occupant_id_at(cell: Vector2i) -> String:
 		if Vector2i(int(u["q"]), int(u["r"])) == cell:
 			return str(u["id"])
 	return ""
+
+
+func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vector2i) -> Dictionary:
+	var def: Dictionary = DataManager.get_unit_type(unit_type_id)
+	if def.is_empty():
+		return {"ok": false, "reason": "invalid_unit"}
+	var spawn_cell: Vector2i = _find_spawn_cell(origin, unit_type_id)
+	if spawn_cell == Vector2i(-9999, -9999):
+		return {"ok": false, "reason": "no_spawn_cell"}
+	var base_morale_v: Variant = DataManager.get_balance_param("unit_morale.base_morale")
+	var base_morale: int = int(base_morale_v) if base_morale_v != null else 100
+	var max_hp: int = int(def.get("hp", 100))
+	var spd: int = int(def.get("speed", 3))
+	var uid: String = "%s_recruit_%s_%d" % [faction_id, unit_type_id, _units.size() + 1]
+	var skills: Array = DataManager.get_unit_skills(faction_id, unit_type_id)
+	_units.append({
+		"id": uid,
+		"faction_id": faction_id,
+		"unit_type_id": unit_type_id,
+		"q": spawn_cell.x,
+		"r": spawn_cell.y,
+		"hp": max_hp,
+		"max_hp": max_hp,
+		"speed": spd,
+		"mp_remaining": spd,
+		"acted": false,
+		"morale": base_morale,
+		"in_combat_this_turn": false,
+		"burn_damage": 0,
+		"burn_turns": 0,
+		"skills": skills,
+		"attacks_this_turn": 0,
+	})
+	_append_log("征兵完成：%s 在 (%d,%d) 入场。" % [uid, spawn_cell.x, spawn_cell.y])
+	state_changed.emit()
+	return {"ok": true, "reason": "OK", "unit_id": uid, "cell": spawn_cell}
+
+
+func _find_spawn_cell(origin: Vector2i, unit_type_id: String) -> Vector2i:
+	if _all_cells.has(origin) and _occupant_id_at(origin) == "" and int(_city_wall_hp.get(origin, 0)) <= 0:
+		return origin
+	var candidates: Array[Vector2i] = HexLib.neighbors_hex(origin)
+	candidates.append_array(_all_cells)
+	for cell: Vector2i in candidates:
+		if not _all_cells.has(cell):
+			continue
+		if _occupant_id_at(cell) != "":
+			continue
+		if _city_wall_hp.has(cell) and int(_city_wall_hp[cell]) > 0:
+			continue
+		if _tile_move_cost_cell(cell, unit_type_id) >= BIG_MOVE:
+			continue
+		return cell
+	return Vector2i(-9999, -9999)
 
 
 func _tile_move_cost_cell(cell: Vector2i, unit_type_id: String, unit_skills: Array = []) -> int:
@@ -1144,20 +1220,11 @@ func _get_fire_attack_ctx() -> Dictionary:
 	return ctx
 
 
-## 学派战斗加成（从 faction 的 default_school 读取）
+## 学派战斗加成（从 SchoolManager 读取运行时学派）
 func _get_school_combat_bonus(faction_id: String) -> Dictionary:
 	var result: Dictionary = {"school_atk": 0.0, "school_def": 0.0}
-	var fdata: Dictionary = DataManager.get_faction(faction_id)
-	if fdata.is_empty():
-		return result
-	var school_id_v: Variant = fdata.get("default_school", null)
-	if school_id_v == null or str(school_id_v) == "":
-		return result
-	var school: Dictionary = DataManager.get_school(str(school_id_v))
-	if school.is_empty():
-		return result
-	var effects: Dictionary = school.get("global_effects", {})
-	result["school_def"] = float(effects.get("def_combat_bonus", 0.0))
+	result["school_atk"] = SchoolManager.get_effect_float(faction_id, "attack_bonus")
+	result["school_def"] = SchoolManager.get_effect_float(faction_id, "defense_bonus")
 	return result
 
 
@@ -1338,6 +1405,19 @@ func get_city_wall_max_hp(cell: Vector2i) -> int:
 	return int(_city_wall_max_hp.get(cell, 0))
 
 
+func can_capture_city(cell: Vector2i, faction_id: String, unit_id: String = "") -> bool:
+	if not _city_wall_hp.has(cell):
+		return false
+	if int(_city_wall_hp[cell]) > 0:
+		return false
+	for other: Dictionary in _units:
+		if unit_id != "" and str(other["id"]) == unit_id:
+			continue
+		if Vector2i(int(other["q"]), int(other["r"])) == cell and str(other["faction_id"]) != faction_id:
+			return false
+	return true
+
+
 ## 获取城市等级；无城市返回 0
 func get_city_level(cell: Vector2i) -> int:
 	return int(_city_level.get(cell, 0))
@@ -1512,25 +1592,14 @@ func _check_enter_city(u: Dictionary) -> void:
 	var c: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 	var fid: String = str(u["faction_id"])
 	# 城市占领：城墙 HP ≤ 0 且无敌方驻军时易主
-	if _city_wall_hp.has(c):
-		var wall_hp: int = int(_city_wall_hp[c])
-		if wall_hp <= 0:
-			# 检查是否有敌方驻军（同格的其他敌方单位）
-			var has_enemy_garrison: bool = false
-			for other: Dictionary in _units:
-				if str(other["id"]) == str(u["id"]):
-					continue
-				if Vector2i(int(other["q"]), int(other["r"])) == c and str(other["faction_id"]) != fid:
-					has_enemy_garrison = true
-					break
-			if not has_enemy_garrison:
-				var old_wall_hp: int = int(_city_wall_hp[c])
-				var max_hp: int = int(_city_wall_max_hp[c])
-				var restore_v: Variant = DataManager.get_balance_param("city_combat.capture_restore_ratio")
-				var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
-				_city_wall_hp[c] = maxi(1, int(float(max_hp) * restore_ratio))
-				_city_attacked[c] = false
-				_append_log("%s 占领城市 (%d,%d)！城墙 HP 恢复至 %d" % [fid, c.x, c.y, int(_city_wall_hp[c])])
+	if can_capture_city(c, fid, str(u["id"])):
+		var old_wall_hp: int = int(_city_wall_hp[c])
+		var max_hp: int = int(_city_wall_max_hp[c])
+		var restore_v: Variant = DataManager.get_balance_param("city_combat.capture_restore_ratio")
+		var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
+		_city_wall_hp[c] = maxi(1, int(float(max_hp) * restore_ratio))
+		_city_attacked[c] = false
+		_append_log("%s 占领城市 (%d,%d)！城墙 HP 恢复至 %d" % [fid, c.x, c.y, int(_city_wall_hp[c])])
 	elif c == _enemy_city or c == _player_city:
 		_append_log("%s 占据城格 (%d,%d)" % [fid, c.x, c.y])
 	# 关隘占领：HP ≤ 0 且无驻守敌军时易主

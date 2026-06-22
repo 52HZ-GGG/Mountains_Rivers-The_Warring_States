@@ -21,6 +21,11 @@ var _selected_index: int = -1
 @onready var _guide_btn: Button = %GuideBtn
 
 
+func _debug_log(message: String) -> void:
+	if OS.has_feature("debug"):
+		print(message)
+
+
 func _ready() -> void:
 	visible = false
 	_scenarios = DataManager.get_skirmish_scenarios()
@@ -111,7 +116,7 @@ func _on_back_pressed() -> void:
 
 func _on_start_pressed() -> void:
 	if _selected_index < 0 or _selected_index >= _scenarios.size():
-		print("[ScenarioPanel] 未选中场景，忽略")
+		_debug_log("[ScenarioPanel] 未选中场景，忽略")
 		return
 	var s: Dictionary = _scenarios[_selected_index]
 	var scenario_id: String = str(s.get("id", ""))
@@ -121,9 +126,9 @@ func _on_start_pressed() -> void:
 		1: season = "summer"
 		2: season = "autumn"
 		3: season = "winter"
-	print("[ScenarioPanel] 开始演武: id=%s season=%s" % [scenario_id, season])
+	_debug_log("[ScenarioPanel] 开始演武: id=%s season=%s" % [scenario_id, season])
 	skirmish_started.emit(scenario_id, season)
-	print("[ScenarioPanel] 信号已发射")
+	_debug_log("[ScenarioPanel] 信号已发射")
 	close_panel()
 
 

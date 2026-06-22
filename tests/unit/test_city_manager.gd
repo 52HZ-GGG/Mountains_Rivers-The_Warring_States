@@ -96,6 +96,10 @@ const PLAYER_INITIAL_WOOD := 2000
 func before_each() -> void:
 	CityManager.reset()
 	GameManager.reset()
+	MinisterManager.reset()
+	TechSystem.reset()
+	SchoolManager.reset()
+	WonderManager.reset()
 	GameManager.apply_gold_delta(PLAYER_INITIAL_GOLD)
 	GameManager.apply_wood_delta(PLAYER_INITIAL_WOOD)
 
@@ -222,6 +226,15 @@ func test_start_build_failure_does_not_deduct() -> void:
 	assert_eq(GameManager.get_player_wood(), PLAYER_INITIAL_WOOD, "失败不应扣木材")
 
 
+func test_start_build_applies_school_build_cost_reduction() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var gold_before: int = GameManager.get_player_gold()
+	SchoolManager.add_school_exp("qin", 60)
+	SchoolManager.activate_policy("qin", "gp_build")
+	CityManager.start_build("xianyang", "farm")
+	assert_eq(GameManager.get_player_gold(), gold_before - 85, "奖励营建应使农田造价降低 15%")
+
+
 # ============= 子任务 3：升级接口 =============
 
 func test_can_upgrade_allowed_basic() -> void:
@@ -306,6 +319,17 @@ func test_start_upgrade_adds_to_queue() -> void:
 	var queue: Array = xianyang["build_queue"]
 	assert_eq(queue.size(), 1, "升级应入队")
 	assert_eq(queue[0]["building_id"], "farm")
+
+
+func test_start_upgrade_applies_school_build_cost_reduction() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var gold_before: int = GameManager.get_player_gold()
+	SchoolManager.add_school_exp("qin", 60)
+	SchoolManager.activate_policy("qin", "gp_build")
+	var xianyang := CityManager.get_city_state("xianyang")
+	(xianyang["buildings"] as Array).append({"building_id": "farm", "level": 1})
+	CityManager.start_upgrade("xianyang", "farm")
+	assert_eq(GameManager.get_player_gold(), gold_before - 128, "升级成本也应吃到奖励营建折扣")
 
 
 # ============= 拆除 =============
@@ -525,6 +549,118 @@ func test_relocate_ai_capital_uses_weight_when_set() -> void:
 	# 还原（避免污染其它测试）
 	qin_faction["ai_capital_relocation_weight"] = original_weight
 	assert_eq(chosen, "chencang", "权重最高的 chencang 应被选为新首都")
+
+
+func test_school_all_output_bonus_applies_to_city_production() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var city_id: String = "xianyang"
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	city["current_population"] = 10
+	var before: Dictionary = CityManager.get_city_production(city_id)
+	SchoolManager.add_school_exp("qin", 130)
+	SchoolManager.activate_policy("qin", "leg_reform")
+	var after: Dictionary = CityManager.get_city_production(city_id)
+	assert_gt(int(after["gold"]), int(before["gold"]), "变法图强应提高城市金钱产出")
+	assert_gt(int(after["wood"]), int(before["wood"]), "变法图强应提高城市木材产出")
+
+
+func test_wonder_food_and_gold_bonus_apply_to_total_production() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	GameManager._process_production("qin")
+	var before_food: int = GameManager.get_player_food()
+	var before_gold: int = GameManager.get_player_gold()
+	GameManager.apply_food_delta(-GameManager.get_player_food())
+	GameManager.apply_gold_delta(-GameManager.get_player_gold())
+	WonderManager.set_wonder_owner("dujiangyan", "qin")
+	WonderManager.set_wonder_owner("honggou", "qin")
+	GameManager._process_production("qin")
+	var after_food: int = GameManager.get_player_food()
+	var after_gold: int = GameManager.get_player_gold()
+	assert_gt(after_food, before_food, "都江堰应提高粮食税入")
+	assert_gt(after_gold, before_gold, "鸿沟应提高金钱税入")
+
+
+func test_city_culture_initializes_on_runtime_state() -> void:
+	var culture: Dictionary = CityManager.get_city_culture("xianyang")
+	assert_true(not culture.is_empty(), "城市文化应按运行时字典初始化")
+	assert_eq(str(CityManager.get_mainstream_culture("xianyang")), "qin", "初始主流文化应跟随归属国")
+
+
+func test_culture_flip_updates_mainstream_and_ownership() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var city_id: String = str(CityManager.get_capital_state("zhao").get("id", ""))
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	city["culture"] = {"qin": 0.0, "zhao": 100.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	city["mainstream_culture"] = "zhao"
+	CityManager.process_culture_turn()
+	assert_eq(str(CityManager.get_mainstream_culture(city_id)), "zhao", "主流文化应保持为占比最高势力")
+	assert_eq(str(CityManager.get_city_state(city_id).get("current_faction_id", "")), "zhao", "主流文化与归属一致时不应翻转")
+
+
+func test_culture_mismatch_applies_stability_and_garrison_penalties() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var city_id: String = str(CityManager.get_capital_state("zhao").get("id", ""))
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	city["current_faction_id"] = "qin"
+	city["mainstream_culture"] = "zhao"
+	city["culture"] = {"qin": 40.0, "zhao": 60.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	city["stability"] = 80
+	city["garrison"] = 10
+	var defense_before: int = CityManager.get_city_defense(city_id)
+	var attack_before: int = CityManager.get_city_attack(city_id)
+	CityManager.call("_apply_culture_mismatch_effects", city)
+	var defense_after: int = CityManager.get_city_defense(city_id)
+	var attack_after: int = CityManager.get_city_attack(city_id)
+	assert_lt(defense_after, defense_before, "文化不匹配应削弱城防驻军防御")
+	assert_lt(attack_after, attack_before, "文化不匹配应削弱城池驻军攻击")
+	assert_lt(int(city.get("stability", 0)), 80, "文化不匹配应压低安定度")
+
+
+func test_culture_flip_flips_ownership_when_foreign_culture_dominates() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var city_id: String = str(CityManager.get_capital_state("zhao").get("id", ""))
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	city["culture"] = {"qin": 20.0, "zhao": 120.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	city["mainstream_culture"] = "zhao"
+	CityManager.process_culture_turn()
+	assert_eq(str(CityManager.get_city_state(city_id).get("current_faction_id", "")), "zhao", "主流文化未超过阈值时不应翻转")
+	city["culture"] = {"qin": 200.0, "zhao": 5.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	city["mainstream_culture"] = "qin"
+	CityManager.process_culture_turn()
+	assert_eq(str(CityManager.get_city_state(city_id).get("current_faction_id", "")), "qin", "外来文化占绝对主导时应翻转归属")
+
+
+func test_trade_route_boosts_culture_spread() -> void:
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var qin_capital_id: String = str(CityManager.get_capital_state("qin")["id"])
+	var zhao_capital_id: String = str(CityManager.get_capital_state("zhao")["id"])
+	var qin_city: Dictionary = CityManager.get_city_state(qin_capital_id)
+	var zhao_city: Dictionary = CityManager.get_city_state(zhao_capital_id)
+	qin_city["culture"] = {"qin": 100.0, "zhao": 0.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	qin_city["mainstream_culture"] = "qin"
+	zhao_city["culture"] = {"qin": 0.0, "zhao": 100.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	zhao_city["mainstream_culture"] = "zhao"
+	var baseline_before: float = float(CityManager.get_city_culture(zhao_capital_id).get("qin", 0.0))
+	CityManager.process_culture_turn()
+	var baseline_after: float = float(CityManager.get_city_culture(zhao_capital_id).get("qin", 0.0))
+	GameManager.reset()
+	CityManager.reset()
+	MinisterManager.reset()
+	TechSystem.reset()
+	SchoolManager.reset()
+	GameManager.start_game(["qin", "zhao"], "qin")
+	qin_city = CityManager.get_city_state(qin_capital_id)
+	zhao_city = CityManager.get_city_state(zhao_capital_id)
+	qin_city["culture"] = {"qin": 100.0, "zhao": 0.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	qin_city["mainstream_culture"] = "qin"
+	zhao_city["culture"] = {"qin": 0.0, "zhao": 100.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
+	zhao_city["mainstream_culture"] = "zhao"
+	DiplomacySystem.open_trade_route("qin", "zhao")
+	CityManager.process_culture_turn()
+	var trade_after: float = float(CityManager.get_city_culture(zhao_capital_id).get("qin", 0.0))
+	assert_gt(trade_after - baseline_before, baseline_after - baseline_before, "商路应提升文化扩散量")
 
 
 # ============= 子任务 4：灭国判定与征服胜利 =============

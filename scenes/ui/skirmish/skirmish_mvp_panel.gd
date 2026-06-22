@@ -3,14 +3,18 @@ extends CanvasLayer
 ## 阶段1战术演武 UI：odd-R 矩形蜂巢密铺（JSON 列/行 → 轴向寻路）+ 地形/兵种贴图 + 悬停信息栏
 ## 选中己方单位后：可走格移动，或直接点击射程内敌军攻击（无需切换模式）
 
+signal panel_closed
+
 ## 六角外接圆半径基准（像素）；实际半径按战术区可用尺寸换算，使蜂巢棋盘尽量大、看得清
 const _HEX_RADIUS_BASE_PX: float = 60.0
 ## 棋盘外沿留白（像素）；过小易导致裁切，过大浪费可视面积
 const _HEX_BOARD_PAD_PX: float = 8.0
 ## 递增后下次打开面板会重建六角格（修正布局/绘制逻辑后避免沿用旧节点）
-const _HEX_BOARD_LAYOUT_VERSION: int = 11
+const _HEX_BOARD_LAYOUT_VERSION: int = 12
 
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+const _ResourceBarScript: Script = preload("res://scenes/ui/resource_bar/resource_bar.gd")
+const _CityPanelScene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
 
 const _CLR_EMPTY_REACH: Color = Color(0.72, 1.0, 0.90)
 const _CLR_PLAYER_UNIT: Color = Color(0.88, 0.93, 1.0)
@@ -30,8 +34,26 @@ const _CLR_ENEMY_CITY: Color = Color(1.0, 0.9, 0.9)
 var _selected_unit_id: String = ""
 var _reachable: Dictionary = {}
 var _hex_refit_pending: bool = false
+var _refresh_suspended: bool = false
+var _panel_cfg: Dictionary = {}
+var _panel_season: String = "summer"
 var _unit_frames_cache: Dictionary = {}  # "unit_type_id:faction_id" -> SpriteFrames
 var _effect_frames_cache: Dictionary = {}  # effect_id -> SpriteFrames
+var _tutorial_city_btn: Button = null
+var _political_map_btn: Button = null
+var _formal_resource_bar: HBoxContainer = null
+var _resource_hover_hint: Label = null
+var _formal_resource_formula: RichTextLabel = null
+var _formula_summary_row: HBoxContainer = null
+var _formula_detail_btn: Button = null
+var _formula_detail_panel: PanelContainer = null
+var _formal_city_panel: Panel = null
+var _political_mode: bool = false
+
+
+func _debug_log(message: String) -> void:
+	if OS.has_feature("debug"):
+		print(message)
 
 
 func _ready() -> void:
@@ -41,6 +63,7 @@ func _ready() -> void:
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/RestartBtn)
 	SkirmishTileTextures.style_scene_button(_retreat_btn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/CloseBtn)
+	_create_tutorial_formal_buttons()
 	$MarginContainer/MainVBox/ButtonRow/EndTurnBtn.pressed.connect(_on_end_turn_pressed)
 	%StandbyBtn.pressed.connect(_on_standby_pressed)
 	$MarginContainer/MainVBox/ButtonRow/RestartBtn.pressed.connect(_on_restart_pressed)
@@ -53,38 +76,389 @@ func _ready() -> void:
 
 
 func open_panel() -> void:
-	print("[SkirmishPanel] open_panel 开始")
+	_debug_log("[SkirmishPanel] open_panel 开始")
 	show()
-	_hex_board.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	_ensure_hex_buttons()
-	print("[SkirmishPanel] hex buttons 创建完成")
-	_ensure_board_backdrop()
 	if not TacticalSkirmishManager.is_active():
 		TacticalSkirmishManager.start_skirmish()
+	_prepare_panel_for_active_skirmish()
+	_debug_log("[SkirmishPanel] open_panel 完成")
+
+
+func open_panel_with_config(cfg: Dictionary, season: String) -> void:
+	_debug_log("[SkirmishPanel] open_panel_with_config 开始")
+	_panel_cfg = cfg.duplicate(true)
+	_panel_season = season
+	show()
+	_refresh_suspended = true
+	TacticalSkirmishManager.reset_skirmish()
+	TacticalSkirmishManager.start_skirmish_with_config(cfg, season)
+	_refresh_suspended = false
+	_prepare_panel_for_active_skirmish()
+	_debug_log("[SkirmishPanel] open_panel_with_config 完成")
+
+
+func _prepare_panel_for_active_skirmish() -> void:
+	_hex_board.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_hex_board.set_meta("_hex_layout_v", 0)
+	_ensure_hex_buttons()
+	_debug_log("[SkirmishPanel] hex buttons 创建完成")
+	_ensure_board_backdrop()
 	_selected_unit_id = ""
 	_reachable.clear()
 	_log_view.clear()
-	var atk_hint: int = TacticalSkirmishManager.get_attack_move_cost()
-	_hint.text = "点选己方单位：绿格可移动；攻击需额外移动力 %d。移动后若仍可攻击会保持选中，再点本单位可待命结束。" % atk_hint
+	_hint.text = _initial_hint_text()
 	_update_season_label()
+	_update_tutorial_formal_ui()
 	_hover_info.text = _default_hover_text()
 	_refresh_display()
-	print("[SkirmishPanel] open_panel 完成")
 	_hex_refit_pending = true
 	call_deferred("_deferred_refit_hex_radius_if_needed")
 
 
 func close_panel() -> void:
+	_close_formal_overlays()
+	_reclaim_formal_resource_bar()
 	TacticalSkirmishManager.reset_skirmish()
 	visible = false
+	panel_closed.emit()
+
+
+
+func _create_tutorial_formal_buttons() -> void:
+	var row: HBoxContainer = $MarginContainer/MainVBox/ButtonRow as HBoxContainer
+	_tutorial_city_btn = Button.new()
+	_tutorial_city_btn.name = "TutorialCityButton"
+	_tutorial_city_btn.text = "城市/征兵"
+	_tutorial_city_btn.tooltip_text = "打开正式咸阳城市面板，使用同一套经营与征兵逻辑"
+	_tutorial_city_btn.visible = false
+	_tutorial_city_btn.pressed.connect(_open_formal_capital_panel)
+	SkirmishTileTextures.style_scene_button(_tutorial_city_btn)
+	var insert_index: int = _retreat_btn.get_index() + 1
+	row.add_child(_tutorial_city_btn)
+	row.move_child(_tutorial_city_btn, insert_index)
+
+	_political_map_btn = Button.new()
+	_political_map_btn.name = "PoliticalBtn"
+	_political_map_btn.text = "政治地图：关"
+	_political_map_btn.custom_minimum_size = Vector2(132, 0)
+	_political_map_btn.tooltip_text = "切换当前战术地图的政治归属显示，口径与正式大地图一致"
+	_political_map_btn.pressed.connect(_on_political_toggle)
+	SkirmishTileTextures.style_scene_button(_political_map_btn)
+	row.add_child(_political_map_btn)
+	row.move_child(_political_map_btn, 0)
+
+
+func _update_tutorial_formal_ui() -> void:
+	var enabled: bool = DemoFlow.is_tutorial_enabled()
+	if _tutorial_city_btn != null:
+		_tutorial_city_btn.visible = enabled
+	if enabled:
+		_ensure_formal_resource_bar()
+	else:
+		_close_formal_overlays()
+		_reclaim_formal_resource_bar()
+
+
+func _ensure_formal_resource_bar() -> void:
+	if _formal_resource_bar == null:
+		_formal_resource_bar = HBoxContainer.new()
+		_formal_resource_bar.name = "FormalTutorialResourceBar"
+		_formal_resource_bar.set_script(_ResourceBarScript)
+	var main_vbox: VBoxContainer = $MarginContainer/MainVBox as VBoxContainer
+	if _formal_resource_bar.get_parent() == null:
+		main_vbox.add_child(_formal_resource_bar)
+		main_vbox.move_child(_formal_resource_bar, 1)
+	_formal_resource_bar.visible = true
+	_ensure_resource_hover_hint()
+	_ensure_resource_formula_panel()
+	_refresh_formal_resource_bar()
+
+
+func _refresh_formal_resource_bar() -> void:
+	if _formal_resource_bar != null and _formal_resource_bar.has_method("refresh"):
+		_formal_resource_bar.refresh()
+	if _formal_resource_formula != null:
+		_formal_resource_formula.text = _resource_formula_text()
+
+
+func _reclaim_formal_resource_bar() -> void:
+	if _formal_resource_bar != null:
+		if _formal_resource_bar.get_parent() != null:
+			_formal_resource_bar.get_parent().remove_child(_formal_resource_bar)
+		_formal_resource_bar.queue_free()
+		_formal_resource_bar = null
+	if _resource_hover_hint != null:
+		if _resource_hover_hint.get_parent() != null:
+			_resource_hover_hint.get_parent().remove_child(_resource_hover_hint)
+		_resource_hover_hint.queue_free()
+		_resource_hover_hint = null
+	if _formal_resource_formula != null:
+		if _formal_resource_formula.get_parent() != null:
+			_formal_resource_formula.get_parent().remove_child(_formal_resource_formula)
+		_formal_resource_formula.queue_free()
+		_formal_resource_formula = null
+	if _formula_summary_row != null:
+		if _formula_summary_row.get_parent() != null:
+			_formula_summary_row.get_parent().remove_child(_formula_summary_row)
+		_formula_summary_row.queue_free()
+		_formula_summary_row = null
+	if _formula_detail_btn != null:
+		if _formula_detail_btn.get_parent() != null:
+			_formula_detail_btn.get_parent().remove_child(_formula_detail_btn)
+		_formula_detail_btn.queue_free()
+		_formula_detail_btn = null
+	if _formula_detail_panel != null:
+		if _formula_detail_panel.get_parent() != null:
+			_formula_detail_panel.get_parent().remove_child(_formula_detail_panel)
+		_formula_detail_panel.queue_free()
+		_formula_detail_panel = null
+
+
+func _ensure_resource_hover_hint() -> void:
+	if _resource_hover_hint == null:
+		_resource_hover_hint = Label.new()
+		_resource_hover_hint.name = "ResourceHoverHint"
+		_resource_hover_hint.text = "小提示：鼠标悬浮在任意资源上，可查看作用、影响因素与计算详情。"
+		_resource_hover_hint.add_theme_font_size_override("font_size", 11)
+		_resource_hover_hint.add_theme_color_override("font_color", Color(0.72, 0.74, 0.68, 1))
+	var main_vbox: VBoxContainer = $MarginContainer/MainVBox as VBoxContainer
+	if _resource_hover_hint.get_parent() == null:
+		main_vbox.add_child(_resource_hover_hint)
+		main_vbox.move_child(_resource_hover_hint, 2)
+	_resource_hover_hint.visible = true
+
+
+func _ensure_resource_formula_panel() -> void:
+	var main_vbox: VBoxContainer = $MarginContainer/MainVBox as VBoxContainer
+	if _formula_summary_row == null:
+		_formula_summary_row = HBoxContainer.new()
+		_formula_summary_row.name = "ResourceFormulaSummaryRow"
+		_formula_summary_row.add_theme_constant_override("separation", 8)
+	if _formula_summary_row.get_parent() == null:
+		main_vbox.add_child(_formula_summary_row)
+		main_vbox.move_child(_formula_summary_row, 3)
+	if _formal_resource_formula == null:
+		_formal_resource_formula = RichTextLabel.new()
+		_formal_resource_formula.name = "ResourceFormulaPanel"
+		_formal_resource_formula.bbcode_enabled = true
+		_formal_resource_formula.fit_content = true
+		_formal_resource_formula.scroll_active = false
+		_formal_resource_formula.custom_minimum_size = Vector2(0, 26)
+		_formal_resource_formula.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_formal_resource_formula.add_theme_font_size_override("normal_font_size", 12)
+		_formal_resource_formula.add_theme_color_override("default_color", Color(0.88, 0.9, 0.78, 1))
+	if _formal_resource_formula.get_parent() == null:
+		_formula_summary_row.add_child(_formal_resource_formula)
+	_formal_resource_formula.visible = true
+	if _formula_detail_btn == null:
+		_formula_detail_btn = Button.new()
+		_formula_detail_btn.name = "ResourceFormulaDetailButton"
+		_formula_detail_btn.text = "详细"
+		_formula_detail_btn.custom_minimum_size = Vector2(76, 0)
+		_formula_detail_btn.pressed.connect(_toggle_resource_formula_detail)
+		SkirmishTileTextures.style_scene_button(_formula_detail_btn)
+	if _formula_detail_btn.get_parent() == null:
+		_formula_summary_row.add_child(_formula_detail_btn)
+	_formula_detail_btn.visible = true
+
+
+func _toggle_resource_formula_detail() -> void:
+	if _formula_detail_panel != null and _formula_detail_panel.visible:
+		_formula_detail_panel.visible = false
+		return
+	_ensure_resource_formula_detail_panel()
+	_formula_detail_panel.visible = true
+
+
+func _ensure_resource_formula_detail_panel() -> void:
+	if _formula_detail_panel != null:
+		return
+	_formula_detail_panel = PanelContainer.new()
+	_formula_detail_panel.name = "ResourceFormulaDetailPanel"
+	_formula_detail_panel.z_index = 1200
+	_formula_detail_panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_formula_detail_panel.offset_left = 32
+	_formula_detail_panel.offset_top = 104
+	_formula_detail_panel.offset_right = -32
+	_formula_detail_panel.offset_bottom = 344
+	var box: VBoxContainer = VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	_formula_detail_panel.add_child(box)
+	var text: RichTextLabel = RichTextLabel.new()
+	text.bbcode_enabled = true
+	text.fit_content = false
+	text.scroll_active = true
+	text.custom_minimum_size = Vector2(0, 190)
+	text.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	text.add_theme_font_size_override("normal_font_size", 12)
+	text.text = _resource_formula_detail_text()
+	box.add_child(text)
+	var close_btn: Button = Button.new()
+	close_btn.text = "收起说明"
+	close_btn.pressed.connect(func() -> void:
+		if _formula_detail_panel != null:
+			_formula_detail_panel.visible = false
+	)
+	SkirmishTileTextures.style_scene_button(close_btn)
+	box.add_child(close_btn)
+	add_child(_formula_detail_panel)
+	_formula_detail_panel.visible = false
+
+
+func _resource_formula_detail_text() -> String:
+	return "[b]资源计算详细说明[/b]\n" \
+		+ "1. 全国税基：先汇总所有己方城市。每城粮/金基础值 = 人口 × food_per_pop/gold_per_pop；木材有 city_base_wood。建筑会提供百分比加成或固定产出，官员、特产、安定度、服役人口占比、学派全产出、儒家民心繁荣会继续修正。粮食还会扣人口口粮消耗，食物消耗减免会降低这项消耗。\n" \
+		+ "2. 季节与全国修正：城市产出汇总后进入季节修正，春/夏/秋/冬分别影响粮、金、木、工匠、建材；科技资源修正和奇观资源修正再作用于全国总量。\n" \
+		+ "3. 税后应入库：粮/金按 税后应入库 = 全国税基 × 当前税率 × 税收效率。税收效率 = 基础税效 × 民心档位 × 腐败修正 × 建筑税收 × 奇观税收。\n" \
+		+ "4. 腐败来源：城市数、总人口、边境城市数提高腐败；科技、建筑、官员、奇观降低腐败。腐败会降低税收效率，也可能影响民心。\n" \
+		+ "5. 上限截断：粮食受国家粮仓上限影响，金币受金库上限影响，木材和帛书也有上限。接近上限时，税后应入库可能很高，但实际入库只会补到上限。\n" \
+		+ "6. 最终变化：实际入库之后再扣兵种维护、马匹耗粮、建筑维护。建造、取消建造、征兵会在点击时即时改变资源，不等回合结算。"
+
+
+func _resource_formula_text() -> String:
+	var preview: Dictionary = GameManager.preview_faction_turn_income(DemoFlow.get_player_faction_id())
+	var prod: Dictionary = preview.get("production", {})
+	var upkeep: Dictionary = preview.get("upkeep", {})
+	var deltas: Dictionary = preview.get("deltas", {})
+	var actual_income: Dictionary = preview.get("actual_income", {})
+	var before: Dictionary = preview.get("before", {})
+	var after_income: Dictionary = preview.get("after_income", {})
+	var caps: Dictionary = preview.get("caps", {})
+	return "资源摘要：粮 %+d（税后%d，粮仓%d/%d，维护%d）；金 %+d（税后%d，金库%d/%d，维护%d）。" % [
+		int(deltas.get("food", 0)),
+		int(prod.get("food_taxed", 0)),
+		int(before.get("food", 0)),
+		int(caps.get("food", -1)),
+		int(upkeep.get("food", 0)),
+		int(deltas.get("gold", 0)),
+		int(prod.get("gold_taxed", 0)),
+		int(before.get("gold", 0)),
+		int(caps.get("gold", -1)),
+		int(upkeep.get("gold", 0)) + int(upkeep.get("building_gold", 0)),
+	]
+
+
+func _resource_formula_factor_text() -> String:
+	return "影响项：税基=城市人口基础产出、建筑百分比/固定产出、官员城市产出、特产、安定度、服役人口占比、学派全产出、儒家民心繁荣、人口口粮消耗、食物消耗减免、季节修正、科技资源修正、奇观资源修正、建筑完工/升级/拆除/取消；税收效率=税率、基础税效、民心档位、腐败、建筑税收、奇观税收；腐败=城市数、总人口、边境城市数、科技/建筑/官员/奇观减腐；上限=粮仓/市场/伐木场/帛书建筑等资源上限；扣除=兵种维护、马匹耗粮、建筑维护、征兵与建造即时花费。"
+
+
+func _close_formal_overlays() -> void:
+	if is_instance_valid(_formal_city_panel):
+		_detach_formal_resource_bar()
+		_formal_city_panel.close()
+		_formal_city_panel = null
+
+
+func _open_formal_capital_panel() -> void:
+	var capital: Dictionary = CityManager.get_capital_state(DemoFlow.get_player_faction_id())
+	var city_id: String = str(capital.get("id", "xianyang"))
+	if city_id == "":
+		city_id = "xianyang"
+	_open_formal_city_panel(city_id)
+
+
+func _open_formal_city_panel(city_id: String) -> void:
+	if not DemoFlow.is_tutorial_enabled():
+		return
+	_close_formal_overlays()
+	_formal_city_panel = _CityPanelScene.instantiate() as Panel
+	_formal_city_panel.name = "FormalTutorialCityPanel"
+	_formal_city_panel.z_index = 1000
+	add_child(_formal_city_panel)
+	_formal_city_panel.return_to_map.connect(_on_formal_city_panel_return_to_skirmish)
+	_formal_city_panel.panel_closed.connect(_on_formal_city_panel_closed)
+	_formal_city_panel.open(city_id)
+	if _formal_city_panel.has_method("set_back_button_text"):
+		_formal_city_panel.set_back_button_text("返回演武")
+	_embed_formal_resource_bar(_formal_city_panel.get_resource_bar_slot())
+	_hint.text = "已打开正式城市面板。这里的建造、产出、人口与征兵和完整 Demo 使用同一套逻辑。"
+
+
+func _embed_formal_resource_bar(target_vbox: VBoxContainer) -> void:
+	_ensure_formal_resource_bar()
+	if _formal_resource_bar == null:
+		return
+	if _formal_resource_bar.get_parent() != null:
+		_formal_resource_bar.get_parent().remove_child(_formal_resource_bar)
+	target_vbox.add_child(_formal_resource_bar)
+	target_vbox.move_child(_formal_resource_bar, 1)
+	_formal_resource_bar.visible = true
+	_refresh_formal_resource_bar()
+
+
+func _detach_formal_resource_bar() -> void:
+	if _formal_resource_bar != null and _formal_resource_bar.get_parent() != null:
+		_formal_resource_bar.get_parent().remove_child(_formal_resource_bar)
+
+
+func _on_formal_city_panel_closed() -> void:
+	if is_instance_valid(_formal_city_panel):
+		_detach_formal_resource_bar()
+		_formal_city_panel.close()
+	_formal_city_panel = null
+	_ensure_formal_resource_bar()
+
+
+func _on_formal_city_panel_return_to_skirmish() -> void:
+	if is_instance_valid(_formal_city_panel):
+		_detach_formal_resource_bar()
+		_formal_city_panel.close()
+	_formal_city_panel = null
+	_ensure_formal_resource_bar()
+	_hint.text = "已返回战术演武小地图。可继续经营咸阳，或选择部队攻打洛邑城墙。"
 
 
 func _default_hover_text() -> String:
+	if DemoFlow.is_enabled() and TacticalSkirmishManager.is_active():
+		if DemoFlow.is_tutorial_enabled():
+			return "新手教程：本关聚焦战术演武与咸阳经营；城市、征兵、资源栏都复用正式组件。"
+		return "Demo 作战目标：用秦军攻城器械攻击洛邑城墙；城墙归零后，移动秦军进入洛邑城格即可获胜。鼠标悬停格子可看城墙 HP、单位与攻击预览。"
 	return "将鼠标移到格子上：显示地形效果、据点归属与单位信息。"
+
+
+func _initial_hint_text() -> String:
+	if DemoFlow.is_enabled() and TacticalSkirmishManager.is_active():
+		return _demo_skirmish_briefing()
+	var atk_hint: int = TacticalSkirmishManager.get_attack_move_cost()
+	return "点选己方单位：绿格可移动；攻击需额外移动力 %d。移动后若仍可攻击会保持选中，再点本单位可待命结束。" % atk_hint
+
+
+func _demo_skirmish_briefing() -> String:
+	var target_city_name: String = DemoFlow.get_target_city_name()
+	var enemy_city: Vector2i = TacticalSkirmishManager.get_enemy_city()
+	var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(enemy_city)
+	var wall_max: int = TacticalSkirmishManager.get_city_wall_max_hp(enemy_city)
+	if DemoFlow.is_tutorial_enabled():
+		return "新手教程：可用“城市/征兵”查看正式经营界面。结束战术回合也会同步推进经营回合；随后选择攻城器械攻击%s城墙（%d/%d），城墙归零后移动秦军进城。" % [
+			target_city_name,
+			wall_hp,
+			wall_max,
+		]
+	if wall_hp > 0:
+		return "Demo 作战简报：1. 选中秦军攻城器械或前排；2. 点击%s城墙削减 HP（当前 %d/%d）；3. 城墙归零后，移动秦军进入%s城格获胜。" % [
+			target_city_name,
+			wall_hp,
+			wall_max,
+			target_city_name,
+		]
+	if wall_max > 0:
+		return "Demo 作战简报：%s城墙已破。现在选择秦军，移动进入%s城格即可获胜。" % [
+			target_city_name,
+			target_city_name,
+		]
+	return "Demo 作战简报：选中秦军，向%s推进；攻破城墙并进入城格即可获胜。" % target_city_name
 
 
 func _on_close_pressed() -> void:
 	close_panel()
+
+
+func _on_political_toggle() -> void:
+	_political_mode = not _political_mode
+	if _political_map_btn != null:
+		_political_map_btn.text = "政治地图：开" if _political_mode else "政治地图：关"
+	_hint.text = "政治地图已%s：当前战术地图按势力归属染色，不跳转大地图。" % ("开启" if _political_mode else "关闭")
+	_refresh_display()
 
 
 func _on_retreat_pressed() -> void:
@@ -110,21 +484,44 @@ func _update_season_label() -> void:
 
 
 func _on_restart_pressed() -> void:
+	if not _panel_cfg.is_empty():
+		open_panel_with_config(_panel_cfg.duplicate(true), _panel_season)
+		return
 	TacticalSkirmishManager.reset_skirmish()
 	TacticalSkirmishManager.start_skirmish()
-	_selected_unit_id = ""
-	_reachable.clear()
-	_log_view.clear()
-	_hover_info.text = _default_hover_text()
-	_refresh_display()
+	_prepare_panel_for_active_skirmish()
 
 
 func _on_end_turn_pressed() -> void:
 	if TacticalSkirmishManager.is_active():
 		TacticalSkirmishManager.end_player_turn()
+	if DemoFlow.is_tutorial_enabled():
+		_advance_formal_turn_for_tutorial()
 	_selected_unit_id = ""
 	_reachable.clear()
 	_refresh_display()
+
+
+func _advance_formal_turn_for_tutorial() -> void:
+	if GameManager.get_current_phase() != GameManager.Phase.ACTION:
+		return
+	var old_season: String = TacticalSkirmishManager.get_current_season()
+	GameManager.end_current_turn()
+	while GameManager.get_current_phase() == GameManager.Phase.ACTION and not GameManager.is_player_faction(GameManager.get_current_faction()):
+		GameManager.process_ai_turn()
+	var new_season: String = CityManager.get_current_season(GameManager.get_current_turn())
+	TacticalSkirmishManager.set_season(new_season)
+	_update_season_label()
+	_refresh_formal_resource_bar()
+	if is_instance_valid(_formal_city_panel):
+		if _formal_city_panel.has_method("refresh"):
+			_formal_city_panel.refresh()
+	var names: Dictionary = {"spring": "春", "summer": "夏", "autumn": "秋", "winter": "冬"}
+	_hint.text = "正式回合已结算：第 %d 回合，季节 %s → %s；资源、征兵池和城市经营已刷新。" % [
+		GameManager.get_current_turn(),
+		str(names.get(old_season, old_season)),
+		str(names.get(new_season, new_season)),
+	]
 
 
 func _on_standby_pressed() -> void:
@@ -157,7 +554,7 @@ func _ensure_hex_buttons() -> void:
 	var pad: float = _HEX_BOARD_PAD_PX
 	var radius_px: float = _compute_hex_radius_px(w, h, pad)
 	var sqrt3: float = sqrt(3.0)
-	## 平顶六角外包：宽 2R、高 √3·R
+	## 平顶六角外包：宽 2R、高 √3·R，矩形布局
 	var cell_w: float = radius_px * 2.0
 	var cell_h: float = radius_px * sqrt3
 	var min_tl_x: float = INF
@@ -213,6 +610,7 @@ func _ensure_hex_buttons() -> void:
 	var bb_w: float = max_br_x - min_tl_x + pad * 2.0
 	var bb_h: float = max_br_y - min_tl_y + pad * 2.0
 	_hex_board.custom_minimum_size = Vector2(bb_w, bb_h)
+	_hex_board.size = _hex_board.custom_minimum_size
 	_hex_board.set_meta("_hex_layout_v", _HEX_BOARD_LAYOUT_VERSION)
 	_hex_board.set_meta("_hex_radius_applied", radius_px)
 
@@ -249,8 +647,8 @@ func _deferred_refit_hex_radius_if_needed() -> void:
 
 func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	var sqrt3: float = sqrt(3.0)
-	var cell_w: float = radius * sqrt3
-	var cell_h: float = radius * 2.0
+	var cell_w: float = radius * 2.0
+	var cell_h: float = radius * sqrt3
 	var min_tl_x: float = INF
 	var min_tl_y: float = INF
 	var max_br_x: float = -INF
@@ -259,7 +657,7 @@ func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	while row_scan < h:
 		var col_scan: int = 0
 		while col_scan < w:
-			var tl_scan: Vector2 = _HexAxial.offset_odd_r_cell_top_left(col_scan, row_scan, radius)
+			var tl_scan: Vector2 = _HexAxial.offset_odd_r_flat_top_cell_top_left(col_scan, row_scan, radius)
 			min_tl_x = minf(min_tl_x, tl_scan.x)
 			min_tl_y = minf(min_tl_y, tl_scan.y)
 			max_br_x = maxf(max_br_x, tl_scan.x + cell_w)
@@ -310,6 +708,8 @@ func _ensure_hex_map_canvas() -> void:
 			_hex_board.move_child(cv, bi + 1)
 	elif cv.get_index() != 0:
 		_hex_board.move_child(cv, 0)
+	cv.custom_minimum_size = _hex_board.custom_minimum_size
+	cv.size = _hex_board.custom_minimum_size
 	cv.queue_redraw()
 
 
@@ -494,6 +894,10 @@ func _on_hex_pressed(q: int, r: int) -> void:
 		return
 	var cell: Vector2i = Vector2i(q, r)
 	var occ: Dictionary = _unit_at_cell(cell)
+	if _selected_unit_id == "" and DemoFlow.is_tutorial_enabled() and _is_tutorial_city_cell(cell):
+		_open_formal_capital_panel()
+		_hint.text = "已打开正式咸阳城市面板。关闭后可继续选择攻城器械攻击洛邑城墙。"
+		return
 	# 已选中己方：优先判断攻击（点击敌军）
 	if _selected_unit_id != "":
 		if not occ.is_empty() and str(occ.get("faction_id", "")) == TacticalSkirmishManager.get_enemy_faction():
@@ -562,6 +966,14 @@ func _on_hex_pressed(q: int, r: int) -> void:
 		return
 
 
+func _is_tutorial_city_cell(cell: Vector2i) -> bool:
+	if cell == TacticalSkirmishManager.get_player_city():
+		return true
+	if cell == TacticalSkirmishManager.get_enemy_city():
+		return true
+	return TacticalSkirmishManager.get_city_wall_hp(cell) >= 0
+
+
 func _unit_at_cell(cell: Vector2i) -> Dictionary:
 	for u: Dictionary in TacticalSkirmishManager.get_units():
 		if Vector2i(int(u["q"]), int(u["r"])) == cell:
@@ -581,10 +993,16 @@ func _is_attackable_enemy_cell(cell: Vector2i) -> bool:
 
 
 func _refresh_display() -> void:
+	if _refresh_suspended:
+		return
+	if not visible or _hex_board == null:
+		return
+	_update_tutorial_formal_ui()
+	_refresh_formal_resource_bar()
 	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
 	var w: int = int(cfg.get("map_width", 7))
 	var h: int = int(cfg.get("map_height", 7))
-	print("[SkirmishPanel] _refresh_display: w=%d h=%d active=%s" % [w, h, str(TacticalSkirmishManager.is_active())])
+	_debug_log("[SkirmishPanel] _refresh_display: w=%d h=%d active=%s" % [w, h, str(TacticalSkirmishManager.is_active())])
 	var by_axial: Dictionary = {}
 	var hex_count: int = 0
 	for ch: Node in _hex_board.get_children():
@@ -592,7 +1010,9 @@ func _refresh_display() -> void:
 			var hc: SkirmishHexCell = ch as SkirmishHexCell
 			by_axial[Vector2i(hc.cell_q, hc.cell_r)] = hc
 			hex_count += 1
-	print("[SkirmishPanel] _refresh_display: hex_count=%d expected=%d" % [hex_count, w * h])
+	_debug_log("[SkirmishPanel] _refresh_display: hex_count=%d expected=%d" % [hex_count, w * h])
+	if hex_count < w * h:
+		return
 	var row_var: int = 0
 	while row_var < h:
 		var col_var: int = 0
@@ -606,7 +1026,8 @@ func _refresh_display() -> void:
 			var uu: Dictionary = _unit_at_cell(cell_axial)
 			var cap: Label = hex_cell.get_node_or_null("CellCaption") as Label
 			var tex: Texture2D = SkirmishTileTextures.terrain_texture(t_id)
-			hex_cell.set_terrain_texture(tex)
+			var terrain_color: Color = SkirmishTileTextures.terrain_fallback_color(t_id)
+			hex_cell.set_terrain_style(tex, terrain_color)
 			hex_cell.set_tint_color(_cell_tint_color(cell_axial, uu))
 			var tag: String = ""
 			if cell_axial == TacticalSkirmishManager.get_player_city():
@@ -619,10 +1040,11 @@ func _refresh_display() -> void:
 			elif cell_axial == TacticalSkirmishManager.get_enemy_city():
 				var wh: int = TacticalSkirmishManager.get_city_wall_hp(cell_axial)
 				var wm: int = TacticalSkirmishManager.get_city_wall_max_hp(cell_axial)
+				var enemy_city_name: String = DemoFlow.get_target_city_name() if DemoFlow.is_enabled() else "赵城"
 				if wh > 0:
-					tag = "赵城\n城墙 %d/%d" % [wh, wm]
+					tag = "%s\n城墙 %d/%d" % [enemy_city_name, wh, wm]
 				else:
-					tag = "赵城（城墙已破）"
+					tag = "%s（城墙已破）" % enemy_city_name
 			# 关隘 HP 显示
 			var pass_hp: int = TacticalSkirmishManager.get_pass_hp(cell_axial)
 			if pass_hp >= 0:
@@ -659,6 +1081,8 @@ func _faction_short(fid: String) -> String:
 
 ## 半透明叠色（不乘到地形贴上），优先级：选中 > 可攻击 > 可走 > 空城 > 势力占位
 func _cell_tint_color(cell: Vector2i, uu: Dictionary) -> Color:
+	if _political_mode:
+		return _political_tint_color(cell, uu)
 	if not uu.is_empty() and str(uu["id"]) == _selected_unit_id:
 		return Color(_CLR_SELECTED.r, _CLR_SELECTED.g, _CLR_SELECTED.b, 0.45)
 	if _is_attackable_enemy_cell(cell):
@@ -677,6 +1101,37 @@ func _cell_tint_color(cell: Vector2i, uu: Dictionary) -> Color:
 		elif fid == TacticalSkirmishManager.get_enemy_faction():
 			return Color(_CLR_ENEMY_UNIT.r, _CLR_ENEMY_UNIT.g, _CLR_ENEMY_UNIT.b, 0.18)
 	return Color(0, 0, 0, 0)
+
+
+func _political_tint_color(cell: Vector2i, uu: Dictionary) -> Color:
+	var fid: String = ""
+	if cell == TacticalSkirmishManager.get_player_city():
+		fid = TacticalSkirmishManager.get_player_faction()
+	elif cell == TacticalSkirmishManager.get_enemy_city():
+		fid = TacticalSkirmishManager.get_enemy_faction()
+	elif not uu.is_empty():
+		fid = str(uu.get("faction_id", ""))
+	else:
+		fid = _temporary_split_political_owner(cell)
+	if fid == "":
+		return Color(0.42, 0.42, 0.42, 0.28)
+	var fdata: Dictionary = DataManager.get_faction(fid)
+	if fdata.is_empty():
+		return Color(0.42, 0.42, 0.42, 0.42)
+	var c: Color = Color.html(str(fdata.get("color", "#888888")))
+	c.a = 0.72
+	return c
+
+
+func _temporary_split_political_owner(cell: Vector2i) -> String:
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
+	var map_width: int = int(cfg.get("map_width", 0))
+	if map_width <= 0:
+		return ""
+	var offset: Vector2i = _HexAxial.axial_to_offset_odd_r(cell.x, cell.y)
+	if offset.x < int(ceil(float(map_width) * 0.5)):
+		return TacticalSkirmishManager.get_player_faction()
+	return TacticalSkirmishManager.get_enemy_faction()
 
 
 ## 秦/赵据点亮首都美术（叠在地形与描边之间，兵牌仍压在其上）
@@ -716,7 +1171,12 @@ func _apply_capital_badge(hex_cell: Control, cell: Vector2i) -> void:
 
 func _apply_unit_overlay(btn: Control, uu: Dictionary) -> void:
 	var anim_sprite: AnimatedSprite2D = btn.get_node_or_null("UnitSprite") as AnimatedSprite2D
+	var stale_unit_sprite: Node = btn.get_node_or_null("UnitSprite")
 	var unit_shadow: TextureRect = btn.get_node_or_null("UnitShadow") as TextureRect
+	if stale_unit_sprite != null and not (stale_unit_sprite is AnimatedSprite2D):
+		btn.remove_child(stale_unit_sprite)
+		stale_unit_sprite.free()
+		anim_sprite = null
 	if uu.is_empty():
 		if anim_sprite != null:
 			anim_sprite.visible = false
@@ -735,16 +1195,43 @@ func _apply_unit_overlay(btn: Control, uu: Dictionary) -> void:
 	var sf: SpriteFrames = _get_or_create_unit_frames(unit_type_id, faction_id)
 	if sf != null:
 		anim_sprite.sprite_frames = sf
-		if not anim_sprite.is_playing():
+		if sf.has_animation("idle") and anim_sprite.animation != "idle":
+			anim_sprite.animation = "idle"
+		if sf.has_animation("idle") and not anim_sprite.is_playing():
 			anim_sprite.play("idle")
-	# 定位到格子右上角
-	anim_sprite.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	else:
+		var fallback_tex: Texture2D = SkirmishTileTextures.unit_texture(unit_type_id)
+		if fallback_tex == null:
+			anim_sprite.visible = false
+			if unit_shadow != null:
+				unit_shadow.visible = false
+			return
+		sf = SpriteFrames.new()
+		sf.remove_animation("default")
+		sf.add_animation("idle")
+		sf.set_animation_loop("idle", true)
+		sf.add_frame("idle", fallback_tex)
+		anim_sprite.sprite_frames = sf
+		anim_sprite.animation = "idle"
+		anim_sprite.play("idle")
+	# AnimatedSprite2D 是 Node2D，必须用 position/scale 控制，不能按 Control offset 拉伸。
 	var cell_size: Vector2 = btn.custom_minimum_size
-	var sprite_size: float = minf(cell_size.x, cell_size.y) * 0.65
-	anim_sprite.offset_left = -sprite_size - 2.0
-	anim_sprite.offset_top = 2.0
-	anim_sprite.offset_right = -2.0
-	anim_sprite.offset_bottom = sprite_size + 2.0
+	if cell_size.x <= 1.0 or cell_size.y <= 1.0:
+		var hc: SkirmishHexCell = btn as SkirmishHexCell
+		if hc != null:
+			cell_size = Vector2(hc.circumradius * 2.0, hc.circumradius * sqrt(3.0))
+		else:
+			cell_size = Vector2(96.0, 84.0)
+	var frame_tex: Texture2D = null
+	if sf.has_animation("idle") and sf.get_frame_count("idle") > 0:
+		frame_tex = sf.get_frame_texture("idle", 0)
+	var frame_max: float = 1.0
+	if frame_tex != null:
+		frame_max = maxf(float(frame_tex.get_width()), float(frame_tex.get_height()))
+	var sprite_size: float = minf(cell_size.x, cell_size.y) * 0.48
+	anim_sprite.centered = true
+	anim_sprite.position = Vector2(cell_size.x * 0.66, cell_size.y * 0.35)
+	anim_sprite.scale = Vector2.ONE * (sprite_size / frame_max)
 	anim_sprite.visible = true
 	# 阴影（保留 TextureRect 方案，用静态贴图做阴影）
 	if unit_shadow == null:
@@ -759,12 +1246,16 @@ func _apply_unit_overlay(btn: Control, uu: Dictionary) -> void:
 	var ut: Texture2D = SkirmishTileTextures.unit_texture(unit_type_id)
 	if ut != null:
 		unit_shadow.texture = ut
-		unit_shadow.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-		unit_shadow.offset_left = anim_sprite.offset_left + 5.0
-		unit_shadow.offset_top = anim_sprite.offset_top + 7.0
-		unit_shadow.offset_right = anim_sprite.offset_right + 5.0
-		unit_shadow.offset_bottom = anim_sprite.offset_bottom + 7.0
+		unit_shadow.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		var shadow_size: float = sprite_size * 0.9
+		var shadow_center: Vector2 = anim_sprite.position + Vector2(4.0, 6.0)
+		unit_shadow.offset_left = shadow_center.x - shadow_size * 0.5
+		unit_shadow.offset_top = shadow_center.y - shadow_size * 0.5
+		unit_shadow.offset_right = shadow_center.x + shadow_size * 0.5
+		unit_shadow.offset_bottom = shadow_center.y + shadow_size * 0.5
 		unit_shadow.visible = true
+	else:
+		unit_shadow.visible = false
 	anim_sprite.move_to_front()
 
 
@@ -779,39 +1270,62 @@ func _get_or_create_unit_frames(unit_type_id: String, faction_id: String) -> Spr
 
 
 func _load_unit_sprite_frames(unit_type_id: String, faction_id: String) -> SpriteFrames:
-	var base_path: String = "res://assets/sprites/units/%s/%s/" % [faction_id, unit_type_id]
-	var dir: DirAccess = DirAccess.open(base_path)
-	if not dir:
-		# 回退到 base 阵营
-		base_path = "res://assets/sprites/units/base/%s/" % unit_type_id
-		dir = DirAccess.open(base_path)
-		if not dir:
-			return null
+	var base_path: String = ""
+	for candidate: String in _unit_sprite_base_paths(unit_type_id, faction_id):
+		if ResourceLoader.exists(_unit_frame_path(candidate, unit_type_id, "idle", 1)):
+			base_path = candidate
+			break
+	if base_path == "":
+		return null
 	var sf: SpriteFrames = SpriteFrames.new()
 	sf.remove_animation("default")
 	var anim_names: Array[String] = ["idle", "move", "attack", "hurt", "death"]
 	var loop_anims: Array[String] = ["idle", "move"]
 	var fps: float = 8.0
 	for anim_name: String in anim_names:
-		var frame_files: Array[String] = []
-		dir.list_dir_begin()
-		var entry: String = dir.get_next()
-		while entry != "":
-			if entry.ends_with(".png") and not entry.ends_with(".import") and ("_" + anim_name + "_") in entry:
-				frame_files.append(base_path + entry)
-			entry = dir.get_next()
-		dir.list_dir_end()
-		if frame_files.is_empty():
+		var frame_paths: Array[String] = _unit_frame_paths(base_path, unit_type_id, anim_name)
+		if frame_paths.is_empty():
 			continue
-		frame_files.sort()
 		sf.add_animation(anim_name)
 		sf.set_animation_speed(anim_name, fps)
 		sf.set_animation_loop(anim_name, anim_name in loop_anims)
-		for frame_path: String in frame_files:
+		for frame_path: String in frame_paths:
 			var tex: Texture2D = load(frame_path) as Texture2D
 			if tex != null:
 				sf.add_frame(anim_name, tex)
 	return sf
+
+
+func _normalized_unit_id(unit_id: String) -> String:
+	return unit_id.trim_prefix("unit_")
+
+
+func _unit_sprite_base_paths(unit_type_id: String, faction_id: String) -> Array[String]:
+	var normalized_id: String = _normalized_unit_id(unit_type_id)
+	var unit_dir: String = "unit_%s" % normalized_id
+	return [
+		"res://assets/sprites/units/%s/%s/" % [faction_id, unit_type_id],
+		"res://assets/sprites/units/%s/%s/" % [faction_id, unit_dir],
+		"res://assets/sprites/units/base/%s/" % unit_type_id,
+		"res://assets/sprites/units/base/%s/" % unit_dir,
+	]
+
+
+func _unit_frame_paths(base_path: String, unit_type_id: String, anim_name: String) -> Array[String]:
+	var out: Array[String] = []
+	var frame_index: int = 1
+	while frame_index <= 12:
+		var path: String = _unit_frame_path(base_path, unit_type_id, anim_name, frame_index)
+		if not ResourceLoader.exists(path):
+			break
+		out.append(path)
+		frame_index += 1
+	return out
+
+
+func _unit_frame_path(base_path: String, unit_type_id: String, anim_name: String, frame_index: int) -> String:
+	var normalized_id: String = _normalized_unit_id(unit_type_id)
+	return "%sunit_%s_%s_%02d.png" % [base_path, normalized_id, anim_name, frame_index]
 
 
 func _play_combat_effect(effect_id: String, cell: Vector2i, _attacker_cell: Vector2i) -> void:
@@ -829,13 +1343,17 @@ func _play_combat_effect(effect_id: String, cell: Vector2i, _attacker_cell: Vect
 	fx.sprite_frames = sf
 	fx.z_index = 10
 	hex_cell.add_child(fx)
-	fx.set_anchors_preset(Control.PRESET_CENTER)
 	var cell_size: Vector2 = hex_cell.custom_minimum_size
 	var fx_size: float = minf(cell_size.x, cell_size.y) * 0.8
-	fx.offset_left = -fx_size * 0.5
-	fx.offset_top = -fx_size * 0.5
-	fx.offset_right = fx_size * 0.5
-	fx.offset_bottom = fx_size * 0.5
+	var frame_tex: Texture2D = null
+	if sf.has_animation("play") and sf.get_frame_count("play") > 0:
+		frame_tex = sf.get_frame_texture("play", 0)
+	var frame_max: float = 1.0
+	if frame_tex != null:
+		frame_max = maxf(float(frame_tex.get_width()), float(frame_tex.get_height()))
+	fx.centered = true
+	fx.position = cell_size * 0.5
+	fx.scale = Vector2.ONE * (fx_size / frame_max)
 	fx.play("play")
 	fx.animation_finished.connect(fx.queue_free)
 

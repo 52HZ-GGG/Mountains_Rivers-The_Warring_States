@@ -97,7 +97,9 @@ const _UNIT_PATHS: Dictionary = {
 	"ballista": "res://photos/unit/unit_siege_crossbow.png",
 	# 水军
 	"mengchong": "res://photos/unit/unit_mengchong.png",
+	"dayi": "res://photos/unit/unit_dayi.png",
 	"great_wing": "res://photos/unit/unit_dayi.png",
+	"louchuan": "res://photos/unit/unit_louchuan.png",
 	"tower_ship": "res://photos/unit/unit_louchuan.png",
 	"navy": "res://photos/unit/unit_mengchong.png",
 	# 国家变体
@@ -161,7 +163,7 @@ const _PANEL_PATHS: Dictionary = {
 	"event_popup": "res://assets/ui/panels/ui_event_popup.png",
 	"tech": "res://assets/ui/panels/ui_tech_panel.png",
 	"school": "res://assets/ui/panels/ui_school_panel.png",
-	"battle": "res://assets/ui/panels/ui_battle_panel.png",
+	"battle": "res://assets/ui/battle/ui_battle_panel.png",
 	"settings": "res://assets/ui/panels/ui_settings.png",
 	"save_load": "res://assets/ui/panels/ui_save_load.png",
 	"victory": "res://assets/ui/panels/ui_victory.png",

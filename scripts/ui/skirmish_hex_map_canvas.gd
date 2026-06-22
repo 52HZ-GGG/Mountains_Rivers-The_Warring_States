@@ -4,6 +4,12 @@ class_name HexMapCanvas
 ## 在 HexBoard 上一次性绘制全部六角地形贴图，避免逐格 Control._draw 叠加误差造成「假缝隙」。
 
 const _EXTRA_BLEED_SCALE: float = 1.2
+const _CAPTION_COLOR: Color = Color(1, 1, 1, 1)
+const _CAPTION_SHADOW_COLOR: Color = Color(0.05, 0.05, 0.10, 0.9)
+
+var _payload_cells: Array = []
+var _payload_board_size: Vector2 = Vector2.ZERO
+var _use_payload: bool = false
 
 func _scale_poly_outward(poly: PackedVector2Array, cell_pos: Vector2, cell: SkirmishHexCell) -> PackedVector2Array:
 	var half_w: float = cell.custom_minimum_size.x * 0.5
@@ -42,10 +48,29 @@ func _white_vertex_colors(n: int) -> PackedColorArray:
 	return colors
 
 
+func set_payload_cells(cells: Array, board_size: Vector2) -> void:
+	_payload_cells = cells
+	_payload_board_size = board_size
+	_use_payload = true
+	queue_redraw()
+
+
+func clear_payload_cells() -> void:
+	_payload_cells = []
+	_payload_board_size = Vector2.ZERO
+	_use_payload = false
+	queue_redraw()
+
+
 func _draw() -> void:
+	if _use_payload:
+		_draw_payload_cells()
+		return
 	var board: Control = get_parent() as Control
 	if board == null:
 		return
+	if size != board.size:
+		size = board.size
 	var list: Array[SkirmishHexCell] = []
 	for ch: Node in board.get_children():
 		if ch is SkirmishHexCell:
@@ -75,3 +100,54 @@ func _draw() -> void:
 			continue
 		var bp2: PackedVector2Array = _scale_poly_outward(lp2, cell2.position, cell2)
 		draw_colored_polygon(bp2, tc)
+
+
+func _draw_payload_cells() -> void:
+	if _payload_board_size != Vector2.ZERO and size != _payload_board_size:
+		size = _payload_board_size
+	var font: Font = get_theme_default_font()
+	var font_size_default: int = get_theme_default_font_size()
+	for payload_v: Variant in _payload_cells:
+		if payload_v is not Dictionary:
+			continue
+		var payload: Dictionary = payload_v as Dictionary
+		var polygon: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
+		if polygon.size() < 3:
+			continue
+		var tex: Texture2D = payload.get("texture", null) as Texture2D
+		var uvs: PackedVector2Array = payload.get("uvs", PackedVector2Array()) as PackedVector2Array
+		if tex != null and polygon.size() == uvs.size():
+			draw_polygon(polygon, _white_vertex_colors(polygon.size()), uvs, tex)
+		else:
+			draw_colored_polygon(polygon, payload.get("fallback_color", SkirmishHexCell.fallback_terrain_color()) as Color)
+		var tint: Color = payload.get("tint", Color(0, 0, 0, 0)) as Color
+		if tint.a > 0.001:
+			draw_colored_polygon(polygon, tint)
+		var capital_rect: Rect2 = payload.get("capital_rect", Rect2()) as Rect2
+		var capital_tex: Texture2D = payload.get("capital_texture", null) as Texture2D
+		if capital_tex != null and capital_rect.size.x > 0.0 and capital_rect.size.y > 0.0:
+			draw_texture_rect(capital_tex, capital_rect, false)
+		var caption_text: String = str(payload.get("caption", ""))
+		if caption_text.is_empty() or font == null:
+			continue
+		var font_size: int = int(payload.get("caption_font_size", font_size_default))
+		var caption_center: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
+		_draw_multiline_centered_caption(font, font_size, caption_center, caption_text)
+
+
+func _draw_multiline_centered_caption(font: Font, font_size: int, center: Vector2, text: String) -> void:
+	var lines: PackedStringArray = text.split("\n")
+	if lines.is_empty():
+		return
+	var line_height: float = float(font_size) + 2.0
+	var total_height: float = line_height * float(lines.size())
+	var baseline_y: float = center.y - total_height * 0.5 + float(font_size)
+	for line: String in lines:
+		if line.is_empty():
+			baseline_y += line_height
+			continue
+		var line_width: float = font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		var pos: Vector2 = Vector2(center.x - line_width * 0.5, baseline_y)
+		draw_string(font, pos + Vector2(1, 1), line, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, _CAPTION_SHADOW_COLOR)
+		draw_string(font, pos, line, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, _CAPTION_COLOR)
+		baseline_y += line_height

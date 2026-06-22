@@ -15,6 +15,27 @@ func initialize(manager: Node) -> void:
 	m = manager
 
 
+func _get_national_morale_atk_offset(faction_id: String) -> float:
+	if not GameManager.is_player_faction(faction_id):
+		return 0.0
+	var morale_mod: float = float(GameManager.get_morale_threshold_effect().get("morale_atk_mod", 1.0))
+	return morale_mod - 1.0
+
+
+func _get_grain_shortage_atk_offset(faction_id: String) -> float:
+	return GameManager.get_grain_shortage_attack_mod(faction_id) - 1.0
+
+
+func _get_grain_shortage_def_offset(faction_id: String) -> float:
+	return GameManager.get_grain_shortage_defense_mod(faction_id) - 1.0
+
+
+func _add_ctx_offset(ctx: Dictionary, key: String, offset: float) -> void:
+	if absf(offset) <= 0.001:
+		return
+	ctx[key] = float(ctx.get(key, 0.0)) + offset
+
+
 func execute_player_attack(attacker_id: String, defender_id: String) -> Dictionary:
 	var a: Dictionary = m.get_unit_by_id(attacker_id)
 	var d: Dictionary = m.get_unit_by_id(defender_id)
@@ -49,6 +70,9 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var is_fire: bool = m._can_fire_attack(def_terrain)
 	if is_fire:
 		atk_ctx = m._get_fire_attack_ctx()
+	_add_ctx_offset(atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(a["faction_id"])))
+	_add_ctx_offset(atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(a["faction_id"])))
+	_add_ctx_offset(def_ctx, "faction_def", _get_grain_shortage_def_offset(str(d["faction_id"])))
 	# 被动技能加成
 	var passive_bonus: float = m._get_passive_skill_bonus(a.get("skills", []))
 	if passive_bonus > 0.0:
@@ -109,7 +133,7 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var naval_atk_mod: float = m._calc_naval_combat_mod(str(a["unit_type_id"]), str(d["unit_type_id"]), atk_cell, def_cell)
 	var naval_def_mod: float = m._calc_naval_defense_mod(str(d["unit_type_id"]), def_cell, str(a["unit_type_id"]))
 	var stranded_mod: float = m._get_stranded_attack_mod(a)
-	dmg = maxi(1, int(float(dmg) * naval_atk_mod * naval_def_mod * stranded_mod))
+	dmg = maxi(1, int(float(dmg) * naval_atk_mod * naval_def_mod * stranded_mod * m.get_demo_attack_multiplier()))
 	var effective_atk_v: Variant = dmg_info.get("effective_atk", null)
 	var eff_atk: float = float(effective_atk_v) if effective_atk_v != null else float(DataManager.get_unit_type(str(a["unit_type_id"])).get("attack", 10))
 	# 关隘结构伤害（攻城器械 × siege_damage_multiplier）
@@ -157,6 +181,9 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 			var atk_terrain2: String = m.terrain_at(atk_cell)
 			var c_atk_ctx: Dictionary = {}
 			var c_def_ctx: Dictionary = {}
+			_add_ctx_offset(c_atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(d["faction_id"])))
+			_add_ctx_offset(c_atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(d["faction_id"])))
+			_add_ctx_offset(c_def_ctx, "faction_def", _get_grain_shortage_def_offset(str(a["faction_id"])))
 			# 反击方被动技能
 			var c_passive: float = m._get_passive_skill_bonus(d.get("skills", []))
 			if c_passive > 0.0:
@@ -266,6 +293,7 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 	if dist < 1 or dist > eff_range:
 		return {"ok": false, "reason": "out_of_range"}
 	var eff_atk: float = float(ug.get("attack", 10))
+	eff_atk *= m.get_demo_attack_multiplier()
 	var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
 	var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
 	var siege_factor: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
@@ -336,6 +364,14 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 	if absf(morale_atk_off) > 0.001:
 		atk_buff += morale_atk_off
 		atk_details.append("士气 %+.0f%%" % (morale_atk_off * 100.0))
+	var national_morale_offset: float = _get_national_morale_atk_offset(atk_fid)
+	if absf(national_morale_offset) > 0.001:
+		atk_buff += national_morale_offset
+		atk_details.append("民心 %+.0f%%" % (national_morale_offset * 100.0))
+	var shortage_atk_offset: float = _get_grain_shortage_atk_offset(atk_fid)
+	if absf(shortage_atk_offset) > 0.001:
+		atk_buff += shortage_atk_offset
+		atk_details.append("断粮 %+.0f%%" % (shortage_atk_offset * 100.0))
 	# 火攻
 	var is_fire: bool = m._can_fire_attack(def_terrain) and not is_wall_attack
 	if is_fire:
@@ -374,6 +410,10 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 		if absf(t_def_offset) > 0.001:
 			def_buff += t_def_offset
 			def_details.append("地形 %+.0f%%" % (t_def_offset * 100.0))
+		var shortage_def_offset: float = _get_grain_shortage_def_offset(def_fid)
+		if absf(shortage_def_offset) > 0.001:
+			def_buff += shortage_def_offset
+			def_details.append("断粮 %+.0f%%" % (shortage_def_offset * 100.0))
 		# 科技
 		var tech_def: float = TechSystem.get_defense_modifier(def_category)
 		if absf(tech_def) > 0.001:

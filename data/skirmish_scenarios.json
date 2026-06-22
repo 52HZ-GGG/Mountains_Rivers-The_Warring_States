@@ -127,6 +127,39 @@
       ]
     },
     {
+      "id": "luoyi_siege_demo",
+      "name": "洛邑攻城 Demo",
+      "description": "秦军攻取洛邑的 Demo 主战斗：使用冲车与投石车破城墙，清理守军后占领洛邑城格。",
+      "mechanics": ["Demo 主线", "攻城器械", "城墙 HP", "守军压制", "占领判定"],
+      "map_width": 9,
+      "map_height": 9,
+      "player_faction_id": "qin",
+      "enemy_faction_id": "zhao",
+      "player_city": { "q": 0, "r": 4, "level": 3, "is_capital": true },
+      "enemy_city": { "q": 8, "r": 4, "level": 3, "is_capital": true },
+      "rows": [
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "plains", "plains", "pass", "plains", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "ford", "river", "ford", "plains", "plains", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"],
+        ["plains", "plains", "plains", "plains", "pass", "plains", "plains", "plains", "plains"],
+        ["plains", "forest", "plains", "plains", "plains", "plains", "plains", "forest", "plains"],
+        ["plains", "plains", "forest", "plains", "plains", "plains", "forest", "plains", "plains"]
+      ],
+      "initial_units": [
+        { "id": "ls_p1", "faction_id": "qin", "unit_type_id": "infantry", "q": 2, "r": 4 },
+        { "id": "ls_p2", "faction_id": "qin", "unit_type_id": "spear", "q": 1, "r": 3 },
+        { "id": "ls_p3", "faction_id": "qin", "unit_type_id": "battering_ram", "q": 2, "r": 5 },
+        { "id": "ls_p4", "faction_id": "qin", "unit_type_id": "siege", "q": 1, "r": 5 },
+        { "id": "ls_p5", "faction_id": "qin", "unit_type_id": "archer", "q": 0, "r": 3 },
+        { "id": "ls_e1", "faction_id": "zhao", "unit_type_id": "infantry", "q": 6, "r": 4 },
+        { "id": "ls_e2", "faction_id": "zhao", "unit_type_id": "crossbow", "q": 7, "r": 3 },
+        { "id": "ls_e3", "faction_id": "zhao", "unit_type_id": "spear", "q": 7, "r": 5 }
+      ]
+    },
+    {
       "id": "supply_warfare",
       "name": "补给线战",
       "description": "沙漠和沼泽地形切断补给线，验证断粮、士气崩溃和溃退。",

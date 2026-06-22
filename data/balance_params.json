@@ -127,34 +127,34 @@
     "city_base_wood": 10,
     "horse_upkeep_food_per_unit": 5,
     "season_food_mod": {
-      "spring": 0.2,
-      "summer": 0,
-      "autumn": 1,
-      "winter": -0.3
+      "spring": 1.2,
+      "summer": 1,
+      "autumn": 2,
+      "winter": 0.7
     },
     "season_gold_mod": {
-      "spring": 0,
-      "summer": 0,
-      "autumn": 0.5,
-      "winter": -0.2
+      "spring": 1,
+      "summer": 1,
+      "autumn": 1.5,
+      "winter": 0.8
     },
     "season_wood_mod": {
-      "spring": 0,
-      "summer": 0,
-      "autumn": 0,
-      "winter": -0.2
+      "spring": 1,
+      "summer": 1,
+      "autumn": 1,
+      "winter": 0.8
     },
     "season_craftsmen_mod": {
-      "spring": 0,
-      "summer": 0,
-      "autumn": 0.2,
-      "winter": -0.2
+      "spring": 1,
+      "summer": 1,
+      "autumn": 1.2,
+      "winter": 0.8
     },
     "season_building_materials_mod": {
-      "spring": 0.2,
-      "summer": 0,
-      "autumn": 0,
-      "winter": -0.3
+      "spring": 1.2,
+      "summer": 1,
+      "autumn": 1,
+      "winter": 0.7
     },
     "special_resource_mod": {
       "wood": {
