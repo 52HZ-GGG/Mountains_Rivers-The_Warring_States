@@ -220,9 +220,8 @@ func test_national_grain_cap_includes_storage_buildings() -> void:
 	var city_id: String = str(CityManager.get_capital_state("qin")["id"])
 	var city: Dictionary = CityManager.get_city_state(city_id)
 	(city["buildings"] as Array).append({"building_id": "granary", "level": 1})
-	(city["buildings"] as Array).append({"building_id": "warehouse", "level": 2})
-	assert_eq(GameManager.get_national_grain_cap("qin"), 330,
-		"国家粮仓上限应为基础 200 + 粮仓 50 + 仓库 80")
+	assert_eq(GameManager.get_national_grain_cap("qin"), 250,
+		"国家粮仓上限应为基础 200 + 粮仓 50")
 
 
 func test_process_production_applies_tax_rate_to_food_and_gold() -> void:

@@ -305,7 +305,7 @@
     },
     {
       "id": "ballista",
-      "name": "弩炮",
+      "name": "攻城弩",
       "attack": 15,
       "defense": 6,
       "hp": 80,

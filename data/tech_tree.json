@@ -321,7 +321,7 @@
       "era": "mid",
       "cost_gold": 200,
       "prerequisites": [
-        "chariot_warfare"
+        "iron_forging"
       ],
       "special_conditions": [],
       "effects": {
@@ -336,7 +336,7 @@
         "evt_tech_horse_training"
       ],
       "knowledge_card": {
-        "historical_background": "赵武灵王胡服骑射，废车战而用骑兵。自此中原始有骑射之术，军事为之一变。",
+        "historical_background": "赵武灵王胡服骑射，师法北方游牧民族。自此中原始有骑射之术，军事为之一变。",
         "key_figures": [
           "赵武灵王",
           "肥义"
@@ -415,7 +415,8 @@
       "era": "mid",
       "cost_gold": 220,
       "prerequisites": [
-        "city_defense"
+        "iron_forging",
+        "formation_tactics"
       ],
       "special_conditions": [],
       "effects": {
@@ -509,8 +510,8 @@
     },
     {
       "id": "ballista_tech",
-      "name": "弩炮之制",
-      "description": "发机如雷，所中皆摧。弩炮之威，城垣为之崩。",
+      "name": "投石之制",
+      "description": "发机如雷，所中皆摧。投石之威，城垣为之崩。",
       "category": "military",
       "era": "mid",
       "cost_gold": 250,
@@ -529,29 +530,30 @@
         "craftsmen": 8
       },
       "knowledge_card": {
-        "historical_background": "发机如雷，所中皆摧。弩炮之制，合弩机与抛石之长，攻坚破城，莫之能御。",
+        "historical_background": "发机如雷，所中皆摧。投石之制，以机发石，攻坚破城，莫之能御。战国时已用于攻城。",
         "key_figures": [
           "公输班",
           "墨子"
         ],
         "related_artifacts": [
-          "弩炮复原模型",
+          "战国投石机复原模型",
           "秦代抛石机部件"
         ],
         "historical_period": "战国中后期",
-        "fun_fact": "弩炮可将数十斤石弹抛射数百步，威力远超人力投石。",
+        "fun_fact": "投石机可将数十斤石弹抛射数百步，威力远超人力投石。墨子守城时曾用此器。",
         "illustration_id": "tech_ballista_tech"
       }
     },
     {
       "id": "heavy_cavalry_tech",
       "name": "重骑之制",
-      "description": "铁骑如山，冲阵无前。重甲利刃，所向披靡。",
+      "description": "铁骑如山，冲阵无前。人马俱甲，以冲力破敌阵，战国末世始见其形。",
       "category": "military",
-      "era": "mid",
-      "cost_gold": 220,
+      "era": "late",
+      "cost_gold": 350,
       "prerequisites": [
-        "cavalry_archery"
+        "cavalry_archery",
+        "iron_armor"
       ],
       "special_conditions": [],
       "effects": {
@@ -559,22 +561,22 @@
         "unit_id": "heavy_cavalry"
       },
       "cost_resources": {
-        "gold": 150,
-        "horse": 12,
-        "refined_iron": 5
+        "gold": 250,
+        "horse": 15,
+        "refined_iron": 15
       },
       "knowledge_card": {
-        "historical_background": "铁骑如山，冲阵无前。重甲骑兵，人马俱甲，以冲力破敌阵，战国末世始见其形。",
+        "historical_background": "铁骑如山，冲阵无前。重甲骑兵，人马俱甲，以冲力破敌阵。战国末世始见其形，秦汉之际渐成规模。",
         "key_figures": [
-          "赵武灵王",
-          "李牧"
+          "李牧",
+          "蒙恬"
         ],
         "related_artifacts": [
-          "战国重骑兵俑",
-          "赵国骑兵装备残片"
+          "秦代骑兵俑",
+          "汉代重骑兵甲片"
         ],
-        "historical_period": "战国后期",
-        "fun_fact": "重骑兵的马铠由数百片铁甲编缀而成，造价极为昂贵。",
+        "historical_period": "战国末期至秦汉",
+        "fun_fact": "重骑兵的马铠由数百片铁甲编缀而成，造价极为昂贵，非强国不能养。",
         "illustration_id": "tech_heavy_cavalry_tech"
       }
     },
@@ -612,7 +614,7 @@
     {
       "id": "repeating_crossbow",
       "name": "连弩之制",
-      "description": "一弩十矢俱发，势如骤雨。敌未及近，已溃于百步之外。",
+      "description": "一弩数矢俱发，势如骤雨。敌未及近，已溃于百步之外。",
       "category": "military",
       "era": "late",
       "cost_gold": 300,
@@ -626,17 +628,17 @@
         "value": 0.15
       },
       "knowledge_card": {
-        "historical_background": "一弩十矢俱发，势如骤雨。诸葛连弩之制，战国已见端倪，守城利器也。",
+        "historical_background": "一弩数矢俱发，势如骤雨。战国时韩之劲弩已名天下，连发之制守城利器也。",
         "key_figures": [
-          "诸葛亮",
-          "马钧"
+          "韩非子",
+          "墨子"
         ],
         "related_artifacts": [
-          "连弩复原件",
-          "蜀汉弩机残件"
+          "战国弩机复原件",
+          "秦弩机构件"
         ],
-        "historical_period": "战国至三国",
-        "fun_fact": "诸葛连弩一次可装十矢，扣动扳机即连发，但射程较短。",
+        "historical_period": "战国时期",
+        "fun_fact": "韩国以'强弓劲弩'著称，所谓'天下之强弓劲弩皆从韩出'。",
         "illustration_id": "tech_repeating_crossbow"
       }
     },
@@ -1724,8 +1726,7 @@
       "era": "mid",
       "cost_gold": 250,
       "prerequisites": [
-        "private_academy",
-        "rites_music"
+        "private_academy"
       ],
       "special_conditions": [],
       "effects": {
@@ -1800,7 +1801,7 @@
       "era": "late",
       "cost_gold": 250,
       "prerequisites": [
-        "legalist_governance"
+        "hundred_schools"
       ],
       "special_conditions": [],
       "effects": {
@@ -1812,7 +1813,7 @@
         "silk_books": 15
       },
       "knowledge_card": {
-        "historical_background": "竹帛所载，皆为至宝。传之子孙，以垂后世。典籍之传，文明之延续也。",
+        "historical_background": "竹帛所载，皆为至宝。传之子孙，以垂后世。百家争鸣，典籍之传，文明之延续也。",
         "key_figures": [
           "孔子",
           "左丘明",
@@ -2111,7 +2112,7 @@
       "era": "mid",
       "cost_gold": 150,
       "prerequisites": [
-        "rammed_earth"
+        "city_defense"
       ],
       "special_conditions": [],
       "effects": {
@@ -2643,8 +2644,8 @@
     },
     {
       "id": "civil_examination",
-      "name": "察举征辟",
-      "description": "举贤才以治国，征能士以佐政。选贤任能，百官得其序。",
+      "name": "养士之风",
+      "description": "招贤纳士，广聚人才。四公子门客三千，稷下学宫百家云集。",
       "category": "livelihood",
       "era": "mid",
       "cost_gold": 160,
@@ -2675,18 +2676,19 @@
         }
       ],
       "knowledge_card": {
-        "historical_background": "乡举里选，征辟贤良。战国之时已有养士之风，稷下学宫广纳百家。至汉遂成察举之制，以德行取士。",
+        "historical_background": "战国之世，养士成风。孟尝、平原、信陵、春申四公子各养士数千，稷下学宫广纳百家，人才辈出。",
         "key_figures": [
-          "孟子",
-          "荀子",
-          "董仲舒"
+          "孟尝君",
+          "平原君",
+          "信陵君",
+          "春申君"
         ],
         "related_artifacts": [
-          "举孝廉画像砖",
-          "战国养士记录"
+          "战国竹简",
+          "稷下学宫遗址"
         ],
-        "historical_period": "战国至西汉",
-        "fun_fact": "战国四公子各养士数千人，其中孟尝君门客竟有三千之众。",
+        "historical_period": "战国时期",
+        "fun_fact": "战国四公子各养士数千人，其中孟尝君门客竟有三千之众，鸡鸣狗盗之徒亦在其列。",
         "illustration_id": "tech_civil_examination"
       }
     },
@@ -2848,7 +2850,7 @@
     {
       "id": "policy_meritocracy",
       "name": "选贤之制",
-      "description": "以军功授爵激励将士，或以察举征辟选拔文臣？取士之道，不可两全。",
+      "description": "以军功授爵激励将士，或以养士之风招揽人才？取士之道，不可两全。",
       "members": [
         "military_merit_system",
         "civil_examination"
