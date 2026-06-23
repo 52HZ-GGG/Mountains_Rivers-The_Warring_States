@@ -71,7 +71,7 @@
       "description": "驷马战车，冲阵破敌。车驰卒奔，以雷霆之势摧坚。",
       "category": "military",
       "era": "early",
-      "cost_gold": 150,
+      "cost_gold": 220,
       "prerequisites": [
         "formation_tactics"
       ],
@@ -81,7 +81,7 @@
         "unit_id": "chariot"
       },
       "cost_resources": {
-        "gold": 100,
+        "gold": 146,
         "wood": 30,
         "horse": 5
       },
@@ -107,7 +107,7 @@
       "description": "弩者，怒也。穿杨贯虱，百步之外取人性命。",
       "category": "military",
       "era": "early",
-      "cost_gold": 120,
+      "cost_gold": 180,
       "prerequisites": [
         "formation_tactics"
       ],
@@ -319,9 +319,9 @@
       "description": "胡服骑射，驰骋千里。马上引弓，所向披靡。",
       "category": "military",
       "era": "mid",
-      "cost_gold": 200,
+      "cost_gold": 300,
       "prerequisites": [
-        "chariot_warfare"
+        "iron_forging"
       ],
       "special_conditions": [],
       "effects": {
@@ -329,14 +329,14 @@
         "unit_id": "cavalry"
       },
       "cost_resources": {
-        "gold": 140,
+        "gold": 210,
         "horse": 10
       },
       "research_events": [
         "evt_tech_horse_training"
       ],
       "knowledge_card": {
-        "historical_background": "赵武灵王胡服骑射，废车战而用骑兵。自此中原始有骑射之术，军事为之一变。",
+        "historical_background": "赵武灵王胡服骑射，师法北方游牧民族。自此中原始有骑射之术，军事为之一变。",
         "key_figures": [
           "赵武灵王",
           "肥义"
@@ -365,7 +365,7 @@
       "effects": {
         "type": "attack_bonus",
         "target": "all",
-        "value": 0.1
+        "value": 0.15
       },
       "mastery": {
         "max_level": 3,
@@ -415,7 +415,8 @@
       "era": "mid",
       "cost_gold": 220,
       "prerequisites": [
-        "city_defense"
+        "iron_forging",
+        "formation_tactics"
       ],
       "special_conditions": [],
       "effects": {
@@ -448,7 +449,7 @@
       "description": "甲坚兵利，士卒无伤。铁衣在身，矢石不能害。",
       "category": "military",
       "era": "mid",
-      "cost_gold": 180,
+      "cost_gold": 280,
       "prerequisites": [
         "iron_forging"
       ],
@@ -458,7 +459,7 @@
         "unit_id": "iron_armored"
       },
       "cost_resources": {
-        "gold": 120,
+        "gold": 186,
         "refined_iron": 15
       },
       "knowledge_card": {
@@ -509,8 +510,8 @@
     },
     {
       "id": "ballista_tech",
-      "name": "弩炮之制",
-      "description": "发机如雷，所中皆摧。弩炮之威，城垣为之崩。",
+      "name": "投石之制",
+      "description": "发机如雷，所中皆摧。投石之威，城垣为之崩。",
       "category": "military",
       "era": "mid",
       "cost_gold": 250,
@@ -529,29 +530,30 @@
         "craftsmen": 8
       },
       "knowledge_card": {
-        "historical_background": "发机如雷，所中皆摧。弩炮之制，合弩机与抛石之长，攻坚破城，莫之能御。",
+        "historical_background": "发机如雷，所中皆摧。投石之制，以机发石，攻坚破城，莫之能御。战国时已用于攻城。",
         "key_figures": [
           "公输班",
           "墨子"
         ],
         "related_artifacts": [
-          "弩炮复原模型",
+          "战国投石机复原模型",
           "秦代抛石机部件"
         ],
         "historical_period": "战国中后期",
-        "fun_fact": "弩炮可将数十斤石弹抛射数百步，威力远超人力投石。",
+        "fun_fact": "投石机可将数十斤石弹抛射数百步，威力远超人力投石。墨子守城时曾用此器。",
         "illustration_id": "tech_ballista_tech"
       }
     },
     {
       "id": "heavy_cavalry_tech",
       "name": "重骑之制",
-      "description": "铁骑如山，冲阵无前。重甲利刃，所向披靡。",
+      "description": "铁骑如山，冲阵无前。人马俱甲，以冲力破敌阵，战国末世始见其形。",
       "category": "military",
-      "era": "mid",
-      "cost_gold": 220,
+      "era": "late",
+      "cost_gold": 350,
       "prerequisites": [
-        "cavalry_archery"
+        "cavalry_archery",
+        "iron_armor"
       ],
       "special_conditions": [],
       "effects": {
@@ -559,22 +561,22 @@
         "unit_id": "heavy_cavalry"
       },
       "cost_resources": {
-        "gold": 150,
-        "horse": 12,
-        "refined_iron": 5
+        "gold": 250,
+        "horse": 15,
+        "refined_iron": 15
       },
       "knowledge_card": {
-        "historical_background": "铁骑如山，冲阵无前。重甲骑兵，人马俱甲，以冲力破敌阵，战国末世始见其形。",
+        "historical_background": "铁骑如山，冲阵无前。重甲骑兵，人马俱甲，以冲力破敌阵。战国末世始见其形，秦汉之际渐成规模。",
         "key_figures": [
-          "赵武灵王",
-          "李牧"
+          "李牧",
+          "蒙恬"
         ],
         "related_artifacts": [
-          "战国重骑兵俑",
-          "赵国骑兵装备残片"
+          "秦代骑兵俑",
+          "汉代重骑兵甲片"
         ],
-        "historical_period": "战国后期",
-        "fun_fact": "重骑兵的马铠由数百片铁甲编缀而成，造价极为昂贵。",
+        "historical_period": "战国末期至秦汉",
+        "fun_fact": "重骑兵的马铠由数百片铁甲编缀而成，造价极为昂贵，非强国不能养。",
         "illustration_id": "tech_heavy_cavalry_tech"
       }
     },
@@ -612,7 +614,7 @@
     {
       "id": "repeating_crossbow",
       "name": "连弩之制",
-      "description": "一弩十矢俱发，势如骤雨。敌未及近，已溃于百步之外。",
+      "description": "一弩数矢俱发，势如骤雨。敌未及近，已溃于百步之外。",
       "category": "military",
       "era": "late",
       "cost_gold": 300,
@@ -623,20 +625,20 @@
       "effects": {
         "type": "attack_bonus",
         "target": "crossbow",
-        "value": 0.15
+        "value": 0.2
       },
       "knowledge_card": {
-        "historical_background": "一弩十矢俱发，势如骤雨。诸葛连弩之制，战国已见端倪，守城利器也。",
+        "historical_background": "一弩数矢俱发，势如骤雨。战国时韩之劲弩已名天下，连发之制守城利器也。",
         "key_figures": [
-          "诸葛亮",
-          "马钧"
+          "韩非子",
+          "墨子"
         ],
         "related_artifacts": [
-          "连弩复原件",
-          "蜀汉弩机残件"
+          "战国弩机复原件",
+          "秦弩机构件"
         ],
-        "historical_period": "战国至三国",
-        "fun_fact": "诸葛连弩一次可装十矢，扣动扳机即连发，但射程较短。",
+        "historical_period": "战国时期",
+        "fun_fact": "韩国以'强弓劲弩'著称，所谓'天下之强弓劲弩皆从韩出'。",
         "illustration_id": "tech_repeating_crossbow"
       }
     },
@@ -690,7 +692,7 @@
       "special_conditions": [],
       "effects": {
         "type": "siege_bonus",
-        "value": 0.25
+        "value": 0.35
       },
       "malus_effects": [
         {
@@ -738,7 +740,7 @@
       "malus_effects": [
         {
           "type": "stability_penalty",
-          "value": -3
+          "value": -2
         }
       ],
       "knowledge_card": {
@@ -772,7 +774,7 @@
       "effects": {
         "type": "defense_bonus",
         "target": "all",
-        "value": 0.15
+        "value": 0.25
       },
       "malus_effects": [
         {
@@ -916,11 +918,11 @@
       "malus_effects": [
         {
           "type": "diplomacy_penalty",
-          "value": -10
+          "value": -5
         },
         {
           "type": "corruption_increase",
-          "value": 5
+          "value": 2
         }
       ],
       "knowledge_card": {
@@ -1379,7 +1381,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "gold",
-        "value": 0.15
+        "value": 0.25
       },
       "knowledge_card": {
         "historical_background": "一法度衡石丈尺，车同轨，书同文字。天下皆遵其式，秦之大一统也。",
@@ -1410,7 +1412,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "food",
-        "value": 0.2
+        "value": 0.3
       },
       "knowledge_card": {
         "historical_background": "三年一易田，肥饶共之。民无争心，地利尽出。均田之制，安民之策也。",
@@ -1449,7 +1451,7 @@
       "malus_effects": [
         {
           "type": "morale_penalty",
-          "value": -5
+          "value": -3
         }
       ],
       "knowledge_card": {
@@ -1487,7 +1489,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "gold",
-        "value": 0.25
+        "value": 0.35
       },
       "knowledge_card": {
         "historical_background": "半两之钱，重如其文。天下货币一统，商旅畅通。秦半两之制，后世钱币之祖也。",
@@ -1724,13 +1726,12 @@
       "era": "mid",
       "cost_gold": 250,
       "prerequisites": [
-        "private_academy",
-        "rites_music"
+        "private_academy"
       ],
       "special_conditions": [],
       "effects": {
         "type": "culture_bonus",
-        "value": 0.3
+        "value": 0.4
       },
       "cost_resources": {
         "gold": 180,
@@ -1800,7 +1801,7 @@
       "era": "late",
       "cost_gold": 250,
       "prerequisites": [
-        "legalist_governance"
+        "hundred_schools"
       ],
       "special_conditions": [],
       "effects": {
@@ -1812,7 +1813,7 @@
         "silk_books": 15
       },
       "knowledge_card": {
-        "historical_background": "竹帛所载，皆为至宝。传之子孙，以垂后世。典籍之传，文明之延续也。",
+        "historical_background": "竹帛所载，皆为至宝。传之子孙，以垂后世。百家争鸣，典籍之传，文明之延续也。",
         "key_figures": [
           "孔子",
           "左丘明",
@@ -2111,7 +2112,7 @@
       "era": "mid",
       "cost_gold": 150,
       "prerequisites": [
-        "rammed_earth"
+        "city_defense"
       ],
       "special_conditions": [],
       "effects": {
@@ -2148,7 +2149,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "gold",
-        "value": 0.15
+        "value": 0.25
       },
       "cost_resources": {
         "gold": 180,
@@ -2266,11 +2267,11 @@
       "malus_effects": [
         {
           "type": "population_growth_penalty",
-          "value": -0.05
+          "value": -0.02
         },
         {
           "type": "stability_penalty",
-          "value": -5
+          "value": -3
         }
       ],
       "research_events": [
@@ -2350,7 +2351,7 @@
       "description": "习水战之术，制蒙冲快船，往来江湖如履平地。",
       "category": "military",
       "era": "early",
-      "cost_gold": 100,
+      "cost_gold": 180,
       "prerequisites": [],
       "special_conditions": [],
       "effects": {
@@ -2402,7 +2403,7 @@
       "description": "大翼战船，攻守兼备。进可突阵，退可固守，水战之利器也。",
       "category": "military",
       "era": "mid",
-      "cost_gold": 200,
+      "cost_gold": 300,
       "prerequisites": [
         "naval_warfare"
       ],
@@ -2622,7 +2623,7 @@
       "malus_effects": [
         {
           "type": "morale_penalty",
-          "value": -5
+          "value": -3
         }
       ],
       "knowledge_card": {
@@ -2643,8 +2644,8 @@
     },
     {
       "id": "civil_examination",
-      "name": "察举征辟",
-      "description": "举贤才以治国，征能士以佐政。选贤任能，百官得其序。",
+      "name": "养士之风",
+      "description": "招贤纳士，广聚人才。四公子门客三千，稷下学宫百家云集。",
       "category": "livelihood",
       "era": "mid",
       "cost_gold": 160,
@@ -2675,18 +2676,19 @@
         }
       ],
       "knowledge_card": {
-        "historical_background": "乡举里选，征辟贤良。战国之时已有养士之风，稷下学宫广纳百家。至汉遂成察举之制，以德行取士。",
+        "historical_background": "战国之世，养士成风。孟尝、平原、信陵、春申四公子各养士数千，稷下学宫广纳百家，人才辈出。",
         "key_figures": [
-          "孟子",
-          "荀子",
-          "董仲舒"
+          "孟尝君",
+          "平原君",
+          "信陵君",
+          "春申君"
         ],
         "related_artifacts": [
-          "举孝廉画像砖",
-          "战国养士记录"
+          "战国竹简",
+          "稷下学宫遗址"
         ],
-        "historical_period": "战国至西汉",
-        "fun_fact": "战国四公子各养士数千人，其中孟尝君门客竟有三千之众。",
+        "historical_period": "战国时期",
+        "fun_fact": "战国四公子各养士数千人，其中孟尝君门客竟有三千之众，鸡鸣狗盗之徒亦在其列。",
         "illustration_id": "tech_civil_examination"
       }
     },
@@ -2754,7 +2756,7 @@
       "special_conditions": [],
       "effects": {
         "type": "diplomacy_bonus",
-        "value": 0.4
+        "value": 0.6
       },
       "mutual_exclusion_group": "policy_expansion_strategy",
       "malus_effects": [
@@ -2848,7 +2850,7 @@
     {
       "id": "policy_meritocracy",
       "name": "选贤之制",
-      "description": "以军功授爵激励将士，或以察举征辟选拔文臣？取士之道，不可两全。",
+      "description": "以军功授爵激励将士，或以养士之风招揽人才？取士之道，不可两全。",
       "members": [
         "military_merit_system",
         "civil_examination"

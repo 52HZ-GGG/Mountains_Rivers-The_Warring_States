@@ -30,14 +30,14 @@
     {
       "id": "synergy_siege_mastery",
       "name": "攻坚利器",
-      "description": "弩炮之制与攻城之术结合，破城如摧枯拉朽。",
+      "description": "投石之制与攻城之术结合，破城如摧枯拉朽。",
       "required_techs": ["ballista_tech", "fortress_assault"],
       "hidden_until_revealed": true,
       "reveal_condition": "all_researched",
       "effects": [
         {"type": "siege_bonus", "value": 0.15}
       ],
-      "flavor_text": "弩炮齐发，关隘为之崩摧。"
+      "flavor_text": "投石齐发，关隘为之崩摧。"
     },
     {
       "id": "synergy_agricultural_revolution",

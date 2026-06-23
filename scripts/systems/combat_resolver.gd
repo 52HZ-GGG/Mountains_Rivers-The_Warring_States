@@ -176,8 +176,10 @@ func compute_damage(
 	var counter: float = compute_counter_multiplier(p_attacker_type_id, p_defender_type_id)
 	var counter_dmg: float = effective_atk * counter
 
-	# --- 扣减防御，保底 1 ---
-	var raw_dmg: float = maxf(counter_dmg - effective_def, 1.0)
+	# --- 乘法模型扣减防御，保底 1 ---
+	var coeff_v: Variant = DataManager.get_balance_param("combat.defense_coefficient")
+	var coeff: float = float(coeff_v) if coeff_v != null else 20.0
+	var raw_dmg: float = maxf(counter_dmg * coeff / (coeff + effective_def), 1.0)
 
 	# --- 随机波动（受远程精度修正影响）---
 	var rmin: Variant = DataManager.get_balance_param("combat.base_random_spread_lo")

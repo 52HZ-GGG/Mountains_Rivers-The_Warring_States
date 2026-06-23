@@ -38,6 +38,21 @@ var _recruit_cost_reduction: Dictionary = {} # {target: float}
 var _disaster_resist_bonus: float = 0.0
 var _action_speed_bonus: float = 0.0
 
+# 新增效果类型（阶段7补全）
+var _corruption_reduction: float = 0.0     # 腐败减少百分比
+var _zoc_range_bonus: int = 0              # ZOC范围加成
+var _zoc_cost_immunity: bool = false       # 免疫ZOC移动力消耗
+var _trade_route_capacity_bonus: int = 0   # 商路上限加成
+var _trade_route_exchange_bonus: float = 0.0  # 商路资源交换比例加成
+var _opinion_bonus: int = 0                # 外交好感加成
+var _reputation_bonus: int = 0             # 外交声望加成
+
+# 负面效果状态（阶段7补全 malus_effects）
+var _stability_penalty: float = 0.0        # 安定度惩罚（绝对值）
+var _corruption_increase: float = 0.0      # 腐败增加（绝对值）
+var _population_growth_modifier: float = 0.0  # 人口增长修正
+var _upkeep_increase: float = 0.0          # 维护费增加
+
 # ============= 生命周期 =============
 
 func _ready() -> void:
@@ -303,7 +318,25 @@ func _control_region(region: String, min_cities: int) -> bool:
 
 func _apply_tech_effects(tech_id: String) -> void:
 	var tech: Dictionary = DataManager.get_tech(tech_id)
-	var effect: Dictionary = tech["effects"]
+	var effects = tech.get("effects", {})
+
+	# 支持数组和字典两种格式
+	var effect_list: Array = []
+	if effects is Array:
+		effect_list = effects
+	elif effects is Dictionary:
+		effect_list = [effects]
+
+	# 应用所有正面效果
+	for effect in effect_list:
+		_apply_single_effect(effect)
+
+	# 应用负面效果（malus_effects）
+	for malus in tech.get("malus_effects", []):
+		_apply_single_malus(malus)
+
+
+func _apply_single_effect(effect: Dictionary) -> void:
 	var effect_type: String = effect.get("type", "")
 
 	match effect_type:
@@ -344,6 +377,7 @@ func _apply_tech_effects(tech_id: String) -> void:
 			_morale_bonus += effect.get("value", 0)
 		"morale_opinion_bonus":
 			_morale_bonus += effect.get("morale_value", 0)
+			_opinion_bonus += int(effect.get("opinion_value", 0))
 		"security_bonus":
 			_security_bonus += effect.get("value", 0.0)
 		"security_morale_bonus":
@@ -368,6 +402,7 @@ func _apply_tech_effects(tech_id: String) -> void:
 			_border_defense_bonus[region] = _border_defense_bonus.get(region, 0.0) + effect.get("value", 0.0)
 		"morale_reputation_bonus":
 			_morale_bonus += effect.get("morale_value", 0)
+			_reputation_bonus += int(effect.get("reputation_value", 0))
 		"morale_culture_bonus":
 			_morale_bonus += effect.get("morale_value", 0)
 			_culture_bonus += effect.get("culture_value", 0.0)
@@ -378,10 +413,50 @@ func _apply_tech_effects(tech_id: String) -> void:
 			_recruit_cost_reduction[target] = _recruit_cost_reduction.get(target, 0.0) + effect.get("value", 0.0)
 		"disaster_resist":
 			_disaster_resist_bonus += effect.get("value", 0.0)
+		"corruption_reduction":
+			_corruption_reduction += effect.get("value", 0.0)
+		"zoc_range_bonus":
+			_zoc_range_bonus += int(effect.get("value", 0))
+		"zoc_cost_immunity":
+			_zoc_cost_immunity = bool(effect.get("value", true))
+		"trade_route_capacity":
+			_trade_route_capacity_bonus += int(effect.get("value", 0))
+		"trade_route_exchange_bonus":
+			_trade_route_exchange_bonus += effect.get("value", 0.0)
 
 	# 处理附加效果字段（如水利工程的 disaster_resist 作为次要效果）
 	if effect.has("disaster_resist") and effect_type != "disaster_resist":
 		_disaster_resist_bonus += effect.get("disaster_resist", 0.0)
+
+
+func _apply_single_malus(malus: Dictionary) -> void:
+	var malus_type: String = malus.get("type", "")
+
+	match malus_type:
+		"morale_penalty":
+			_morale_bonus += int(malus.get("value", 0))
+		"stability_penalty":
+			_stability_penalty += float(malus.get("value", 0))
+		"recruit_cost_increase":
+			var increase: float = malus.get("value", 0.0)
+			_recruit_cost_reduction["all"] = _recruit_cost_reduction.get("all", 0.0) - increase
+		"diplomacy_penalty":
+			_diplomacy_bonus += float(malus.get("value", 0))
+		"corruption_increase":
+			_corruption_increase += float(malus.get("value", 0))
+		"resource_penalty":
+			var resource: String = malus.get("resource", "")
+			_resource_modifiers[resource] = _resource_modifiers.get(resource, 0.0) + malus.get("value", 0.0)
+		"attack_bonus":
+			_attack_modifiers["all"] = _attack_modifiers.get("all", 0.0) + malus.get("value", 0.0)
+		"security_bonus":
+			_security_bonus += malus.get("value", 0.0)
+		"trade_bonus":
+			_trade_bonus += malus.get("value", 0.0)
+		"population_growth_penalty":
+			_population_growth_modifier += float(malus.get("value", 0))
+		"upkeep_increase":
+			_upkeep_increase += float(malus.get("value", 0))
 
 
 # ============= 效果查询接口（供其他系统调用） =============
@@ -474,6 +549,52 @@ func get_faction_action_speed_bonus(_faction_id: String) -> float:
 	return _action_speed_bonus
 
 
+# ============= 阶段7新增查询接口 =============
+
+func get_corruption_reduction() -> float:
+	return _corruption_reduction
+
+
+func get_corruption_increase() -> float:
+	return _corruption_increase
+
+
+func get_zoc_range_bonus() -> int:
+	return _zoc_range_bonus
+
+
+func has_zoc_cost_immunity() -> bool:
+	return _zoc_cost_immunity
+
+
+func get_trade_route_capacity_bonus() -> int:
+	return _trade_route_capacity_bonus
+
+
+func get_trade_route_exchange_bonus() -> float:
+	return _trade_route_exchange_bonus
+
+
+func get_opinion_bonus() -> int:
+	return _opinion_bonus
+
+
+func get_reputation_bonus() -> int:
+	return _reputation_bonus
+
+
+func get_stability_penalty() -> float:
+	return _stability_penalty
+
+
+func get_population_growth_modifier() -> float:
+	return _population_growth_modifier
+
+
+func get_upkeep_increase() -> float:
+	return _upkeep_increase
+
+
 # ============= 重置 =============
 
 func reset() -> void:
@@ -505,4 +626,16 @@ func reset() -> void:
 	_recruit_cost_reduction.clear()
 	_disaster_resist_bonus = 0.0
 	_action_speed_bonus = 0.0
+	# 阶段7新增
+	_corruption_reduction = 0.0
+	_zoc_range_bonus = 0
+	_zoc_cost_immunity = false
+	_trade_route_capacity_bonus = 0
+	_trade_route_exchange_bonus = 0.0
+	_opinion_bonus = 0
+	_reputation_bonus = 0
+	_stability_penalty = 0.0
+	_corruption_increase = 0.0
+	_population_growth_modifier = 0.0
+	_upkeep_increase = 0.0
 	_ai_researched_techs.clear()

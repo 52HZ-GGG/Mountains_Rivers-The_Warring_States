@@ -638,20 +638,20 @@
     "morale_break_threshold": 20,
     "high_morale_threshold": 130,
     "high_morale_atk_bonus": 0.1,
-    "broken_hp_loss_per_turn": 0.2,
+    "broken_hp_loss_per_turn": 0.15,
     "broken_atk_mod": 0.5,
     "broken_def_mod": 0.5,
     "broken_speed_mod": 0.5,
     "morale_loss_on_ally_death": 5,
     "morale_gain_on_ally_kill": 5,
-    "morale_gain_on_self_kill": 15,
+    "morale_gain_on_self_kill": 10,
     "morale_recovery_per_turn": 3,
     "morale_recovery_in_city": 8,
     "natural_recovery_cap": 100,
     "low_morale_threshold": 50,
     "low_morale_atk_penalty": -0.1,
-    "flanking_morale_loss": -20,
-    "encirclement_morale_loss": -50
+    "flanking_morale_loss": -15,
+    "encirclement_morale_loss": -30
   },
   "retreat": {
     "safe_distance": 3,
@@ -741,16 +741,16 @@
     },
     "stat_ranges": {
       "common": {
-        "min": 10,
-        "max": 50
+        "min": 5,
+        "max": 25
       },
       "rare": {
-        "min": 20,
-        "max": 70
+        "min": 10,
+        "max": 35
       },
       "legendary": {
-        "min": 40,
-        "max": 100
+        "min": 20,
+        "max": 50
       }
     },
     "ransom": {
