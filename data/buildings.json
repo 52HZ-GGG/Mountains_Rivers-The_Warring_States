@@ -719,7 +719,7 @@
           "build_turns": 2,
           "effects": {
             "structure_hp": 150,
-            "tower_attack": 10
+            "tower_attack": 12
           }
         },
         {
@@ -728,7 +728,7 @@
           "build_turns": 2,
           "effects": {
             "structure_hp": 250,
-            "tower_attack": 15
+            "tower_attack": 18
           }
         },
         {
@@ -737,8 +737,8 @@
           "build_turns": 3,
           "cost_building_materials": 25,
           "effects": {
-            "structure_hp": 350,
-            "tower_attack": 20
+            "structure_hp": 400,
+            "tower_attack": 24
           }
         }
       ]
@@ -758,7 +758,7 @@
           "cost_wood": 40,
           "build_turns": 2,
           "effects": {
-            "structure_hp": 200,
+            "structure_hp": 150,
             "city_attack_bonus": 0.1
           }
         },
@@ -767,7 +767,7 @@
           "cost_wood": 60,
           "build_turns": 3,
           "effects": {
-            "structure_hp": 400,
+            "structure_hp": 250,
             "city_attack_bonus": 0.2
           }
         }

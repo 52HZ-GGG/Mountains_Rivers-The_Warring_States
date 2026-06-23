@@ -125,7 +125,7 @@
     "gold_cap_per_market_level": 50,
     "wood_cap_base": 200,
     "wood_cap_per_lumbermill_level": 30,
-    "city_base_wood": 10,
+    "city_base_wood": 8,
     "horse_upkeep_food_per_unit": 5,
     "season_food_mod": {
       "spring": 1.2,
@@ -501,7 +501,7 @@
     "ai_target": "highest_development"
   },
   "fortification": {
-    "pass_hp": 500,
+    "pass_hp": 300,
     "pass_defense": 100,
     "pass_struct_def": 10,
     "siege_damage_multiplier": 3,
@@ -955,10 +955,10 @@
   "city_levels": {
     "1": {
       "name": "村",
-      "hp": 150,
+      "hp": 100,
       "attack": 5,
       "attack_range": 1,
-      "city_defense": 2,
+      "city_defense": 3,
       "building_slots": 1,
       "base_food": 3,
       "base_gold": 5,
@@ -968,10 +968,10 @@
     },
     "2": {
       "name": "镇",
-      "hp": 250,
+      "hp": 200,
       "attack": 10,
       "attack_range": 1,
-      "city_defense": 4,
+      "city_defense": 7,
       "building_slots": 2,
       "base_food": 6,
       "base_gold": 10,
@@ -981,10 +981,10 @@
     },
     "3": {
       "name": "城",
-      "hp": 400,
+      "hp": 350,
       "attack": 15,
       "attack_range": 1,
-      "city_defense": 6,
+      "city_defense": 12,
       "building_slots": 3,
       "base_food": 10,
       "base_gold": 15,
@@ -994,10 +994,10 @@
     },
     "4": {
       "name": "府",
-      "hp": 600,
+      "hp": 500,
       "attack": 20,
       "attack_range": 2,
-      "city_defense": 8,
+      "city_defense": 18,
       "building_slots": 4,
       "base_food": 15,
       "base_gold": 25,
@@ -1007,10 +1007,10 @@
     },
     "5": {
       "name": "都",
-      "hp": 800,
+      "hp": 700,
       "attack": 25,
       "attack_range": 2,
-      "city_defense": 10,
+      "city_defense": 25,
       "building_slots": 5,
       "base_food": 20,
       "base_gold": 35,
@@ -1043,6 +1043,15 @@
       "1": 5,
       "2": 8,
       "3": 12
+    },
+    "wengcheng_struct_def_by_level": {
+      "1": 8,
+      "2": 12
+    },
+    "arrow_tower_struct_def_by_level": {
+      "1": 3,
+      "2": 5,
+      "3": 8
     },
     "arrow_tower_formula": "multiplicative"
   },

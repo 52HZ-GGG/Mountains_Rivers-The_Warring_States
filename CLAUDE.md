@@ -84,6 +84,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - 游戏设计知识：见 `.claude/skills/shanhece-world.md`
 - 技术架构规范：见 `.claude/skills/godot-guidelines.md`
 - 美术资产管线：见 `.claude/skills/art-pipeline.md`
+- 数值平衡调整流程：见 `.claude/skills/balance-workflow.md`（**核心原则：机制以 docs/机制概览/ 为准，不以程序实现为准**）
 - 自定义命令：`.claude/commands/` 下的 `/balance`、`/event`、`/audit`、`/tilegen`、`/save`
 - MCP 服务器配置：见 `.claude/mcp.json.template`（首次使用需复制为 `.claude/mcp.json` 后再按本地环境调整；`mcp.json` 已被 `.gitignore` 排除）
 - 决策记录：见 `docs/`下文档

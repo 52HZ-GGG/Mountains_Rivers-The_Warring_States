@@ -141,14 +141,12 @@
       "barrier_type": null,
       "crossing_rules": {
         "move_speed_modifier": 0.5,
-        "atk_mod": -0.3,
-        "def_bonus": 0.5,
         "blocks_culture_except_owner": true
       },
       "tech_overrides": null,
       "buildable_structures": null,
       "is_occupiable": true,
-      "structure_hp": 500,
+      "structure_hp": 300,
       "hp_type": "fortification",
       "elevation": 1,
       "vision_cost": 3,
