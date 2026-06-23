@@ -107,7 +107,7 @@
       "id": "marsh",
       "name": "沼泽",
       "move_cost": 4,
-      "atk_mod": 0.5,
+      "atk_mod": 0.7,
       "def_mod": 0.7,
       "ambush_chance": 0.1,
       "ranged_accuracy_mod": -10,

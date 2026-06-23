@@ -116,7 +116,7 @@
           "cost_wood": 20,
           "build_turns": 1,
           "effects": {
-            "craftsmen_production": 3
+            "craftsmen_production": 4
           }
         },
         {
@@ -124,7 +124,7 @@
           "cost_wood": 30,
           "build_turns": 1,
           "effects": {
-            "craftsmen_production": 6
+            "craftsmen_production": 8
           }
         },
         {
@@ -132,7 +132,7 @@
           "cost_wood": 45,
           "build_turns": 2,
           "effects": {
-            "craftsmen_production": 10
+            "craftsmen_production": 13
           }
         }
       ]
@@ -150,7 +150,7 @@
           "cost_wood": 30,
           "build_turns": 1,
           "effects": {
-            "building_materials_production": 3
+            "building_materials_production": 4
           }
         },
         {
@@ -158,7 +158,7 @@
           "cost_wood": 45,
           "build_turns": 1,
           "effects": {
-            "building_materials_production": 6
+            "building_materials_production": 8
           }
         },
         {
@@ -166,7 +166,7 @@
           "cost_wood": 68,
           "build_turns": 2,
           "effects": {
-            "building_materials_production": 10
+            "building_materials_production": 13
           }
         }
       ]
@@ -217,7 +217,7 @@
           "cost_wood": 30,
           "build_turns": 2,
           "effects": {
-            "refined_iron_production": 3
+            "refined_iron_production": 4
           }
         }
       ]
