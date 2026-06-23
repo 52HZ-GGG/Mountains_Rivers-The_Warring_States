@@ -48,7 +48,7 @@
           "cost_wood": 0,
           "build_turns": 1,
           "effects": {
-            "gold_production_bonus": 0.15
+            "gold_production_bonus": 0.30
           }
         },
         {
@@ -56,7 +56,7 @@
           "cost_wood": 0,
           "build_turns": 1,
           "effects": {
-            "gold_production_bonus": 0.35
+            "gold_production_bonus": 0.60
           }
         },
         {
@@ -64,7 +64,7 @@
           "cost_wood": 0,
           "build_turns": 2,
           "effects": {
-            "gold_production_bonus": 0.6
+            "gold_production_bonus": 1.0
           }
         }
       ]
@@ -228,7 +228,7 @@
       "description": "掌海外通商，招徕远客，岁入倍增。须邻水而建。",
       "category": "economic",
       "max_level": 2,
-      "upkeep_gold": 5,
+      "upkeep_gold": 2,
       "max_national_count": 2,
       "build_requires": {
         "terrain": [
@@ -242,7 +242,7 @@
           "cost_wood": 20,
           "build_turns": 2,
           "effects": {
-            "gold_production_bonus": 0.15
+            "gold_production_bonus": 0.30
           }
         },
         {
@@ -250,7 +250,7 @@
           "cost_wood": 30,
           "build_turns": 2,
           "effects": {
-            "gold_production_bonus": 0.35
+            "gold_production_bonus": 0.60
           }
         }
       ]
@@ -314,8 +314,8 @@
           "cost_wood": 15,
           "build_turns": 1,
           "effects": {
-            "food_production_bonus": 0.05,
-            "gold_production_bonus": 0.05
+            "food_production_bonus": 0.10,
+            "gold_production_bonus": 0.10
           }
         },
         {
@@ -323,8 +323,8 @@
           "cost_wood": 23,
           "build_turns": 1,
           "effects": {
-            "food_production_bonus": 0.12,
-            "gold_production_bonus": 0.1
+            "food_production_bonus": 0.20,
+            "gold_production_bonus": 0.20
           }
         },
         {
@@ -332,8 +332,8 @@
           "cost_wood": 35,
           "build_turns": 2,
           "effects": {
-            "food_production_bonus": 0.2,
-            "gold_production_bonus": 0.15
+            "food_production_bonus": 0.35,
+            "gold_production_bonus": 0.35
           }
         }
       ]
@@ -950,6 +950,80 @@
             "tax_bonus": 0.2,
             "diplomacy_reputation": 15,
             "stability_bonus": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "imperial_temple",
+      "name": "太庙",
+      "description": "皇家祭祀先祖之所，彰显皇室正统，安定民心",
+      "category": "special",
+      "max_level": 1,
+      "upkeep_gold": 15,
+      "max_national_count": 1,
+      "build_requires": {
+        "is_capital": true
+      },
+      "levels": [
+        {
+          "cost_gold": 600,
+          "cost_wood": 180,
+          "build_turns": 3,
+          "effects": {
+            "morale_bonus": 10,
+            "stability_bonus": 15,
+            "corruption_reduction": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "altar_of_land",
+      "name": "社稷坛",
+      "description": "祭祀天地社稷之所，祈求五谷丰登、国泰民安",
+      "category": "special",
+      "max_level": 1,
+      "upkeep_gold": 8,
+      "max_national_count": 1,
+      "build_requires": {
+        "is_capital": true
+      },
+      "levels": [
+        {
+          "cost_gold": 450,
+          "cost_wood": 120,
+          "build_turns": 3,
+          "effects": {
+            "food_production_bonus": 0.20,
+            "stability_bonus": 10,
+            "morale_bonus": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "arsenal",
+      "name": "武库",
+      "description": "国家级军事设施，储存兵器铠甲，整军备战",
+      "category": "special",
+      "max_level": 1,
+      "upkeep_gold": 10,
+      "max_national_count": 1,
+      "build_requires": {
+        "building": "barracks",
+        "level": 3
+      },
+      "levels": [
+        {
+          "cost_gold": 600,
+          "cost_wood": 200,
+          "cost_refined_iron": 30,
+          "build_turns": 4,
+          "effects": {
+            "recruit_efficiency": 0.30,
+            "garrison_atk_bonus": 0.15,
+            "garrison_def_bonus": 0.15
           }
         }
       ]

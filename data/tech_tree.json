@@ -71,7 +71,7 @@
       "description": "驷马战车，冲阵破敌。车驰卒奔，以雷霆之势摧坚。",
       "category": "military",
       "era": "early",
-      "cost_gold": 150,
+      "cost_gold": 220,
       "prerequisites": [
         "formation_tactics"
       ],
@@ -81,7 +81,7 @@
         "unit_id": "chariot"
       },
       "cost_resources": {
-        "gold": 100,
+        "gold": 146,
         "wood": 30,
         "horse": 5
       },
@@ -107,7 +107,7 @@
       "description": "弩者，怒也。穿杨贯虱，百步之外取人性命。",
       "category": "military",
       "era": "early",
-      "cost_gold": 120,
+      "cost_gold": 180,
       "prerequisites": [
         "formation_tactics"
       ],
@@ -319,7 +319,7 @@
       "description": "胡服骑射，驰骋千里。马上引弓，所向披靡。",
       "category": "military",
       "era": "mid",
-      "cost_gold": 200,
+      "cost_gold": 300,
       "prerequisites": [
         "iron_forging"
       ],
@@ -329,7 +329,7 @@
         "unit_id": "cavalry"
       },
       "cost_resources": {
-        "gold": 140,
+        "gold": 210,
         "horse": 10
       },
       "research_events": [
@@ -365,7 +365,7 @@
       "effects": {
         "type": "attack_bonus",
         "target": "all",
-        "value": 0.1
+        "value": 0.15
       },
       "mastery": {
         "max_level": 3,
@@ -449,7 +449,7 @@
       "description": "甲坚兵利，士卒无伤。铁衣在身，矢石不能害。",
       "category": "military",
       "era": "mid",
-      "cost_gold": 180,
+      "cost_gold": 280,
       "prerequisites": [
         "iron_forging"
       ],
@@ -459,7 +459,7 @@
         "unit_id": "iron_armored"
       },
       "cost_resources": {
-        "gold": 120,
+        "gold": 186,
         "refined_iron": 15
       },
       "knowledge_card": {
@@ -625,7 +625,7 @@
       "effects": {
         "type": "attack_bonus",
         "target": "crossbow",
-        "value": 0.15
+        "value": 0.2
       },
       "knowledge_card": {
         "historical_background": "一弩数矢俱发，势如骤雨。战国时韩之劲弩已名天下，连发之制守城利器也。",
@@ -692,7 +692,7 @@
       "special_conditions": [],
       "effects": {
         "type": "siege_bonus",
-        "value": 0.25
+        "value": 0.35
       },
       "malus_effects": [
         {
@@ -740,7 +740,7 @@
       "malus_effects": [
         {
           "type": "stability_penalty",
-          "value": -3
+          "value": -2
         }
       ],
       "knowledge_card": {
@@ -774,7 +774,7 @@
       "effects": {
         "type": "defense_bonus",
         "target": "all",
-        "value": 0.15
+        "value": 0.25
       },
       "malus_effects": [
         {
@@ -918,11 +918,11 @@
       "malus_effects": [
         {
           "type": "diplomacy_penalty",
-          "value": -10
+          "value": -5
         },
         {
           "type": "corruption_increase",
-          "value": 5
+          "value": 2
         }
       ],
       "knowledge_card": {
@@ -1381,7 +1381,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "gold",
-        "value": 0.15
+        "value": 0.25
       },
       "knowledge_card": {
         "historical_background": "一法度衡石丈尺，车同轨，书同文字。天下皆遵其式，秦之大一统也。",
@@ -1412,7 +1412,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "food",
-        "value": 0.2
+        "value": 0.3
       },
       "knowledge_card": {
         "historical_background": "三年一易田，肥饶共之。民无争心，地利尽出。均田之制，安民之策也。",
@@ -1451,7 +1451,7 @@
       "malus_effects": [
         {
           "type": "morale_penalty",
-          "value": -5
+          "value": -3
         }
       ],
       "knowledge_card": {
@@ -1489,7 +1489,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "gold",
-        "value": 0.25
+        "value": 0.35
       },
       "knowledge_card": {
         "historical_background": "半两之钱，重如其文。天下货币一统，商旅畅通。秦半两之制，后世钱币之祖也。",
@@ -1731,7 +1731,7 @@
       "special_conditions": [],
       "effects": {
         "type": "culture_bonus",
-        "value": 0.3
+        "value": 0.4
       },
       "cost_resources": {
         "gold": 180,
@@ -2149,7 +2149,7 @@
       "effects": {
         "type": "resource_bonus",
         "resource": "gold",
-        "value": 0.15
+        "value": 0.25
       },
       "cost_resources": {
         "gold": 180,
@@ -2267,11 +2267,11 @@
       "malus_effects": [
         {
           "type": "population_growth_penalty",
-          "value": -0.05
+          "value": -0.02
         },
         {
           "type": "stability_penalty",
-          "value": -5
+          "value": -3
         }
       ],
       "research_events": [
@@ -2351,7 +2351,7 @@
       "description": "习水战之术，制蒙冲快船，往来江湖如履平地。",
       "category": "military",
       "era": "early",
-      "cost_gold": 100,
+      "cost_gold": 180,
       "prerequisites": [],
       "special_conditions": [],
       "effects": {
@@ -2403,7 +2403,7 @@
       "description": "大翼战船，攻守兼备。进可突阵，退可固守，水战之利器也。",
       "category": "military",
       "era": "mid",
-      "cost_gold": 200,
+      "cost_gold": 300,
       "prerequisites": [
         "naval_warfare"
       ],
@@ -2623,7 +2623,7 @@
       "malus_effects": [
         {
           "type": "morale_penalty",
-          "value": -5
+          "value": -3
         }
       ],
       "knowledge_card": {
@@ -2756,7 +2756,7 @@
       "special_conditions": [],
       "effects": {
         "type": "diplomacy_bonus",
-        "value": 0.4
+        "value": 0.6
       },
       "mutual_exclusion_group": "policy_expansion_strategy",
       "malus_effects": [
