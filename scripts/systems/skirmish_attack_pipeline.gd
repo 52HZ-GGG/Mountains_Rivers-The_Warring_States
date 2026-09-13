@@ -172,14 +172,8 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	# 火攻触发时施加烧伤 DOT
 	if is_fire and not bool(dmg_info.get("was_ambush", false)):
 		m._apply_burn(a, d)
-	# 夹击/包围：受伤后检测并应用士气惩罚
-	var flanking_delta: int = m._check_flanking(d)
-	if flanking_delta != 0:
-		m._apply_morale_delta(d, flanking_delta)
-		if flanking_delta <= -50:
-			m._append_log("%s 被包围！士气大幅下降" % defender_id)
-		else:
-			m._append_log("%s 遭受夹击！士气下降" % defender_id)
+	# 夹击/包围：持续状态统一重算（脱离时恢复）
+	m._process_flanking_states()
 	# ── 反击（§2.4）：防御方存活且为近战攻击时触发 ──
 	var counter_dmg: int = 0
 	if int(d["hp"]) > 0:
@@ -289,8 +283,9 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 		return {"ok": false, "reason": "not_player"}
 	if bool(a.get("acted", false)):
 		return {"ok": false, "reason": "already_acted"}
-	if not m._city_wall_hp.has(cell) or int(m._city_wall_hp[cell]) <= 0:
+	if not m._city_wall_hp.has(cell):
 		return {"ok": false, "reason": "no_wall"}
+	var wall_left: int = int(m._city_wall_hp[cell])
 	var atk_cost: int = m.get_attack_move_cost()
 	if int(a.get("mp_remaining", 0)) < atk_cost:
 		return {"ok": false, "reason": "insufficient_mp"}
@@ -307,23 +302,31 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 	var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
 	var siege_factor: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
 	var city_lv: int = int(m._city_level.get(cell, 3))
-	var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
-	var wall_struct_def: float = 8.0
-	if wsdef_v is Dictionary:
-		var wsdef_dict: Dictionary = wsdef_v as Dictionary
-		var lv_val: Variant = wsdef_dict.get(str(city_lv), null)
-		if lv_val != null:
-			wall_struct_def = float(lv_val)
 	var coeff: float = 20.0
-	var wall_dmg: int = maxi(1, int(eff_atk * siege_factor * coeff / (coeff + wall_struct_def)))
-	m._damage_city_wall(cell, wall_dmg)
+	# 城墙未破：打城墙结构；已破：打城市本体（机制：城市经营系统.md §9.2）
+	if wall_left > 0:
+		var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
+		var wall_struct_def: float = 8.0
+		if wsdef_v is Dictionary:
+			var wsdef_dict: Dictionary = wsdef_v as Dictionary
+			var lv_val: Variant = wsdef_dict.get(str(city_lv), null)
+			if lv_val != null:
+				wall_struct_def = float(lv_val)
+		var wall_dmg: int = maxi(1, int(eff_atk * siege_factor * coeff / (coeff + wall_struct_def)))
+		m._damage_city_wall(cell, wall_dmg)
+		m._append_log("%s 攻击城墙，造成 %d 伤害" % [attacker_id, wall_dmg])
+	else:
+		var city_def_v: Variant = DataManager.get_balance_param("city_levels.%d.city_defense" % city_lv)
+		var city_def: float = float(city_def_v) if city_def_v != null else 10.0
+		var body_dmg: int = maxi(1, int(eff_atk * siege_factor * coeff / (coeff + city_def)))
+		m._damage_city_body(cell, body_dmg)
+		m._append_log("%s 攻击城市本体，造成 %d 伤害" % [attacker_id, body_dmg])
 	m._city_attacked[cell] = true
 	a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost
 	a["acted"] = true
-	m._append_log("%s 攻击城墙，造成 %d 伤害" % [attacker_id, wall_dmg])
 	m.state_changed.emit()
 	m.combat_effect_requested.emit("fx_siege", cell, ac)
-	return {"ok": true, "damage": wall_dmg}
+	return {"ok": true, "damage": 1}
 
 
 func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dictionary:

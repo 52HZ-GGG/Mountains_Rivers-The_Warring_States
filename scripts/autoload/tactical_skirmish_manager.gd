@@ -36,6 +36,8 @@ var _pass_attacked: Dictionary = {} # Vector2i → bool
 # 城防状态：cell → 城墙 HP / 最大 HP / 等级 / 被攻击标记 / 箭塔 HP
 var _city_wall_hp: Dictionary = {}     # Vector2i → int
 var _city_wall_max_hp: Dictionary = {} # Vector2i → int
+var _city_body_hp: Dictionary = {}     # Vector2i → int（城市本体，独立于城墙）
+var _city_body_max_hp: Dictionary = {} # Vector2i → int
 var _city_level: Dictionary = {}       # Vector2i → int (1-5)
 var _city_attacked: Dictionary = {}    # Vector2i → bool
 var _city_tower_hp: Dictionary = {}    # Vector2i → int（箭塔 HP，0 = 无箭塔）
@@ -179,6 +181,8 @@ func reset_skirmish() -> void:
 	_pass_attacked.clear()
 	_city_wall_hp.clear()
 	_city_wall_max_hp.clear()
+	_city_body_hp.clear()
+	_city_body_max_hp.clear()
 	_city_level.clear()
 	_city_attacked.clear()
 	_city_tower_hp.clear()
@@ -239,6 +243,8 @@ func begin_player_phase() -> void:
 	_process_burn_dot(_player_faction)
 	# 断粮结算
 	_process_supply_effects(_player_faction)
+	# 夹击/包围持续状态
+	_process_flanking_states()
 	# 关隘自然恢复
 	_process_pass_recovery()
 	# 城墙自然恢复
@@ -487,6 +493,8 @@ func check_victory() -> String:
 			# 城墙未摧毁时不能获胜
 			if _city_wall_hp.has(c) and int(_city_wall_hp[c]) > 0:
 				continue
+			if _city_body_hp.has(c) and int(_city_body_hp[c]) > 0:
+				continue
 			# 关隘阻断：敌方关隘仍有驻军时不能获胜
 			if _enemy_pass_blocks(_player_faction):
 				return ""
@@ -495,6 +503,8 @@ func check_victory() -> String:
 		var c2: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 		if str(u["faction_id"]) == _enemy_faction and c2 == _player_city:
 			if _city_wall_hp.has(c2) and int(_city_wall_hp[c2]) > 0:
+				continue
+			if _city_body_hp.has(c2) and int(_city_body_hp[c2]) > 0:
 				continue
 			if _enemy_pass_blocks(_enemy_faction):
 				return ""
@@ -541,6 +551,8 @@ func _build_tiles() -> void:
 	_pass_attacked.clear()
 	_city_wall_hp.clear()
 	_city_wall_max_hp.clear()
+	_city_body_hp.clear()
+	_city_body_max_hp.clear()
 	_city_level.clear()
 	_city_attacked.clear()
 	_city_tower_hp.clear()
@@ -597,6 +609,7 @@ func _spawn_units() -> void:
 			"in_combat_this_turn": false,
 			"burn_damage": 0,
 			"burn_turns": 0,
+			"flanking_penalty": 0,
 			"skills": skills,
 			"attacks_this_turn": 0,
 		})
@@ -637,6 +650,7 @@ func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vecto
 		"in_combat_this_turn": false,
 		"burn_damage": 0,
 		"burn_turns": 0,
+		"flanking_penalty": 0,
 		"skills": skills,
 		"attacks_this_turn": 0,
 	})
@@ -766,6 +780,25 @@ func _check_flanking(target: Dictionary) -> int:
 			var val: Variant = DataManager.get_balance_param("unit_morale.flanking_morale_loss")
 			return int(val) if val != null else -15
 	return 0
+
+
+## 夹击/包围为持续状态：先回补上次惩罚，再按当前站位重新结算。
+## 脱离状态时被扣士气立即恢复（战斗系统.md §5.2）。
+func _process_flanking_states() -> void:
+	for u: Dictionary in _units:
+		var prev: int = int(u.get("flanking_penalty", 0))
+		if prev != 0:
+			u["morale"] = int(u.get("morale", 100)) - prev
+			u["flanking_penalty"] = 0
+		var delta: int = _check_flanking(u)
+		if delta == 0:
+			continue
+		u["morale"] = int(u.get("morale", 100)) + delta
+		u["flanking_penalty"] = delta
+		if _is_unit_encircled(u):
+			_append_log("%s 被包围！士气 %d" % [str(u["id"]), delta])
+		else:
+			_append_log("%s 遭受夹击！士气 %d" % [str(u["id"]), delta])
 
 
 ## 判断单位是否被包围（4+ 邻格敌占）
@@ -1423,12 +1456,31 @@ func can_capture_city(cell: Vector2i, faction_id: String, unit_id: String = "") 
 		return false
 	if int(_city_wall_hp[cell]) > 0:
 		return false
+	if int(_city_body_hp.get(cell, 0)) > 0:
+		return false
 	for other: Dictionary in _units:
 		if unit_id != "" and str(other["id"]) == unit_id:
 			continue
 		if Vector2i(int(other["q"]), int(other["r"])) == cell and str(other["faction_id"]) != faction_id:
 			return false
 	return true
+
+
+## 城市本体 HP（城墙击破后的主要目标）
+func get_city_body_hp(cell: Vector2i) -> int:
+	return int(_city_body_hp.get(cell, -1))
+
+
+func get_city_body_max_hp(cell: Vector2i) -> int:
+	return int(_city_body_max_hp.get(cell, 0))
+
+
+func _damage_city_body(cell: Vector2i, dmg: int) -> void:
+	if not _city_body_hp.has(cell):
+		return
+	var old_hp: int = int(_city_body_hp[cell])
+	_city_body_hp[cell] = maxi(0, old_hp - dmg)
+	_append_log("城市本体受到 %d 伤害（%d → %d）" % [dmg, old_hp, int(_city_body_hp[cell])])
 
 
 ## 获取城市等级；无城市返回 0
@@ -1579,6 +1631,8 @@ func _process_arrow_towers() -> void:
 
 
 ## 初始化单个城市的城防数据
+## 城墙 HP 来自 buildings.json → wall.effects.structure_hp（机制：战斗系统.md §7.4）
+## 城市本体 HP 来自 balance_params.json → city_levels.hp，与城墙独立。
 func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 	var level: int = int(city_cfg.get("level", 3))
 	level = clampi(level, 1, 5)
@@ -1587,12 +1641,17 @@ func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 	var level_data: Dictionary = {}
 	if levels_data is Dictionary:
 		level_data = (levels_data as Dictionary).get(str(level), {})
-	var wall_max_hp: int = int(level_data.get("hp", 1000))
+	var body_max_hp: int = int(level_data.get("hp", 300))
 	if is_capital:
 		var bonus_v: Variant = DataManager.get_balance_param("city_levels.capital_bonus.hp")
-		wall_max_hp += int(bonus_v) if bonus_v != null else 500
+		body_max_hp += int(bonus_v) if bonus_v != null else 500
+	# 城墙：优先 wall 建筑 structure_hp；场景可指定 wall_level
+	var wall_level: int = int(city_cfg.get("wall_level", 1))
+	var wall_max_hp: int = _resolve_wall_structure_hp(wall_level)
 	_city_wall_hp[cell] = wall_max_hp
 	_city_wall_max_hp[cell] = wall_max_hp
+	_city_body_hp[cell] = body_max_hp
+	_city_body_max_hp[cell] = body_max_hp
 	_city_level[cell] = level
 	_city_attacked[cell] = false
 	# 箭塔：4 级以上城市有箭塔
@@ -1601,6 +1660,20 @@ func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 		_city_tower_hp[cell] = tower_base
 	else:
 		_city_tower_hp[cell] = 0
+
+
+## 从 buildings.json 解析城墙 structure_hp
+func _resolve_wall_structure_hp(wall_level: int) -> int:
+	var lv: int = clampi(wall_level, 1, 3)
+	var wall: Dictionary = DataManager.get_building("wall")
+	var levels: Array = wall.get("levels", []) if wall is Dictionary else []
+	if lv >= 1 and lv <= levels.size():
+		var effects: Dictionary = (levels[lv - 1] as Dictionary).get("effects", {})
+		var structure_hp: int = int(effects.get("structure_hp", 0))
+		if structure_hp > 0:
+			return structure_hp
+	# 兜底：无建筑数据时用城级 HP 的 30% 作城墙池
+	return maxi(1, int(int(DataManager.get_balance_param("city_levels.3.hp") if wall_level <= 0 else 150) * 0.3))
 
 
 func _check_enter_city(u: Dictionary) -> void:
@@ -1613,6 +1686,8 @@ func _check_enter_city(u: Dictionary) -> void:
 		var restore_v: Variant = DataManager.get_balance_param("city_combat.capture_restore_ratio")
 		var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
 		_city_wall_hp[c] = maxi(1, int(float(max_hp) * restore_ratio))
+		if _city_body_max_hp.has(c):
+			_city_body_hp[c] = int(_city_body_max_hp[c])
 		_city_attacked[c] = false
 		_append_log("%s 占领城市 (%d,%d)！城墙 HP 恢复至 %d" % [fid, c.x, c.y, int(_city_wall_hp[c])])
 	elif c == _enemy_city or c == _player_city:

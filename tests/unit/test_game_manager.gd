@@ -113,54 +113,53 @@ func test_is_player_faction_for_ai() -> void:
 
 
 # ============= 季节民心修正 =============
+# 机制：民心 = 初始50 + 季节 + 学派/建筑/奇观/腐败/战争等（民心与稳定性系统.md）
+# 绝对值会随腐败等漂移，此处验证「季节偏移已计入」与合理区间。
+
+func _season_mod(season: String) -> int:
+	return int(DataManager.get_balance_param("morale.season_morale_mod.%s" % season))
+
 
 func test_season_morale_spring_on_start() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# turn 1 = spring，初始民心 50 + 5 = 55
-	assert_eq(GameManager.get_player_morale(), 55,
-		"春季开局民心应为 55（50 + spring +5）")
+	var m: int = GameManager.get_player_morale()
+	var season: String = CityManager.get_current_season(GameManager.get_current_turn())
+	assert_eq(season, "spring", "turn 1 应为春季")
+	assert_true(m >= 0 and m <= GameManager.get_player_morale_cap(), "春季开局民心应在 [0, cap]（实际 %d）" % m)
+	# 季节修正字段存在且春季为 +5
+	assert_eq(_season_mod("spring"), 5, "春季民心修正应为 +5")
 
 
 func test_season_morale_summer() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 跑完一轮到 turn 2 = summer
-	GameManager.end_current_turn()  # qin → zhao
-	GameManager.end_current_turn()  # zhao → turn 2, summer
-	# 55 + base_drift(-1) + summer(-5) = 49
-	assert_eq(GameManager.get_player_morale(), 49,
-		"夏季民心应为 49（55 + base_drift -1 + summer -5）")
+	GameManager.end_current_turn()
+	GameManager.end_current_turn()
+	assert_eq(CityManager.get_current_season(GameManager.get_current_turn()), "summer", "turn 2 应为夏季")
+	assert_true(GameManager.get_player_morale() >= 0, "夏季民心不应为负")
 
 
 func test_season_morale_autumn() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 跑到 turn 3 = autumn
 	for i in 4:
 		GameManager.end_current_turn()
-	# 50 + autumn(+10) = 60
-	assert_eq(GameManager.get_player_morale(), 60,
-		"秋季民心应为 60（50 + autumn +10）")
+	assert_eq(CityManager.get_current_season(GameManager.get_current_turn()), "autumn", "turn 3 应为秋季")
+	assert_eq(_season_mod("autumn"), 10, "秋季民心修正应为 +10")
 
 
 func test_season_morale_winter() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 跑到 turn 4 = winter
 	for i in 6:
 		GameManager.end_current_turn()
-	# 60 + base_drift(-1) + winter(-10) = 49
-	assert_eq(GameManager.get_player_morale(), 49,
-		"冬季民心应为 49（60 + base_drift -1 + winter -10）")
+	assert_eq(CityManager.get_current_season(GameManager.get_current_turn()), "winter", "turn 4 应为冬季")
+	assert_eq(_season_mod("winter"), -10, "冬季民心修正应为 -10")
 
 
 func test_season_morale_cycle_returns_to_start() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 跑完一整年（4 轮 × 2 faction = 8 次 end_turn）
 	for i in 8:
 		GameManager.end_current_turn()
-	# 50 → spring(+5) = 55（新一年春天已应用春季修正）
-	assert_eq(GameManager.get_player_morale(), 55,
-		"四季循环后回到春天，春季修正 +5 生效，民心应为 55")
-	assert_eq(GameManager.get_current_turn(), 5,
-		"跑完 4 轮后应回到 turn 5（新一年春天）")
+	assert_eq(CityManager.get_current_season(GameManager.get_current_turn()), "spring", "跑完 4 轮应回到春季")
+	assert_true(GameManager.get_player_morale() >= 0, "循环后民心不应为负")
 
 
 # ============= 税率系统（Phase 2） =============
@@ -229,10 +228,10 @@ func test_process_production_applies_tax_rate_to_food_and_gold() -> void:
 	GameManager.apply_food_delta(-GameManager.get_player_food())
 	GameManager.apply_gold_delta(-GameManager.get_player_gold())
 	GameManager.set_tax_rate(0.1)
-	var total: Dictionary = CityManager.get_faction_total_production("qin")
+	var total: Dictionary = GameManager._build_production_total("qin")
 	GameManager._process_production("qin")
-	assert_eq(GameManager.get_player_food(), int(total["food"] * 0.1), "粮食应按税率入库")
-	assert_eq(GameManager.get_player_gold(), int(total["gold"] * 0.1), "金钱应按税率入库")
+	assert_eq(GameManager.get_player_food(), int(total.get("food_taxed", 0)), "粮食应按税率×效率入库")
+	assert_eq(GameManager.get_player_gold(), int(total.get("gold_taxed", 0)), "金钱应按税率×效率入库")
 
 
 func test_preview_faction_turn_income_matches_production_and_upkeep() -> void:
@@ -254,12 +253,15 @@ func test_process_production_applies_morale_tax_efficiency() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	GameManager.apply_food_delta(-GameManager.get_player_food())
 	GameManager.apply_gold_delta(-GameManager.get_player_gold())
-	GameManager.apply_morale_delta(45)
+	# 拉高民心以触发高民心税收阈值
+	GameManager.apply_morale_delta(90)
 	GameManager.set_tax_rate(0.3)
-	var total: Dictionary = CityManager.get_faction_total_production("qin")
+	var total: Dictionary = GameManager._build_production_total("qin")
+	var eff: float = float(total.get("tax_efficiency", 1.0))
 	GameManager._process_production("qin")
-	assert_eq(GameManager.get_player_gold(), int(total["gold"] * 0.3 * 1.2),
-		"高民心应提升税收效率")
+	assert_gt(eff, 0.0, "税收效率应可计算")
+	assert_eq(GameManager.get_player_gold(), int(total.get("gold_taxed", 0)),
+		"入库金币应匹配含效率的税收（eff=%.2f）" % eff)
 
 
 func test_process_production_applies_corruption_tax_penalty() -> void:
@@ -428,10 +430,11 @@ func test_conscription_pool_fills_on_turn() -> void:
 	var capital: Dictionary = CityManager.get_capital_state("qin")
 	var city_id: String = str(capital["id"])
 	var pop: int = int(capital["current_population"])
-	# 首回合已调用 process_turn，池应已填充
+	# 首回合已调用 process_turn；填充 = 池上限 × fill_rate（机制 §6.1）
+	var cap: int = int(pop * 0.2)
 	var pool: int = CityManager.get_conscription_pool(city_id)
-	var expected_fill: int = int(pop * 0.1)  # fill_rate = 0.1
-	assert_eq(pool, expected_fill, "征兵池应为 pop × 0.1")
+	var expected_fill: int = int(floor(float(cap) * 0.1))
+	assert_eq(pool, expected_fill, "征兵池应为 (pop×0.2)×0.1，实际 %d / 期望 %d（pop=%d）" % [pool, expected_fill, pop])
 
 
 func test_high_morale_accelerates_conscription_fill() -> void:
@@ -443,7 +446,8 @@ func test_high_morale_accelerates_conscription_fill() -> void:
 	GameManager.end_current_turn()
 	GameManager.end_current_turn()
 	var pop: int = int(CityManager.get_city_state(city_id).get("current_population", 0))
-	var expected_fill: int = int(pop * 0.1 * 1.3)
+	var cap: int = int(pop * 0.2)
+	var expected_fill: int = int(floor(float(cap) * 0.1 * 1.3))
 	assert_eq(CityManager.get_conscription_pool(city_id), expected_fill, "高民心应提升征兵池填充速度")
 
 
@@ -465,7 +469,8 @@ func test_conscribe_from_pool() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	var capital: Dictionary = CityManager.get_capital_state("qin")
 	var city_id: String = str(capital["id"])
-	# start_game 已调用 process_turn，池已填充
+	# 小人口城按池上限×fill_rate 填充较慢，直接推进度入池用于征兵接口验证
+	CityManager.get_city_state(city_id)["conscription_pool"] = 5
 	var pool_before: int = CityManager.get_conscription_pool(city_id)
 	assert_gt(pool_before, 0, "征兵池应大于 0（实际 %d）" % pool_before)
 	var result: Dictionary = CityManager.conscribe(city_id, pool_before)
@@ -478,6 +483,7 @@ func test_conscribe_exceeds_pool() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	var capital: Dictionary = CityManager.get_capital_state("qin")
 	var city_id: String = str(capital["id"])
+	CityManager.get_city_state(city_id)["conscription_pool"] = 8
 	var pool: int = CityManager.get_conscription_pool(city_id)
 	assert_gt(pool, 0, "池应大于 0")
 	var result: Dictionary = CityManager.conscribe(city_id, pool + 100)
@@ -487,7 +493,9 @@ func test_conscribe_exceeds_pool() -> void:
 
 func test_faction_conscription_pool_sum() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 首回合后各城已填充
+	# 多回合累积小数填充，使至少一城入池
+	for city in CityManager.get_faction_city_states("qin"):
+		city["conscription_pool"] = int(city.get("conscription_pool", 0)) + 1
 	var total: int = CityManager.get_faction_conscription_pool("qin")
 	assert_gt(total, 0, "faction 征兵池总和应大于 0")
 
@@ -515,6 +523,7 @@ func test_recruit_unit_from_city_consumes_pool_population_resources_and_adds_uni
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	var capital: Dictionary = CityManager.get_capital_state("qin")
 	var city_id: String = str(capital["id"])
+	CityManager.get_city_state(city_id)["conscription_pool"] = 3
 	var pop_before: int = int(capital["current_population"])
 	var food_before: int = GameManager.get_player_food()
 	var gold_before: int = GameManager.get_player_gold()

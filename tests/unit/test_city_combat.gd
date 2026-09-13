@@ -27,12 +27,19 @@ func test_city_wall_hp_matches_config() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var city: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	var hp: int = TacticalSkirmishManager.get_city_wall_hp(city)
-	var expected_base_v: Variant = DataManager.get_balance_param("city_levels.3.hp")
-	var expected_base: int = int(expected_base_v) if expected_base_v != null else 1000
-	var capital_bonus_v: Variant = DataManager.get_balance_param("city_levels.capital_bonus.hp")
-	var capital_bonus: int = int(capital_bonus_v) if capital_bonus_v != null else 500
-	var expected: int = expected_base + capital_bonus
-	assert_eq(hp, expected, "3 级都城城墙 HP 应为 %d（实际 %d）" % [expected, hp])
+	# 城墙 HP 来自 buildings.json → wall Lv1 structure_hp（战斗系统.md §7.4）
+	var wall: Dictionary = DataManager.get_building("wall")
+	var structure_hp: int = int(((wall.get("levels", []) as Array)[0] as Dictionary).get("effects", {}).get("structure_hp", 150))
+	assert_eq(hp, structure_hp, "城墙 HP 应为 wall.structure_hp=%d（实际 %d）" % [structure_hp, hp])
+
+
+func test_city_body_hp_independent_from_wall() -> void:
+	TacticalSkirmishManager.start_skirmish()
+	var city: Vector2i = TacticalSkirmishManager.get_enemy_city()
+	var body: int = TacticalSkirmishManager.get_city_body_hp(city)
+	var expected: int = int(DataManager.get_balance_param("city_levels.3.hp")) + int(DataManager.get_balance_param("city_levels.capital_bonus.hp"))
+	assert_eq(body, expected, "城市本体 HP 应为 city_levels.hp+首都加成=%d（实际 %d）" % [expected, body])
+	assert_true(body != TacticalSkirmishManager.get_city_wall_hp(city), "本体 HP 应与城墙 HP 独立")
 
 
 func test_city_level_stored() -> void:
@@ -155,6 +162,7 @@ func test_capture_city_when_wall_destroyed() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var enemy_city: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	TacticalSkirmishManager._city_wall_hp[enemy_city] = 0
+	TacticalSkirmishManager._city_body_hp[enemy_city] = 0
 	# 将敌军移走
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = 0
@@ -178,6 +186,7 @@ func test_capture_restores_30_percent_hp() -> void:
 	var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
 	var expected_hp: int = maxi(1, int(float(max_hp) * restore_ratio))
 	TacticalSkirmishManager._city_wall_hp[enemy_city] = 0
+	TacticalSkirmishManager._city_body_hp[enemy_city] = 0
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = 0
 	e1["r"] = 0
@@ -195,6 +204,7 @@ func test_cannot_capture_with_garrison() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var enemy_city: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	TacticalSkirmishManager._city_wall_hp[enemy_city] = 0
+	TacticalSkirmishManager._city_body_hp[enemy_city] = 0
 	# 敌军仍在城市上
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = enemy_city.x
@@ -269,8 +279,9 @@ func test_wall_destroyed_allows_victory() -> void:
 	p1["q"] = enemy_city.x
 	p1["r"] = enemy_city.y
 	TacticalSkirmishManager._city_wall_hp[enemy_city] = 0
+	TacticalSkirmishManager._city_body_hp[enemy_city] = 0
 	var winner: String = TacticalSkirmishManager.check_victory()
-	assert_eq(winner, "qin", "城墙摧毁后应获胜")
+	assert_eq(winner, "qin", "城墙与本体摧毁后应获胜")
 
 
 # ============= 箭塔测试 =============

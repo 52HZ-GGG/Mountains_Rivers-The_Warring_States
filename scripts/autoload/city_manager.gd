@@ -842,7 +842,33 @@ func process_turn(faction_id: String) -> Dictionary:
 	for city in cities:
 		var city_id: String = str(city["id"])
 		_process_stability(city_id, faction_id)
+	_clamp_faction_conscription(faction_id)
 	return events
+
+
+## 全国硬约束：可服役 + 已服役 ≤ 最大征召（总人口 × conscription_rate）。
+## 城级池为全国池的分片存储；填充速率已按池上限计算（§6.1）。
+func _clamp_faction_conscription(faction_id: String) -> void:
+	var total_pop: int = 0
+	for city in get_faction_city_states(faction_id):
+		total_pop += int(city.get("current_population", 0))
+	if total_pop <= 0:
+		return
+	var max_rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
+	var max_cons: int = int(total_pop * max_rate)
+	var active: int = GameManager.get_total_troops(faction_id)
+	var available: int = get_faction_conscription_pool(faction_id)
+	var allowed: int = maxi(max_cons - active, 0)
+	if available <= allowed:
+		return
+	var excess: int = available - allowed
+	for city in get_faction_city_states(faction_id):
+		if excess <= 0:
+			break
+		var pool: int = int(city.get("conscription_pool", 0))
+		var take: int = mini(pool, excess)
+		city["conscription_pool"] = pool - take
+		excess -= take
 
 
 ## 全国文化结算：按整轮处理所有城市文化。
@@ -963,7 +989,9 @@ func _process_population_growth(city_id: String) -> void:
 		city["growth_progress"] = progress
 
 
-## 征兵池填充：每回合按人口 × fill_rate 补充，上限 = 人口 × conscription_rate。
+## 征兵池填充：每回合按「池上限 × fill_rate」补充（机制：粮食人口征兵系统.md §6.1）。
+## 池上限 = 人口 × conscription_rate；填充基于上限而非人口。
+## 采用小数进度累积，避免小人口城长期无法入池。
 func _process_conscription_fill(city_id: String) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
@@ -977,8 +1005,12 @@ func _process_conscription_fill(city_id: String) -> void:
 	var faction_id: String = str(city.get("current_faction_id", ""))
 	if GameManager.is_player_faction(faction_id):
 		recruit_mod = float(GameManager.get_morale_threshold_effect().get("recruit_mod", 1.0))
-	var fill: int = int(pop * fill_rate * recruit_mod)
 	var cap: int = int(pop * max_rate)
+	if cap <= 0:
+		return
+	var progress: float = float(city.get("conscription_fill_progress", 0.0)) + float(cap) * fill_rate * recruit_mod
+	var fill: int = int(floor(progress))
+	city["conscription_fill_progress"] = progress - float(fill)
 	var pool: int = int(city.get("conscription_pool", 0))
 	city["conscription_pool"] = mini(pool + fill, cap)
 
@@ -1597,6 +1629,7 @@ func _initialize_states() -> void:
 		state["current_population"] = int(city_data.get("initial_population", 0))
 		state["growth_progress"] = 0.0
 		state["conscription_pool"] = 0
+		state["conscription_fill_progress"] = 0.0
 		# 城池 HP：初始 = max_hp（按城级查 city_levels）
 		var cl_cfg: Dictionary = DataManager.get_balance_param("city_levels")
 		var lv_cfg: Dictionary = cl_cfg.get(str(int(city_data.get("city_level", 1))), {})

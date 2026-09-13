@@ -84,3 +84,6 @@ __pycache__/
 *.pem
 *.key
 secrets.json
+
+.gut_*.log
+.gut_*.log.err

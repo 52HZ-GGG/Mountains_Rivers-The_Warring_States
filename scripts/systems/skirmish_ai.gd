@@ -198,14 +198,8 @@ func run_turn() -> void:
 			# AI 火攻施加烧伤 DOT
 			if ai_is_fire and not bool(dmg_i.get("was_ambush", false)):
 				m._apply_burn(u, defender)
-			# 夹击/包围：受伤后检测并应用士气惩罚
-			var flanking_delta_ai: int = m._check_flanking(defender)
-			if flanking_delta_ai != 0:
-				m._apply_morale_delta(defender, flanking_delta_ai)
-				if flanking_delta_ai <= -50:
-					m._append_log("%s 被包围！士气大幅下降" % t_id)
-				else:
-					m._append_log("%s 遭受夹击！士气下降" % t_id)
+			# 夹击/包围：持续状态统一重算
+			m._process_flanking_states()
 			if int(defender["hp"]) <= 0:
 				var dead_faction_ai: String = str(defender["faction_id"])
 				m._remove_unit(t_id)
