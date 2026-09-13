@@ -3,7 +3,7 @@ extends Node
 ## 全局数据管理器
 ##
 ## 启动时加载 data/*.json，提供只读访问。
-## 接口契约见 docs/接口文档.md。
+## 接口契约见 docs/归档/过程稿/旧规范/接口文档.md（阶段 0 冻结稿，以代码为准）。
 ## 实现相对接口文档的偏离记录在 PR 描述中（fail-fast / id 索引 / map_size 缺省报错 / faction 分桶）。
 
 const TERRAIN_PATH := "res://data/terrain.json"
