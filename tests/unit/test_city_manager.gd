@@ -38,7 +38,9 @@ func test_static_fields_preserved() -> void:
 	assert_eq(xianyang.get("name"), "咸阳")
 	assert_eq(xianyang.get("faction_id"), "qin")
 	assert_true(xianyang.get("is_capital"), "咸阳应为首都")
-	assert_eq(int(xianyang.get("max_building_slots")), 5)
+	assert_eq(int(xianyang.get("city_level", 0)), 5, "咸阳应为 5 级都")
+	var slots: Variant = DataManager.get_balance_param("city_levels.5.building_slots")
+	assert_eq(int(slots), 5, "5 级城建筑槽位应为 5")
 
 
 # ============= get_city_state =============
