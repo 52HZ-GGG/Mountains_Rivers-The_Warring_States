@@ -1632,9 +1632,21 @@ func _add_recruitable_unit(units: Array[String], unit_id: String) -> void:
 
 func _unit_requires_tech(unit_id: String) -> bool:
 	for tech in DataManager.get_all_techs():
-		var effect: Dictionary = (tech as Dictionary).get("effects", {})
-		if effect.get("type", "") == "unlock_unit" and str(effect.get("unit_id", "")) == unit_id:
-			return true
+		if not (tech is Dictionary):
+			continue
+		var tech_dict: Dictionary = tech as Dictionary
+		var effects: Variant = tech_dict.get("effects", {})
+		if effects is Dictionary:
+			if str((effects as Dictionary).get("type", "")) == "unlock_unit" \
+				and str((effects as Dictionary).get("unit_id", "")) == unit_id:
+				return true
+		elif effects is Array:
+			for effect_v in effects:
+				if not (effect_v is Dictionary):
+					continue
+				var effect: Dictionary = effect_v as Dictionary
+				if str(effect.get("type", "")) == "unlock_unit" and str(effect.get("unit_id", "")) == unit_id:
+					return true
 	return false
 
 
