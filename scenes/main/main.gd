@@ -708,8 +708,13 @@ func _show_save_load_panel() -> void:
 	_framework_placeholder_title.text = "存档 / 读档"
 	_framework_placeholder_body.text = _framework_save_load_summary()
 	_clear_framework_placeholder_actions()
-	_add_framework_placeholder_action("QuickSaveButton", "快速存档", _save_framework_quick_save)
-	_add_framework_placeholder_action("QuickLoadButton", "快速读档", _load_framework_quick_save)
+	_add_framework_placeholder_action("QuickSaveButton", "保存槽位 1", _save_framework_quick_save.bind(0))
+	_add_framework_placeholder_action("QuickLoadButton", "读取槽位 1", _load_framework_quick_save.bind(0))
+	_add_framework_placeholder_action("SaveSlot2Button", "保存槽位 2", _save_framework_quick_save.bind(1))
+	_add_framework_placeholder_action("LoadSlot2Button", "读取槽位 2", _load_framework_quick_save.bind(1))
+	_add_framework_placeholder_action("SaveSlot3Button", "保存槽位 3", _save_framework_quick_save.bind(2))
+	_add_framework_placeholder_action("LoadSlot3Button", "读取槽位 3", _load_framework_quick_save.bind(2))
+	_add_framework_placeholder_action("LoadAutoButton", "读取自动存档", _load_framework_quick_save.bind(SaveManager.AUTO_SLOT))
 	_framework_placeholder_layer.visible = true
 
 
@@ -950,22 +955,22 @@ func _toggle_framework_demo_cheat() -> void:
 
 
 func _framework_save_load_summary() -> String:
-	var status: String = SaveManager.get_summary()
-	return "[b]完整单槽存档[/b]\n%s\n\n[b]范围[/b]\n城市/资源/税率/外交/科技/学派/大夫/奇观/事件/Demo。\n\n[b]路径[/b]\n%s" % [status, SaveManager.get_save_path()]
+	return "[b]多槽存档[/b]\n%s\n\n[b]范围[/b]\n城市/资源/税率/外交/科技/学派/大夫/奇观/事件/Demo。\n玩家回合结束会自动写入「自动」槽。" % SaveManager.format_slots_text()
 
 
-func _save_framework_quick_save() -> void:
-	var result: Dictionary = SaveManager.quick_save()
+func _save_framework_quick_save(slot: int = 0) -> void:
+	var result: Dictionary = SaveManager.save_to_slot(slot)
 	if not bool(result.get("success", false)):
-		_framework_placeholder_body.text = "[b]保存失败[/b]\n%s" % str(result.get("reason", "WRITE_FAILED"))
+		_framework_placeholder_body.text = "[b]保存失败[/b]\n槽位 %s：%s" % [str(slot + 1), str(result.get("reason", "WRITE_FAILED"))]
 		return
-	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入完整单槽存档。\n\n%s\n\n%s" % [SaveManager.get_summary(), _framework_save_load_summary()]
+	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入 %s。\n\n%s" % [SaveManager.get_save_path(slot), _framework_save_load_summary()]
+	_show_save_load_panel()
 
 
-func _load_framework_quick_save() -> void:
-	var result: Dictionary = SaveManager.quick_load()
+func _load_framework_quick_save(slot: int = 0) -> void:
+	var result: Dictionary = SaveManager.load_from_slot(slot)
 	if not bool(result.get("success", false)):
-		_framework_placeholder_body.text = "[b]读取失败[/b]\n%s" % str(result.get("reason", "NO_SAVE"))
+		_framework_placeholder_body.text = "[b]读取失败[/b]\n槽位 %s：%s" % [str(slot + 1), str(result.get("reason", "NO_SAVE"))]
 		return
 	_framework_placeholder_body.text = "[b]读取成功[/b]\n已恢复完整战局。\n\n玩家势力：%s\n当前回合：第 %d 回合\n目标城归属：%s\n资源：%s" % [
 		_faction_display_name(str(result.get("player_faction", ""))),

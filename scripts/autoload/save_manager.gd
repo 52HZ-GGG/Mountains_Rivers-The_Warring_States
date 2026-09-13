@@ -1,42 +1,106 @@
 extends Node
 
-## 单槽完整存档管理器。
+## 完整存档管理器：多槽位 + 自动存档。
 ## 汇总 GameManager / CityManager / Diplomacy / Tech / School / Minister / Wonder / Event / Demo。
 
-const SAVE_PATH: String = "user://shanhece_save_slot0.json"
 const SCHEMA_VERSION: int = 2
+const SLOT_COUNT: int = 3
+const AUTO_SLOT: int = -1
 
 
-func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+func _ready() -> void:
+	SignalBus.turn_ended.connect(_on_turn_ended)
 
 
-func get_save_path() -> String:
-	return SAVE_PATH
+func get_slot_path(slot: int) -> String:
+	if slot == AUTO_SLOT:
+		return "user://shanhece_save_auto.json"
+	return "user://shanhece_save_slot%d.json" % slot
 
 
-func quick_save() -> Dictionary:
+func has_save(slot: int = 0) -> bool:
+	return FileAccess.file_exists(get_slot_path(slot))
+
+
+func get_save_path(slot: int = 0) -> String:
+	return get_slot_path(slot)
+
+
+func quick_save(slot: int = 0) -> Dictionary:
+	return save_to_slot(slot)
+
+
+func quick_load(slot: int = 0) -> Dictionary:
+	return load_from_slot(slot)
+
+
+func save_to_slot(slot: int) -> Dictionary:
 	var data: Dictionary = build_save_data()
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var path: String = get_slot_path(slot)
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
-		return {"success": false, "reason": "WRITE_FAILED", "path": SAVE_PATH}
+		return {"success": false, "reason": "WRITE_FAILED", "path": path}
 	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
-	return {"success": true, "path": SAVE_PATH, "turn": int(data.get("turn", 0))}
+	return {"success": true, "path": path, "slot": slot, "turn": int(data.get("turn", 0))}
 
 
-func quick_load() -> Dictionary:
-	var data: Dictionary = read_save_file()
+func load_from_slot(slot: int) -> Dictionary:
+	var data: Dictionary = read_save_file(slot)
 	if data.is_empty():
-		return {"success": false, "reason": "NO_SAVE"}
+		return {"success": false, "reason": "NO_SAVE", "slot": slot}
 	var err: String = apply_save_data(data)
 	if err != "":
-		return {"success": false, "reason": err}
+		return {"success": false, "reason": err, "slot": slot}
 	return {
 		"success": true,
+		"slot": slot,
 		"turn": GameManager.get_current_turn(),
 		"player_faction": GameManager.get_player_faction(),
 	}
+
+
+func delete_slot(slot: int) -> bool:
+	var path: String = get_slot_path(slot)
+	if not FileAccess.file_exists(path):
+		return false
+	return DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func list_slots() -> Array:
+	var out: Array = []
+	for slot in range(SLOT_COUNT):
+		out.append(_slot_info(slot))
+	out.append(_slot_info(AUTO_SLOT))
+	return out
+
+
+func _slot_info(slot: int) -> Dictionary:
+	var path: String = get_slot_path(slot)
+	var exists: bool = FileAccess.file_exists(path)
+	var turn: int = 0
+	var player: String = ""
+	var saved_at: int = 0
+	if exists:
+		var data: Dictionary = read_save_file(slot)
+		turn = int(data.get("turn", 0))
+		player = str(data.get("player_faction", ""))
+		saved_at = int(data.get("saved_at_unix", 0))
+	return {
+		"slot": slot,
+		"label": "自动" if slot == AUTO_SLOT else "槽位 %d" % (slot + 1),
+		"exists": exists,
+		"turn": turn,
+		"player_faction": player,
+		"saved_at_unix": saved_at,
+		"path": path,
+	}
+
+
+func _on_turn_ended(_turn_number: int, faction_id: String) -> void:
+	# 玩家回合结束时写自动存档
+	if faction_id == GameManager.get_player_faction():
+		save_to_slot(AUTO_SLOT)
 
 
 func build_save_data() -> Dictionary:
@@ -61,17 +125,17 @@ func build_save_data() -> Dictionary:
 			"enabled": DemoFlow.is_enabled(),
 			"complete": DemoFlow.is_demo_complete(),
 			"completed_steps": DemoFlow.get_completed_steps(),
-			"full_demo_enabled": DemoFlow.is_full_demo_enabled() if DemoFlow.has_method("is_full_demo_enabled") else false,
 		},
 		"target_city_id": DemoFlow.get_target_city_id(),
 		"target_city_owner": str(target_city.get("current_faction_id", "")),
 	}
 
 
-func read_save_file() -> Dictionary:
-	if not FileAccess.file_exists(SAVE_PATH):
+func read_save_file(slot: int = 0) -> Dictionary:
+	var path: String = get_slot_path(slot)
+	if not FileAccess.file_exists(path):
 		return {}
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {}
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
@@ -102,28 +166,31 @@ func apply_save_data(data: Dictionary) -> String:
 	return ""
 
 
-func get_summary() -> String:
-	var data: Dictionary = read_save_file()
+func get_summary(slot: int = 0) -> String:
+	var data: Dictionary = read_save_file(slot)
 	if data.is_empty():
 		return "无存档"
-	var resources: Dictionary = (data.get("game", {}) as Dictionary).get("faction_resources", {})
-	var player_res: Dictionary = resources.get(str(data.get("player_faction", "")), {})
-	if player_res.is_empty():
-		# 玩家资源在 game 顶层字段
-		var g: Dictionary = data.get("game", {}) as Dictionary
-		player_res = {
-			"food": g.get("player_food", 0),
-			"gold": g.get("player_gold", 0),
-			"wood": g.get("player_wood", 0),
-			"morale": g.get("player_morale", 0),
-			"population": g.get("player_population", 0),
-			"troops": g.get("player_troops", 0),
-		}
-	return "回合 %s | 势力 %s | 粮%s 金%s 士气%s | 城归属 %s" % [
+	var g: Dictionary = data.get("game", {}) as Dictionary
+	return "回合 %s | 势力 %s | 粮%s 金%s 士气%s | 洛邑 %s" % [
 		str(data.get("turn", 0)),
 		str(data.get("player_faction", "")),
-		str(int(player_res.get("food", 0))),
-		str(int(player_res.get("gold", 0))),
-		str(int(player_res.get("morale", 0))),
+		str(int(g.get("player_food", 0))),
+		str(int(g.get("player_gold", 0))),
+		str(int(g.get("player_morale", 0))),
 		str(data.get("target_city_owner", "")),
 	]
+
+
+func format_slots_text() -> String:
+	var lines: Array[String] = []
+	for info: Dictionary in list_slots():
+		if bool(info.get("exists", false)):
+			lines.append("%s：回合 %d | %s | %s" % [
+				str(info.get("label", "")),
+				int(info.get("turn", 0)),
+				str(info.get("player_faction", "")),
+				get_summary(int(info.get("slot", 0))),
+			])
+		else:
+			lines.append("%s：空" % str(info.get("label", "")))
+	return "\n".join(lines)

@@ -86,12 +86,15 @@ func test_zoc_increases_move_cost() -> void:
 	# 将敌方步兵放到玩家步兵东侧 2 格处
 	e1["q"] = p_pos.x + 2
 	e1["r"] = p_pos.y
-	var reach: Dictionary = TacticalSkirmishManager.get_reachable_cells("mvp_p1")
-	# 检查敌方旁边的格子（ZoC 范围内）移耗是否增加
 	var zoc_cell: Vector2i = Vector2i(p_pos.x + 1, p_pos.y)
+	assert_true(TacticalSkirmishManager._is_in_enemy_zoc(zoc_cell, str(p1["faction_id"])), "敌旁格应处于 ZoC")
+	var reach: Dictionary = TacticalSkirmishManager.get_reachable_cells("mvp_p1")
 	if reach.has(zoc_cell):
 		var zoc_cost: int = int(reach[zoc_cell])
 		assert_true(zoc_cost >= 2, "ZoC 格子移耗应 >= 2（基础 1 + ZoC 1），实际: %d" % zoc_cost)
+	else:
+		# 若因占用/地形不可达，至少确认 ZoC 判定本身成立
+		assert_true(TacticalSkirmishManager._is_in_enemy_zoc(zoc_cell, str(p1["faction_id"])), "不可达时仍应判定 ZoC")
 
 
 func test_zoc_overlap_does_not_stack() -> void:
