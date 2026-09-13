@@ -83,8 +83,8 @@ func test_no_heal_when_morale_broken() -> void:
 	e2["q"] = 10
 	e2["r"] = 11
 	var hp_before: int = int(p1["hp"])
-	TacticalSkirmishManager.process_morale_for_test()
-	# 崩溃态不回复（还可能因崩溃扣 HP）
+	# 只跑治疗结算，验证崩溃态禁止治疗（溃退等另测）
+	TacticalSkirmishManager._process_healing("qin")
 	assert_true(int(p1["hp"]) <= hp_before, "崩溃态不应恢复 HP（前=%d，后=%d）" % [hp_before, int(p1["hp"])])
 
 

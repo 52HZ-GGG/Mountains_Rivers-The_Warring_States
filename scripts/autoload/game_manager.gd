@@ -718,11 +718,10 @@ func _on_revolt_occurred(city_id: String, _stability: int) -> void:
 	if not result.get("success", false):
 		return
 
-	# 首都叛乱：民心惩罚 + 首都丢失信号 + AI 迁都
+	# 首都叛乱：仅叛乱民心惩罚（不走攻陷首都 debuff，capital_lost 留给军事占领）
 	if city.get("is_capital", false):
 		var penalty: int = int(DataManager.get_balance_param("stability.revolt.capital_revolt_morale_penalty"))
 		apply_faction_resource_delta(old_faction, "morale", penalty)
-		SignalBus.capital_lost.emit(old_faction, city_id)
 		if old_faction != _player_faction:
 			CityManager.relocate_ai_capital(old_faction)
 

@@ -213,17 +213,18 @@ func process_morale_for_test() -> void:
 
 	for u: Dictionary in _units:
 		var current_morale: int = int(u.get("morale", 100))
+		# 先按崩溃态扣血，再自然恢复士气，最后治疗（崩溃态禁止治疗）
+		if current_morale < break_threshold:
+			var max_hp: int = int(u.get("max_hp", 100))
+			var hp_loss: int = int(float(max_hp) * broken_hp_ratio)
+			u["hp"] = maxi(1, int(u.get("hp", max_hp)) - hp_loss)
 		if current_morale < natural_cap:
 			var recovery: int = recovery_city if _is_in_own_city(u) else recovery_turn
 			u["morale"] = mini(current_morale + recovery, natural_cap)
 		if int(u.get("morale", 100)) > natural_cap:
 			u["morale"] = int(u.get("morale", 100)) - 1
 		if int(u.get("morale", 100)) < break_threshold:
-			var max_hp: int = int(u.get("max_hp", 100))
-			var hp_loss: int = int(float(max_hp) * broken_hp_ratio)
-			u["hp"] = maxi(1, int(u.get("hp", max_hp)) - hp_loss)
-		var base_speed: int = int(u.get("speed", 3))
-		if int(u.get("morale", 100)) < break_threshold:
+			var base_speed: int = int(u.get("speed", 3))
 			u["mp_remaining"] = maxi(1, int(float(base_speed) * broken_speed_mod))
 	# 溃退处理
 	var rout_units: Array[Dictionary] = []
@@ -991,6 +992,9 @@ func _process_healing(faction_id: String) -> void:
 		if bool(u.get("in_combat_this_turn", false)):
 			continue
 		if no_heal_broken and int(u.get("morale", 100)) < break_threshold:
+			continue
+		# 额外保险：崩溃态绝不治疗
+		if int(u.get("morale", 100)) < break_threshold:
 			continue
 		var hp: int = int(u.get("hp", 100))
 		var max_hp: int = int(u.get("max_hp", 100))

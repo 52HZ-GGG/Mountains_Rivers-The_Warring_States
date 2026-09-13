@@ -87,3 +87,8 @@ secrets.json
 
 .gut_*.log
 .gut_*.log.err
+
+.auto_*.log
+.auto_*.log.err
+.shot_*.png
+.auto_regression/
