@@ -316,6 +316,7 @@ func test_destroyed_pass_does_not_block_victory() -> void:
 	p1["r"] = enemy_city.y
 	TacticalSkirmishManager._pass_hp[pass_cell] = 0
 	TacticalSkirmishManager._city_wall_hp[enemy_city] = 0
+	TacticalSkirmishManager._city_body_hp[enemy_city] = 0
 	var winner: String = TacticalSkirmishManager.check_victory()
 	assert_eq(winner, "qin", "摧毁的关隘不应阻断胜利")
 
@@ -329,6 +330,7 @@ func test_empty_garrison_pass_does_not_block() -> void:
 	p1["r"] = enemy_city.y
 	TacticalSkirmishManager._pass_hp[pass_cell] = 500
 	TacticalSkirmishManager._city_wall_hp[enemy_city] = 0
+	TacticalSkirmishManager._city_body_hp[enemy_city] = 0
 	# 将敌军移走
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = 0

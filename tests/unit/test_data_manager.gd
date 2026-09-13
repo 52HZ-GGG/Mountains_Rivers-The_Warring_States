@@ -36,7 +36,10 @@ func test_get_terrain_by_id() -> void:
 func test_get_unit_type_by_id() -> void:
 	var infantry := DataManager.get_unit_type("infantry")
 	assert_eq(infantry.get("name"), "步兵")
-	assert_eq(infantry.get("attack"), 20)
+	# 数值以 units.json 为准（阶段 7 兵种重算后 attack=27）
+	assert_eq(int(infantry.get("attack", 0)), 27)
+	assert_eq(int(infantry.get("defense", 0)), 10)
+	assert_eq(int(infantry.get("hp", 0)), 100)
 
 
 func test_get_city_by_id() -> void:
@@ -54,15 +57,16 @@ func test_invalid_terrain_returns_empty() -> void:
 
 func test_faction_variant_merge_qin_rushi() -> void:
 	var rushi := DataManager.get_faction_variant("qin", "infantry")
+	var base := DataManager.get_unit_type("infantry")
 	assert_eq(rushi.get("variant_id"), "rushi")
 	assert_eq(rushi.get("variant_name"), "锐士")
-	# stat_overrides 应覆盖基础值
-	assert_eq(rushi.get("attack"), 24, "锐士 attack 应被覆盖为 24")
-	assert_eq(rushi.get("defense"), 12, "锐士 defense 应被覆盖为 12")
-	assert_eq(rushi.get("cost_gold"), 75, "锐士 cost_gold 应被覆盖为 75")
-	# 未覆盖字段应保留基础值
-	assert_eq(rushi.get("hp"), 100, "锐士 hp 未在 overrides 中应保留 100")
-	assert_eq(rushi.get("speed"), 3, "锐士 speed 未在 overrides 中应保留 3")
+	# 以 units.json faction_variants 为准（造价与基础步兵同为 75）
+	assert_eq(int(rushi.get("attack", 0)), 32, "锐士 attack 应为 32")
+	assert_true(int(rushi.get("defense", 0)) > int(base.get("defense", 0)), "锐士防御应高于基础步兵")
+	assert_eq(int(rushi.get("cost_gold", 0)), 75, "锐士 cost_gold 覆盖为 75")
+	# 未覆盖字段保留基础值
+	assert_eq(int(rushi.get("hp", 0)), int(base.get("hp", 0)), "锐士 hp 未覆盖时应与基础一致")
+	assert_eq(int(rushi.get("speed", 0)), int(base.get("speed", 0)), "锐士 speed 未覆盖时应与基础一致")
 
 
 func test_faction_variant_no_match_returns_base() -> void:

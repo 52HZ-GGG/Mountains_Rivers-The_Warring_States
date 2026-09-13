@@ -123,6 +123,7 @@ func get_city_culture(city_id: String) -> Dictionary:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
 		return {}
+	_ensure_city_culture(city)
 	return (city.get("culture", {}) as Dictionary).duplicate(true)
 
 
@@ -130,6 +131,7 @@ func get_mainstream_culture(city_id: String) -> String:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
 		return ""
+	_ensure_city_culture(city)
 	return str(city.get("mainstream_culture", ""))
 
 

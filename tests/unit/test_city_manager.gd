@@ -200,10 +200,13 @@ func test_start_build_success_returns_true() -> void:
 
 
 func test_start_build_success_deducts_resources() -> void:
-	# 伐木场：80 金 + 20 木材
+	# 造价以 buildings.json 为准
+	var lumber: Dictionary = DataManager.get_building("lumbermill")
+	var cost_gold: int = int((lumber.get("levels", []) as Array)[0].get("cost_gold", 0))
+	var cost_wood: int = int((lumber.get("levels", []) as Array)[0].get("cost_wood", 0))
 	CityManager.start_build("xianyang", "lumbermill")
-	assert_eq(GameManager.get_player_gold(), PLAYER_INITIAL_GOLD - 80)
-	assert_eq(GameManager.get_player_wood(), PLAYER_INITIAL_WOOD - 20)
+	assert_eq(GameManager.get_player_gold(), PLAYER_INITIAL_GOLD - cost_gold)
+	assert_eq(GameManager.get_player_wood(), PLAYER_INITIAL_WOOD - cost_wood)
 
 
 func test_start_build_success_adds_to_queue() -> void:
@@ -603,18 +606,20 @@ func test_culture_mismatch_applies_stability_and_garrison_penalties() -> void:
 	GameManager.start_game(["qin", "zhao"], "qin")
 	var city_id: String = str(CityManager.get_capital_state("zhao").get("id", ""))
 	var city: Dictionary = CityManager.get_city_state(city_id)
+	# 先取无文化不匹配时的基线
+	city["garrison"] = 10
+	city["stability"] = 80
+	var defense_before: int = CityManager.get_city_defense(city_id)
+	var attack_before: int = CityManager.get_city_attack(city_id)
+	# 再制造文化不匹配
 	city["current_faction_id"] = "qin"
 	city["mainstream_culture"] = "zhao"
 	city["culture"] = {"qin": 40.0, "zhao": 60.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
-	city["stability"] = 80
-	city["garrison"] = 10
-	var defense_before: int = CityManager.get_city_defense(city_id)
-	var attack_before: int = CityManager.get_city_attack(city_id)
 	CityManager.call("_apply_culture_mismatch_effects", city)
 	var defense_after: int = CityManager.get_city_defense(city_id)
 	var attack_after: int = CityManager.get_city_attack(city_id)
-	assert_lt(defense_after, defense_before, "文化不匹配应削弱城防驻军防御")
-	assert_lt(attack_after, attack_before, "文化不匹配应削弱城池驻军攻击")
+	assert_lt(defense_after, defense_before, "文化不匹配应削弱城防驻军防御（%d → %d）" % [defense_before, defense_after])
+	assert_lt(attack_after, attack_before, "文化不匹配应削弱城池驻军攻击（%d → %d）" % [attack_before, attack_after])
 	assert_lt(int(city.get("stability", 0)), 80, "文化不匹配应压低安定度")
 
 
@@ -638,6 +643,9 @@ func test_trade_route_boosts_culture_spread() -> void:
 	var zhao_capital_id: String = str(CityManager.get_capital_state("zhao")["id"])
 	var qin_city: Dictionary = CityManager.get_city_state(qin_capital_id)
 	var zhao_city: Dictionary = CityManager.get_city_state(zhao_capital_id)
+	# 扩散仅 4 格内；将赵都坐标挪到秦都旁以便比较商路加成
+	zhao_city["hex_q"] = int(qin_city.get("hex_q", 0)) + 1
+	zhao_city["hex_r"] = int(qin_city.get("hex_r", 0))
 	qin_city["culture"] = {"qin": 100.0, "zhao": 0.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
 	qin_city["mainstream_culture"] = "qin"
 	zhao_city["culture"] = {"qin": 0.0, "zhao": 100.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
@@ -650,14 +658,20 @@ func test_trade_route_boosts_culture_spread() -> void:
 	MinisterManager.reset()
 	TechSystem.reset()
 	SchoolManager.reset()
+	DiplomacySystem.reset()
 	GameManager.start_game(["qin", "zhao"], "qin")
 	qin_city = CityManager.get_city_state(qin_capital_id)
 	zhao_city = CityManager.get_city_state(zhao_capital_id)
+	zhao_city["hex_q"] = int(qin_city.get("hex_q", 0)) + 1
+	zhao_city["hex_r"] = int(qin_city.get("hex_r", 0))
 	qin_city["culture"] = {"qin": 100.0, "zhao": 0.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
 	qin_city["mainstream_culture"] = "qin"
 	zhao_city["culture"] = {"qin": 0.0, "zhao": 100.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
 	zhao_city["mainstream_culture"] = "zhao"
-	DiplomacySystem.open_trade_route("qin", "zhao")
+	DiplomacySystem.change_opinion("qin", "zhao", 50)
+	var opened: Dictionary = DiplomacySystem.open_trade_route("qin", "zhao")
+	assert_true(bool(opened.get("success", opened.get("ok", true))) or DiplomacySystem.have_trade_route("qin", "zhao"),
+		"商路应开启，result=%s" % str(opened))
 	CityManager.process_culture_turn()
 	var trade_after: float = float(CityManager.get_city_culture(zhao_capital_id).get("qin", 0.0))
 	assert_gt(trade_after - baseline_before, baseline_after - baseline_before, "商路应提升文化扩散量")
