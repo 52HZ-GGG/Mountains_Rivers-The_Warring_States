@@ -439,6 +439,8 @@ func process_ai_turn() -> void:
 	_ai_research_tick(faction_id)
 	# 3. AI军事决策（征兵/攻城/驻军）
 	MilitaryAI.evaluate_military(faction_id)
+	# 4. AI经济决策（建造/升级）
+	EconomyAI.evaluate_economy(faction_id)
 	end_current_turn()
 
 
