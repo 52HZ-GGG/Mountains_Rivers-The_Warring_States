@@ -743,6 +743,7 @@ func _show_schools_panel() -> void:
 	_framework_placeholder_body.text = _framework_schools_summary()
 	_clear_framework_placeholder_actions()
 	_add_framework_placeholder_action("OpenSchoolSelectButton", "切换学派", _open_school_switch_panel)
+	_add_framework_placeholder_action("OpenSchoolPolicyButton", "激活政策", _open_school_policy_panel)
 	_add_framework_placeholder_action("OpenSchoolEventsButton", "相关事件", _open_school_events_panel)
 	_add_framework_placeholder_action("OpenSchoolTechButton", "查看科技", _open_school_tech_panel)
 	_framework_placeholder_layer.visible = true
@@ -758,6 +759,78 @@ func _show_ministers_panel() -> void:
 	_add_framework_placeholder_action("OpenMinisterCityButton", "查看城市", _open_minister_city_panel)
 	_add_framework_placeholder_action("OpenMinisterDiplomacyButton", "查看外交", _open_minister_diplomacy_panel)
 	_framework_placeholder_layer.visible = true
+
+
+func _open_school_policy_panel() -> void:
+	if not is_instance_valid(_framework_placeholder_layer):
+		return
+	var player_faction_id: String = _resolve_player_faction_id()
+	_framework_placeholder_title.text = "学派政策"
+	_framework_placeholder_body.text = _framework_school_policy_summary(player_faction_id)
+	_clear_framework_placeholder_actions()
+	var school_id: String = SchoolManager.get_current_school(player_faction_id)
+	if school_id != "":
+		for policy_v: Variant in DataManager.get_all_school_general_policies():
+			var policy: Dictionary = policy_v as Dictionary
+			var pid: String = str(policy.get("id", ""))
+			_add_framework_placeholder_action(
+				"Policy_%s" % pid,
+				"通用·%s（经验%s）" % [str(policy.get("name", pid)), str(policy.get("exp_cost", 0))],
+				_on_school_policy_activate.bind(pid)
+			)
+		var school: Dictionary = DataManager.get_school(school_id)
+		for policy_v: Variant in school.get("exclusive_policies", []):
+			var policy: Dictionary = policy_v as Dictionary
+			var pid: String = str(policy.get("id", ""))
+			_add_framework_placeholder_action(
+				"Policy_%s" % pid,
+				"专属·%s（经验%s）" % [str(policy.get("name", pid)), str(policy.get("exp_cost", 0))],
+				_on_school_policy_activate.bind(pid)
+			)
+	_add_framework_placeholder_action("SchoolPolicyBackButton", "返回总览", _show_schools_panel)
+	_framework_placeholder_layer.visible = true
+
+
+func _framework_school_policy_summary(player_faction_id: String) -> String:
+	var school_id: String = SchoolManager.get_current_school(player_faction_id)
+	var school: Dictionary = DataManager.get_school(school_id)
+	var state: Dictionary = SchoolManager.get_school_state(player_faction_id)
+	var active_lines: Array[String] = []
+	for policy_state_v: Variant in SchoolManager.get_active_policies(player_faction_id):
+		var policy_state: Dictionary = policy_state_v as Dictionary
+		var policy: Dictionary = SchoolManager.get_policy_definition(player_faction_id, str(policy_state.get("policy_id", "")))
+		active_lines.append("- %s（剩余 %d 回合）" % [
+			str(policy.get("name", policy_state.get("policy_id", "?"))),
+			int(policy_state.get("turns_remaining", 0)),
+		])
+	var effects: Dictionary = SchoolManager.get_effects(player_faction_id)
+	var effect_lines: Array[String] = []
+	for key in effects:
+		effect_lines.append("- %s: %s" % [str(key), str(effects[key])])
+	return "[b]学派政策[/b]\n学派：%s\n等级：%d\n经验：%d\n槽位上限：%d\n\n[b]已激活[/b]\n%s\n\n[b]当前效果摘要[/b]\n%s\n\n[b]说明[/b]\n点击下方按钮消耗经验激活政策；政策效果即时计入经营/科研/外交。" % [
+		str(school.get("name", school_id if school_id != "" else "未配置")),
+		int(state.get("level", 0)),
+		int(state.get("exp", 0)),
+		SchoolManager.get_policy_slot_limit(player_faction_id),
+		"\n".join(active_lines) if not active_lines.is_empty() else "- 无",
+		"\n".join(effect_lines) if not effect_lines.is_empty() else "- 无",
+	]
+
+
+func _on_school_policy_activate(policy_id: String) -> void:
+	var player_faction_id: String = _resolve_player_faction_id()
+	var result: Dictionary = SchoolManager.activate_policy(player_faction_id, policy_id)
+	if bool(result.get("success", false)):
+		_open_school_policy_panel()
+	else:
+		_show_framework_placeholder("学派政策", "[b]激活失败[/b]\n原因：%s" % str(result.get("reason", "UNKNOWN")))
+
+
+func _resolve_player_faction_id() -> String:
+	var player_faction_id: String = GameManager.get_player_faction()
+	if player_faction_id == "":
+		player_faction_id = DemoFlow.get_player_faction_id()
+	return player_faction_id
 
 
 func _open_school_switch_panel() -> void:
@@ -785,8 +858,19 @@ func _open_minister_assign_panel() -> void:
 	_framework_placeholder_body.text = _framework_minister_assign_summary()
 	_clear_framework_placeholder_actions()
 	_add_framework_placeholder_action("MinisterAssignCapitalButton", "派驻首都大夫", _assign_minister_to_capital)
+	_add_framework_placeholder_action("MinisterUnassignCapitalButton", "卸任首都大夫", _unassign_minister_from_capital)
 	_add_framework_placeholder_action("MinisterBackButton", "返回总览", _show_ministers_panel)
 	_framework_placeholder_layer.visible = true
+
+
+func _unassign_minister_from_capital() -> void:
+	var player_faction_id: String = _resolve_player_faction_id()
+	var capital: Dictionary = CityManager.get_capital_state(player_faction_id)
+	if capital.is_empty():
+		_show_framework_placeholder("大夫派驻", "[b]卸任失败[/b]\n没有找到玩家首都。")
+		return
+	MinisterManager.remove_civil_minister_from_city(str(capital.get("id", "")))
+	_open_minister_assign_panel()
 
 
 func _open_school_events_panel() -> void:
@@ -866,54 +950,31 @@ func _toggle_framework_demo_cheat() -> void:
 
 
 func _framework_save_load_summary() -> String:
-	var status: String = "尚未发现快速存档。"
-	if FileAccess.file_exists(FRAMEWORK_QUICK_SAVE_PATH):
-		var save_data: Dictionary = _read_framework_quick_save()
-		if save_data.is_empty():
-			status = "检测到存档文件，但内容暂无法解析。"
-		else:
-			status = "最近存档：%s\n玩家势力：%s\n当前回合：第 %d 回合\n目标城归属：%s" % [
-				str(save_data.get("saved_at_unix", "未知")),
-				_faction_display_name(str(save_data.get("player_faction", ""))),
-				int(save_data.get("turn", 0)),
-				_faction_display_name(str(save_data.get("target_city_owner", ""))),
-			]
-	return "[b]快速存档槽[/b]\n%s\n\n[b]当前范围[/b]\n保存框架快照、玩家势力、当前回合、资源摘要、Demo 状态、目标城归属与事件状态。\n\n[b]读档说明[/b]\n本阶段读取后会恢复事件系统状态并展示存档摘要；完整城市、资源与战局回滚会在正式存档系统中接入。" % status
+	var status: String = SaveManager.get_summary()
+	return "[b]完整单槽存档[/b]\n%s\n\n[b]范围[/b]\n城市/资源/税率/外交/科技/学派/大夫/奇观/事件/Demo。\n\n[b]路径[/b]\n%s" % [status, SaveManager.get_save_path()]
 
 
 func _save_framework_quick_save() -> void:
-	var save_data: Dictionary = _build_framework_quick_save_data()
-	var file: FileAccess = FileAccess.open(FRAMEWORK_QUICK_SAVE_PATH, FileAccess.WRITE)
-	if file == null:
-		_framework_placeholder_body.text = "[b]保存失败[/b]\n无法写入快速存档文件：%s" % FRAMEWORK_QUICK_SAVE_PATH
+	var result: Dictionary = SaveManager.quick_save()
+	if not bool(result.get("success", false)):
+		_framework_placeholder_body.text = "[b]保存失败[/b]\n%s" % str(result.get("reason", "WRITE_FAILED"))
 		return
-	file.store_string(JSON.stringify(save_data, "\t"))
-	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入快速存档。\n\n%s" % _framework_save_load_summary()
+	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入完整单槽存档。\n\n%s\n\n%s" % [SaveManager.get_summary(), _framework_save_load_summary()]
 
 
 func _load_framework_quick_save() -> void:
-	var save_data: Dictionary = _read_framework_quick_save()
-	if save_data.is_empty():
-		_framework_placeholder_body.text = "[b]读取失败[/b]\n没有可用的快速存档，或存档内容无法解析。"
+	var result: Dictionary = SaveManager.quick_load()
+	if not bool(result.get("success", false)):
+		_framework_placeholder_body.text = "[b]读取失败[/b]\n%s" % str(result.get("reason", "NO_SAVE"))
 		return
-	var event_state: Dictionary = save_data.get("event_state", {}) as Dictionary
-	if not event_state.is_empty():
-		EventManager.load_save_data(event_state)
-	var school_state: Dictionary = save_data.get("school_state", {}) as Dictionary
-	if not school_state.is_empty():
-		SchoolManager.load_save_data(school_state)
-	var diplomacy_state: Dictionary = save_data.get("diplomacy_state", {}) as Dictionary
-	if not diplomacy_state.is_empty():
-		DiplomacySystem.load_save_data(diplomacy_state)
-	var wonder_state: Dictionary = save_data.get("wonder_state", {}) as Dictionary
-	if not wonder_state.is_empty():
-		WonderManager.load_save_data(wonder_state)
-	_framework_placeholder_body.text = "[b]读取成功[/b]\n已读取框架快照，并恢复事件系统状态。\n\n玩家势力：%s\n当前回合：第 %d 回合\n目标城归属：%s\n资源摘要：%s" % [
-		_faction_display_name(str(save_data.get("player_faction", ""))),
-		int(save_data.get("turn", 0)),
-		_faction_display_name(str(save_data.get("target_city_owner", ""))),
-		_framework_resource_line(save_data.get("resources", {}) as Dictionary),
+	_framework_placeholder_body.text = "[b]读取成功[/b]\n已恢复完整战局。\n\n玩家势力：%s\n当前回合：第 %d 回合\n目标城归属：%s\n资源：%s" % [
+		_faction_display_name(str(result.get("player_faction", ""))),
+		int(result.get("turn", 0)),
+		_faction_display_name(str(CityManager.get_city_state(DemoFlow.get_target_city_id()).get("current_faction_id", ""))),
+		_framework_resource_line(GameManager.get_faction_resources(str(result.get("player_faction", "")))),
 	]
+	if is_instance_valid(_demo_objective_panel) and _demo_objective_panel.has_method("update_panel"):
+		_demo_objective_panel.update_panel()
 
 
 func _build_framework_quick_save_data() -> Dictionary:
@@ -1221,19 +1282,38 @@ func _framework_minister_assign_summary() -> String:
 	var capital_id: String = str(capital.get("id", ""))
 	var assigned: Dictionary = MinisterManager.get_city_civil_minister(capital_id)
 	var lines: Array[String] = []
+	var unassigned: Array[String] = []
 	for minister_v: Variant in MinisterManager.get_faction_civil_ministers(player_faction_id):
 		var minister: Dictionary = minister_v as Dictionary
-		lines.append("- %s（%s / %s）" % [
+		var stats: Dictionary = minister.get("stats", {})
+		var line: String = "- %s（%s / %s）理财%s 安民%s" % [
 			str(minister.get("name", minister.get("id", "未命名"))),
 			str(minister.get("school", "无学派")),
 			str(minister.get("status", "idle")),
-		])
+			str(stats.get("理财", 0)),
+			str(stats.get("安民", 0)),
+		]
+		lines.append(line)
+		if str(minister.get("status", "")) == "idle" or str(minister.get("assigned_city_id", "")) == "":
+			unassigned.append(str(minister.get("id", "")))
 	var active_name: String = "当前首都尚未派驻文大夫"
 	if not assigned.is_empty():
-		active_name = "首都当前派驻：%s" % str(assigned.get("name", assigned.get("id", "未命名")))
-	return "[b]大夫派驻[/b]\n首都：%s\n%s\n\n[b]可用文大夫[/b]\n%s\n\n[b]说明[/b]\n这里先做首都派驻入口，后续可扩展到各城与官职任命。" % [
+		active_name = "首都当前派驻：%s（理财%s 安民%s）" % [
+			str(assigned.get("name", assigned.get("id", "未命名"))),
+			str((assigned.get("stats", {}) as Dictionary).get("理财", 0)),
+			str((assigned.get("stats", {}) as Dictionary).get("安民", 0)),
+		]
+	var city_bonus: String = ""
+	if not assigned.is_empty():
+		city_bonus = "\n首都加成：金钱产出 +%.0f%%，安定度 +%d" % [
+			MinisterManager.get_city_gold_bonus(capital_id) * 100.0,
+			MinisterManager.get_city_stability_bonus(capital_id),
+		]
+	return "[b]大夫派驻[/b]\n首都：%s\n%s%s\n\n[b]本势文大夫（%d）[/b]\n%s\n\n[b]操作[/b]\n点击「派驻首都」可在可用文大夫间轮换。" % [
 		str(capital.get("name", capital_id)),
 		active_name,
+		city_bonus,
+		lines.size(),
 		"\n".join(lines) if not lines.is_empty() else "暂无可用文大夫",
 	]
 

@@ -123,6 +123,20 @@ func get_completed_steps() -> Dictionary:
 	return _completed_steps.duplicate()
 
 
+func restore_completed_steps(steps: Dictionary) -> void:
+	_completed_steps.clear()
+	if steps is Dictionary:
+		for step_id in steps:
+			_completed_steps[str(step_id)] = true
+
+
+func restore_demo_flags(enabled: bool, complete: bool) -> void:
+	_enabled = enabled
+	_demo_complete = complete
+	if not enabled:
+		_completed_steps.clear()
+
+
 func get_strategy_snapshot() -> Dictionary:
 	var city_counts: Dictionary = {}
 	var neutral_count: int = 0

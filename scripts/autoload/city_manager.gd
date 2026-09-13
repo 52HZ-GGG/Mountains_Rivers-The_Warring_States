@@ -424,9 +424,9 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 	var cost_gold: int = costs[0]
 	var cost_wood: int = costs[1]
 	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_wood() < cost_wood:
-		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
+		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES, "cost_gold": cost_gold, "cost_wood": cost_wood}
 
-	return {"allowed": true, "reason": REASON_OK}
+	return {"allowed": true, "reason": REASON_OK, "cost_gold": cost_gold, "cost_wood": cost_wood}
 
 
 ## 开始在 city_id 建造 building_id。
@@ -619,6 +619,25 @@ func reset() -> void:
 	_initialize_states()
 	_build_faction_index()
 	_player_relocation_counts.clear()
+
+
+func get_save_data() -> Dictionary:
+	return {
+		"city_states": _city_states.duplicate(true),
+		"player_relocation_counts": _player_relocation_counts.duplicate(true),
+	}
+
+
+func load_save_data(data: Dictionary) -> void:
+	var states: Variant = data.get("city_states", {})
+	if states is Dictionary and not (states as Dictionary).is_empty():
+		_city_states = (states as Dictionary).duplicate(true)
+		_build_faction_index()
+	else:
+		_initialize_states()
+		_build_faction_index()
+	var reloc: Variant = data.get("player_relocation_counts", {})
+	_player_relocation_counts = (reloc as Dictionary).duplicate(true) if reloc is Dictionary else {}
 
 
 # ============= 占领系统（子任务 4） =============

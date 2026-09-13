@@ -371,6 +371,8 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_init_player_resources()
 	_init_ai_factions()
 	_sort_factions_by_speed()
+	# 玩家固定首回合行动，避免速度排序把玩家排到 AI 之后
+	_promote_player_to_front()
 	DiplomacySystem.initialize(active_factions)
 	TechSystem.reset()
 	SchoolManager.initialize_factions(active_factions)
@@ -384,6 +386,7 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_apply_upkeep(first_faction)
 	_process_national_culture_turn()
 	SignalBus.turn_started.emit(_turn_number, first_faction)
+	SchoolManager.tick_policy_durations(first_faction)
 	_change_phase(Phase.ACTION)
 
 
@@ -410,6 +413,7 @@ func end_current_turn() -> void:
 		_faction_index = 0
 		_turn_number += 1
 		_sort_factions_by_speed()
+		_promote_player_to_front()
 		_process_national_culture_turn()
 
 	_change_phase(Phase.TURN_START)
@@ -422,6 +426,7 @@ func end_current_turn() -> void:
 	_process_production(new_faction)
 	_apply_upkeep(new_faction)
 	SignalBus.turn_started.emit(_turn_number, new_faction)
+	SchoolManager.tick_policy_durations(new_faction)
 	_change_phase(Phase.ACTION)
 
 
@@ -966,6 +971,87 @@ func reset() -> void:
 	_cultural_victory_turns.clear()
 
 
+func get_save_data() -> Dictionary:
+	return {
+		"phase": int(_phase),
+		"turn_number": _turn_number,
+		"active_factions": _active_factions.duplicate(),
+		"faction_order": _faction_order.duplicate(),
+		"faction_index": _faction_index,
+		"player_faction": _player_faction,
+		"player_food": _player_food,
+		"player_gold": _player_gold,
+		"player_wood": _player_wood,
+		"player_morale": _player_morale,
+		"player_population": _player_population,
+		"player_troops": _player_troops,
+		"player_horse": _player_horse,
+		"player_refined_iron": _player_refined_iron,
+		"player_craftsmen": _player_craftsmen,
+		"player_building_materials": _player_building_materials,
+		"player_silk_books": _player_silk_books,
+		"faction_resources": _faction_resources.duplicate(true),
+		"unit_composition": _unit_composition.duplicate(true),
+		"grain_shortage_factions": _grain_shortage_factions.duplicate(true),
+		"difficulty": _difficulty,
+		"tax_rate": _tax_rate,
+		"tax_change_cooldown_remaining": _tax_change_cooldown_remaining,
+		"national_grain_pool": _national_grain_pool,
+		"war_weariness_turns": _war_weariness_turns.duplicate(true),
+		"war_weariness_recovery_turns": _war_weariness_recovery_turns.duplicate(true),
+		"capital_morale_recovery": _capital_morale_recovery.duplicate(true),
+		"capital_captured_targets": _capital_captured_targets.duplicate(true),
+		"captured_capitals_by_faction": _captured_capitals_by_faction.duplicate(true),
+		"victory_bonus_turns_remaining": _victory_bonus_turns_remaining.duplicate(true),
+		"cultural_victory_turns": _cultural_victory_turns.duplicate(true),
+	}
+
+
+func load_save_data(data: Dictionary) -> void:
+	_phase = Phase.ACTION
+	_turn_state = TurnState.WAITING
+	_turn_number = int(data.get("turn_number", 1))
+	var active: Variant = data.get("active_factions", [])
+	_active_factions.clear()
+	if active is Array:
+		for fid in active:
+			_active_factions.append(str(fid))
+	var order: Variant = data.get("faction_order", [])
+	_faction_order.clear()
+	if order is Array:
+		for fid in order:
+			_faction_order.append(str(fid))
+	_faction_index = int(data.get("faction_index", 0))
+	_player_faction = str(data.get("player_faction", ""))
+	_player_food = int(data.get("player_food", 0))
+	_player_gold = int(data.get("player_gold", 0))
+	_player_wood = int(data.get("player_wood", 0))
+	_player_morale = int(data.get("player_morale", 50))
+	_player_population = int(data.get("player_population", 0))
+	_player_troops = int(data.get("player_troops", 0))
+	_player_horse = int(data.get("player_horse", 0))
+	_player_refined_iron = int(data.get("player_refined_iron", 0))
+	_player_craftsmen = int(data.get("player_craftsmen", 0))
+	_player_building_materials = int(data.get("player_building_materials", 0))
+	_player_silk_books = int(data.get("player_silk_books", 0))
+	_faction_resources = (data.get("faction_resources", {}) as Dictionary).duplicate(true)
+	_unit_composition = (data.get("unit_composition", {}) as Dictionary).duplicate(true)
+	_grain_shortage_factions = (data.get("grain_shortage_factions", {}) as Dictionary).duplicate(true)
+	_difficulty = str(data.get("difficulty", "normal"))
+	_tax_rate = float(data.get("tax_rate", 0.3))
+	_tax_change_cooldown_remaining = int(data.get("tax_change_cooldown_remaining", 0))
+	_national_grain_pool = int(data.get("national_grain_pool", 0))
+	_war_weariness_turns = (data.get("war_weariness_turns", {}) as Dictionary).duplicate(true)
+	_war_weariness_recovery_turns = (data.get("war_weariness_recovery_turns", {}) as Dictionary).duplicate(true)
+	_capital_morale_recovery = (data.get("capital_morale_recovery", {}) as Dictionary).duplicate(true)
+	_capital_captured_targets = (data.get("capital_captured_targets", {}) as Dictionary).duplicate(true)
+	_captured_capitals_by_faction = (data.get("captured_capitals_by_faction", {}) as Dictionary).duplicate(true)
+	_victory_bonus_turns_remaining = (data.get("victory_bonus_turns_remaining", {}) as Dictionary).duplicate(true)
+	_cultural_victory_turns = (data.get("cultural_victory_turns", {}) as Dictionary).duplicate(true)
+	_change_phase(Phase.ACTION)
+	SignalBus.turn_started.emit(_turn_number, get_current_faction())
+
+
 # ============= AI 国家资源管理 =============
 
 func get_faction_resources(faction_id: String) -> Dictionary:
@@ -1391,10 +1477,21 @@ func _sort_factions_by_speed() -> void:
 	_faction_order.sort_custom(func(a: String, b: String) -> bool:
 		var speed_a: float = _get_faction_action_speed(a)
 		var speed_b: float = _get_faction_action_speed(b)
-		if speed_a != speed_b:
+		if absf(speed_a - speed_b) > 0.0001:
 			return speed_a > speed_b
-		return a < b
+		# 同速时保持 active_factions 原始次序，避免按名字乱序
+		return _active_factions.find(a) < _active_factions.find(b)
 	)
+
+
+func _promote_player_to_front() -> void:
+	if _player_faction == "" or _faction_order.is_empty():
+		return
+	var idx: int = _faction_order.find(_player_faction)
+	if idx <= 0:
+		return
+	_faction_order.remove_at(idx)
+	_faction_order.push_front(_player_faction)
 
 
 func _get_faction_action_speed(faction_id: String) -> float:

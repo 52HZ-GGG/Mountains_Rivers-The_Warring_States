@@ -637,5 +637,32 @@ func reset() -> void:
 	_stability_penalty = 0.0
 	_corruption_increase = 0.0
 	_population_growth_modifier = 0.0
-	_upkeep_increase = 0.0
-	_ai_researched_techs.clear()
+
+
+func get_save_data() -> Dictionary:
+	return {
+		"researched_techs": _researched_techs.duplicate(true),
+		"researching_tech": _researching_tech,
+		"research_progress": _research_progress,
+		"research_cost_turns": _research_cost_turns,
+		"ai_researched_techs": _ai_researched_techs.duplicate(true),
+	}
+
+
+func load_save_data(data: Dictionary) -> void:
+	reset()
+	var researched: Variant = data.get("researched_techs", {})
+	if researched is Dictionary:
+		for tech_id in researched:
+			_researched_techs[str(tech_id)] = true
+	_researching_tech = str(data.get("researching_tech", ""))
+	_research_progress = int(data.get("research_progress", 0))
+	_research_cost_turns = int(data.get("research_cost_turns", 1))
+	var ai: Variant = data.get("ai_researched_techs", {})
+	if ai is Dictionary:
+		_ai_researched_techs = (ai as Dictionary).duplicate(true)
+	# 重放玩家已研究科技效果
+	for tech_id in _researched_techs:
+		_apply_tech_effects(str(tech_id))
+	_update_available_techs()
+

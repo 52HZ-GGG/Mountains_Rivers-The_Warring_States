@@ -60,18 +60,28 @@ func test_permanent_policy_counts_toward_policy_slots() -> void:
 
 
 func test_policy_duration_ticks_on_player_turn_start() -> void:
+	assert_eq(GameManager.get_current_faction(), "qin", "开局应轮到玩家")
 	SchoolManager.add_school_exp("qin", 60)
 	SchoolManager.activate_policy("qin", "leg_surveillance")
 	GameManager.end_current_turn()
+	assert_eq(GameManager.get_current_faction(), "zhao", "结束玩家回合后应轮到赵")
+	var policies_after_ai: Array = SchoolManager.get_active_policies("qin")
+	assert_eq(int((policies_after_ai[0] as Dictionary).get("turns_remaining", -1)), 5, "非本势力回合不应递减玩家政策")
 	GameManager.end_current_turn()
+	assert_eq(GameManager.get_current_faction(), "chu", "第二结束应轮到楚")
+	# 再结束一次回到玩家
+	GameManager.end_current_turn()
+	assert_eq(GameManager.get_current_faction(), "qin", "应回到玩家回合")
 	var policies: Array = SchoolManager.get_active_policies("qin")
 	assert_eq(int((policies[0] as Dictionary).get("turns_remaining", -1)), 4, "轮到玩家新回合时应递减政策持续回合")
 
 
 func test_policy_duration_ticks_on_ai_turn_start() -> void:
+	assert_eq(GameManager.get_current_faction(), "qin", "开局应轮到玩家")
 	SchoolManager.add_school_exp("zhao", 60)
-	SchoolManager.activate_policy("zhao", "gp_research")
+	assert_true(bool(SchoolManager.activate_policy("zhao", "gp_research").get("success", false)), "应能激活赵政策")
 	GameManager.end_current_turn()
+	assert_eq(GameManager.get_current_faction(), "zhao", "应轮到赵")
 	var policies: Array = SchoolManager.get_active_policies("zhao")
 	assert_eq(int((policies[0] as Dictionary).get("turns_remaining", -1)), 4, "AI 势力新回合开始时也应递减政策持续回合")
 
@@ -108,23 +118,31 @@ func test_runtime_policy_effects_feed_city_economy_and_building_costs() -> void:
 	var city_id: String = "xianyang"
 	var city: Dictionary = CityManager.get_city_state(city_id)
 	city["current_population"] = 10
+	# gp_build：建造减费
 	var before_build: Dictionary = CityManager.can_build(city_id, "farm")
 	SchoolManager.add_school_exp("qin", 60)
-	SchoolManager.activate_policy("qin", "gp_build")
+	assert_true(bool(SchoolManager.activate_policy("qin", "gp_build").get("success", false)), "应能激活 gp_build")
 	var after_build: Dictionary = CityManager.can_build(city_id, "farm")
-	var before_production: Dictionary = CityManager.get_city_production(city_id)
-	var after_production: Dictionary = CityManager.get_city_production(city_id)
-	assert_lt(int(after_build.get("cost_gold", 0)), int(before_build.get("cost_gold", 0)), "学派建造减免应实时反映到建造成本")
-	assert_gt(int(after_production.get("food", 0)), int(before_production.get("food", 0)), "学派全产出加成应实时反映到城市产出")
+	assert_lt(int(after_build.get("cost_gold", 0)), int(before_build.get("cost_gold", 0)),
+		"学派建造减免应实时反映到建造成本（%d → %d）" % [int(before_build.get("cost_gold", 0)), int(after_build.get("cost_gold", 0))])
+	# leg_reform：全产出加成（需 3 级）
+	SchoolManager.add_school_exp("qin", 200)
+	assert_true(SchoolManager.get_school_level("qin") >= 3, "经验应足以升到 3 级")
+	var reform: Dictionary = SchoolManager.activate_policy("qin", "leg_reform")
+	assert_true(bool(reform.get("success", false)), "应能激活 leg_reform，reason=%s" % str(reform.get("reason", "")))
+	var production: Dictionary = CityManager.get_city_production(city_id)
+	assert_gt(int(production.get("food", 0)), 0, "学派全产出加成后城市应有粮食产出")
+	assert_gt(SchoolManager.get_effect_float("qin", "all_output_bonus"), 0.0, "运行时效果应包含 all_output_bonus")
 
 
 func test_school_state_can_round_trip_through_save_data() -> void:
 	SchoolManager.add_school_exp("qin", 130)
 	SchoolManager.activate_policy("qin", "leg_reform")
+	var expected_exp: int = SchoolManager.get_school_exp("qin")
 	var save_data: Dictionary = SchoolManager.get_save_data()
 	SchoolManager.reset()
 	SchoolManager.load_save_data(save_data)
 	assert_eq(SchoolManager.get_current_school("qin"), "legalism", "读回后应恢复当前学派")
 	assert_eq(SchoolManager.get_school_level("qin"), 3, "读回后应恢复学派等级")
-	assert_eq(SchoolManager.get_school_exp("qin"), 70, "读回后应恢复学派经验")
+	assert_eq(SchoolManager.get_school_exp("qin"), expected_exp, "读回后应恢复学派经验")
 	assert_eq(SchoolManager.get_active_policies("qin").size(), 1, "读回后应恢复激活政策")

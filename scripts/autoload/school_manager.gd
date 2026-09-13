@@ -25,8 +25,19 @@ const _POLICY_SLOT_EFFECT_KEYS: Array[String] = [
 
 
 func _ready() -> void:
-	SignalBus.turn_started.connect(_on_turn_started)
 	SignalBus.school_exp_gained.connect(_on_school_exp_gained)
+
+
+## 由 GameManager 在 turn_started 后显式调用，避免仅靠信号导致漏 tick。
+func tick_policy_durations(faction_id: String) -> void:
+	_tick_policy_durations(faction_id)
+
+
+func _on_school_exp_gained(amount: int) -> void:
+	var faction_id: String = GameManager.get_player_faction()
+	if faction_id == "":
+		return
+	add_school_exp(faction_id, amount)
 
 
 func reset() -> void:
@@ -241,17 +252,6 @@ func get_policy_definition(faction_id: String, policy_id: String) -> Dictionary:
 	return {}
 
 
-func _on_turn_started(_turn_number: int, faction_id: String) -> void:
-	_tick_policy_durations(faction_id)
-
-
-func _on_school_exp_gained(amount: int) -> void:
-	var faction_id: String = GameManager.get_player_faction()
-	if faction_id == "":
-		return
-	add_school_exp(faction_id, amount)
-
-
 func _tick_policy_durations(faction_id: String) -> void:
 	if not _school_state_by_faction.has(faction_id):
 		return
@@ -331,10 +331,14 @@ func _merge_effects(target: Dictionary, source: Dictionary, multiplier: float) -
 
 
 func _add_or_replace_policy(state: Dictionary, policy_id: String, duration_turns: int) -> void:
-	var policies: Array = state.get("active_policies", [])
+	var policies: Array = []
+	if state.has("active_policies") and state["active_policies"] is Array:
+		policies = (state["active_policies"] as Array).duplicate(true)
 	for i in range(policies.size()):
 		var policy_state: Dictionary = policies[i] as Dictionary
 		if str(policy_state.get("policy_id", "")) == policy_id:
 			policies[i] = {"policy_id": policy_id, "turns_remaining": duration_turns}
+			state["active_policies"] = policies
 			return
 	policies.append({"policy_id": policy_id, "turns_remaining": duration_turns})
+	state["active_policies"] = policies
