@@ -1795,3 +1795,8 @@ func _get_terrain_at_hex(q: int, r: int) -> String:
 	if q < 0 or q >= row.size():
 		return "plains"
 	return str(row[q])
+
+
+## 公开：大地图 hex 列/行（odd-R 偏移 q=col,r=row）地形查询。
+func get_big_map_terrain_id(col: int, row: int) -> String:
+	return _get_terrain_at_hex(col, row)

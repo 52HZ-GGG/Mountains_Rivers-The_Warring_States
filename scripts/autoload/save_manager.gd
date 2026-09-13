@@ -121,6 +121,7 @@ func build_save_data() -> Dictionary:
 		"ministers": MinisterManager.get_save_data(),
 		"wonders": WonderManager.get_save_data(),
 		"events": EventManager.get_save_data(),
+		"strategic_units": StrategicMapManager.get_save_data(),
 		"demo": {
 			"enabled": DemoFlow.is_enabled(),
 			"complete": DemoFlow.is_demo_complete(),
@@ -156,6 +157,7 @@ func apply_save_data(data: Dictionary) -> String:
 	MinisterManager.load_save_data(data.get("ministers", {}) as Dictionary)
 	WonderManager.load_save_data(data.get("wonders", {}) as Dictionary)
 	EventManager.load_save_data(data.get("events", {}) as Dictionary)
+	StrategicMapManager.load_save_data(data.get("strategic_units", {}) as Dictionary)
 	var demo: Dictionary = data.get("demo", {}) as Dictionary
 	if DemoFlow.has_method("restore_demo_flags"):
 		DemoFlow.restore_demo_flags(bool(demo.get("enabled", false)), bool(demo.get("complete", false)))

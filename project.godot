@@ -32,6 +32,7 @@ TechSystem="*res://scripts/systems/tech_system.gd"
 TacticalSkirmishManager="*res://scripts/autoload/tactical_skirmish_manager.gd"
 DemoFlow="*res://scripts/autoload/demo_flow.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
+StrategicMapManager="*res://scripts/autoload/strategic_map_manager.gd"
 
 [display]
 

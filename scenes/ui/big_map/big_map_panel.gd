@@ -422,13 +422,19 @@ func _refresh_display() -> void:
 			var cell_pos: Vector2 = _cell_top_left(cell_axial)
 			var polygon: PackedVector2Array = _world_hex_polygon(cell_pos)
 			var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
+			var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
+			var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
+			if not unit.is_empty():
+				var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
+				var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
+				caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
 			var payload: Dictionary = {
 				"polygon": polygon,
 				"uvs": _world_hex_uvs(),
 				"texture": SkirmishTileTextures.terrain_texture(str(_terrain_at_axial.get(cell_axial, "plains"))),
 				"fallback_color": SkirmishTileTextures.terrain_fallback_color(str(_terrain_at_axial.get(cell_axial, "plains"))),
 				"tint": _cell_tint(cell_axial, city),
-				"caption": str(city.get("name", "")) if not city.is_empty() else "",
+				"caption": caption,
 				"caption_center": cell_pos + _cell_size * 0.5,
 				"caption_font_size": caption_font_size,
 				"capital_texture": _capital_texture(city),
@@ -718,9 +724,35 @@ func _axial_at_local_point(point: Vector2) -> Variant:
 
 func _on_hex_pressed(q: int, r: int) -> void:
 	var axial: Vector2i = Vector2i(q, r)
-	var city: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
-	if not city.is_empty():
-		city_clicked.emit(str(city.get("id", "")))
+	# 战略单位交互：选中己方 → 点可达格移动；点邻接敌军/敌城攻击
+	var selected_id: String = StrategicMapManager.get_selected_unit_id()
+	var unit_here: Dictionary = StrategicMapManager.get_unit_at_axial(axial)
+	if selected_id != "":
+		var selected: Dictionary = StrategicMapManager.get_unit(selected_id)
+		if not selected.is_empty() and str(selected.get("faction_id", "")) == GameManager.get_player_faction():
+			if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) != GameManager.get_player_faction():
+				StrategicMapManager.try_attack_unit(selected_id, str(unit_here.get("id", "")))
+				_refresh_display()
+				return
+			var city: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
+			if not city.is_empty() and str(city.get("current_faction_id", "")) != GameManager.get_player_faction():
+				StrategicMapManager.try_attack_city(selected_id, str(city.get("id", "")))
+				_refresh_display()
+				return
+			var moved: Dictionary = StrategicMapManager.try_move_unit(selected_id, axial)
+			if bool(moved.get("ok", false)):
+				StrategicMapManager.clear_selection()
+				_refresh_display()
+				return
+	# 选中己方单位
+	if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) == GameManager.get_player_faction():
+		StrategicMapManager.select_unit(str(unit_here.get("id", "")))
+		_refresh_display()
+		return
+	StrategicMapManager.clear_selection()
+	var city2: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
+	if not city2.is_empty():
+		city_clicked.emit(str(city2.get("id", "")))
 
 
 func _on_hex_mouse_enter(q: int, r: int) -> void:
@@ -751,13 +783,29 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var cap_tag: String = "（首都）" if bool(city.get("is_capital", false)) else ""
 		var special_resource: Variant = city.get("special_resource", null)
 		var special_text: String = " ｜ 特产：%s" % str(special_resource) if special_resource != null else ""
-		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d%s" % [
+		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s" % [
 			str(city.get("name", "")),
 			cap_tag,
 			_faction_display_name(fid),
 			int(city.get("base_population", 0)),
+			int(city.get("current_hp", 0)),
 			special_text
 		])
+	var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell)
+	if not unit.is_empty():
+		var u_type: Dictionary = DataManager.get_unit_type(str(unit.get("unit_type_id", "")))
+		lines.append("单位：%s ｜ 势力：%s ｜ HP %d/%d ｜ 移力 %d" % [
+			str(u_type.get("name", unit.get("unit_type_id", ""))),
+			_faction_display_name(str(unit.get("faction_id", ""))),
+			int(unit.get("hp", 0)),
+			int(unit.get("max_hp", 0)),
+			int(unit.get("mp", 0)),
+		])
+	var selected_id: String = StrategicMapManager.get_selected_unit_id()
+	if selected_id != "":
+		var reach: Dictionary = StrategicMapManager.get_reachable_cells(selected_id)
+		if reach.has(cell):
+			lines.append("可达（移耗 %d）— 点击移动" % int(reach[cell]))
 	return "\n".join(lines)
 
 

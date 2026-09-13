@@ -827,7 +827,17 @@ func recruit_unit_from_city(city_id: String, unit_id: String, count: int) -> Dic
 	_pay_unit_cost(faction_id, city_id, unit_data, actual)
 	apply_faction_resource_delta(faction_id, "population", -actual)
 	add_units(faction_id, unit_id, actual)
-	return {"success": true, "reason": "OK", "recruited": actual}
+	# 大地图生产战略单位（与城市同格）
+	var spawn: Dictionary = StrategicMapManager.spawn_unit_at_city(
+		faction_id,
+		unit_id,
+		int(city.get("hex_q", 0)),
+		int(city.get("hex_r", 0)),
+		actual
+	)
+	if not bool(spawn.get("success", false)):
+		push_warning("GameManager: 大地图生产单位失败 %s" % str(spawn.get("reason", "")))
+	return {"success": true, "reason": "OK", "recruited": actual, "strategic_unit_id": str(spawn.get("unit_id", ""))}
 
 
 func _get_affordable_unit_count(faction_id: String, unit_data: Dictionary, desired: int, reserve: Dictionary = {}) -> int:
