@@ -628,10 +628,13 @@ func _on_recruit_pressed(unit_id: String) -> void:
 		var deployed: Dictionary = {}
 		if DemoFlow.is_tutorial_enabled() and TacticalSkirmishManager.is_active():
 			deployed = TacticalSkirmishManager.add_player_recruited_unit(unit_id)
+		var strategic_id: String = str(result.get("strategic_unit_id", ""))
 		message = "已征发 %d 队 %s。" % [
 			int(result.get("recruited", 0)),
 			str(DataManager.get_unit_type(unit_id).get("name", unit_id)),
 		]
+		if strategic_id != "":
+			message += " 已在大地图本城格生成部队，可打开大地图选中移动/作战。"
 		if not deployed.is_empty() and bool(deployed.get("ok", false)):
 			message += " 新部队已进入演武地图。"
 		elif not deployed.is_empty():

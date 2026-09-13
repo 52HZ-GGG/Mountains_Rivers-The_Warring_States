@@ -443,6 +443,8 @@ func _refresh_display() -> void:
 				"caption_font_size": caption_font_size,
 				"capital_texture": _capital_texture(city),
 				"capital_rect": _capital_rect(cell_pos),
+				"unit_texture": _unit_texture(unit),
+				"unit_rect": _unit_rect(cell_pos),
 			}
 			payload_cells.append(payload)
 			_cell_payload_by_axial[cell_axial] = {
@@ -539,6 +541,18 @@ func _capital_rect(cell_pos: Vector2) -> Rect2:
 	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.4
 	var center: Vector2 = cell_pos + _cell_size * 0.5
 	return Rect2(center.x - size_px, center.y - size_px * 0.88, size_px * 2.0, size_px * 1.76)
+
+
+func _unit_texture(unit: Dictionary) -> Texture2D:
+	if unit.is_empty():
+		return null
+	return SkirmishTileTextures.unit_texture(str(unit.get("unit_type_id", "")))
+
+
+func _unit_rect(cell_pos: Vector2) -> Rect2:
+	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.42
+	var center: Vector2 = cell_pos + _cell_size * 0.5
+	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.5, size_px, size_px)
 
 
 func _rebuild_minimap_data(map_size: Vector2i) -> void:

@@ -39,14 +39,29 @@ static func _enemy_target_axials(faction_id: String) -> Array:
 		var owner: String = str(city.get("current_faction_id", ""))
 		if owner == faction_id or owner == "":
 			continue
-		if owner == "neutral" and int(city.get("city_level", 1)) < 3:
+		# 中立小城不主动打；敌国城需处于战争或中立大城
+		if owner == "neutral":
+			if int(city.get("city_level", 1)) < 3:
+				continue
+		elif not DiplomacySystem.are_at_war(faction_id, owner):
 			continue
 		out.append(HexAxial.offset_odd_r_to_axial(int(city.get("hex_q", 0)), int(city.get("hex_r", 0))))
 	for enemy_unit: Dictionary in StrategicMapManager.get_units():
-		if str(enemy_unit.get("faction_id", "")) == faction_id:
+		var enemy_fid: String = str(enemy_unit.get("faction_id", ""))
+		if enemy_fid == faction_id:
+			continue
+		if enemy_fid != "neutral" and not DiplomacySystem.are_at_war(faction_id, enemy_fid):
 			continue
 		out.append(Vector2i(int(enemy_unit.get("q", 0)), int(enemy_unit.get("r", 0))))
 	return out
+
+
+static func _can_engage(faction_id: String, target_faction_id: String) -> bool:
+	if target_faction_id == faction_id:
+		return false
+	if target_faction_id == "neutral" or target_faction_id == "":
+		return true
+	return DiplomacySystem.are_at_war(faction_id, target_faction_id)
 
 
 static func _try_attack_adjacent_enemy(unit_id: String, faction_id: String) -> bool:
@@ -59,7 +74,8 @@ static func _try_attack_adjacent_enemy(unit_id: String, faction_id: String) -> b
 	var best_id: String = ""
 	var best_hp: int = 999999
 	for enemy: Dictionary in StrategicMapManager.get_units():
-		if str(enemy.get("faction_id", "")) == faction_id:
+		var enemy_fid: String = str(enemy.get("faction_id", ""))
+		if not _can_engage(faction_id, enemy_fid):
 			continue
 		var e_pos: Vector2i = Vector2i(int(enemy.get("q", 0)), int(enemy.get("r", 0)))
 		if HexAxial.hex_distance_hex(my_pos, e_pos) > atk_range:
@@ -82,7 +98,9 @@ static func _try_attack_adjacent_enemy_city(unit_id: String, faction_id: String)
 	var atk_range: int = int(my_type.get("range", 1))
 	for city in CityManager.get_all_city_states():
 		var owner: String = str(city.get("current_faction_id", ""))
-		if owner == faction_id or owner == "":
+		if not _can_engage(faction_id, owner):
+			continue
+		if owner == "neutral" and int(city.get("city_level", 1)) < 3:
 			continue
 		var c_pos: Vector2i = HexAxial.offset_odd_r_to_axial(int(city.get("hex_q", 0)), int(city.get("hex_r", 0)))
 		if HexAxial.hex_distance_hex(my_pos, c_pos) > atk_range:
