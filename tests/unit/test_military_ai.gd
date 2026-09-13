@@ -122,7 +122,7 @@ func test_recruit_respects_city_unlocks() -> void:
 
 
 func test_select_unit_prefers_infantry() -> void:
-	# 平衡性格（aggression=2, greed=2）多次选兵种，应能选出步兵类
+	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	var counts: Dictionary = {"infantry": 0, "cavalry": 0, "archer": 0, "siege": 0}
 	var picked_any: int = 0
 	for i in 100:
@@ -135,7 +135,6 @@ func test_select_unit_prefers_infantry() -> void:
 		if counts.has(cat):
 			counts[cat] += 1
 	assert_gt(picked_any, 0, "应能选出可招募兵种")
-	# 允许权重波动，但步兵不应长期为 0
 	assert_true(counts["infantry"] + counts["cavalry"] + counts["archer"] + counts["siege"] > 0,
 		"应统计到兵种类别（步兵: %d, 骑兵: %d）" % [counts["infantry"], counts["cavalry"]])
 

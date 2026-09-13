@@ -71,7 +71,16 @@ static func _select_recruit_unit(faction_id: String, _city_id: String) -> String
 	for c in categories:
 		w.append(weights[c])
 	var picked: String = _weighted_random_pick(categories, w)
-	return _cheapest_unit_in_category(picked, _city_id)
+	var unit_id: String = _cheapest_unit_in_category(picked, _city_id)
+	if unit_id == "":
+		unit_id = _cheapest_unit_in_category("infantry", _city_id)
+	if unit_id == "":
+		var fallback: Array = DataManager.get_all_unit_types()
+		if not fallback.is_empty():
+			unit_id = str((fallback[0] as Dictionary).get("id", "militia"))
+		else:
+			unit_id = "militia"
+	return unit_id
 
 
 ## 从 units.json 中找指定类别下最便宜的兵种 ID。
