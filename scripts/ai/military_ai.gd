@@ -16,6 +16,8 @@ static func evaluate_military(faction_id: String) -> void:
 	_evaluate_recruitment(faction_id)
 	_evaluate_siege(faction_id)
 	_evaluate_garrison(faction_id)
+	# 大地图战略单位：移动/攻城/交战
+	StrategicAI.evaluate_strategic_units(faction_id)
 
 
 # ============= 征兵子系统 =============

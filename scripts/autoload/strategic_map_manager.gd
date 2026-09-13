@@ -139,11 +139,14 @@ func get_reachable_cells(unit_id: String) -> Dictionary:
 	var frontier: Array = [{"cell": start, "cost": 0}]
 	var best: Dictionary = {start: 0}
 	while not frontier.is_empty():
-		frontier.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-			return int(a["cost"]) < int(b["cost"]))
-		var node: Dictionary = frontier.pop_front()
-		var cell: Vector2i = node["cell"]
-		var cost: int = int(node["cost"])
+		frontier.sort_custom(func(a, b) -> bool:
+			return int((a as Dictionary).get("cost", 0)) < int((b as Dictionary).get("cost", 0)))
+		var node: Variant = frontier.pop_front()
+		if not (node is Dictionary):
+			continue
+		var node_dict: Dictionary = node as Dictionary
+		var cell: Vector2i = node_dict["cell"] as Vector2i
+		var cost: int = int(node_dict.get("cost", 0))
 		if cost > mp:
 			continue
 		for neighbor: Vector2i in HexLib.neighbors_hex(cell):
@@ -174,25 +177,33 @@ func get_reachable_cells(unit_id: String) -> Dictionary:
 	return result
 
 
-func try_move_unit(unit_id: String, dest_axial: Vector2i) -> Dictionary:
+func try_move_unit(unit_id: String, dest_axial: Vector2i, allow_ai: bool = false) -> Dictionary:
 	var unit: Dictionary = _get_unit_ref(unit_id)
 	if unit.is_empty():
 		return {"ok": false, "reason": "NO_UNIT"}
-	if str(unit["faction_id"]) != GameManager.get_player_faction():
+	if not allow_ai and str(unit["faction_id"]) != GameManager.get_player_faction():
 		return {"ok": false, "reason": "NOT_PLAYER"}
 	if bool(unit.get("acted", false)):
 		return {"ok": false, "reason": "ALREADY_ACTED"}
 	var reach: Dictionary = get_reachable_cells(unit_id)
 	if not reach.has(dest_axial):
 		return {"ok": false, "reason": "UNREACHABLE"}
+	return _apply_move(unit, dest_axial, int(reach[dest_axial]))
+
+
+func _apply_move(unit: Dictionary, dest_axial: Vector2i, cost: int) -> Dictionary:
+	var unit_id: String = str(unit["id"])
 	var from: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
 	unit["q"] = dest_axial.x
 	unit["r"] = dest_axial.y
 	var offset: Vector2i = HexLib.axial_to_offset_odd_r(dest_axial.x, dest_axial.y)
 	unit["col"] = offset.x
 	unit["row"] = offset.y
-	unit["mp"] = int(unit.get("mp", 0)) - int(reach[dest_axial])
-	unit["acted"] = int(unit["mp"]) <= 0
+	unit["mp"] = int(unit.get("mp", 0)) - cost
+	if int(unit["mp"]) < 0:
+		unit["mp"] = 0
+	# 仍有移动力可继续行动
+	unit["acted"] = false
 	# 移动到敌城且城防为 0 → 占领
 	var city_id: String = _city_id_at_offset(offset.x, offset.y)
 	if city_id != "":
@@ -200,6 +211,28 @@ func try_move_unit(unit_id: String, dest_axial: Vector2i) -> Dictionary:
 	unit_moved.emit(unit_id, from, dest_axial)
 	units_changed.emit()
 	return {"ok": true}
+
+
+## 一步移动到目标方向最近可达格（供 AI 用）。
+func move_toward(unit_id: String, target_axial: Vector2i) -> Dictionary:
+	var unit: Dictionary = _get_unit_ref(unit_id)
+	if unit.is_empty() or bool(unit.get("acted", false)):
+		return {"ok": false, "reason": "NO_ACTION"}
+	var reach: Dictionary = get_reachable_cells(unit_id)
+	if reach.is_empty():
+		return {"ok": false, "reason": "NO_REACH"}
+	var best_cell: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
+	var best_dist: int = HexLib.hex_distance_hex(best_cell, target_axial)
+	var best_cost: int = 0
+	for cell: Vector2i in reach:
+		var dist: int = HexLib.hex_distance_hex(cell, target_axial)
+		if dist < best_dist:
+			best_dist = dist
+			best_cell = cell
+			best_cost = int(reach[cell])
+	if best_cell == Vector2i(int(unit["q"]), int(unit["r"])):
+		return {"ok": false, "reason": "NO_CLOSER"}
+	return _apply_move(unit, best_cell, best_cost)
 
 
 # ============= 战斗 =============
@@ -264,6 +297,13 @@ func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
 	return {"ok": true, "damage": dmg, "destroyed": bool(result.get("destroyed", false))}
 
 
+func _city_id_at_offset(col: int, row: int) -> String:
+	for city in CityManager.get_all_city_states():
+		if int(city.get("hex_q", -1)) == col and int(city.get("hex_r", -1)) == row:
+			return str(city.get("id", ""))
+	return ""
+
+
 func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
 	var a_type_id: String = str(attacker["unit_type_id"])
 	var d_type_id: String = str(defender["unit_type_id"])
@@ -291,13 +331,6 @@ func _try_capture_city_if_clear(faction_id: String, city_id: String) -> void:
 	if int(city.get("current_hp", 0)) > 0:
 		return
 	CityManager.change_ownership(city_id, faction_id)
-
-
-func _city_id_at_offset(col: int, row: int) -> String:
-	for city in CityManager.get_all_city_states():
-		if int(city.get("hex_q", -1)) == col and int(city.get("hex_r", -1)) == row:
-			return str(city.get("id", ""))
-	return ""
 
 
 func _get_unit_ref(unit_id: String) -> Dictionary:

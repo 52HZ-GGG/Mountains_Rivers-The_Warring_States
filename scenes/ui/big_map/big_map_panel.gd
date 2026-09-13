@@ -428,12 +428,16 @@ func _refresh_display() -> void:
 				var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
 				var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
 				caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
+			var tint: Color = _cell_tint(cell_axial, city)
+			var selected_id: String = StrategicMapManager.get_selected_unit_id()
+			if selected_id != "" and StrategicMapManager.get_reachable_cells(selected_id).has(cell_axial):
+				tint = Color(0.35, 0.75, 1.0, 0.35)
 			var payload: Dictionary = {
 				"polygon": polygon,
 				"uvs": _world_hex_uvs(),
 				"texture": SkirmishTileTextures.terrain_texture(str(_terrain_at_axial.get(cell_axial, "plains"))),
 				"fallback_color": SkirmishTileTextures.terrain_fallback_color(str(_terrain_at_axial.get(cell_axial, "plains"))),
-				"tint": _cell_tint(cell_axial, city),
+				"tint": tint,
 				"caption": caption,
 				"caption_center": cell_pos + _cell_size * 0.5,
 				"caption_font_size": caption_font_size,
