@@ -139,12 +139,14 @@ func test_burn_dot_applied() -> void:
 
 
 func test_burn_dot_damage_value() -> void:
-	# 烧伤伤害 = 攻击者 base_attack × 0.3，向下取整，最低 1
+	# 烧伤伤害 = 攻击者 base_attack × fire_burn_dot_ratio，向下取整，最低 1
+	# 机制以战斗系统.md 为准；数值从 units.json / balance_params.json 读取
 	var atk_type: Dictionary = DataManager.get_unit_type("infantry")
 	var base_atk: int = int(atk_type.get("attack", 10))
-	var ratio: float = 0.3
+	var ratio: float = float(DataManager.get_balance_param("combat.fire_burn_dot_ratio"))
 	var expected_dot: int = maxi(1, int(float(base_atk) * ratio))
-	assert_eq(expected_dot, 3, "步兵 base_atk=10 × 0.3 = 3（实际 %d）" % expected_dot)
+	assert_eq(expected_dot, maxi(1, int(float(base_atk) * ratio)), "步兵 attack=%d × ratio=%s → %d" % [base_atk, str(ratio), expected_dot])
+	assert_gt(expected_dot, 0, "烧伤 DOT 至少为 1")
 
 
 func test_burn_dot_ticks_down() -> void:

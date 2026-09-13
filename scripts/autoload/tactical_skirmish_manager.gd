@@ -135,7 +135,8 @@ func start_skirmish() -> void:
 	if cfg.is_empty():
 		push_error("TacticalSkirmishManager: tactical_skirmish_mvp 数据为空")
 		return
-	start_skirmish_with_config(cfg, "summer")
+	# 保留调用前 set_season() 设定的季节，避免被硬编码覆盖
+	start_skirmish_with_config(cfg, _current_season)
 
 
 ## 以指定配置和季节开始演武（供场景选择器调用）
@@ -754,22 +755,34 @@ func _check_flanking(target: Dictionary) -> int:
 			continue
 		if str(occ["faction_id"]) != str(target["faction_id"]):
 			enemy_dirs.append(i)
-	# 包围：6 格全敌
-	if enemy_dirs.size() == 6:
+	# 包围：4+ 邻格被敌方占据（机制概览·战斗系统.md §5.2）
+	if enemy_dirs.size() >= 4:
 		var val: Variant = DataManager.get_balance_param("unit_morale.encirclement_morale_loss")
-		return int(val) if val != null else -50
+		return int(val) if val != null else -30
 	# 夹击：存在一对相反方向的敌人
 	for dir: int in enemy_dirs:
 		var opposite: int = (dir + 3) % 6
 		if enemy_dirs.has(opposite):
 			var val: Variant = DataManager.get_balance_param("unit_morale.flanking_morale_loss")
-			return int(val) if val != null else -20
+			return int(val) if val != null else -15
 	return 0
 
 
-## 判断单位是否被包围（6 格全敌）
+## 判断单位是否被包围（4+ 邻格敌占）
 func _is_unit_encircled(unit: Dictionary) -> bool:
-	return _check_flanking(unit) <= -50
+	var target_pos: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
+	var neighbors: Array[Vector2i] = HexLib.neighbors_hex(target_pos)
+	var enemy_count: int = 0
+	for n: Vector2i in neighbors:
+		var occ_id: String = _occupant_id_at(n)
+		if occ_id == "":
+			continue
+		var occ: Dictionary = _get_unit_by_id(occ_id)
+		if occ.is_empty():
+			continue
+		if str(occ["faction_id"]) != str(unit["faction_id"]):
+			enemy_count += 1
+	return enemy_count >= 4
 
 
 ## 找到最近敌方单位的距离

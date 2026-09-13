@@ -2522,7 +2522,7 @@
         "probability": 0.12,
         "conditions": {
           "school": "daoism",
-          "season": "spring"
+          "season": ["spring"]
         },
         "priority": 40,
         "one_shot": false

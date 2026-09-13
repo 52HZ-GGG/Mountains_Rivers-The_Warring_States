@@ -157,7 +157,13 @@ func _process_pool_events(turn_number: int, faction_id: String) -> void:
 func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: String = "") -> bool:
 	if conditions.has("season"):
 		var current_season: String = DataManager.get_current_season(turn_number)
-		if not conditions["season"].has(current_season):
+		var season_cond: Variant = conditions["season"]
+		var season_ok: bool = false
+		if season_cond is Array:
+			season_ok = (season_cond as Array).has(current_season)
+		elif season_cond is String:
+			season_ok = str(season_cond) == current_season
+		if not season_ok:
 			return false
 
 	if conditions.has("morale_min"):

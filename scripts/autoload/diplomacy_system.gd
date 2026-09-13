@@ -197,9 +197,12 @@ func get_power_score(faction_id: String) -> float:
 	var resources: Dictionary = GameManager.get_faction_resources(faction_id)
 	var troops: int = resources.get("troops", 0)
 	var morale: int = resources.get("morale", 50)
-	# 科技和文化暂用占位值
-	var tech_count: int = 0
+	var tech_count: int = (TechSystem.get_ai_researched_techs(faction_id) as Dictionary).size()
+	if faction_id == GameManager.get_player_faction():
+		tech_count = maxi(tech_count, TechSystem.get_researched_techs().size())
 	var culture: int = 0
+	if CityManager.has_method("get_culture_coverage_ratio"):
+		culture = int(round(CityManager.get_culture_coverage_ratio(faction_id) * 100.0))
 	return city_count * params.get("city_weight", 50) \
 		+ troops * params.get("troop_weight", 3) \
 		+ tech_count * params.get("tech_weight", 15) \
@@ -761,7 +764,9 @@ func send_hostage(sender: String, receiver: String, minister_id: String) -> Dict
 		return {"success": false, "reason": "invalid_minister"}
 	if str(minister.get("faction_id", "")) != sender:
 		return {"success": false, "reason": "wrong_owner"}
-	if str(minister.get("status", "")) != "idle":
+	# 在任文大夫（assigned）可送出质子；死亡/被俘/已为质子则不可
+	var minister_status: String = str(minister.get("status", "idle"))
+	if minister_status == "dead" or minister_status == "captured" or minister_status == "hostage":
 		return {"success": false, "reason": "minister_busy"}
 	_hostages[sender] = {
 		"receiver": receiver,
@@ -1121,6 +1126,14 @@ func reset() -> void:
 	_vassals.clear()
 	_trade_routes.clear()
 	_military_access.clear()
+	_tribute.clear()
+	_hostages.clear()
+	_prisoners.clear()
+	_intelligence.clear()
+	_strategist_abilities.clear()
+	_hezong_alliance.clear()
+	_lianheng_alliance.clear()
+	_event_chain_flags.clear()
 	_decay_counter = 0
 
 
