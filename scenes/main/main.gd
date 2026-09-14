@@ -739,12 +739,12 @@ func _show_settings_panel() -> void:
 	_framework_placeholder_title.text = "设置"
 	_framework_placeholder_body.text = _framework_settings_summary()
 	_clear_framework_placeholder_actions()
-	_add_framework_placeholder_action("ToggleMuteButton", "切换静音", _toggle_framework_mute)
-	_add_framework_placeholder_action("ToggleFullscreenButton", "切换全屏", _toggle_framework_fullscreen)
-	_add_framework_placeholder_action("VolDownBtn", "音量 -10%", _adjust_master_volume.bind(-0.1))
-	_add_framework_placeholder_action("VolUpBtn", "音量 +10%", _adjust_master_volume.bind(0.1))
-	_add_framework_placeholder_action("ToggleLangButton", "切换语言（当前：%s）" % I18n.get_locale(), _toggle_framework_language)
-	_add_framework_placeholder_action("ToggleDemoCheatButton", "切换作弊", _toggle_framework_demo_cheat)
+	_add_framework_placeholder_action("ToggleMuteButton", I18n.t("settings.mute"), _toggle_framework_mute)
+	_add_framework_placeholder_action("ToggleFullscreenButton", I18n.t("settings.fullscreen"), _toggle_framework_fullscreen)
+	_add_framework_placeholder_action("VolDownBtn", I18n.t("settings.vol_down"), _adjust_master_volume.bind(-0.1))
+	_add_framework_placeholder_action("VolUpBtn", I18n.t("settings.vol_up"), _adjust_master_volume.bind(0.1))
+	_add_framework_placeholder_action("ToggleLangButton", I18n.t("settings.lang") + "（%s）" % I18n.get_locale(), _toggle_framework_language)
+	_add_framework_placeholder_action("ToggleDemoCheatButton", I18n.t("settings.cheat"), _toggle_framework_demo_cheat)
 	_framework_placeholder_layer.visible = true
 
 
