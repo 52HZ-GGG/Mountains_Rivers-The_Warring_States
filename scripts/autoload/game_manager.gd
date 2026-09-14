@@ -387,6 +387,9 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_process_national_culture_turn()
 	SignalBus.turn_started.emit(_turn_number, first_faction)
 	SchoolManager.tick_policy_durations(first_faction)
+	# 首回合不结算任务，避免开局资源直接发经验
+	if _turn_number > 1:
+		SchoolManager.check_quests(first_faction)
 	_change_phase(Phase.ACTION)
 
 
@@ -427,6 +430,7 @@ func end_current_turn() -> void:
 	_apply_upkeep(new_faction)
 	SignalBus.turn_started.emit(_turn_number, new_faction)
 	SchoolManager.tick_policy_durations(new_faction)
+	SchoolManager.check_quests(new_faction)
 	_change_phase(Phase.ACTION)
 
 
@@ -435,8 +439,9 @@ func process_ai_turn() -> void:
 	var faction_id := get_current_faction()
 	# 1. AI外交决策
 	DiplomacyAI.evaluate_diplomacy(faction_id, _turn_number)
-	# 2. AI科技研究
-	_ai_research_tick(faction_id)
+	# 2. AI科技研究（隔回合研究，降低 AI 回合耗时）
+	if _turn_number % 2 == 0:
+		_ai_research_tick(faction_id)
 	# 3. AI军事决策（征兵/攻城/驻军）
 	MilitaryAI.evaluate_military(faction_id)
 	# 4. AI经济决策（建造/升级）

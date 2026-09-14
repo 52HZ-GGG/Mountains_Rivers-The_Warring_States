@@ -769,6 +769,7 @@ func _show_schools_panel() -> void:
 	_clear_framework_placeholder_actions()
 	_add_framework_placeholder_action("OpenSchoolSelectButton", "切换学派", _open_school_switch_panel)
 	_add_framework_placeholder_action("OpenSchoolPolicyButton", "激活政策", _open_school_policy_panel)
+	_add_framework_placeholder_action("OpenSchoolQuestButton", "学派任务", _open_school_quest_panel)
 	_add_framework_placeholder_action("OpenWonderButton", "建造都江堰", _try_build_dujiangyan)
 	_add_framework_placeholder_action("OpenSchoolEventsButton", "相关事件", _open_school_events_panel)
 	_add_framework_placeholder_action("OpenSchoolTechButton", "查看科技", _open_school_tech_panel)
@@ -782,9 +783,57 @@ func _show_ministers_panel() -> void:
 	_framework_placeholder_body.text = _framework_ministers_summary()
 	_clear_framework_placeholder_actions()
 	_add_framework_placeholder_action("OpenMinisterAssignButton", "派驻首都", _open_minister_assign_panel)
+	_add_framework_placeholder_action("OpenMinisterDiplomatBtn", "派驻外交大夫", _open_minister_diplomat_panel)
 	_add_framework_placeholder_action("OpenMinisterCityButton", "查看城市", _open_minister_city_panel)
 	_add_framework_placeholder_action("OpenMinisterDiplomacyButton", "查看外交", _open_minister_diplomacy_panel)
 	_framework_placeholder_layer.visible = true
+
+
+func _open_minister_diplomat_panel() -> void:
+	if not is_instance_valid(_framework_placeholder_layer):
+		return
+	var fid: String = _resolve_player_faction_id()
+	_framework_placeholder_title.text = "外交大夫派驻"
+	_framework_placeholder_body.text = _framework_diplomat_assign_summary(fid)
+	_clear_framework_placeholder_actions()
+	for m in MinisterManager.get_faction_diplomat_ministers(fid):
+		var minister: Dictionary = m as Dictionary
+		var mid: String = str(minister.get("id", ""))
+		for other in GameManager.FACTION_IDS:
+			if other == fid:
+				continue
+			_add_framework_placeholder_action(
+				"Dip_%s_%s" % [mid, other],
+				"%s → %s" % [str(minister.get("name", "?")), _faction_display_name(other)],
+				_on_diplomat_assign.bind(mid, other)
+			)
+	_add_framework_placeholder_action("DipBackBtn", "返回总览", _show_ministers_panel)
+	_framework_placeholder_layer.visible = true
+
+
+func _framework_diplomat_assign_summary(fid: String) -> String:
+	var lines: Array[String] = []
+	for m in MinisterManager.get_faction_diplomat_ministers(fid):
+		var minister: Dictionary = m as Dictionary
+		var st: Dictionary = minister.get("stats", {})
+		var target: String = str(minister.get("assigned_faction_id", ""))
+		lines.append("- %s 辩才%s 亲和%s 驻：%s" % [
+			str(minister.get("name", "?")),
+			str(st.get("辩才", 0)),
+			str(st.get("亲和", 0)),
+			_faction_display_name(target) if target != "" else "未派驻",
+		])
+	return "[b]外交大夫[/b]\n派驻后：对目标国好感增长更快，部分外交成本降低。\n\n%s" % (
+		"\n".join(lines) if not lines.is_empty() else "暂无外交大夫"
+	)
+
+
+func _on_diplomat_assign(minister_id: String, target_faction: String) -> void:
+	var ok: bool = MinisterManager.assign_diplomat_to_faction(minister_id, target_faction)
+	if ok:
+		_open_minister_diplomat_panel()
+	else:
+		_show_framework_placeholder("外交大夫", "[b]派驻失败[/b]")
 
 
 func _open_school_policy_panel() -> void:
@@ -859,6 +908,36 @@ func _try_build_dujiangyan() -> void:
 		_show_framework_placeholder("奇观", "[b]已开工都江堰[/b]\n剩余约 %d 回合。" % int(result.get("turns_left", 0)))
 	else:
 		_show_framework_placeholder("奇观", "[b]无法开工[/b]\n原因：%s" % str(result.get("reason", "UNKNOWN")))
+
+
+func _open_school_quest_panel() -> void:
+	if not is_instance_valid(_framework_placeholder_layer):
+		return
+	var fid: String = _resolve_player_faction_id()
+	_framework_placeholder_title.text = "学派任务"
+	_framework_placeholder_body.text = _framework_school_quest_summary(fid)
+	_clear_framework_placeholder_actions()
+	_add_framework_placeholder_action("SchoolQuestBackBtn", "返回总览", _show_schools_panel)
+	_framework_placeholder_layer.visible = true
+
+
+func _framework_school_quest_summary(fid: String) -> String:
+	var done: Array = SchoolManager.get_completed_quests(fid)
+	var lines: Array[String] = []
+	for qv in SchoolManager.get_available_quests(fid):
+		var q: Dictionary = qv as Dictionary
+		var qid: String = str(q.get("id", ""))
+		var mark: String = "✓" if done.has(qid) else "·"
+		lines.append("%s %s — %s（经验 +%s）" % [
+			mark,
+			str(q.get("name", qid)),
+			str(q.get("description", "")),
+			str(q.get("reward_exp", 0)),
+		])
+	return "[b]学派任务[/b]\n回合开始时自动结算；完成后发放学派经验。\n\n%s\n\n已完成：%d" % [
+		"\n".join(lines) if not lines.is_empty() else "当前学派暂无任务池",
+		done.size(),
+	]
 
 
 func _resolve_player_faction_id() -> String:

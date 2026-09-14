@@ -11,6 +11,14 @@ static func evaluate_strategic_units(faction_id: String) -> void:
 	var units: Array[Dictionary] = StrategicMapManager.get_faction_units(faction_id)
 	if units.is_empty():
 		return
+	# 未与任何人开战则不出兵
+	var at_war: bool = false
+	for other in GameManager.FACTION_IDS:
+		if other != faction_id and DiplomacySystem.are_at_war(faction_id, other):
+			at_war = true
+			break
+	if not at_war:
+		return
 	var targets: Array = _enemy_target_axials(faction_id)
 	if targets.is_empty():
 		return
@@ -24,13 +32,10 @@ static func evaluate_strategic_units(faction_id: String) -> void:
 		if bool(unit.get("acted", false)):
 			continue
 		action_budget -= 1
-		# 1) 优先攻击邻接敌单位
 		if _try_attack_adjacent_enemy(unit_id, faction_id):
 			continue
-		# 2) 攻击邻接敌城
 		if _try_attack_adjacent_enemy_city(unit_id, faction_id):
 			continue
-		# 3) 向最近敌目标推进
 		var target: Vector2i = _nearest_axial(Vector2i(int(unit.get("q", 0)), int(unit.get("r", 0))), targets)
 		StrategicMapManager.move_toward(unit_id, target)
 		_try_attack_adjacent_enemy(unit_id, faction_id)

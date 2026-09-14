@@ -54,6 +54,7 @@ func initialize_factions(active_factions: Array[String]) -> void:
 			"level": 1 if school_id != "" else 0,
 			"exp": 0,
 			"active_policies": [],
+			"completed_quests": [],
 			"transition_turns": 0,
 		}
 
@@ -270,6 +271,97 @@ func _tick_policy_durations(faction_id: String) -> void:
 	var transition_turns: int = int(state.get("transition_turns", 0))
 	if transition_turns > 0:
 		state["transition_turns"] = transition_turns - 1
+
+
+# ============= 学派任务（最小闭环） =============
+
+func get_available_quests(faction_id: String) -> Array:
+	var school_id: String = get_current_school(faction_id)
+	if school_id == "":
+		return []
+	var school: Dictionary = DataManager.get_school(school_id)
+	return school.get("quest_pool", []) as Array
+
+
+func get_completed_quests(faction_id: String) -> Array:
+	if not _school_state_by_faction.has(faction_id):
+		return []
+	return (_school_state_by_faction[faction_id] as Dictionary).get("completed_quests", [])
+
+
+## 回合开始时检查任务条件，完成则发经验。
+func check_quests(faction_id: String) -> Array:
+	var completed: Array = []
+	if not _school_state_by_faction.has(faction_id):
+		return completed
+	var state: Dictionary = _school_state_by_faction[faction_id]
+	if not state.has("completed_quests"):
+		state["completed_quests"] = []
+	var done: Array = state["completed_quests"]
+	for quest_v in get_available_quests(faction_id):
+		var quest: Dictionary = quest_v as Dictionary
+		var qid: String = str(quest.get("id", ""))
+		if qid == "" or done.has(qid):
+			continue
+		if not _quest_condition_met(faction_id, quest):
+			continue
+		done.append(qid)
+		var reward: int = int(quest.get("reward_exp", 0))
+		if reward > 0:
+			add_school_exp(faction_id, reward)
+		completed.append(qid)
+	state["completed_quests"] = done
+	return completed
+
+
+func _quest_condition_met(faction_id: String, quest: Dictionary) -> bool:
+	var cond: Dictionary = quest.get("condition", {})
+	var target: String = str(cond.get("target", ""))
+	var op: String = str(cond.get("operator", ">="))
+	var value: float = float(cond.get("value", 0))
+	var actual: float = 0.0
+	match target:
+		"gold":
+			actual = float(GameManager.get_faction_resource(faction_id, "gold"))
+		"food":
+			actual = float(GameManager.get_faction_resource(faction_id, "food"))
+		"total_recruits":
+			actual = float(GameManager.get_total_troops(faction_id))
+		"city_count":
+			actual = float(CityManager.get_faction_city_states(faction_id).size())
+		"legalist_governed_stability":
+			actual = _min_avg_stability_for_minister_school(faction_id, "legalism")
+		_:
+			return false
+	match op:
+		">=":
+			return actual >= value
+		">":
+			return actual > value
+		"<=":
+			return actual <= value
+		"<":
+			return actual < value
+		"==":
+			return absf(actual - value) < 0.001
+	return false
+
+
+func _min_avg_stability_for_minister_school(faction_id: String, school_id: String) -> float:
+	var total: float = 0.0
+	var count: int = 0
+	for minister_v in MinisterManager.get_faction_civil_ministers(faction_id):
+		var minister: Dictionary = minister_v as Dictionary
+		if str(minister.get("school", "")) != school_id:
+			continue
+		var city_id: String = str(minister.get("assigned_city_id", ""))
+		if city_id == "":
+			continue
+		total += float(CityManager.get_city_stability(city_id))
+		count += 1
+	if count == 0:
+		return 0.0
+	return total / float(count)
 
 
 func _has_active_policy(state: Dictionary, policy_id: String) -> bool:
