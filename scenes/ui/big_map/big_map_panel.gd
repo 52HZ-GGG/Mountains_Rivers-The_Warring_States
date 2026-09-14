@@ -206,7 +206,7 @@ func _on_political_toggle() -> void:
 		_refresh_runtime_political_control(false)
 	var btn: Button = $MarginContainer/MainVBox/TitleBar/PoliticalBtn as Button
 	if btn != null:
-		btn.text = "政治地图：开" if _political_mode else "政治地图：关"
+		btn.text = I18n.t("big_map.political_on") if _political_mode else I18n.t("big_map.political_off")
 	_update_political_legend()
 	_refresh_display()
 
@@ -440,7 +440,7 @@ func _refresh_display() -> void:
 				var built_count: int = (city.get("buildings", []) as Array).size()
 				var queue_count: int = (city.get("build_queue", []) as Array).size()
 				if built_count > 0 or queue_count > 0:
-					var b_tag: String = "建%d" % built_count
+					var b_tag: String = I18n.t("big_map.build_tag") % built_count
 					if queue_count > 0:
 						b_tag += "+%d" % queue_count
 					caption = "%s\n%s" % [caption, b_tag]
@@ -798,7 +798,7 @@ func _on_hex_mouse_enter(q: int, r: int) -> void:
 
 
 func _on_hex_mouse_exit() -> void:
-	_hover_info.text = "将鼠标移到格子上：显示地形与城市信息。"
+	_hover_info.text = I18n.t("big_map.hover_hint")
 
 
 func _build_hover_text(cell: Vector2i) -> String:
@@ -807,7 +807,7 @@ func _build_hover_text(cell: Vector2i) -> String:
 	var terrain_data: Dictionary = DataManager.get_terrain(terrain_id)
 	var terrain_name: String = str(terrain_data.get("name", terrain_id))
 	var move_cost: Variant = terrain_data.get("move_cost", 1)
-	var move_text: String = "不可通行" if int(move_cost) < 0 else str(move_cost)
+	var move_text: String = I18n.t("big_map.impassable") if int(move_cost) < 0 else str(move_cost)
 	lines.append("地形：%s（%s）｜ 移耗：%s ｜ 攻×%.2f ｜ 守×%.2f" % [
 		terrain_name,
 		terrain_id,
@@ -840,7 +840,7 @@ func _build_hover_text(cell: Vector2i) -> String:
 			special_text,
 			build_text
 		])
-		lines.append("点击城市格：打开城池管理")
+		lines.append(I18n.t("big_map.click_city"))
 	var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell)
 	if not unit.is_empty():
 		var u_type: Dictionary = DataManager.get_unit_type(str(unit.get("unit_type_id", "")))
@@ -855,13 +855,13 @@ func _build_hover_text(cell: Vector2i) -> String:
 	if selected_id != "":
 		var reach: Dictionary = StrategicMapManager.get_reachable_cells(selected_id)
 		if reach.has(cell):
-			lines.append("可达（移耗 %d）— 点击移动" % int(reach[cell]))
+			lines.append(I18n.t("big_map.reachable") % int(reach[cell]))
 	return "\n".join(lines)
 
 
 func _faction_display_name(faction_id: String) -> String:
 	if faction_id == "neutral":
-		return "中立"
+		return I18n.t("big_map.neutral")
 	var faction: Dictionary = DataManager.get_faction(faction_id)
 	if not faction.is_empty():
 		return str(faction.get("name", faction_id))

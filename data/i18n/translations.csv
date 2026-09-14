@@ -24,6 +24,26 @@ minister.assign_diplomat,派驻外交大夫,Send Diplomat
 minister.diplomat_target,外交目标：,Diplomat Target:
 minister.military_bonus,武大夫攻防加成：+%d%% / +%d%%,Military Bonus: +%d%% / +%d%%
 minister.empty_hint,选择列表中的大夫查看详情。,Select a minister to view details.
+minister.no_capital,未找到首都。,No capital found.
+minister.no_civil,没有可派驻的文大夫。,No civil minister available.
+minister.assign_ok,派驻首都成功。,Assigned to capital.
+minister.assign_fail,派驻失败。,Assign failed.
+minister.unassign_ok,已卸任首都大夫。,Capital minister unassigned.
+minister.no_diplomat_target,没有可派驻的外交目标。,No diplomat target available.
+minister.diplomat_ok,已派驻外交大夫至 %s。,Diplomat sent to %s.
+minister.diplomat_fail,派驻外交大夫失败。,Failed to send diplomat.
+minister.not_assigned,未派驻,Unassigned
+minister.status_label,状态：%s,Status: %s
+minister.city_label,驻城：%s,City: %s
+minister.target_label,派驻目标：%s,Target: %s
+big_map.political_on,政治地图：开,Political: On
+big_map.political_off,政治地图：关,Political: Off
+big_map.hover_hint,将鼠标移到格子上：显示地形与城市信息。,Hover a hex for terrain and city info.
+big_map.click_city,点击城市格：打开城池管理,Click city hex to manage
+big_map.impassable,不可通行,Impassable
+big_map.build_tag,建%d,B%d
+big_map.reachable,可达（移耗 %d）— 点击移动,Reachable (cost %d) — click to move
+big_map.neutral,中立,Neutral
 school.policy,学派政策,School Policies
 school.quests,学派任务,School Quests
 school.switch,切换学派,Switch School

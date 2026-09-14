@@ -101,7 +101,7 @@ func _build_ui() -> void:
 	_target_option.custom_minimum_size = Vector2(140, 0)
 	action_row.add_child(_target_option)
 	var assign_dip := Button.new()
-	assign_dip.text = "派驻外交大夫"
+	assign_dip.text = I18n.t("minister.assign_diplomat")
 	assign_dip.pressed.connect(_on_assign_diplomat)
 	action_row.add_child(assign_dip)
 
@@ -109,7 +109,7 @@ func _build_ui() -> void:
 	_detail_label.bbcode_enabled = true
 	_detail_label.fit_content = true
 	_detail_label.custom_minimum_size = Vector2(0, 120)
-	_detail_label.text = "选择列表中的大夫查看详情。"
+	_detail_label.text = I18n.t("minister.empty_hint")
 	root.add_child(_detail_label)
 
 
@@ -228,7 +228,7 @@ func _on_minister_selected(minister: Dictionary, type: String) -> void:
 func _on_assign_capital() -> void:
 	var capital: Dictionary = CityManager.get_capital_state(_faction_id)
 	if capital.is_empty():
-		_status_label.text = "未找到首都。"
+		_status_label.text = I18n.t("minister.no_capital")
 		return
 	var chosen: String = ""
 	for m in MinisterManager.get_faction_civil_ministers(_faction_id):
@@ -238,10 +238,10 @@ func _on_assign_capital() -> void:
 		chosen = mid
 		break
 	if chosen == "":
-		_status_label.text = "没有可派驻的文大夫。"
+		_status_label.text = I18n.t("minister.no_civil")
 		return
 	var ok: bool = MinisterManager.assign_civil_minister(str(capital.get("id", "")), chosen)
-	_status_label.text = "派驻首都成功。" if ok else "派驻失败。"
+	_status_label.text = I18n.t("minister.assign_ok") if ok else I18n.t("minister.assign_fail")
 	_refresh_all()
 
 
@@ -249,13 +249,13 @@ func _on_unassign_capital() -> void:
 	var capital: Dictionary = CityManager.get_capital_state(_faction_id)
 	if not capital.is_empty():
 		MinisterManager.remove_civil_minister_from_city(str(capital.get("id", "")))
-		_status_label.text = "已卸任首都大夫。"
+		_status_label.text = I18n.t("minister.unassign_ok")
 	_refresh_all()
 
 
 func _on_assign_diplomat() -> void:
 	if _target_option.item_count <= 0:
-		_status_label.text = "没有可派驻的外交目标。"
+		_status_label.text = I18n.t("minister.no_diplomat_target")
 		return
 	var target: String = str(_target_option.get_item_metadata(_target_option.selected))
 	for m in MinisterManager.get_faction_diplomat_ministers(_faction_id):
@@ -263,10 +263,10 @@ func _on_assign_diplomat() -> void:
 		if mid == "":
 			continue
 		if MinisterManager.assign_diplomat_to_faction(mid, target):
-			_status_label.text = "已派驻外交大夫至 %s。" % _faction_display(target)
+			_status_label.text = I18n.t("minister.diplomat_ok") % _faction_display(target)
 			_refresh_all()
 			return
-	_status_label.text = "派驻外交大夫失败。"
+	_status_label.text = I18n.t("minister.diplomat_fail")
 
 
 func _city_name(city_id: String) -> String:
