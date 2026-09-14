@@ -90,6 +90,10 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var atk_school_bonus: Dictionary = m._get_school_combat_bonus(str(a["faction_id"]))
 	if atk_school_bonus.get("school_atk", 0.0) != 0.0:
 		atk_ctx["school_atk"] = atk_school_bonus["school_atk"]
+	# 武大夫勇武%
+	var mil_atk: float = MinisterManager.get_faction_military_attack_bonus(str(a["faction_id"]))
+	if mil_atk > 0.001:
+		atk_ctx["minister_bravery_pct"] = mil_atk
 	var def_school_bonus: Dictionary = m._get_school_combat_bonus(str(d["faction_id"]))
 	if def_school_bonus.get("school_def", 0.0) != 0.0:
 		def_ctx["school_def"] = def_school_bonus["school_def"]

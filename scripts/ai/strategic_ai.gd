@@ -43,18 +43,17 @@ static func _enemy_target_axials(faction_id: String) -> Array:
 		var owner: String = str(city.get("current_faction_id", ""))
 		if owner == faction_id or owner == "":
 			continue
-		# 中立小城不主动打；敌国城需处于战争或中立大城
+		# 仅进攻战争中的敌国；中立城默认不打（避免和平期乱跑）
 		if owner == "neutral":
-			if int(city.get("city_level", 1)) < 3:
-				continue
-		elif not DiplomacySystem.are_at_war(faction_id, owner):
+			continue
+		if not DiplomacySystem.are_at_war(faction_id, owner):
 			continue
 		out.append(HexAxial.offset_odd_r_to_axial(int(city.get("hex_q", 0)), int(city.get("hex_r", 0))))
 	for enemy_unit: Dictionary in StrategicMapManager.get_units():
 		var enemy_fid: String = str(enemy_unit.get("faction_id", ""))
-		if enemy_fid == faction_id:
+		if enemy_fid == faction_id or enemy_fid == "neutral":
 			continue
-		if enemy_fid != "neutral" and not DiplomacySystem.are_at_war(faction_id, enemy_fid):
+		if not DiplomacySystem.are_at_war(faction_id, enemy_fid):
 			continue
 		out.append(Vector2i(int(enemy_unit.get("q", 0)), int(enemy_unit.get("r", 0))))
 	return out

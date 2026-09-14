@@ -921,10 +921,14 @@ func _hex_distance(q1: int, r1: int, q2: int, r2: int) -> int:
 func _change_opinion(faction_a: String, faction_b: String, delta: int) -> void:
 	if not _opinions.has(faction_a) or not _opinions[faction_a].has(faction_b):
 		return
+	var adjusted: int = delta
+	if delta > 0:
+		# 外交大夫亲和：每回合正向好感额外成长
+		adjusted += int(ceil(MinisterManager.get_diplomat_opinion_gain(faction_a, faction_b)))
 	var old_val: int = _opinions[faction_a][faction_b]
 	var min_val: int = DataManager.get_balance_param("diplomacy.opinion_min")
 	var max_val: int = DataManager.get_balance_param("diplomacy.opinion_max")
-	_opinions[faction_a][faction_b] = clampi(old_val + delta, min_val, max_val)
+	_opinions[faction_a][faction_b] = clampi(old_val + adjusted, min_val, max_val)
 	SignalBus.opinion_changed.emit(faction_a, faction_b, old_val, _opinions[faction_a][faction_b])
 
 

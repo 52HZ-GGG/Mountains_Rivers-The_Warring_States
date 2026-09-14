@@ -1,15 +1,15 @@
 extends Node
 
-## 大夫管理器（最小经营闭环）
-##
-## 当前只实现文大夫：
-## - 开局为各激活势力初始化 1 名文大夫
-## - 自动派驻到首都
-## - 提供城市经营/安定/减腐查询接口
-## - 城破时处理驻城文大夫命运，避免残留错误驻城状态
+## 大夫管理器
+## - 文大夫：城市经营/安定/减腐
+## - 武大夫：首都驻防，提供攻防加成
+## - 外交大夫：派驻目标国，提供好感/降成本
 
 var _civil_ministers_by_faction: Dictionary = {}
+var _military_ministers_by_faction: Dictionary = {}
+var _diplomat_ministers_by_faction: Dictionary = {}
 var _city_assignments: Dictionary = {}
+var _diplomat_assignments: Dictionary = {}  # minister_id -> target_faction_id
 var _minister_index: Dictionary = {}
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -21,53 +21,69 @@ func _ready() -> void:
 
 func reset() -> void:
 	_civil_ministers_by_faction.clear()
+	_military_ministers_by_faction.clear()
+	_diplomat_ministers_by_faction.clear()
 	_city_assignments.clear()
+	_diplomat_assignments.clear()
 	_minister_index.clear()
 
 
 func get_save_data() -> Dictionary:
 	return {
 		"civil_ministers_by_faction": _civil_ministers_by_faction.duplicate(true),
+		"military_ministers_by_faction": _military_ministers_by_faction.duplicate(true),
+		"diplomat_ministers_by_faction": _diplomat_ministers_by_faction.duplicate(true),
 		"city_assignments": _city_assignments.duplicate(true),
+		"diplomat_assignments": _diplomat_assignments.duplicate(true),
 		"minister_index": _minister_index.duplicate(true),
 	}
 
 
 func load_save_data(data: Dictionary) -> void:
-	var civil_states: Variant = data.get("civil_ministers_by_faction", {})
-	var city_assignments: Variant = data.get("city_assignments", {})
-	var minister_index: Variant = data.get("minister_index", {})
-	if civil_states is Dictionary:
-		_civil_ministers_by_faction = (civil_states as Dictionary).duplicate(true)
-	else:
-		_civil_ministers_by_faction.clear()
-	if city_assignments is Dictionary:
-		_city_assignments = (city_assignments as Dictionary).duplicate(true)
-	else:
-		_city_assignments.clear()
-	if minister_index is Dictionary:
-		_minister_index = (minister_index as Dictionary).duplicate(true)
-	else:
-		_minister_index.clear()
+	_civil_ministers_by_faction = _load_dict(data, "civil_ministers_by_faction")
+	_military_ministers_by_faction = _load_dict(data, "military_ministers_by_faction")
+	_diplomat_ministers_by_faction = _load_dict(data, "diplomat_ministers_by_faction")
+	_city_assignments = _load_dict(data, "city_assignments")
+	_diplomat_assignments = _load_dict(data, "diplomat_assignments")
+	_minister_index = _load_dict(data, "minister_index")
+
+
+func _load_dict(data: Dictionary, key: String) -> Dictionary:
+	var v: Variant = data.get(key, {})
+	return (v as Dictionary).duplicate(true) if v is Dictionary else {}
 
 
 func initialize_factions(active_factions: Array[String]) -> void:
 	reset()
 	var used_source_ids: Dictionary = {}
 	var civil_capacity: int = int(DataManager.get_balance_param("minister.capacity.civil"))
+	var military_capacity: int = int(DataManager.get_balance_param("minister.capacity.military"))
+	var diplomat_capacity: int = int(DataManager.get_balance_param("minister.capacity.diplomat"))
 	for faction_id in active_factions:
 		_civil_ministers_by_faction[faction_id] = []
-		if civil_capacity <= 0:
-			continue
-		var minister: Dictionary = _create_initial_civil_minister(faction_id, used_source_ids)
-		if minister.is_empty():
-			continue
-		var minister_id: String = str(minister.get("id", ""))
-		_minister_index[minister_id] = minister
-		(_civil_ministers_by_faction[faction_id] as Array).append(minister_id)
-		var capital: Dictionary = CityManager.get_capital_state(faction_id)
-		if not capital.is_empty():
-			assign_civil_minister(str(capital.get("id", "")), minister_id)
+		_military_ministers_by_faction[faction_id] = []
+		_diplomat_ministers_by_faction[faction_id] = []
+		if civil_capacity > 0:
+			var minister: Dictionary = _create_initial_civil_minister(faction_id, used_source_ids)
+			if not minister.is_empty():
+				var minister_id: String = str(minister.get("id", ""))
+				_minister_index[minister_id] = minister
+				(_civil_ministers_by_faction[faction_id] as Array).append(minister_id)
+				var capital: Dictionary = CityManager.get_capital_state(faction_id)
+				if not capital.is_empty():
+					assign_civil_minister(str(capital.get("id", "")), minister_id)
+		if military_capacity > 0:
+			var mmin: Dictionary = _create_initial_military_minister(faction_id, used_source_ids)
+			if not mmin.is_empty():
+				var mid: String = str(mmin.get("id", ""))
+				_minister_index[mid] = mmin
+				(_military_ministers_by_faction[faction_id] as Array).append(mid)
+		if diplomat_capacity > 0:
+			var dmin: Dictionary = _create_initial_diplomat_minister(faction_id, used_source_ids)
+			if not dmin.is_empty():
+				var did: String = str(dmin.get("id", ""))
+				_minister_index[did] = dmin
+				(_diplomat_ministers_by_faction[faction_id] as Array).append(did)
 
 
 func get_faction_civil_ministers(faction_id: String) -> Array:
@@ -181,6 +197,89 @@ func get_faction_corruption_reduction(faction_id: String) -> float:
 	return total
 
 
+# ============= 武大夫 =============
+
+func get_faction_military_ministers(faction_id: String) -> Array:
+	var result: Array = []
+	for minister_id in _military_ministers_by_faction.get(faction_id, []):
+		var minister: Dictionary = get_minister(str(minister_id))
+		if not minister.is_empty():
+			result.append(minister)
+	return result
+
+
+func get_faction_military_attack_bonus(faction_id: String) -> float:
+	return _sum_stat_pct(_military_ministers_by_faction.get(faction_id, []), "勇武")
+
+
+func get_faction_military_defense_bonus(faction_id: String) -> float:
+	return _sum_stat_pct(_military_ministers_by_faction.get(faction_id, []), "韬略")
+
+
+func _sum_stat_pct(minister_ids: Array, stat_name: String) -> float:
+	var total: float = 0.0
+	for minister_id in minister_ids:
+		var minister: Dictionary = _minister_index.get(str(minister_id), {})
+		if minister.is_empty():
+			continue
+		if str(minister.get("status", "")) == "dead" or str(minister.get("status", "")) == "captured":
+			continue
+		var stats: Dictionary = minister.get("stats", {})
+		total += float(stats.get(stat_name, 0)) / 100.0
+	return total
+
+
+# ============= 外交大夫 =============
+
+func get_faction_diplomat_ministers(faction_id: String) -> Array:
+	var result: Array = []
+	for minister_id in _diplomat_ministers_by_faction.get(faction_id, []):
+		var minister: Dictionary = get_minister(str(minister_id))
+		if not minister.is_empty():
+			result.append(minister)
+	return result
+
+
+func assign_diplomat_to_faction(minister_id: String, target_faction_id: String) -> bool:
+	if not _minister_index.has(minister_id):
+		return false
+	var minister: Dictionary = _minister_index[minister_id]
+	if str(minister.get("type", "")) != "diplomat":
+		return false
+	if str(minister.get("faction_id", "")) == target_faction_id:
+		return false
+	if str(minister.get("status", "")) in ["dead", "captured", "hostage"]:
+		return false
+	_diplomat_assignments[minister_id] = target_faction_id
+	minister["status"] = "assigned"
+	minister["assigned_faction_id"] = target_faction_id
+	return true
+
+
+func get_diplomat_cost_reduction(actor: String, target: String) -> float:
+	for minister_id in _diplomat_ministers_by_faction.get(actor, []):
+		if str(_diplomat_assignments.get(str(minister_id), "")) != target:
+			continue
+		var minister: Dictionary = _minister_index.get(str(minister_id), {})
+		if minister.is_empty():
+			continue
+		var stats: Dictionary = minister.get("stats", {})
+		return clampf(float(stats.get("辩才", 0)) / 100.0, 0.0, 0.5)
+	return 0.0
+
+
+func get_diplomat_opinion_gain(actor: String, target: String) -> float:
+	for minister_id in _diplomat_ministers_by_faction.get(actor, []):
+		if str(_diplomat_assignments.get(str(minister_id), "")) != target:
+			continue
+		var minister: Dictionary = _minister_index.get(str(minister_id), {})
+		if minister.is_empty():
+			continue
+		var stats: Dictionary = minister.get("stats", {})
+		return float(stats.get("亲和", 0)) / 10.0
+	return 0.0
+
+
 func handle_city_lost(city_id: String, old_faction: String, new_faction: String) -> void:
 	var minister_id: String = str(_city_assignments.get(city_id, ""))
 	if minister_id == "":
@@ -261,6 +360,92 @@ func _create_initial_civil_minister(faction_id: String, used_source_ids: Diction
 		},
 		"skills": skills,
 		"skill_levels": skill_levels,
+		"assigned_city_id": "",
+		"status": "idle",
+		"captured_by": "",
+	}
+
+
+func _create_initial_military_minister(faction_id: String, used_source_ids: Dictionary) -> Dictionary:
+	var pool: Dictionary = DataManager.get_minister_pool()
+	var military_pool: Dictionary = pool.get("military", {})
+	var quality_order: Array[String] = ["legendary", "rare", "common"]
+	var template: Dictionary = {}
+	var quality: String = "common"
+	for q in quality_order:
+		var list: Array = military_pool.get(q, []) as Array
+		if list.is_empty():
+			continue
+		for candidate in list:
+			var t: Dictionary = candidate as Dictionary
+			if used_source_ids.has(str(t.get("id", ""))):
+				continue
+			template = t
+			quality = q
+			break
+		if not template.is_empty():
+			break
+	if template.is_empty():
+		template = {"id": "military_template", "name": "武大夫", "base_stats": {"勇武": [15, 40], "韬略": [10, 35]}}
+	var source_id: String = str(template.get("id", "military_template"))
+	used_source_ids[source_id] = true
+	return {
+		"id": "%s__%s" % [faction_id, source_id],
+		"source_id": source_id,
+		"type": "military",
+		"name": _resolve_minister_name(template),
+		"school": template.get("school", null),
+		"quality": quality,
+		"faction_id": faction_id,
+		"stats": {
+			"勇武": _resolve_stat_value(template.get("base_stats", {}).get("勇武", [15, 40]), quality),
+			"韬略": _resolve_stat_value(template.get("base_stats", {}).get("韬略", [10, 35]), quality),
+		},
+		"skills": [],
+		"skill_levels": {},
+		"assigned_city_id": "",
+		"status": "idle",
+		"captured_by": "",
+	}
+
+
+func _create_initial_diplomat_minister(faction_id: String, used_source_ids: Dictionary) -> Dictionary:
+	var pool: Dictionary = DataManager.get_minister_pool()
+	var diplomat_pool: Dictionary = pool.get("diplomat", {})
+	var quality_order: Array[String] = ["legendary", "rare", "common"]
+	var template: Dictionary = {}
+	var quality: String = "common"
+	for q in quality_order:
+		var list: Array = diplomat_pool.get(q, []) as Array
+		if list.is_empty():
+			continue
+		for candidate in list:
+			var t: Dictionary = candidate as Dictionary
+			if used_source_ids.has(str(t.get("id", ""))):
+				continue
+			template = t
+			quality = q
+			break
+		if not template.is_empty():
+			break
+	if template.is_empty():
+		template = {"id": "diplomat_template", "name": "外交大夫", "base_stats": {"辩才": [10, 40], "亲和": [10, 35]}}
+	var source_id: String = str(template.get("id", "diplomat_template"))
+	used_source_ids[source_id] = true
+	return {
+		"id": "%s__%s" % [faction_id, source_id],
+		"source_id": source_id,
+		"type": "diplomat",
+		"name": _resolve_minister_name(template),
+		"school": template.get("school", null),
+		"quality": quality,
+		"faction_id": faction_id,
+		"stats": {
+			"辩才": _resolve_stat_value(template.get("base_stats", {}).get("辩才", [10, 40]), quality),
+			"亲和": _resolve_stat_value(template.get("base_stats", {}).get("亲和", [10, 35]), quality),
+		},
+		"skills": [],
+		"skill_levels": {},
 		"assigned_city_id": "",
 		"status": "idle",
 		"captured_by": "",

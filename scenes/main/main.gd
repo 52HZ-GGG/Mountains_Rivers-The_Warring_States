@@ -726,8 +726,28 @@ func _show_settings_panel() -> void:
 	_clear_framework_placeholder_actions()
 	_add_framework_placeholder_action("ToggleMuteButton", "切换静音", _toggle_framework_mute)
 	_add_framework_placeholder_action("ToggleFullscreenButton", "切换全屏", _toggle_framework_fullscreen)
+	_add_framework_placeholder_action("VolDownBtn", "音量 -10%", _adjust_master_volume.bind(-0.1))
+	_add_framework_placeholder_action("VolUpBtn", "音量 +10%", _adjust_master_volume.bind(0.1))
+	_add_framework_placeholder_action("ToggleLangButton", "切换语言(中/英占位)", _toggle_framework_language)
 	_add_framework_placeholder_action("ToggleDemoCheatButton", "切换作弊", _toggle_framework_demo_cheat)
 	_framework_placeholder_layer.visible = true
+
+
+func _adjust_master_volume(delta: float) -> void:
+	var idx: int = AudioServer.get_bus_index("Master")
+	if idx < 0:
+		return
+	var vol: float = db_to_linear(AudioServer.get_bus_volume_db(idx))
+	vol = clampf(vol + delta, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(vol, 0.0001)))
+	_show_settings_panel()
+
+
+func _toggle_framework_language() -> void:
+	# 占位：记录切换，完整 i18n 后续接入
+	var lang: String = "en-US" if TranslationServer.get_locale().begins_with("zh") else "zh-CN"
+	TranslationServer.set_locale(lang)
+	_show_settings_panel()
 
 
 func _show_intelligence_panel() -> void:
@@ -749,6 +769,7 @@ func _show_schools_panel() -> void:
 	_clear_framework_placeholder_actions()
 	_add_framework_placeholder_action("OpenSchoolSelectButton", "切换学派", _open_school_switch_panel)
 	_add_framework_placeholder_action("OpenSchoolPolicyButton", "激活政策", _open_school_policy_panel)
+	_add_framework_placeholder_action("OpenWonderButton", "建造都江堰", _try_build_dujiangyan)
 	_add_framework_placeholder_action("OpenSchoolEventsButton", "相关事件", _open_school_events_panel)
 	_add_framework_placeholder_action("OpenSchoolTechButton", "查看科技", _open_school_tech_panel)
 	_framework_placeholder_layer.visible = true
@@ -829,6 +850,15 @@ func _on_school_policy_activate(policy_id: String) -> void:
 		_open_school_policy_panel()
 	else:
 		_show_framework_placeholder("学派政策", "[b]激活失败[/b]\n原因：%s" % str(result.get("reason", "UNKNOWN")))
+
+
+func _try_build_dujiangyan() -> void:
+	var fid: String = _resolve_player_faction_id()
+	var result: Dictionary = WonderManager.start_build_wonder(fid, "dujiangyan")
+	if bool(result.get("success", false)):
+		_show_framework_placeholder("奇观", "[b]已开工都江堰[/b]\n剩余约 %d 回合。" % int(result.get("turns_left", 0)))
+	else:
+		_show_framework_placeholder("奇观", "[b]无法开工[/b]\n原因：%s" % str(result.get("reason", "UNKNOWN")))
 
 
 func _resolve_player_faction_id() -> String:
@@ -1404,8 +1434,26 @@ func _framework_ministers_summary() -> String:
 			"\n".join(matching_titles.slice(0, mini(4, matching_titles.size()))) if not matching_titles.is_empty() else "- 暂无代表人物",
 		]
 
-	return "[b]试玩说明[/b]\n这一页用于让玩家理解“官员系统未来会怎么接进城市和外交”，现在先提供人物池、类型和势力偏好作为试玩认知锚点。\n\n[b]系统定位[/b]\n官员招募、任命、能力成长、城市派驻与国家加成的统一入口。\n\n[b]当前势力关注[/b]\n%s\n\n[b]当前数据[/b]\n官员条目：%d\n历史人物：%d\n随机模板：%d\n技能定义：%d\n\n[b]类型分布[/b]\n%s\n\n[b]传奇人物样例[/b]\n%s\n\n[b]建议动作[/b]\n可先打开城市查看内政承接位，或打开外交面板对照纵横类大夫与关系系统。" % [
+	var mil_lines: Array[String] = []
+	for m in MinisterManager.get_faction_military_ministers(player_faction_id):
+		var mm: Dictionary = m as Dictionary
+		var st: Dictionary = mm.get("stats", {})
+		mil_lines.append("- %s 勇武%s 韬略%s" % [str(mm.get("name", "?")), str(st.get("勇武", 0)), str(st.get("韬略", 0))])
+	var dip_lines: Array[String] = []
+	for m2 in MinisterManager.get_faction_diplomat_ministers(player_faction_id):
+		var dm: Dictionary = m2 as Dictionary
+		var st2: Dictionary = dm.get("stats", {})
+		dip_lines.append("- %s 辩才%s 亲和%s" % [str(dm.get("name", "?")), str(st2.get("辩才", 0)), str(st2.get("亲和", 0))])
+	var runtime_text: String = "武大夫攻防加成：+%d%% / +%d%%\n%s\n外交大夫：\n%s" % [
+		int(MinisterManager.get_faction_military_attack_bonus(player_faction_id) * 100),
+		int(MinisterManager.get_faction_military_defense_bonus(player_faction_id) * 100),
+		"\n".join(mil_lines) if not mil_lines.is_empty() else "- 暂无武大夫",
+		"\n".join(dip_lines) if not dip_lines.is_empty() else "- 暂无外交大夫",
+	]
+
+	return "[b]试玩说明[/b]\n这一页用于让玩家理解“官员系统未来会怎么接进城市和外交”，现在先提供人物池、类型和势力偏好作为试玩认知锚点。\n\n[b]系统定位[/b]\n官员招募、任命、能力成长、城市派驻与国家加成的统一入口。\n\n[b]当前势力关注[/b]\n%s\n\n[b]运行时武/外交大夫[/b]\n%s\n\n[b]当前数据[/b]\n官员条目：%d\n历史人物：%d\n随机模板：%d\n技能定义：%d\n\n[b]类型分布[/b]\n%s\n\n[b]传奇人物样例[/b]\n%s\n\n[b]建议动作[/b]\n可先打开城市查看内政承接位，或打开外交面板对照纵横类大夫与关系系统。" % [
 		player_focus_text,
+		runtime_text,
 		total_entries,
 		historical_count,
 		template_count,
