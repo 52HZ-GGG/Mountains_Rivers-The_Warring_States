@@ -118,7 +118,7 @@ func _build_ui() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_bar.add_child(spacer)
 
-	_back_button = SkirmishTileTextures.styled_button("返回大地图")
+	_back_button = SkirmishTileTextures.styled_button(I18n.t("city.back_to_map"))
 	_back_button.pressed.connect(_on_back_pressed)
 	title_bar.add_child(_back_button)
 
@@ -153,7 +153,7 @@ func _build_ui() -> void:
 
 	# 已建建筑
 	var built_title := Label.new()
-	built_title.text = "── 已建建筑 ──"
+	built_title.text = I18n.t("city.built_title")
 	built_title.add_theme_font_size_override("font_size", 15)
 	built_title.add_theme_color_override("font_color", Color(0.7, 0.85, 0.7, 1))
 	left_pane.add_child(built_title)
@@ -170,7 +170,7 @@ func _build_ui() -> void:
 
 	# 建造队列
 	var queue_title := Label.new()
-	queue_title.text = "── 建造队列 ──"
+	queue_title.text = I18n.t("city.queue_title")
 	queue_title.add_theme_font_size_override("font_size", 15)
 	queue_title.add_theme_color_override("font_color", Color(0.85, 0.75, 0.6, 1))
 	left_pane.add_child(queue_title)
@@ -186,7 +186,7 @@ func _build_ui() -> void:
 	split.add_child(right_pane)
 
 	var build_title := Label.new()
-	build_title.text = "── 可建造 ──"
+	build_title.text = I18n.t("city.build_title")
 	build_title.add_theme_font_size_override("font_size", 15)
 	build_title.add_theme_color_override("font_color", Color(0.7, 0.75, 0.9, 1))
 	right_pane.add_child(build_title)
@@ -202,7 +202,7 @@ func _build_ui() -> void:
 	build_scroll.add_child(_build_list)
 
 	var recruit_title := Label.new()
-	recruit_title.text = "── 可征兵 ──"
+	recruit_title.text = I18n.t("city.recruit_title")
 	recruit_title.add_theme_font_size_override("font_size", 15)
 	recruit_title.add_theme_color_override("font_color", Color(0.85, 0.7, 0.55, 1))
 	right_pane.add_child(recruit_title)
@@ -227,7 +227,7 @@ func _build_ui() -> void:
 
 	# 详情
 	var detail_title := Label.new()
-	detail_title.text = "── 建筑详情 ──"
+	detail_title.text = I18n.t("city.detail_title")
 	detail_title.add_theme_font_size_override("font_size", 15)
 	detail_title.add_theme_color_override("font_color", Color(0.8, 0.75, 0.65, 1))
 	right_pane.add_child(detail_title)
@@ -268,13 +268,13 @@ func _apply_deferred_refresh() -> void:
 func _refresh_info() -> void:
 	var city: Dictionary = CityManager.get_city_state(_city_id)
 	if city.is_empty():
-		_city_name_label.text = "未知城市"
+		_city_name_label.text = I18n.t("city.unknown")
 		_info_label.text = ""
 		return
 
 	var name_str: String = str(city.get("name", _city_id))
 	if city.get("is_capital", false):
-		name_str += "（首都）"
+		name_str += I18n.t("city.capital")
 	_city_name_label.text = name_str
 
 	var fid: String = str(city.get("current_faction_id", ""))
@@ -347,7 +347,7 @@ func _refresh_buildings() -> void:
 
 		# 升级按钮
 		var upgrade_check: Dictionary = CityManager.can_upgrade(_city_id, bid)
-		var up_btn := SkirmishTileTextures.styled_button("升级")
+		var up_btn := SkirmishTileTextures.styled_button(I18n.t("city.upgrade"))
 		up_btn.add_theme_font_size_override("font_size", 12)
 		up_btn.disabled = not upgrade_check["allowed"]
 		SkirmishTileTextures.update_button_disabled(up_btn)
@@ -362,7 +362,7 @@ func _refresh_buildings() -> void:
 		row.add_child(up_btn)
 
 		# 拆除按钮
-		var del_btn := SkirmishTileTextures.styled_button("拆除")
+		var del_btn := SkirmishTileTextures.styled_button(I18n.t("city.demolish"))
 		del_btn.add_theme_font_size_override("font_size", 12)
 		del_btn.pressed.connect(_on_demolish_pressed.bind(bid))
 		row.add_child(del_btn)
@@ -520,7 +520,7 @@ func _refresh_recruit_list() -> void:
 		count_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.72, 1))
 		row.add_child(count_label)
 
-		var recruit_btn := SkirmishTileTextures.styled_button("征 1 队")
+		var recruit_btn := SkirmishTileTextures.styled_button(I18n.t("city.recruit_one"))
 		recruit_btn.name = "RecruitButton_%s" % unit_id
 		recruit_btn.add_theme_font_size_override("font_size", 12)
 		recruit_btn.disabled = not GameManager.is_player_faction(faction_id)
@@ -679,10 +679,10 @@ func _special_resource_name(sr: String) -> String:
 
 func _category_name(cat: String) -> String:
 	match cat:
-		"economic": return "经济"
-		"military": return "军事"
-		"political": return "政治"
-		"special": return "特殊"
+		"economic": return I18n.t("city.category_economic")
+		"military": return I18n.t("city.category_military")
+		"political": return I18n.t("city.category_political")
+		"special": return I18n.t("city.category_special")
 		_: return cat
 
 

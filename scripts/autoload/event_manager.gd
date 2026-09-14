@@ -223,6 +223,56 @@ func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: Str
 		if ally_count < conditions["allies_min"]:
 			return false
 
+	# 朝贡/声望门槛（九鼎/禅让等）
+	if conditions.has("tribute_min"):
+		if DiplomacySystem.get_tribute(faction_id if faction_id != "" else GameManager.get_player_faction()) < int(conditions["tribute_min"]):
+			return false
+	if conditions.has("reputation_min"):
+		if DiplomacySystem.get_reputation(faction_id if faction_id != "" else GameManager.get_player_faction()) < int(conditions["reputation_min"]):
+			return false
+	if conditions.has("tribute_max"):
+		if DiplomacySystem.get_tribute(faction_id if faction_id != "" else GameManager.get_player_faction()) > int(conditions["tribute_max"]):
+			return false
+	if conditions.has("reputation_max"):
+		if DiplomacySystem.get_reputation(faction_id if faction_id != "" else GameManager.get_player_faction()) > int(conditions["reputation_max"]):
+			return false
+
+	# 任意国家声望/存在（纵横家个人事件）
+	if conditions.has("reputation_min_any_faction"):
+		var threshold: int = int(conditions["reputation_min_any_faction"])
+		var any_hit: bool = false
+		for fid in GameManager.FACTION_IDS:
+			if DiplomacySystem.get_reputation(fid) >= threshold:
+				any_hit = true
+				break
+		if not any_hit:
+			return false
+	if conditions.has("faction_exists"):
+		if CityManager.is_faction_eliminated(str(conditions["faction_exists"])):
+			return false
+
+	# 纵横家联盟状态
+	if conditions.has("hezong_active"):
+		if bool(DiplomacySystem.get_event_chain_flag("hezong_active")) != bool(conditions["hezong_active"]):
+			return false
+	if conditions.has("lianheng_active"):
+		if bool(DiplomacySystem.get_event_chain_flag("lianheng_active")) != bool(conditions["lianheng_active"]):
+			return false
+	if conditions.has("hezong_turns_min"):
+		var bloc: Dictionary = DiplomacySystem.get_hezong_alliance()
+		if bloc.is_empty():
+			return false
+		var elapsed: int = GameManager.get_current_turn() - int(bloc.get("start_turn", 0))
+		if elapsed < int(conditions["hezong_turns_min"]):
+			return false
+	if conditions.has("lianheng_turns_min"):
+		var bloc: Dictionary = DiplomacySystem.get_lianheng_alliance()
+		if bloc.is_empty():
+			return false
+		var elapsed: int = GameManager.get_current_turn() - int(bloc.get("start_turn", 0))
+		if elapsed < int(conditions["lianheng_turns_min"]):
+			return false
+
 	return true
 
 

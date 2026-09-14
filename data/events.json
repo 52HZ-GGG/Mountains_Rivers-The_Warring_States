@@ -3722,7 +3722,7 @@
       "options": null
     },
     {
-      "_comment": "条件使用 turn_min 占位，实际触发需新增条件：tribute_min(>=80)、reputation_min(>=80)，见决策文档待办事项",
+      "_comment": "九鼎迁徙：朝贡度与声望双高",
       "id": "dip_nine_tripods",
       "title": "九鼎迁徙",
       "description": "周室衰微，九鼎迁徙之事传遍天下。有诸侯上表请求迎鼎入国，以承天命。",
@@ -3731,7 +3731,9 @@
         "type": "turn_start",
         "probability": 0.05,
         "conditions": {
-          "turn_min": 20
+          "turn_min": 20,
+          "tribute_min": 80,
+          "reputation_min": 80
         },
         "priority": 70,
         "one_shot": false
@@ -3832,7 +3834,7 @@
       ]
     },
     {
-      "_comment": "条件使用 turn_min 占位，实际触发需新增条件：tribute_min(>=90)、reputation_min(>=90)，见决策文档待办事项",
+      "_comment": "天子禅让：朝贡度与声望极高",
       "id": "dip_mandate_transfer",
       "title": "天子禅让",
       "description": "周天子以天命将尽，欲禅让天下于有德之诸侯。此乃千载难逢之机。",
@@ -3841,7 +3843,9 @@
         "type": "turn_start",
         "probability": 0.03,
         "conditions": {
-          "turn_min": 30
+          "turn_min": 30,
+          "tribute_min": 90,
+          "reputation_min": 90
         },
         "priority": 70,
         "one_shot": false

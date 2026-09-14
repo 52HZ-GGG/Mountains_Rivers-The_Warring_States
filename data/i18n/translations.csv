@@ -89,3 +89,24 @@ tech.status_available,状态: 可研究,Status: Available
 tech.status_locked,状态: 未解锁,Status: Locked
 tech.start_research,开始研究,Start Research
 tech.cancel_research,取消研究,Cancel Research
+city.back_to_map,返回大地图,Back to Map
+city.built_title,── 已建建筑 ──,── Built ──
+city.queue_title,── 建造队列 ──,── Build Queue ──
+city.build_title,── 可建造 ──,── Available ──
+city.recruit_title,── 可征兵 ──,── Recruit ──
+city.detail_title,── 建筑详情 ──,── Building Detail ──
+city.unknown,未知城市,Unknown City
+city.capital,（首都）,(Capital)
+city.upgrade,升级,Upgrade
+city.demolish,拆除,Demolish
+city.cancel,取消,Cancel
+city.recruit_one,征 1 队,Recruit 1
+city.conscription_pool,征兵池：,Conscription:
+city.empty,（空）,(Empty)
+city.category_economic,经济,Economy
+city.category_military,军事,Military
+city.category_political,政治,Political
+city.category_special,特殊,Special
+event.title,事件,Event
+school.title,学派,School
+big_map.title,大地图,World Map

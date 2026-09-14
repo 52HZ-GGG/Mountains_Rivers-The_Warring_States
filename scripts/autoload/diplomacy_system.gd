@@ -1289,7 +1289,7 @@ func _settle_trade_routes() -> void:
 
 
 func _apply_building_diplomacy_effects() -> void:
-	# 王宫 diplomacy_reputation：每回合给所属国加声望
+	# 王宫 diplomacy_reputation / 驿站 intelligence_range / 驿馆 intelligence_score
 	_building_diplomacy_rep_bonus.clear()
 	for fid in _opinions.keys():
 		if str(fid) == "zhou":
@@ -1321,6 +1321,12 @@ func _apply_building_diplomacy_effects() -> void:
 					for other in _opinions.keys():
 						if other != fid:
 							add_intelligence_points(str(fid), str(other), int(intel_range))
+				# 驿馆情报分加成
+				var intel_score: Variant = effects.get("intelligence_score")
+				if intel_score != null and (intel_score is int or intel_score is float):
+					for other in _opinions.keys():
+						if other != fid:
+							add_intelligence_points(str(fid), str(other), int(intel_score))
 		if rep_bonus > 0:
 			_building_diplomacy_rep_bonus[str(fid)] = rep_bonus
 			_change_reputation(str(fid), rep_bonus)
