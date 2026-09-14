@@ -21,6 +21,9 @@ static func evaluate_diplomacy(faction_id: String, turn_number: int) -> void:
 	_evaluate_ceasefire(faction_id)
 	_evaluate_alliance(faction_id)
 	_check_coalition_trigger()
+	# 纵横家：声望/回合达标时尝试合纵或连横
+	if randf() < 0.25:
+		DiplomacySystem.try_ai_strategist_bloc(faction_id)
 
 
 # ============= 评估频率 =============
@@ -57,6 +60,19 @@ static func _evaluate_war(faction_id: String) -> void:
 	# 检查互不侵犯
 	if DiplomacySystem.have_non_aggression(faction_id, target):
 		return
+
+	# 战争借口门槛：无借口时仅极高好战 AI 可宣战
+	var justify: Dictionary = DataManager.get_diplomacy_param("war_justification")
+	if bool(justify.get("ai_require_justification", true)):
+		if not DiplomacySystem.has_casus_belli(faction_id, target):
+			var personality: Dictionary = DataManager.get_ai_personality(faction_id)
+			var aggression: int = personality.get("aggression", 2)
+			if aggression < int(justify.get("ai_min_aggression_without_cb", 5)):
+				# 低好感可生成边界借口
+				if opinion < 0:
+					DiplomacySystem.grant_casus_belli(faction_id, target, "border_conflict")
+				else:
+					return
 
 	DiplomacySystem.declare_war(faction_id, target)
 

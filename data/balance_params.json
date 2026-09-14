@@ -397,6 +397,38 @@
     "wonder_chance_modifier": 0.5,
     "wonder_effect_modifier": 0.5
   },
+  "disasters": {
+    "omen_min_turn": 15,
+    "omen_chance": 0.04,
+    "omen_duration": 5,
+    "omen_morale_penalty": -8,
+    "omen_stability_penalty": -5,
+    "omen_disaster_resist_factor": 1.0,
+    "comet_min_turn": 25,
+    "comet_chance": 0.03,
+    "comet_morale_penalty": -15,
+    "comet_reputation_penalty": -5,
+    "five_star_min_turn": 40,
+    "five_star_chance": 0.02,
+    "five_star_duration": 8,
+    "five_star_morale_bonus": 10,
+    "five_star_reputation_bonus": 10,
+    "cooldown_turns": 12
+  },
+  "restoration": {
+    "enabled": true,
+    "check_on_elimination": true,
+    "min_turn": 20,
+    "base_chance": 0.35,
+    "culture_coverage_bonus": 0.25,
+    "high_reputation_bonus": 0.15,
+    "reputation_threshold": 60,
+    "ally_support_bonus": 0.1,
+    "restore_morale": 40,
+    "restore_gold": 200,
+    "restore_food": 200,
+    "unrest_duration": 5
+  },
   "culture": {
     "spread_rate": 0.05,
     "winter_spread_mod": 0.5,

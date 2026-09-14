@@ -215,6 +215,38 @@
     "war_target_weights": {"distance": 0.3, "power": 0.3, "opinion": 0.4},
     "gift_response": "same_as_player"
   },
+  "hezong_lianheng": {
+    "hezong_min_turn": 10,
+    "hezong_min_reputation": 70,
+    "hezong_ally_count": 3,
+    "hezong_duration": 10,
+    "hezong_reputation_gain": 5,
+    "hezong_tribute_gain": 5,
+    "lianheng_min_turn": 8,
+    "lianheng_min_reputation": 60,
+    "lianheng_ally_count": 2,
+    "lianheng_duration": 8,
+    "lianheng_reputation_gain": 10,
+    "lianheng_tribute_cost": 5,
+    "collapse_opinion_penalty": -10,
+    "backlash_opinion_penalty": -15,
+    "school_probability_bonus": 0.5,
+    "player_ability_cost_gold_hezong": 300,
+    "player_ability_cost_reputation_hezong": 20,
+    "player_ability_cost_gold_lianheng": 200,
+    "player_ability_cost_reputation_lianheng": 15,
+    "player_forced_alliance_duration": 20
+  },
+  "war_justification": {
+    "casus_belli_save_reputation": 15,
+    "casus_belli_save_opinion": 20,
+    "no_justification_extra_reputation": -10,
+    "no_justification_extra_opinion_all": -5,
+    "surprise_extra_reputation": -15,
+    "ai_require_justification": true,
+    "ai_min_aggression_without_cb": 5,
+    "valid_sources": ["border_conflict", "revenge", "vassal_defense", "coalition", "hezong", "lianheng", "city_claim"]
+  },
   "reputation_thresholds": {
     "very_low": 20,
     "low": 40,

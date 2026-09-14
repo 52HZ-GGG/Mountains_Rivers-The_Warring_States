@@ -60,12 +60,12 @@ func _build_ui() -> void:
 	var header := HBoxContainer.new()
 	root.add_child(header)
 	_title_label = Label.new()
-	_title_label.text = "大夫府"
+	_title_label.text = I18n.t("minister.panel_title")
 	_title_label.add_theme_font_size_override("font_size", 22)
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_title_label)
 	_close_btn = Button.new()
-	_close_btn.text = "关闭"
+	_close_btn.text = I18n.t("ui.close")
 	_close_btn.pressed.connect(func() -> void: close())
 	header.add_child(_close_btn)
 
@@ -78,24 +78,24 @@ func _build_ui() -> void:
 	cols.add_theme_constant_override("separation", 12)
 	root.add_child(cols)
 
-	_civil_list = _make_column(cols, "文大夫")
-	_military_list = _make_column(cols, "武大夫")
-	_diplomat_list = _make_column(cols, "外交大夫")
+	_civil_list = _make_column(cols, I18n.t("minister.civil"))
+	_military_list = _make_column(cols, I18n.t("minister.military"))
+	_diplomat_list = _make_column(cols, I18n.t("minister.diplomat"))
 
 	var action_row := HBoxContainer.new()
 	action_row.add_theme_constant_override("separation", 8)
 	root.add_child(action_row)
 	var assign_capital := Button.new()
-	assign_capital.text = "派驻首都"
+	assign_capital.text = I18n.t("minister.assign_capital")
 	assign_capital.pressed.connect(_on_assign_capital)
 	action_row.add_child(assign_capital)
 	var unassign_capital := Button.new()
-	unassign_capital.text = "卸任首都"
+	unassign_capital.text = I18n.t("minister.unassign_capital")
 	unassign_capital.pressed.connect(_on_unassign_capital)
 	action_row.add_child(unassign_capital)
 	action_row.add_child(Label.new())
 	var target_label := Label.new()
-	target_label.text = "外交目标："
+	target_label.text = I18n.t("minister.diplomat_target")
 	action_row.add_child(target_label)
 	_target_option = OptionButton.new()
 	_target_option.custom_minimum_size = Vector2(140, 0)
@@ -146,8 +146,8 @@ func _panel_style() -> StyleBoxFlat:
 
 
 func _refresh_all() -> void:
-	_title_label.text = "大夫府 — %s" % _faction_display(_faction_id)
-	_status_label.text = "武大夫攻防加成：+%d%% / +%d%%" % [
+	_title_label.text = I18n.t("minister.panel_title") + " — %s" % _faction_display(_faction_id)
+	_status_label.text = I18n.t("minister.military_bonus") % [
 		int(MinisterManager.get_faction_military_attack_bonus(_faction_id) * 100),
 		int(MinisterManager.get_faction_military_defense_bonus(_faction_id) * 100),
 	]

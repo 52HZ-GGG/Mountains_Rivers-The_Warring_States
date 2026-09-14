@@ -122,6 +122,7 @@ func build_save_data() -> Dictionary:
 		"wonders": WonderManager.get_save_data(),
 		"events": EventManager.get_save_data(),
 		"strategic_units": StrategicMapManager.get_save_data(),
+		"disasters": DisasterManager.get_save_data(),
 		"demo": {
 			"enabled": DemoFlow.is_enabled(),
 			"complete": DemoFlow.is_demo_complete(),
@@ -158,6 +159,7 @@ func apply_save_data(data: Dictionary) -> String:
 	WonderManager.load_save_data(data.get("wonders", {}) as Dictionary)
 	EventManager.load_save_data(data.get("events", {}) as Dictionary)
 	StrategicMapManager.load_save_data(data.get("strategic_units", {}) as Dictionary)
+	DisasterManager.load_save_data(data.get("disasters", {}) as Dictionary)
 	var demo: Dictionary = data.get("demo", {}) as Dictionary
 	if DemoFlow.has_method("restore_demo_flags"):
 		DemoFlow.restore_demo_flags(bool(demo.get("enabled", false)), bool(demo.get("complete", false)))

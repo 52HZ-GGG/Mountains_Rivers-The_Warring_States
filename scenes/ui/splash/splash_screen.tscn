@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://c72xheiuo7shb"]
 
 [ext_resource type="Script" path="res://scenes/ui/splash/splash_screen.gd" id="1"]
 [ext_resource type="Shader" path="res://assets/shaders/splash_brush_reveal.gdshader" id="2"]
@@ -41,7 +41,6 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 expand_mode = 3
-texture_filter = 0
 
 [node name="TitleContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -54,11 +53,10 @@ grow_vertical = 2
 
 [node name="Title" type="TextureRect" parent="TitleContainer"]
 visible = false
+material = SubResource("ShaderMaterial_splash")
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 expand_mode = 3
-texture_filter = 0
-material = SubResource("ShaderMaterial_splash")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

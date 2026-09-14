@@ -1,0 +1,51 @@
+key,zh_CN,en_US
+ui.close,关闭,Close
+ui.back,返回,Back
+ui.save,保存,Save
+ui.load,读取,Load
+ui.settings,设置,Settings
+ui.ministers,官员 / 大夫,Ministers
+ui.schools,学派 / 文化,Schools
+ui.save_load,存档 / 读档,Save / Load
+ui.big_map,大地图,World Map
+ui.diplomacy,外交,Diplomacy
+ui.tech,科技,Tech
+ui.military,军事 / 战役,Military
+ui.events,事件,Events
+ui.intelligence,情报,Intel
+ui.resources,资源,Resources
+minister.panel_title,大夫府,Minister Hall
+minister.civil,文大夫,Civil Minister
+minister.military,武大夫,Military Minister
+minister.diplomat,外交大夫,Diplomat
+minister.assign_capital,派驻首都,Assign to Capital
+minister.unassign_capital,卸任首都,Unassign Capital
+minister.assign_diplomat,派驻外交大夫,Send Diplomat
+minister.diplomat_target,外交目标：,Diplomat Target:
+minister.military_bonus,武大夫攻防加成：+%d%% / +%d%%,Military Bonus: +%d%% / +%d%%
+minister.empty_hint,选择列表中的大夫查看详情。,Select a minister to view details.
+school.policy,学派政策,School Policies
+school.quests,学派任务,School Quests
+school.switch,切换学派,Switch School
+school.activate_policy,激活政策,Activate Policy
+school.build_wonder,建造都江堰,Build Dujiangyan
+save.slot1,保存槽位 1,Save Slot 1
+save.slot2,保存槽位 2,Save Slot 2
+save.slot3,保存槽位 3,Save Slot 3
+save.load1,读取槽位 1,Load Slot 1
+save.load2,读取槽位 2,Load Slot 2
+save.load3,读取槽位 3,Load Slot 3
+save.load_auto,读取自动存档,Load Auto Save
+save.success,保存成功,Saved
+save.failed,保存失败,Save Failed
+save.load_success,读取成功,Loaded
+settings.mute,切换静音,Toggle Mute
+settings.fullscreen,切换全屏,Toggle Fullscreen
+settings.vol_down,音量 -10%,Volume -10%
+settings.vol_up,音量 +10%,Volume +10%
+settings.lang,切换语言(中/英),Switch Language (ZH/EN)
+settings.cheat,切换作弊,Toggle Cheat
+turn.success,回合切换成功,Turn Advanced
+turn.next,结束回合,End Turn
+demo.objective,Demo 目标,Demo Objective
+demo.sortie,出征洛邑,Sortie to Luoyi

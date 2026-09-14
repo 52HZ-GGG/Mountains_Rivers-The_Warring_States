@@ -45,6 +45,9 @@ var _strategist_abilities: Dictionary = {}
 var _hezong_alliance: Dictionary = {}
 var _lianheng_alliance: Dictionary = {}
 
+## 战争借口: attacker -> defender -> source
+var _casus_belli: Dictionary = {}
+
 ## 好感度衰减计数器
 var _decay_counter: int = 0
 
@@ -60,6 +63,7 @@ func _on_turn_started(turn_number: int, _faction_id: String) -> void:
 	_update_opinion_decay()
 	_update_treaty_expiry()
 	_update_war_cooldowns()
+	_tick_hezong_lianheng()
 
 
 func _on_turn_ended(turn_number: int, _faction_id: String) -> void:
@@ -87,6 +91,7 @@ func initialize(active_factions: Array[String]) -> void:
 	_strategist_abilities.clear()
 	_hezong_alliance.clear()
 	_lianheng_alliance.clear()
+	_casus_belli.clear()
 	_decay_counter = 0
 
 	# 初始化好感度（基于 initial_relations + 接壤修正）
@@ -343,6 +348,7 @@ func get_save_data() -> Dictionary:
 		"strategist_abilities": _strategist_abilities.duplicate(true),
 		"hezong_alliance": _hezong_alliance.duplicate(true),
 		"lianheng_alliance": _lianheng_alliance.duplicate(true),
+		"casus_belli": _casus_belli.duplicate(true),
 		"event_chain_flags": _event_chain_flags.duplicate(true),
 		"decay_counter": _decay_counter,
 	}
@@ -363,6 +369,7 @@ func load_save_data(data: Dictionary) -> void:
 	_strategist_abilities = (data.get("strategist_abilities", {}) as Dictionary).duplicate(true)
 	_hezong_alliance = (data.get("hezong_alliance", {}) as Dictionary).duplicate(true)
 	_lianheng_alliance = (data.get("lianheng_alliance", {}) as Dictionary).duplicate(true)
+	_casus_belli = (data.get("casus_belli", {}) as Dictionary).duplicate(true)
 	_event_chain_flags = (data.get("event_chain_flags", {}) as Dictionary).duplicate(true)
 	_decay_counter = int(data.get("decay_counter", 0))
 
@@ -476,19 +483,40 @@ func declare_war(attacker: String, defender: String) -> Dictionary:
 
 	# 好感度变化
 	var effects: Dictionary = DataManager.get_action_effects("declare_war")
-	_change_opinion(attacker, defender, effects.get("opinion_change_target", -30))
+	var opinion_target: int = effects.get("opinion_change_target", -30)
+	var opinion_all: int = effects.get("opinion_change_all", -10)
+	var reputation_delta: int = effects.get("reputation_change", -20)
+
+	# 战争借口减免 / 无借口加重
+	var cb_source: String = consume_casus_belli(attacker, defender)
+	var war_kind: String = get_declare_war_type(attacker, defender)
+	var justify: Dictionary = DataManager.get_diplomacy_param("war_justification")
+	if cb_source != "":
+		reputation_delta += int(justify.get("casus_belli_save_reputation", 15))
+		opinion_target += int(justify.get("casus_belli_save_opinion", 20))
+	else:
+		reputation_delta += int(justify.get("no_justification_extra_reputation", -10))
+		opinion_all += int(justify.get("no_justification_extra_opinion_all", -5))
+	if war_kind == "surprise":
+		reputation_delta += int(justify.get("surprise_extra_reputation", -15))
 
 	# 所有国家好感度变化（不宣而战惩罚）
 	for fid in _opinions:
 		if fid != attacker and fid != defender:
-			_change_opinion(fid, attacker, effects.get("opinion_change_all", -10))
+			_change_opinion(fid, attacker, opinion_all)
+
+	_change_opinion(attacker, defender, opinion_target)
+	_change_opinion(defender, attacker, opinion_target)
 
 	# 声望变化
-	_change_reputation(attacker, effects.get("reputation_change", -20))
+	_change_reputation(attacker, reputation_delta)
+
+	_at_war[key]["casus_belli"] = cb_source
+	_at_war[key]["war_kind"] = war_kind
 
 	SignalBus.war_declared.emit(attacker, defender)
 	SignalBus.diplomacy_action_performed.emit("declare_war", attacker, defender)
-	return {"success": true}
+	return {"success": true, "casus_belli": cb_source, "war_kind": war_kind}
 
 
 func propose_ceasefire(proposer: String, target: String, terms: Dictionary) -> Dictionary:
@@ -1141,6 +1169,7 @@ func reset() -> void:
 	_strategist_abilities.clear()
 	_hezong_alliance.clear()
 	_lianheng_alliance.clear()
+	_casus_belli.clear()
 	_event_chain_flags.clear()
 	_decay_counter = 0
 
@@ -1192,3 +1221,295 @@ func get_allies_count(faction_id: String) -> int:
 		if key.begins_with("alliance_") and (key.ends_with("_" + faction_id) or key.begins_with("alliance_" + faction_id + "_")):
 			count += 1
 	return count
+
+
+# ============= 战争借口 =============
+
+## 授予战争借口（边界冲突/复仇/护附庸/合纵连横等）
+func grant_casus_belli(attacker: String, defender: String, source: String) -> void:
+	if attacker == "" or defender == "" or attacker == defender:
+		return
+	var valid: Array = DataManager.get_diplomacy_param("war_justification.valid_sources")
+	if not valid.is_empty() and not valid.has(source):
+		source = "border_conflict"
+	if not _casus_belli.has(attacker):
+		_casus_belli[attacker] = {}
+	(_casus_belli[attacker] as Dictionary)[defender] = source
+
+
+func has_casus_belli(attacker: String, defender: String) -> bool:
+	return (_casus_belli.get(attacker, {}) as Dictionary).has(defender)
+
+
+func get_casus_belli(attacker: String, defender: String) -> String:
+	return str((_casus_belli.get(attacker, {}) as Dictionary).get(defender, ""))
+
+
+func consume_casus_belli(attacker: String, defender: String) -> String:
+	var source: String = get_casus_belli(attacker, defender)
+	if source != "" and _casus_belli.has(attacker):
+		(_casus_belli[attacker] as Dictionary).erase(defender)
+	return source
+
+
+# ============= 合纵 / 连横 =============
+
+func get_hezong_alliance() -> Dictionary:
+	return _hezong_alliance.duplicate(true)
+
+
+func get_lianheng_alliance() -> Dictionary:
+	return _lianheng_alliance.duplicate(true)
+
+
+func is_in_hezong(faction_id: String) -> bool:
+	if _hezong_alliance.is_empty():
+		return false
+	return (_hezong_alliance.get("members", []) as Array).has(faction_id)
+
+
+func is_in_lianheng(faction_id: String) -> bool:
+	if _lianheng_alliance.is_empty():
+		return false
+	return (_lianheng_alliance.get("members", []) as Array).has(faction_id)
+
+
+## 合纵：多国联合对扩张国宣战。members 含 leader。
+func form_hezong(leader: String, target: String, allies: Array) -> Dictionary:
+	if leader == "" or target == "" or leader == target:
+		return {"success": false, "reason": "invalid_args"}
+	if not _hezong_alliance.is_empty():
+		return {"success": false, "reason": "hezong_active"}
+	var params: Dictionary = DataManager.get_diplomacy_param("hezong_lianheng")
+	var need: int = int(params.get("hezong_ally_count", 3))
+	var members: Array = [leader]
+	for a in allies:
+		var fid := str(a)
+		if fid != "" and fid != target and not members.has(fid):
+			members.append(fid)
+	if members.size() < need:
+		return {"success": false, "reason": "not_enough_allies", "members": members}
+
+	for m in members:
+		var mid := str(m)
+		if mid == leader:
+			continue
+		# 强制临时结盟，绕过好感门槛
+		_force_alliance(leader, mid, int(params.get("player_forced_alliance_duration", 20)))
+		_change_opinion(mid, leader, 10)
+	for m in members:
+		var mid := str(m)
+		grant_casus_belli(mid, target, "hezong")
+		var war: Dictionary = declare_war(mid, target)
+		if not bool(war.get("success", false)) and str(war.get("reason", "")) != "already_at_war":
+			pass
+
+	_hezong_alliance = {
+		"leader": leader,
+		"target": target,
+		"members": members,
+		"turns_left": int(params.get("hezong_duration", 10)),
+		"start_turn": GameManager.get_current_turn(),
+	}
+	set_event_chain_flag("hezong_active", true)
+	_change_reputation(leader, int(params.get("hezong_reputation_gain", 5)))
+	_change_tribute(leader, int(params.get("hezong_tribute_gain", 5)))
+	SignalBus.diplomacy_action_performed.emit("hezong", leader, target)
+	return {"success": true, "members": members, "target": target}
+
+
+## 连横：两国联合对共同强敌宣战。
+func form_lianheng(leader: String, target: String, ally: String) -> Dictionary:
+	if leader == "" or target == "" or ally == "" or leader == target or ally == target or leader == ally:
+		return {"success": false, "reason": "invalid_args"}
+	if not _lianheng_alliance.is_empty():
+		return {"success": false, "reason": "lianheng_active"}
+	var params: Dictionary = DataManager.get_diplomacy_param("hezong_lianheng")
+	var members: Array = [leader, ally]
+	_force_alliance(leader, ally, int(params.get("player_forced_alliance_duration", 20)))
+	_change_opinion(ally, leader, 8)
+	for mid in members:
+		grant_casus_belli(str(mid), target, "lianheng")
+		declare_war(str(mid), target)
+
+	_lianheng_alliance = {
+		"leader": leader,
+		"target": target,
+		"members": members,
+		"turns_left": int(params.get("lianheng_duration", 8)),
+		"start_turn": GameManager.get_current_turn(),
+	}
+	set_event_chain_flag("lianheng_active", true)
+	_change_reputation(leader, int(params.get("lianheng_reputation_gain", 10)))
+	_change_tribute(leader, -int(params.get("lianheng_tribute_cost", 5)))
+	SignalBus.diplomacy_action_performed.emit("lianheng", leader, target)
+	return {"success": true, "members": members, "target": target}
+
+
+## 玩家主动能力：合纵（消耗金+声望，每局一次）
+func activate_hezong_ability(leader: String, target: String, allies: Array) -> Dictionary:
+	var ability: Dictionary = DataManager.get_diplomacy_param("strategist_abilities.vertical_alliance")
+	return _activate_strategist_ability("hezong", leader, target, allies, ability)
+
+
+## 玩家主动能力：连横
+func activate_lianheng_ability(leader: String, target: String, ally: String) -> Dictionary:
+	var ability: Dictionary = DataManager.get_diplomacy_param("strategist_abilities.horizontal_alliance")
+	return _activate_strategist_ability("lianheng", leader, target, [ally], ability)
+
+
+func _activate_strategist_ability(kind: String, leader: String, target: String, allies: Array, ability: Dictionary) -> Dictionary:
+	var used_key := kind + "_used"
+	if bool(_strategist_abilities.get(used_key, false)):
+		return {"success": false, "reason": "already_used"}
+	var cost_gold: int = int(ability.get("cost_gold", 200))
+	var cost_rep: int = int(ability.get("cost_reputation", 15))
+	if GameManager.get_faction_resource(leader, "gold") < cost_gold:
+		return {"success": false, "reason": "not_enough_gold"}
+	if get_reputation(leader) < cost_rep:
+		return {"success": false, "reason": "not_enough_reputation"}
+	GameManager.apply_faction_resource_delta(leader, "gold", -cost_gold)
+	_change_reputation(leader, -cost_rep)
+	_strategist_abilities[used_key] = true
+	if kind == "hezong":
+		return form_hezong(leader, target, allies)
+	return form_lianheng(leader, target, str(allies[0]) if allies.size() > 0 else "")
+
+
+func _force_alliance(a: String, b: String, duration: int) -> void:
+	var key := _relation_key(a, b)
+	_treaties[key] = {
+		"type": "alliance",
+		"turns_left": duration,
+		"start_turn": GameManager.get_current_turn(),
+		"forced": true,
+	}
+	SignalBus.alliance_formed.emit(a, b)
+
+
+func _tick_hezong_lianheng() -> void:
+	var params: Dictionary = DataManager.get_diplomacy_param("hezong_lianheng")
+	if not _hezong_alliance.is_empty():
+		_hezong_alliance["turns_left"] = int(_hezong_alliance.get("turns_left", 0)) - 1
+		if int(_hezong_alliance.get("turns_left", 0)) <= 0:
+			_dissolve_bloc(_hezong_alliance, int(params.get("collapse_opinion_penalty", -10)), "hezong")
+			_hezong_alliance = {}
+			set_event_chain_flag("hezong_active", false)
+	if not _lianheng_alliance.is_empty():
+		_lianheng_alliance["turns_left"] = int(_lianheng_alliance.get("turns_left", 0)) - 1
+		if int(_lianheng_alliance.get("turns_left", 0)) <= 0:
+			_dissolve_bloc(_lianheng_alliance, int(params.get("backlash_opinion_penalty", -5)), "lianheng")
+			_lianheng_alliance = {}
+			set_event_chain_flag("lianheng_active", false)
+
+
+func _dissolve_bloc(bloc: Dictionary, opinion_penalty: int, kind: String) -> void:
+	var members: Array = bloc.get("members", [])
+	for i in range(members.size()):
+		for j in range(i + 1, members.size()):
+			var a := str(members[i])
+			var b := str(members[j])
+			var key := _relation_key(a, b)
+			if _treaties.has(key) and str(_treaties[key].get("type", "")) == "alliance" and bool(_treaties[key].get("forced", false)):
+				_treaties.erase(key)
+				SignalBus.alliance_broken.emit(a, b)
+			_change_opinion(a, b, opinion_penalty)
+			_change_opinion(b, a, opinion_penalty)
+	SignalBus.diplomacy_action_performed.emit(kind + "_dissolve", str(bloc.get("leader", "")), str(bloc.get("target", "")))
+
+
+func _change_tribute(faction_id: String, delta: int) -> void:
+	if delta == 0:
+		return
+	var current: int = int(_tribute.get(faction_id, 0))
+	_tribute[faction_id] = clampi(current + delta, 0, 100)
+
+
+## AI 评估是否发起合纵/连横（由 DiplomacyAI 调用）
+func try_ai_strategist_bloc(faction_id: String) -> bool:
+	var params: Dictionary = DataManager.get_diplomacy_param("hezong_lianheng")
+	var turn: int = GameManager.get_current_turn()
+	var rep: int = get_reputation(faction_id)
+
+	# 扩张中的强国 → 合纵
+	if turn >= int(params.get("hezong_min_turn", 10)) and rep >= int(params.get("hezong_min_reputation", 70)):
+		if _hezong_alliance.is_empty() and get_power_score(faction_id) > _average_power() * 1.2:
+			var target := _pick_bloc_target(faction_id, true)
+			if not target.is_empty():
+				var allies := _pick_lowest_opinion_allies(target, faction_id, int(params.get("hezong_ally_count", 3)) - 1)
+				if allies.size() >= int(params.get("hezong_ally_count", 3)) - 1:
+					var result := form_hezong(faction_id, target, allies)
+					if bool(result.get("success", false)):
+						return true
+
+	# 有强敌 → 连横
+	if turn >= int(params.get("lianheng_min_turn", 8)) and rep >= int(params.get("lianheng_min_reputation", 60)):
+		if _lianheng_alliance.is_empty():
+			var target := _pick_bloc_target(faction_id, false)
+			if not target.is_empty():
+				var ally := _pick_highest_opinion_ally(faction_id, target)
+				if not ally.is_empty():
+					var result := form_lianheng(faction_id, target, ally)
+					if bool(result.get("success", false)):
+						return true
+	return false
+
+
+func _average_power() -> float:
+	var total := 0.0
+	var count := 0
+	for fid in GameManager.FACTION_IDS:
+		if CityManager.get_faction_cities(fid).is_empty():
+			continue
+		total += get_power_score(fid)
+		count += 1
+	return total / float(maxi(count, 1))
+
+
+func _pick_bloc_target(self_id: String, prefer_strong: bool) -> String:
+	var best := ""
+	var best_score := -1.0
+	for fid in GameManager.FACTION_IDS:
+		if fid == self_id or CityManager.get_faction_cities(fid).is_empty():
+			continue
+		if are_allied(self_id, fid) or are_at_war(self_id, fid):
+			continue
+		var power: float = get_power_score(fid)
+		var opinion: int = get_opinion(self_id, fid)
+		var score: float = power if prefer_strong else float(100 - opinion)
+		if score > best_score:
+			best_score = score
+			best = fid
+	return best
+
+
+func _pick_lowest_opinion_allies(target: String, leader: String, count: int) -> Array:
+	var scored: Array = []
+	for fid in GameManager.FACTION_IDS:
+		if fid == target or fid == leader or CityManager.get_faction_cities(fid).is_empty():
+			continue
+		if are_at_war(fid, target):
+			continue
+		scored.append({"id": fid, "opinion": get_opinion(fid, target)})
+	scored.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a["opinion"]) < int(b["opinion"])
+	)
+	var result: Array = []
+	for i in range(mini(count, scored.size())):
+		result.append(str(scored[i]["id"]))
+	return result
+
+
+func _pick_highest_opinion_ally(self_id: String, target: String) -> String:
+	var best := ""
+	var best_opinion := -999
+	for fid in GameManager.FACTION_IDS:
+		if fid == self_id or fid == target or CityManager.get_faction_cities(fid).is_empty():
+			continue
+		if are_at_war(fid, target) or are_allied(fid, target):
+			continue
+		var op: int = get_opinion(self_id, fid)
+		if op > best_opinion:
+			best_opinion = op
+			best = fid
+	return best

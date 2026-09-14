@@ -33,6 +33,8 @@ TacticalSkirmishManager="*res://scripts/autoload/tactical_skirmish_manager.gd"
 DemoFlow="*res://scripts/autoload/demo_flow.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 StrategicMapManager="*res://scripts/autoload/strategic_map_manager.gd"
+I18n="*res://scripts/autoload/i18n.gd"
+DisasterManager="*res://scripts/autoload/disaster_manager.gd"
 
 [display]
 

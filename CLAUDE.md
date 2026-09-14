@@ -104,8 +104,12 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 | `event_manager.gd` | 三阶段事件管线：连锁事件、季节事件、池竞争；管理冷却和条件触发 |
 | `game_manager.gd` | 主游戏循环控制器；状态机（GAME_INIT→TURN_START→ACTION→TURN_END→GAME_OVER）；回合循环/势力顺序/玩家资源/胜利条件 |
 | `city_manager.gd` | 50城运行时状态管理；建筑建造/升级/拆除、所有权变更、迁都、灭国检查 |
-| `diplomacy_system.gd` | 外交系统：好感度/声望/条约/战争/附庸/商路/军事通行；每回合衰减和过期 |
+| `diplomacy_system.gd` | 外交系统：好感度/声望/条约/战争/附庸/商路/军事通行；合纵/连横与战争借口；每回合衰减和过期 |
 | `tactical_skirmish_manager.gd` | 战术演武管理器：六角格移动/战斗结算/攻城/关隘城墙耐久；数据驱动自 `tactical_skirmish_mvp.json` |
+| `save_manager.gd` | 多槽完整存档 + 自动存档 |
+| `strategic_map_manager.gd` | 大地图战略单位生产/移动/战斗 |
+| `disaster_manager.gd` | 大灾异象（彗星/五连星）+ 复国主义 |
+| `i18n.gd` | 轻量 i18n（CSV 词条 + locale 切换） |
 
 ### 游戏系统（`scripts/systems/`）
 
@@ -122,7 +126,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 | 文件 | 职责 |
 |------|------|
-| `diplomacy_ai.gd` | AI 外交决策系统 `DiplomacyAI`：概率驱动的战争评估/停战/结盟/合纵/脱附；性格加权 |
+| `diplomacy_ai.gd` | AI 外交决策系统 `DiplomacyAI`：概率驱动的战争评估/停战/结盟/合纵/脱附；性格加权；战争借口门槛 |
 
 ### 单位脚本（`scripts/units/`）
 
@@ -206,6 +210,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 | `test_unit_morale.gd` | 单位士气系统 |
 | `test_unit_skills.gd` | 单位特殊技能 |
 | `test_zoc.gd` | 控制区（ZoC） |
+| `test_diplomacy_blocs.gd` | 合纵/连横、战争借口、复国主义 |
 
 ### 工具脚本（`tools/`）— 12个资产生成脚本
 
