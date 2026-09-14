@@ -49,6 +49,13 @@ school.quests,学派任务,School Quests
 school.switch,切换学派,Switch School
 school.activate_policy,激活政策,Activate Policy
 school.build_wonder,建造都江堰,Build Dujiangyan
+school.events,相关事件,Related Events
+school.view_tech,查看科技,View Tech
+school.overview_title,学派 / 文化总览,Schools / Culture
+school.policy_title,学派政策,School Policies
+school.back_to_overview,返回总览,Back to Overview
+school.policy_general,通用·%s（经验%s）,General·%s (EXP %s)
+school.policy_exclusive,专属·%s（经验%s）,Exclusive·%s (EXP %s)
 save.slot1,保存槽位 1,Save Slot 1
 save.slot2,保存槽位 2,Save Slot 2
 save.slot3,保存槽位 3,Save Slot 3

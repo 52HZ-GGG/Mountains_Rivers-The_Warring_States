@@ -777,15 +777,15 @@ func _show_intelligence_panel() -> void:
 func _show_schools_panel() -> void:
 	if not is_instance_valid(_framework_placeholder_layer):
 		return
-	_framework_placeholder_title.text = "学派 / 文化总览"
+	_framework_placeholder_title.text = I18n.t("school.overview_title")
 	_framework_placeholder_body.text = _framework_schools_summary()
 	_clear_framework_placeholder_actions()
-	_add_framework_placeholder_action("OpenSchoolSelectButton", "切换学派", _open_school_switch_panel)
-	_add_framework_placeholder_action("OpenSchoolPolicyButton", "激活政策", _open_school_policy_panel)
-	_add_framework_placeholder_action("OpenSchoolQuestButton", "学派任务", _open_school_quest_panel)
-	_add_framework_placeholder_action("OpenWonderButton", "建造都江堰", _try_build_dujiangyan)
-	_add_framework_placeholder_action("OpenSchoolEventsButton", "相关事件", _open_school_events_panel)
-	_add_framework_placeholder_action("OpenSchoolTechButton", "查看科技", _open_school_tech_panel)
+	_add_framework_placeholder_action("OpenSchoolSelectButton", I18n.t("school.switch"), _open_school_switch_panel)
+	_add_framework_placeholder_action("OpenSchoolPolicyButton", I18n.t("school.activate_policy"), _open_school_policy_panel)
+	_add_framework_placeholder_action("OpenSchoolQuestButton", I18n.t("school.quests"), _open_school_quest_panel)
+	_add_framework_placeholder_action("OpenWonderButton", I18n.t("school.build_wonder"), _try_build_dujiangyan)
+	_add_framework_placeholder_action("OpenSchoolEventsButton", I18n.t("school.events"), _open_school_events_panel)
+	_add_framework_placeholder_action("OpenSchoolTechButton", I18n.t("school.view_tech"), _open_school_tech_panel)
 	_framework_placeholder_layer.visible = true
 
 
@@ -873,7 +873,7 @@ func _open_school_policy_panel() -> void:
 	if not is_instance_valid(_framework_placeholder_layer):
 		return
 	var player_faction_id: String = _resolve_player_faction_id()
-	_framework_placeholder_title.text = "学派政策"
+	_framework_placeholder_title.text = I18n.t("school.policy_title")
 	_framework_placeholder_body.text = _framework_school_policy_summary(player_faction_id)
 	_clear_framework_placeholder_actions()
 	var school_id: String = SchoolManager.get_current_school(player_faction_id)
@@ -883,7 +883,7 @@ func _open_school_policy_panel() -> void:
 			var pid: String = str(policy.get("id", ""))
 			_add_framework_placeholder_action(
 				"Policy_%s" % pid,
-				"通用·%s（经验%s）" % [str(policy.get("name", pid)), str(policy.get("exp_cost", 0))],
+				I18n.t("school.policy_general") % [str(policy.get("name", pid)), str(policy.get("exp_cost", 0))],
 				_on_school_policy_activate.bind(pid)
 			)
 		var school: Dictionary = DataManager.get_school(school_id)
@@ -892,10 +892,10 @@ func _open_school_policy_panel() -> void:
 			var pid: String = str(policy.get("id", ""))
 			_add_framework_placeholder_action(
 				"Policy_%s" % pid,
-				"专属·%s（经验%s）" % [str(policy.get("name", pid)), str(policy.get("exp_cost", 0))],
+				I18n.t("school.policy_exclusive") % [str(policy.get("name", pid)), str(policy.get("exp_cost", 0))],
 				_on_school_policy_activate.bind(pid)
 			)
-	_add_framework_placeholder_action("SchoolPolicyBackButton", "返回总览", _show_schools_panel)
+	_add_framework_placeholder_action("SchoolPolicyBackButton", I18n.t("school.back_to_overview"), _show_schools_panel)
 	_framework_placeholder_layer.visible = true
 
 
