@@ -147,6 +147,7 @@ func set_tax_rate(rate: float) -> bool:
 		push_warning("GameManager: 税率调整冷却中，剩余 %d 回合" % _tax_change_cooldown_remaining)
 		return false
 	_tax_rate = rate
+	SchoolManager.notify_tax_changed(_player_faction)
 	var tax_morale: Variant = DataManager.get_balance_param("morale.tax_morale_values")
 	if tax_morale is Dictionary:
 		var tax_delta: int = int((tax_morale as Dictionary).get(str(rate), 0))

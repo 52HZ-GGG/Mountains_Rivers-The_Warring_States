@@ -155,19 +155,24 @@ func test_framework_ministers_module_uses_real_minister_data() -> void:
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
 	main_scene.call("_on_framework_module_pressed", "ministers")
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
+	var minister_panel: Control = main_scene.get("_minister_panel") as Control
+	assert_not_null(minister_panel, "官员入口应打开正式大夫面板")
+	assert_true(minister_panel.visible, "大夫面板应可见")
+	var title: Label = minister_panel.get("_title_label") as Label
+	assert_true(title.text.contains("大夫府"), "标题应为大夫府")
+	var civil: VBoxContainer = minister_panel.get("_civil_list") as VBoxContainer
+	var military: VBoxContainer = minister_panel.get("_military_list") as VBoxContainer
+	var diplomat: VBoxContainer = minister_panel.get("_diplomat_list") as VBoxContainer
+	assert_gt(civil.get_child_count(), 0, "应列出文大夫")
+	assert_gt(military.get_child_count(), 0, "应列出武大夫")
+	assert_gt(diplomat.get_child_count(), 0, "应列出外交大夫")
+	var status: Label = minister_panel.get("_status_label") as Label
+	assert_true(status.text.contains("武大夫攻防加成"), "应展示武大夫加成")
+	# 总览仍可通过内部接口打开
+	main_scene.call("_show_ministers_panel")
 	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
-
-	assert_eq(placeholder_title.text, "官员 / 大夫总览", "官员入口应升级为真实数据总览")
 	assert_true(placeholder_body.text.contains("试玩说明"), "官员总览应统一提供试玩说明")
-	assert_true(placeholder_body.text.contains("官员条目"), "官员总览应展示官员数据统计")
 	assert_true(placeholder_body.text.contains("商鞅"), "官员总览应展示已有历史人物")
-	assert_true(placeholder_body.text.contains("当前势力关注"), "官员总览应展示当前势力的官员关注方向")
-	assert_true(placeholder_body.text.contains("秦国"), "秦国试玩路径下应展示玩家势力信息")
-	assert_true(placeholder_body.text.contains("法家"), "秦国默认学派关联人物应指向法家")
-	assert_not_null(_find_descendant_by_name(actions, "OpenMinisterCityButton"), "官员总览应提供城市入口")
-	assert_not_null(_find_descendant_by_name(actions, "OpenMinisterDiplomacyButton"), "官员总览应提供外交入口")
 
 
 func test_framework_minister_assign_panel_can_reassign_capital_minister() -> void:

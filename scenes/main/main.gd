@@ -4,6 +4,8 @@ extends Node
 
 var _diplomacy_scene: PackedScene = preload("res://scenes/ui/diplomacy/diplomacy_panel.tscn")
 var _diplomacy_panel: Panel = null
+var _minister_panel_scene: PackedScene = preload("res://scenes/ui/minister_panel/minister_panel.tscn")
+var _minister_panel: Panel = null
 var _big_map_scene: PackedScene = preload("res://scenes/ui/big_map/big_map_panel.tscn")
 var _big_map_panel: CanvasLayer = null
 var _city_panel_scene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
@@ -607,7 +609,7 @@ func _on_framework_module_pressed(module_id: String) -> void:
 		"schools":
 			_show_schools_panel()
 		"ministers":
-			_show_ministers_panel()
+			_open_formal_minister_panel()
 		"intelligence":
 			_show_intelligence_panel()
 		"resources":
@@ -775,6 +777,26 @@ func _show_schools_panel() -> void:
 	_add_framework_placeholder_action("OpenSchoolEventsButton", "相关事件", _open_school_events_panel)
 	_add_framework_placeholder_action("OpenSchoolTechButton", "查看科技", _open_school_tech_panel)
 	_framework_placeholder_layer.visible = true
+
+
+func _open_formal_minister_panel() -> void:
+	if is_instance_valid(_minister_panel):
+		_minister_panel.queue_free()
+	_minister_panel = _minister_panel_scene.instantiate() as Panel
+	add_child(_minister_panel)
+	_minister_panel.panel_closed.connect(_on_minister_panel_closed)
+	var fid: String = _resolve_player_faction_id()
+	_minister_panel.open(fid)
+	_set_toolbar_visible(false)
+	_set_end_turn_visible(false)
+
+
+func _on_minister_panel_closed() -> void:
+	_set_toolbar_visible(true)
+	_set_end_turn_visible(false)
+	if is_instance_valid(_minister_panel):
+		_minister_panel.queue_free()
+		_minister_panel = null
 
 
 func _show_ministers_panel() -> void:

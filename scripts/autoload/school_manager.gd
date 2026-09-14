@@ -9,6 +9,7 @@ extends Node
 ## - 按等级 + 政策 + 季节汇总效果
 
 var _school_state_by_faction: Dictionary = {}
+var _turns_without_tax_change: Dictionary = {}
 const _POLICY_SLOT_EFFECT_KEYS: Array[String] = [
 	"all_output_bonus",
 	"research_speed_bonus",
@@ -31,6 +32,7 @@ func _ready() -> void:
 ## 由 GameManager 在 turn_started 后显式调用，避免仅靠信号导致漏 tick。
 func tick_policy_durations(faction_id: String) -> void:
 	_tick_policy_durations(faction_id)
+	tick_tax_stability_counter(faction_id)
 
 
 func _on_school_exp_gained(amount: int) -> void:
@@ -42,6 +44,7 @@ func _on_school_exp_gained(amount: int) -> void:
 
 func reset() -> void:
 	_school_state_by_faction.clear()
+	_turns_without_tax_change.clear()
 
 
 func initialize_factions(active_factions: Array[String]) -> void:
@@ -341,6 +344,10 @@ func _quest_condition_met(faction_id: String, quest: Dictionary) -> bool:
 			actual = float(GameManager.get_total_troops(faction_id))
 		"city_count":
 			actual = float(CityManager.get_faction_city_states(faction_id).size())
+		"national_morale":
+			actual = float(GameManager.get_faction_resource(faction_id, "morale"))
+		"turns_without_tax_change":
+			actual = float(_turns_without_tax_change.get(faction_id, 0))
 		"legalist_governed_stability":
 			actual = _min_avg_stability_for_minister_school(faction_id, "legalism")
 		_:
@@ -357,6 +364,14 @@ func _quest_condition_met(faction_id: String, quest: Dictionary) -> bool:
 		"==":
 			return absf(actual - value) < 0.001
 	return false
+
+
+func notify_tax_changed(faction_id: String) -> void:
+	_turns_without_tax_change[faction_id] = 0
+
+
+func tick_tax_stability_counter(faction_id: String) -> void:
+	_turns_without_tax_change[faction_id] = int(_turns_without_tax_change.get(faction_id, 0)) + 1
 
 
 func _min_avg_stability_for_minister_school(faction_id: String, school_id: String) -> float:
