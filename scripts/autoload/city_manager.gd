@@ -1516,10 +1516,11 @@ func get_city_production(city_id: String) -> Dictionary:
 	if minister_output_bonus > 0.0:
 		for resource in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books"]:
 			prod[resource] = int(round(float(prod.get(resource, 0)) * (1.0 + minister_output_bonus)))
-	# 粮仓 max_food_production 上限截断
-	var max_fp: int = int(prod.get("max_food_production", 0))
-	if max_fp > 0 and prod["food"] > max_fp:
-		prod["food"] = max_fp
+	# 城级粮食产出上限 + 粮仓加成（先记入，最后统一截断）
+	var city_level: int = int(city.get("city_level", 1))
+	var level_cfg: Dictionary = (DataManager.get_balance_param("city_levels") as Dictionary).get(str(city_level), {})
+	var max_fp_base: int = int(level_cfg.get("max_food_production", 0))
+	prod["max_food_production"] = max_fp_base + int(prod.get("max_food_production", 0))
 	# 特产加成
 	var sr: Variant = city.get("special_resource", null)
 	if sr != null:
@@ -1536,12 +1537,18 @@ func get_city_production(city_id: String) -> Dictionary:
 	prod["wood"] = int(prod["wood"] * stab_mod)
 	prod["food"] = int(prod["food"] * service_food_mod)
 	prod["gold"] = int(prod["gold"] * service_gold_mod)
+	# 服役惩罚也压低人口增长（写入供调用方读取）
+	prod["growth_mod"] = float(service_effect.get("growth_mod", 1.0))
 	var faction_id: String = str(city.get("current_faction_id", ""))
 	var all_output_bonus: float = SchoolManager.get_effect_float(faction_id, "all_output_bonus")
 	all_output_bonus += GameManager._get_confucian_prosperity_bonus(faction_id)
 	if all_output_bonus > 0.0:
 		for resource in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books"]:
 			prod[resource] = int(round(float(prod.get(resource, 0)) * (1.0 + all_output_bonus)))
+	# 所有加成后再截断粮食上限
+	var max_fp: int = int(prod.get("max_food_production", 0))
+	if max_fp > 0 and int(prod["food"]) > max_fp:
+		prod["food"] = max_fp
 	var base_food_consume_per_pop: float = float(DataManager.get_balance_param("population.food_consume_per_pop"))
 	var food_consumption_reduction: float = GameManager.get_food_consumption_reduction(faction_id)
 	var food_consume_per_pop: int = int(round(base_food_consume_per_pop * (1.0 - food_consumption_reduction)))
