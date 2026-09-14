@@ -390,7 +390,7 @@ func _apply_effects(effects: Dictionary) -> void:
 		var shift: int = randi_range(min_val, max_val)
 		DiplomacySystem.change_opinion_all_toward(GameManager.get_player_faction_id(), shift)
 	if effects.has("tribute_change"):
-		DiplomacySystem.set_event_chain_flag("tribute_change", effects["tribute_change"])
+		DiplomacySystem._change_tribute(GameManager.get_player_faction(), int(effects["tribute_change"]))
 	if effects.has("diplomacy_independence_bonus"):
 		DiplomacySystem.set_event_chain_flag("independence_bonus", effects["diplomacy_independence_bonus"])
 
@@ -409,6 +409,12 @@ func _apply_effects(effects: Dictionary) -> void:
 		DiplomacySystem.set_event_chain_flag("lianheng_backlash", true)
 	if effects.has("diplomacy_zhou_aid"):
 		DiplomacySystem.set_event_chain_flag("zhou_aid", true)
+	if effects.has("diplomacy_nine_tripods"):
+		DiplomacySystem.set_event_chain_flag("nine_tripods_offered", true)
+	# 特殊胜利：九鼎 / 禅让
+	if effects.has("special_victory"):
+		var victory_type: String = str(effects["special_victory"])
+		GameManager.grant_special_victory(GameManager.get_player_faction(), victory_type)
 
 
 func _record_recent_event(evt: Dictionary, status: String, choice_id: String = "") -> void:

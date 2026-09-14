@@ -91,15 +91,19 @@ func _ready() -> void:
 	_resource_bar.visible = false
 
 	var diplomacy_button := $DiplomacyButton as Button
+	diplomacy_button.text = I18n.t("ui.diplomacy")
 	diplomacy_button.pressed.connect(_on_diplomacy_button_pressed)
 
 	var tech_button := $TechButton as Button
+	tech_button.text = I18n.t("ui.tech")
 	tech_button.pressed.connect(_on_tech_button_pressed)
 
 	var skirmish_button := $SkirmishButton as Button
+	skirmish_button.text = I18n.t("ui.military")
 	skirmish_button.pressed.connect(_on_skirmish_button_pressed)
 
 	var big_map_button := $BigMapButton as Button
+	big_map_button.text = I18n.t("ui.big_map")
 	big_map_button.pressed.connect(_on_big_map_button_pressed)
 
 	_init_game()

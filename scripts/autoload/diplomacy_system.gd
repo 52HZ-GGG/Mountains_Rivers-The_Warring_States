@@ -328,6 +328,73 @@ func get_intel_detail(observer: String, target: String, info_type: String) -> Va
 	return null
 
 
+## 外交状态五级（决策 #95）：hostile / unfriendly / neutral / friendly / allied
+func get_diplomatic_state(observer: String, target: String) -> String:
+	if are_at_war(observer, target):
+		return "hostile"
+	if are_allied(observer, target):
+		return "allied"
+	var opinion: int = get_opinion(observer, target)
+	if opinion >= 40:
+		return "friendly"
+	if opinion <= -20:
+		return "unfriendly"
+	return "neutral"
+
+
+## 单位信息可见性（决策 #89/#95/#99）：外交状态 ∪ 情报力
+## 返回字段：unit_name / hp_status / attack_defense / move / minister_name / minister_stats / minister_skills
+func get_unit_info_visibility(observer: String, target_faction: String) -> Dictionary:
+	var visible := {
+		"unit_name": true,
+		"hp_status": true,
+		"attack_defense": false,
+		"move": false,
+		"minister_name": false,
+		"minister_stats": false,
+		"minister_skills": false,
+	}
+	# 被动势力自动完整
+	if DataManager.get_faction(observer).get("is_passive", false) \
+		or DataManager.get_faction(target_faction).get("is_passive", false):
+		for k in visible:
+			visible[k] = true
+		return visible
+
+	var state: String = get_diplomatic_state(observer, target_faction)
+	match state:
+		"hostile":
+			visible["minister_name"] = true
+		"neutral":
+			visible["attack_defense"] = true
+		"friendly":
+			visible["minister_stats"] = true
+			visible["move"] = true
+		"allied":
+			visible["minister_skills"] = true
+			visible["minister_stats"] = true
+			visible["minister_name"] = true
+			visible["move"] = true
+			visible["attack_defense"] = true
+
+	var level: int = get_intelligence_level(observer, target_faction)
+	if level >= 2:
+		visible["attack_defense"] = true
+	if level >= 3:
+		visible["move"] = true
+		visible["minister_name"] = true
+	if level >= 4:
+		visible["minister_stats"] = true
+	return visible
+
+
+## 是否允许对目标单位发起战略交互（未宣战禁止）
+func can_attack_faction(attacker: String, defender: String) -> bool:
+	if attacker == "" or defender == "" or attacker == defender:
+		return false
+	return are_at_war(attacker, defender)
+
+
 func is_zhou_faction(faction_id: String) -> bool:
 	return faction_id == "zhou"
 

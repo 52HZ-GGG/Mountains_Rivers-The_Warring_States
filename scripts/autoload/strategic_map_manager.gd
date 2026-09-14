@@ -244,6 +244,9 @@ func try_attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 		return {"ok": false, "reason": "NO_UNIT"}
 	if str(attacker["faction_id"]) == str(defender["faction_id"]):
 		return {"ok": false, "reason": "SAME_FACTION"}
+	# 决策 #89：未宣战禁止交互
+	if not DiplomacySystem.are_at_war(str(attacker["faction_id"]), str(defender["faction_id"])):
+		return {"ok": false, "reason": "NOT_AT_WAR"}
 	if bool(attacker.get("acted", false)):
 		return {"ok": false, "reason": "ALREADY_ACTED"}
 	var a_pos: Vector2i = Vector2i(int(attacker["q"]), int(attacker["r"]))
@@ -272,6 +275,11 @@ func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
 		return {"ok": false, "reason": "NO_CITY"}
 	if str(city.get("current_faction_id", "")) == str(unit["faction_id"]):
 		return {"ok": false, "reason": "OWN_CITY"}
+	# 决策 #89：未宣战禁止攻城（中立城除外）
+	var city_owner: String = str(city.get("current_faction_id", ""))
+	if city_owner != "neutral" and city_owner != "":
+		if not DiplomacySystem.are_at_war(str(unit["faction_id"]), city_owner):
+			return {"ok": false, "reason": "NOT_AT_WAR"}
 	if bool(unit.get("acted", false)):
 		return {"ok": false, "reason": "ALREADY_ACTED"}
 	var u_pos: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))

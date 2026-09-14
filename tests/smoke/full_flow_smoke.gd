@@ -163,6 +163,9 @@ func _test_recruit_and_strategic_units() -> void:
 
 
 func _test_strategic_combat() -> void:
+	# 决策 #89：未宣战不可攻击
+	if not bool(_dip.call("are_at_war", "qin", "zhao")):
+		_dip.call("declare_war", "qin", "zhao")
 	var mine: Array = _sai.call("get_faction_units", "qin")
 	if mine.is_empty():
 		_bad("战略战斗: 秦无单位")
@@ -194,8 +197,12 @@ func _test_strategic_combat() -> void:
 
 
 func _test_diplomacy_war() -> void:
-	var declared: Dictionary = _dip.call("declare_war", "qin", "zhao")
-	_assert("外交: 宣战", bool(declared.get("success", false)), str(declared.get("reason", "")))
+	# 战略战斗用例可能已宣战
+	if bool(_dip.call("are_at_war", "qin", "zhao")):
+		_ok("外交: 已处于战争")
+	else:
+		var declared: Dictionary = _dip.call("declare_war", "qin", "zhao")
+		_assert("外交: 宣战", bool(declared.get("success", false)), str(declared.get("reason", "")))
 	_assert("外交: 处于战争", bool(_dip.call("are_at_war", "qin", "zhao")))
 	var accepted: Dictionary = _dip.call("accept_ceasefire", "qin", "zhao", {})
 	_assert("外交: 停战", bool(accepted.get("success", false)), str(accepted.get("reason", "")))

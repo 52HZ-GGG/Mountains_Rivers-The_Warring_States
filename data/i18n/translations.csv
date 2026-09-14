@@ -45,6 +45,12 @@ settings.vol_down,音量 -10%,Volume -10%
 settings.vol_up,音量 +10%,Volume +10%
 settings.lang,切换语言(中/英),Switch Language (ZH/EN)
 settings.cheat,切换作弊,Toggle Cheat
+victory.nine_tripods,九鼎天命,Nine Tripods Mandate
+victory.mandate_of_heaven,天子禅让,Mandate of Heaven
+combat.not_at_war,未宣战不可攻击,Cannot attack without war
+intel.unit_name,兵种名,Unit
+intel.attack_defense,攻防,ATK/DEF
+intel.minister_name,大夫,Minister
 turn.success,回合切换成功,Turn Advanced
 turn.next,结束回合,End Turn
 demo.objective,Demo 目标,Demo Objective

@@ -73,6 +73,9 @@ var _captured_capitals_by_faction: Dictionary = {}
 var _victory_bonus_turns_remaining: Dictionary = {}
 var _cultural_victory_turns: Dictionary = {}
 
+## 特殊胜利：faction_id -> victory_type（nine_tripods / mandate_of_heaven）
+var _special_victories: Dictionary = {}
+
 # ============= 生命周期 =============
 
 func _ready() -> void:
@@ -704,10 +707,35 @@ func check_victory() -> String:
 	if cultural_winner != "":
 		return cultural_winner
 
+	# 特殊胜利：九鼎 / 禅让
+	if not _special_victories.is_empty():
+		for fid in _special_victories:
+			if str(fid) in _active_factions and not CityManager.is_faction_eliminated(str(fid)):
+				return str(fid)
+
 	if _player_faction != "" and CityManager.is_faction_eliminated(_player_faction):
 		return alive[0] if not alive.is_empty() else ""
 
 	return ""
+
+
+## 记录特殊胜利（EventManager 的 special_victory 效果调用）
+func grant_special_victory(faction_id: String, victory_type: String) -> bool:
+	if faction_id.is_empty() or victory_type.is_empty():
+		return false
+	if not _active_factions.has(faction_id):
+		return false
+	_special_victories[faction_id] = victory_type
+	SignalBus.diplomacy_action_performed.emit("special_victory_" + victory_type, faction_id, victory_type)
+	return true
+
+
+func get_special_victories() -> Dictionary:
+	return _special_victories.duplicate(true)
+
+
+func has_special_victory(faction_id: String) -> bool:
+	return _special_victories.has(faction_id)
 
 
 # ============= 叛乱处理 =============
@@ -986,6 +1014,7 @@ func reset() -> void:
 	_captured_capitals_by_faction.clear()
 	_victory_bonus_turns_remaining.clear()
 	_cultural_victory_turns.clear()
+	_special_victories.clear()
 
 
 func get_save_data() -> Dictionary:
@@ -1021,6 +1050,7 @@ func get_save_data() -> Dictionary:
 		"captured_capitals_by_faction": _captured_capitals_by_faction.duplicate(true),
 		"victory_bonus_turns_remaining": _victory_bonus_turns_remaining.duplicate(true),
 		"cultural_victory_turns": _cultural_victory_turns.duplicate(true),
+		"special_victories": _special_victories.duplicate(true),
 	}
 
 
@@ -1065,6 +1095,7 @@ func load_save_data(data: Dictionary) -> void:
 	_captured_capitals_by_faction = (data.get("captured_capitals_by_faction", {}) as Dictionary).duplicate(true)
 	_victory_bonus_turns_remaining = (data.get("victory_bonus_turns_remaining", {}) as Dictionary).duplicate(true)
 	_cultural_victory_turns = (data.get("cultural_victory_turns", {}) as Dictionary).duplicate(true)
+	_special_victories = (data.get("special_victories", {}) as Dictionary).duplicate(true)
 	_change_phase(Phase.ACTION)
 	SignalBus.turn_started.emit(_turn_number, get_current_faction())
 
