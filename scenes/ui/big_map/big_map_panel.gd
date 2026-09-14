@@ -16,6 +16,7 @@ const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 signal city_clicked(city_id: String)
 signal map_closed
+signal hub_action_requested(action: String)
 
 var _city_at_axial: Dictionary = {}
 var _terrain_at_axial: Dictionary = {}
@@ -48,12 +49,22 @@ func _ready() -> void:
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomInBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomResetBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/PoliticalBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubTechBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubDiplomacyBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubMinisterBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubSchoolBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubSaveBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/CloseBtn)
 	$MarginContainer/MainVBox/TitleBar/CloseBtn.pressed.connect(_on_close_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomInBtn.pressed.connect(_on_zoom_in_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomOutBtn.pressed.connect(_on_zoom_out_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomResetBtn.pressed.connect(_on_zoom_reset_pressed)
 	$MarginContainer/MainVBox/TitleBar/PoliticalBtn.pressed.connect(_on_political_toggle)
+	$MarginContainer/MainVBox/TitleBar/HubTechBtn.pressed.connect(func() -> void: hub_action_requested.emit("tech"))
+	$MarginContainer/MainVBox/TitleBar/HubDiplomacyBtn.pressed.connect(func() -> void: hub_action_requested.emit("diplomacy"))
+	$MarginContainer/MainVBox/TitleBar/HubMinisterBtn.pressed.connect(func() -> void: hub_action_requested.emit("ministers"))
+	$MarginContainer/MainVBox/TitleBar/HubSchoolBtn.pressed.connect(func() -> void: hub_action_requested.emit("schools"))
+	$MarginContainer/MainVBox/TitleBar/HubSaveBtn.pressed.connect(func() -> void: hub_action_requested.emit("save"))
 	SignalBus.city_occupied.connect(_on_city_control_changed)
 	SignalBus.city_revolted.connect(_on_city_revolted)
 	SignalBus.capital_relocated.connect(_on_capital_relocated)
@@ -424,6 +435,15 @@ func _refresh_display() -> void:
 			var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
 			var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
 			var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
+			if not city.is_empty():
+				# 建筑可视化：城格上标注已建建筑数/队列
+				var built_count: int = (city.get("buildings", []) as Array).size()
+				var queue_count: int = (city.get("build_queue", []) as Array).size()
+				if built_count > 0 or queue_count > 0:
+					var b_tag: String = "建%d" % built_count
+					if queue_count > 0:
+						b_tag += "+%d" % queue_count
+					caption = "%s\n%s" % [caption, b_tag]
 			if not unit.is_empty():
 				var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
 				var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
@@ -797,18 +817,30 @@ func _build_hover_text(cell: Vector2i) -> String:
 	])
 	var city: Dictionary = _city_at_axial.get(cell, {}) as Dictionary
 	if not city.is_empty():
-		var fid: String = str(city.get("current_faction_id", city.get("faction_id", "neutral")))
-		var cap_tag: String = "（首都）" if bool(city.get("is_capital", false)) else ""
-		var special_resource: Variant = city.get("special_resource", null)
+		var city_id: String = str(city.get("id", ""))
+		var state: Dictionary = CityManager.get_city_state(city_id)
+		var fid: String = str(state.get("current_faction_id", city.get("current_faction_id", city.get("faction_id", "neutral"))))
+		var cap_tag: String = "（首都）" if bool(state.get("is_capital", city.get("is_capital", false))) else ""
+		var special_resource: Variant = state.get("special_resource", city.get("special_resource", null))
 		var special_text: String = " ｜ 特产：%s" % str(special_resource) if special_resource != null else ""
-		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s" % [
-			str(city.get("name", "")),
+		var built_names: Array = []
+		for b in state.get("buildings", []):
+			var bdata: Dictionary = DataManager.get_building(str(b.get("building_id", "")))
+			if not bdata.is_empty():
+				built_names.append(str(bdata.get("name", b.get("building_id", ""))))
+		var build_text: String = ""
+		if not built_names.is_empty():
+			build_text = " ｜ 建筑：%s" % "、".join(PackedStringArray(built_names))
+		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s" % [
+			str(state.get("name", city.get("name", ""))),
 			cap_tag,
 			_faction_display_name(fid),
-			int(city.get("base_population", 0)),
-			int(city.get("current_hp", 0)),
-			special_text
+			int(state.get("current_population", city.get("base_population", 0))),
+			int(state.get("current_hp", city.get("current_hp", 0))),
+			special_text,
+			build_text
 		])
+		lines.append("点击城市格：打开城池管理")
 	var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell)
 	if not unit.is_empty():
 		var u_type: Dictionary = DataManager.get_unit_type(str(unit.get("unit_type_id", "")))

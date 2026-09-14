@@ -66,6 +66,26 @@ text = "重置"
 layout_mode = 2
 text = "政治地图：关"
 
+[node name="HubTechBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "科技"
+
+[node name="HubDiplomacyBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "外交"
+
+[node name="HubMinisterBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "大夫"
+
+[node name="HubSchoolBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "学派"
+
+[node name="HubSaveBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "存档"
+
 [node name="CloseBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
 layout_mode = 2
 text = "关闭"

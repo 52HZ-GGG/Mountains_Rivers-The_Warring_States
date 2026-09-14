@@ -56,6 +56,12 @@ var _end_turn_layer: CanvasLayer = null
 var _persistent_end_btn: Button = null
 var _is_processing_turn: bool = false
 
+## 高层级 UI 容器：科技/城池等普通 Control 必须放进 CanvasLayer，否则被大地图/中枢盖住
+var _tech_layer: CanvasLayer = null
+var _city_layer: CanvasLayer = null
+const _UI_LAYER_TECH: int = 90
+const _UI_LAYER_CITY: int = 92
+
 const SEASON_NAMES: Dictionary = {
 	"spring": "春",
 	"summer": "夏",
@@ -190,6 +196,8 @@ func _close_city_panel() -> void:
 		_reclaim_resource_bar()
 		_city_panel.close()
 		_city_panel = null
+	if is_instance_valid(_city_layer):
+		_city_layer.visible = false
 
 
 func _init_game() -> void:
@@ -1841,6 +1849,34 @@ func _ensure_big_map() -> void:
 	add_child(_big_map_panel)
 	_big_map_panel.city_clicked.connect(_on_city_clicked)
 	_big_map_panel.map_closed.connect(_on_big_map_closed)
+	_big_map_panel.hub_action_requested.connect(_on_big_map_hub_action)
+
+
+## 大地图顶栏功能入口：科技/外交/大夫/学派/存档
+func _on_big_map_hub_action(action: String) -> void:
+	match action:
+		"tech":
+			# 不关大地图，直接叠高层科技面板
+			_ensure_tech_layer()
+			var panel := _tech_layer.get_node_or_null("TechTreePanel") as Control
+			if panel != null:
+				panel.visible = true
+				_tech_layer.visible = true
+		"diplomacy":
+			_close_big_map()
+			_on_diplomacy_button_pressed()
+		"ministers":
+			_close_big_map()
+			_set_toolbar_visible(false)
+			_set_end_turn_visible(true)
+			_open_formal_minister_panel()
+		"schools":
+			_close_big_map()
+			_set_toolbar_visible(false)
+			_set_end_turn_visible(true)
+			_show_schools_panel()
+		"save":
+			_show_save_load_panel()
 
 
 func _on_diplomacy_button_pressed() -> void:
@@ -1864,8 +1900,28 @@ func _on_diplomacy_closed() -> void:
 
 
 func _on_tech_button_pressed() -> void:
-	var panel := $TechTreePanel as Control
+	_ensure_tech_layer()
+	var panel := _tech_layer.get_node_or_null("TechTreePanel") as Control
+	if panel == null:
+		return
 	panel.visible = not panel.visible
+	_tech_layer.visible = panel.visible
+
+
+func _ensure_tech_layer() -> void:
+	if is_instance_valid(_tech_layer):
+		return
+	_tech_layer = CanvasLayer.new()
+	_tech_layer.name = "TechLayer"
+	_tech_layer.layer = _UI_LAYER_TECH
+	add_child(_tech_layer)
+	# 把场景树里的 TechTreePanel 迁到高层 CanvasLayer
+	var panel := $TechTreePanel as Control
+	if panel != null:
+		remove_child(panel)
+		panel.name = "TechTreePanel"
+		_tech_layer.add_child(panel)
+		panel.visible = false
 
 
 func _on_skirmish_button_pressed() -> void:
@@ -1920,12 +1976,24 @@ func _on_city_clicked(city_id: String) -> void:
 	_set_end_turn_visible(true)
 	_last_big_map_city_focus_id = city_id
 
+	_ensure_city_layer()
 	_city_panel = _city_panel_scene.instantiate() as Panel
-	add_child(_city_panel)
+	_city_layer.add_child(_city_panel)
+	_city_layer.visible = true
 	_city_panel.return_to_map.connect(_on_city_panel_back)
 	_city_panel.panel_closed.connect(_on_city_panel_closed)
 	_city_panel.open(city_id)
 	_embed_resource_bar(_city_panel.get_resource_bar_slot())
+
+
+func _ensure_city_layer() -> void:
+	if is_instance_valid(_city_layer):
+		return
+	_city_layer = CanvasLayer.new()
+	_city_layer.name = "CityLayer"
+	_city_layer.layer = _UI_LAYER_CITY
+	_city_layer.visible = false
+	add_child(_city_layer)
 
 
 func _on_city_panel_back() -> void:
