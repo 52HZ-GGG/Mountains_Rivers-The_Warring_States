@@ -91,4 +91,6 @@ secrets.json
 .auto_*.log
 .auto_*.log.err
 .shot_*.png
+.shot_*.png.import
+data/i18n/translations.csv.import
 .auto_regression/

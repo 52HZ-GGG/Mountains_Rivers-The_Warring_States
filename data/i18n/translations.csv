@@ -108,5 +108,28 @@ city.category_military,军事,Military
 city.category_political,政治,Political
 city.category_special,特殊,Special
 event.title,事件,Event
+event.unknown,未知事件,Unknown Event
+event.effect_preview,效果预览\n将鼠标悬停在右侧选项上。,Effect Preview\nHover options on the right.
+event.confirm,确定,OK
+event.no_effect,无效果,No Effect
+event.res_food,粮食,Food
+event.res_gold,金币,Gold
+event.res_iron,铁矿,Iron
+event.res_morale,民心,Morale
+event.res_population,人口,Population
+event.res_troops,兵力,Troops
+negotiation.title,停战谈判,Ceasefire Talks
+negotiation.in_progress,谈判进行中...,Talks in progress...
+negotiation.gold_label,赔款金额:,Gold Indemnity:
+negotiation.city_label,割让城市:,Cede City:
+negotiation.none,无,None
+negotiation.vassal,称臣纳贡,Become Vassal
+negotiation.history,谈判历史:,Talk History:
+negotiation.reject,拒绝,Reject
+negotiation.counter,还价,Counter
+negotiation.accept,接受,Accept
+negotiation.broken,谈判破裂,Talks Collapsed
+negotiation.ai_accept,AI接受,AI Accept
+negotiation.ai_counter,AI还价,AI Counter
 school.title,学派,School
 big_map.title,大地图,World Map

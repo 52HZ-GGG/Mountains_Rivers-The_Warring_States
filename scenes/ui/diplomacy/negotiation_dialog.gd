@@ -22,7 +22,7 @@ var _history_label: Label
 
 
 func _ready() -> void:
-	title = "停战谈判"
+	title = I18n.t("negotiation.title")
 	visible = false
 	confirmed.connect(_on_accept_pressed)
 
@@ -37,7 +37,7 @@ func _build_ui() -> void:
 	# 谈判信息
 	var info_label := Label.new()
 	info_label.name = "InfoLabel"
-	info_label.text = "谈判进行中..."
+	info_label.text = I18n.t("negotiation.in_progress")
 	vbox.add_child(info_label)
 
 	# 赔款
@@ -45,7 +45,7 @@ func _build_ui() -> void:
 	vbox.add_child(gold_box)
 
 	var gold_label := Label.new()
-	gold_label.text = "赔款金额:"
+	gold_label.text = I18n.t("negotiation.gold_label")
 	gold_box.add_child(gold_label)
 
 	_gold_input = SpinBox.new()
@@ -61,35 +61,35 @@ func _build_ui() -> void:
 	vbox.add_child(city_box)
 
 	var city_label := Label.new()
-	city_label.text = "割让城市:"
+	city_label.text = I18n.t("negotiation.city_label")
 	city_box.add_child(city_label)
 
 	_city_option = OptionButton.new()
 	_city_option.name = "CityOption"
-	_city_option.add_item("无", 0)
+	_city_option.add_item(I18n.t("negotiation.none"), 0)
 	city_box.add_child(_city_option)
 
 	# 称臣
 	_vassal_check = CheckBox.new()
 	_vassal_check.name = "VassalCheck"
-	_vassal_check.text = "称臣纳贡"
+	_vassal_check.text = I18n.t("negotiation.vassal")
 	vbox.add_child(_vassal_check)
 
 	# 谈判历史
 	_history_label = Label.new()
 	_history_label.name = "HistoryLabel"
-	_history_label.text = "谈判历史:"
+	_history_label.text = I18n.t("negotiation.history")
 	vbox.add_child(_history_label)
 
 	# 按钮区
 	var button_box := HBoxContainer.new()
 	vbox.add_child(button_box)
 
-	var reject_btn := SkirmishTileTextures.styled_button("拒绝")
+	var reject_btn := SkirmishTileTextures.styled_button(I18n.t("negotiation.reject"))
 	reject_btn.pressed.connect(_on_reject_pressed)
 	button_box.add_child(reject_btn)
 
-	var counter_btn := SkirmishTileTextures.styled_button("还价")
+	var counter_btn := SkirmishTileTextures.styled_button(I18n.t("negotiation.counter"))
 	counter_btn.pressed.connect(_on_counter_pressed)
 	button_box.add_child(counter_btn)
 
@@ -103,7 +103,7 @@ func open(proposer: String, target: String) -> void:
 
 	# 填充城市选项
 	_city_option.clear()
-	_city_option.add_item("无", 0)
+	_city_option.add_item(I18n.t("negotiation.none"), 0)
 	var cities: Array = DataManager.get_faction_cities(target)
 	for i in range(cities.size()):
 		_city_option.add_item(cities[i]["name"], i + 1)
@@ -158,7 +158,7 @@ func _get_current_terms() -> Dictionary:
 func _on_accept_pressed() -> void:
 	var terms := _get_current_terms()
 	_negotiation_history.append(terms)
-	_negotiation_history[_negotiation_history.size() - 1]["result"] = "接受"
+	_negotiation_history[_negotiation_history.size() - 1]["result"] = I18n.t("negotiation.accept")
 
 	# 执行停战
 	DiplomacySystem.accept_ceasefire(_proposer, _target, terms)
@@ -169,7 +169,7 @@ func _on_accept_pressed() -> void:
 
 func _on_reject_pressed() -> void:
 	_negotiation_history.append(_get_current_terms())
-	_negotiation_history[_negotiation_history.size() - 1]["result"] = "拒绝"
+	_negotiation_history[_negotiation_history.size() - 1]["result"] = I18n.t("negotiation.reject")
 	_update_history()
 	negotiation_completed.emit(false)
 	visible = false
@@ -180,7 +180,7 @@ func _on_counter_pressed() -> void:
 	if _current_round >= _max_rounds:
 		# 谈判破裂
 		_negotiation_history.append(_get_current_terms())
-		_negotiation_history[_negotiation_history.size() - 1]["result"] = "谈判破裂"
+		_negotiation_history[_negotiation_history.size() - 1]["result"] = I18n.t("negotiation.broken")
 		_update_history()
 		negotiation_completed.emit(false)
 		visible = false
@@ -193,7 +193,7 @@ func _on_counter_pressed() -> void:
 	# AI评估并还价
 	var ai_accepts: bool = DiplomacyAI.evaluate_ceasefire_offer(_target, current_terms)
 	if ai_accepts:
-		_negotiation_history[_negotiation_history.size() - 1]["result"] = "AI接受"
+		_negotiation_history[_negotiation_history.size() - 1]["result"] = I18n.t("negotiation.ai_accept")
 		DiplomacySystem.accept_ceasefire(_proposer, _target, current_terms)
 		_update_history()
 		negotiation_completed.emit(true)
@@ -201,7 +201,7 @@ func _on_counter_pressed() -> void:
 	else:
 		# AI还价
 		var counter_terms: Dictionary = DiplomacyAI.generate_counter_offer(_target, current_terms)
-		_negotiation_history[_negotiation_history.size() - 1]["result"] = "AI还价"
+		_negotiation_history[_negotiation_history.size() - 1]["result"] = I18n.t("negotiation.ai_counter")
 		# 更新UI为AI的还价
 		_gold_input.value = counter_terms.get("gold", 0)
 		_vassal_check.button_pressed = counter_terms.get("vassal", false)

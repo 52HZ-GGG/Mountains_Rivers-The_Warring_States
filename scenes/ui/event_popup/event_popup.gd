@@ -124,7 +124,7 @@ func _build_ui() -> void:
 	_effect_label.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7, 1))
 	_effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_effect_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_effect_label.text = "效果预览\n将鼠标悬停在右侧选项上。"
+	_effect_label.text = I18n.t("event.effect_preview")
 	effect_margin.add_child(_effect_label)
 
 
@@ -134,13 +134,13 @@ func _on_event_triggered(event_data: Dictionary) -> void:
 
 
 func _show_event() -> void:
-	var title: String = str(_event_data.get("title", "未知事件"))
+	var title: String = str(_event_data.get("title", I18n.t("event.unknown")))
 	var desc: String = str(_event_data.get("description", ""))
 
 	# 设置文本
 	_title_label.text = title
 	_desc_label.text = desc
-	_effect_label.text = "效果预览\n将鼠标悬停在右侧选项上。"
+	_effect_label.text = I18n.t("event.effect_preview")
 
 	# 清空旧选项
 	for ch in _options_container.get_children():
@@ -161,7 +161,7 @@ func _show_event() -> void:
 	else:
 		# 无选项事件 — 显示效果 + 确定按钮
 		_effect_label.text = "效果预览\n%s" % _format_outcomes(_event_data.get("effects", {}))
-		var btn := SkirmishTileTextures.styled_button("确定")
+		var btn := SkirmishTileTextures.styled_button(I18n.t("event.confirm"))
 		btn.add_theme_font_size_override("font_size", 15)
 		btn.pressed.connect(_on_confirm_pressed)
 		_options_container.add_child(btn)
@@ -186,18 +186,18 @@ func _close_popup() -> void:
 
 
 static var _OUTCOME_LABELS: Dictionary = {
-	"food_delta": "粮食",
-	"gold_delta": "金币",
-	"iron_delta": "铁矿",
-	"morale_delta": "民心",
-	"population_delta": "人口",
-	"troops_delta": "兵力",
+	"food_delta": I18n.t("event.res_food"),
+	"gold_delta": I18n.t("event.res_gold"),
+	"iron_delta": I18n.t("event.res_iron"),
+	"morale_delta": I18n.t("event.res_morale"),
+	"population_delta": I18n.t("event.res_population"),
+	"troops_delta": I18n.t("event.res_troops"),
 }
 
 
 func _format_outcomes(outcomes: Dictionary) -> String:
 	if outcomes.is_empty():
-		return "无效果"
+		return I18n.t("event.no_effect")
 	var lines: PackedStringArray = []
 	for key in _OUTCOME_LABELS:
 		var val: int = int(outcomes.get(key, 0))
@@ -207,5 +207,5 @@ func _format_outcomes(outcomes: Dictionary) -> String:
 		var sign: String = "+" if val > 0 else ""
 		lines.append("%s %s%d" % [label, sign, val])
 	if lines.is_empty():
-		return "无效果"
+		return I18n.t("event.no_effect")
 	return "\n".join(lines)
