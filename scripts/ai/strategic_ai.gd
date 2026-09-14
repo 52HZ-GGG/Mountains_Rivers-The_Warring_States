@@ -14,11 +14,16 @@ static func evaluate_strategic_units(faction_id: String) -> void:
 	var targets: Array = _enemy_target_axials(faction_id)
 	if targets.is_empty():
 		return
+	# 每回合最多操作 5 支，避免大地图单位多了拖慢 AI 回合
+	var action_budget: int = 5
 	for unit_v in units:
+		if action_budget <= 0:
+			break
 		var unit: Dictionary = unit_v as Dictionary
 		var unit_id: String = str(unit.get("id", ""))
 		if bool(unit.get("acted", false)):
 			continue
+		action_budget -= 1
 		# 1) 优先攻击邻接敌单位
 		if _try_attack_adjacent_enemy(unit_id, faction_id):
 			continue
@@ -28,7 +33,6 @@ static func evaluate_strategic_units(faction_id: String) -> void:
 		# 3) 向最近敌目标推进
 		var target: Vector2i = _nearest_axial(Vector2i(int(unit.get("q", 0)), int(unit.get("r", 0))), targets)
 		StrategicMapManager.move_toward(unit_id, target)
-		# 移动后再尝试攻击
 		_try_attack_adjacent_enemy(unit_id, faction_id)
 		_try_attack_adjacent_enemy_city(unit_id, faction_id)
 

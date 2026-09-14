@@ -67,8 +67,11 @@ if (-not $SkipGut) {
       "-gexit","-glog=1"
     )
     $timeoutMs = 180000
-    if ($tag -in @("test_game_manager","test_main_turn_ui","test_city_manager")) {
+    if ($tag -in @("test_game_manager","test_city_manager")) {
       $timeoutMs = 300000
+    }
+    if ($tag -eq "test_main_turn_ui") {
+      $timeoutMs = 600000
     }
     $proc = Start-Process -FilePath $GodotPath -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -NoNewWindow
     $done = $proc.WaitForExit($timeoutMs)

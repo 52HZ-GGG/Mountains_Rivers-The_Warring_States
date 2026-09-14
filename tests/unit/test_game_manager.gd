@@ -268,16 +268,21 @@ func test_process_production_applies_corruption_tax_penalty() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
 	GameManager.apply_food_delta(-GameManager.get_player_food())
 	GameManager.apply_gold_delta(-GameManager.get_player_gold())
-	var qin_cities: Array = CityManager.get_faction_city_states("qin")
-	while qin_cities.size() < 9:
-		var clone: Dictionary = qin_cities[0].duplicate(true)
-		clone["id"] = "temp_%d" % qin_cities.size()
+	# 伪造多城提高腐败：必须重建势力索引，否则 get_faction_city_states 读不到新城会死循环
+	var seed_city: Dictionary = CityManager.get_faction_city_states("qin")[0]
+	for i in range(9):
+		var clone: Dictionary = seed_city.duplicate(true)
+		clone["id"] = "temp_corrupt_%d" % i
 		clone["current_faction_id"] = "qin"
 		clone["current_population"] = 30
-		clone["hex_q"] = 50 + qin_cities.size()
+		clone["hex_q"] = 50 + i
 		clone["hex_r"] = 50
+		clone["buildings"] = []
+		clone["build_queue"] = []
 		CityManager._city_states[clone["id"]] = clone
-		qin_cities = CityManager.get_faction_city_states("qin")
+	CityManager._build_faction_index()
+	var qin_cities: Array = CityManager.get_faction_city_states("qin")
+	assert_gte(qin_cities.size(), 9, "应至少有 9 座秦城")
 	var total: Dictionary = CityManager.get_faction_total_production("qin")
 	GameManager._process_production("qin")
 	assert_lt(GameManager.get_player_gold(), int(total["gold"] * 0.3), "高腐败应压低税收效率")
@@ -318,7 +323,8 @@ func test_process_production_clamps_silk_books_to_cap() -> void:
 
 func test_morale_threshold_high() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 初始民心 50 + spring +5 = 55 → 中档
+	# 固定民心后测阈值函数（开局还会受季节/腐败等影响，不能假设恰为 55）
+	GameManager._player_morale = 55
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
 	assert_eq(effect["tax_mod"], 1.0, "民心 55 税收效率应正常")
 	assert_eq(effect["recruit_mod"], 1.0, "民心 55 征兵速度应正常")
@@ -326,9 +332,7 @@ func test_morale_threshold_high() -> void:
 
 func test_morale_threshold_very_high() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 强制设高民心
-	for i in 6:
-		GameManager.apply_morale_delta(5)  # 55 + 30 = 85
+	GameManager._player_morale = 85
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
 	assert_eq(effect["tax_mod"], 1.2, "民心 85 税收效率应 +20%")
 	assert_eq(effect["recruit_mod"], 1.3, "民心 85 征兵速度应 +30%")
@@ -336,8 +340,7 @@ func test_morale_threshold_very_high() -> void:
 
 func test_morale_threshold_low() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	# 降到 40-59 区间
-	GameManager.apply_morale_delta(-10)  # 55 - 10 = 45
+	GameManager._player_morale = 45
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
 	assert_eq(effect["tax_mod"], 0.8, "民心 45 税收效率应 -20%")
 	assert_eq(effect["recruit_mod"], 0.8, "民心 45 征兵速度应 -20%")
@@ -345,7 +348,7 @@ func test_morale_threshold_low() -> void:
 
 func test_morale_threshold_very_low() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	GameManager.apply_morale_delta(-30)  # 55 - 30 = 25
+	GameManager._player_morale = 25
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
 	assert_eq(effect["tax_mod"], 0.5, "民心 25 税收效率应 -50%")
 	assert_eq(effect["recruit_mod"], 0.8, "民心 25 征兵速度应 -20%")
@@ -353,7 +356,7 @@ func test_morale_threshold_very_low() -> void:
 
 func test_morale_threshold_rebellion() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
-	GameManager.apply_morale_delta(-55)  # 55 - 55 = 0
+	GameManager._player_morale = 0
 	var effect: Dictionary = GameManager.get_morale_threshold_effect()
 	assert_eq(effect["tax_mod"], 0.5, "民心 0 税收效率应 -50%")
 	assert_eq(effect["morale_atk_mod"], 0.7, "民心 0 战斗攻击修正应为 70%")
@@ -759,8 +762,10 @@ func test_cultural_victory_counter_exists_after_start() -> void:
 
 func test_cultural_victory_counter_ticks_once_per_full_round() -> void:
 	GameManager.start_game(TWO_FACTIONS, PLAYER)
+	# 写入完整文化字典，避免 process_culture_turn 重算后清空主流
 	for city_v in CityManager.get_all_city_states():
 		var city: Dictionary = city_v as Dictionary
+		city["culture"] = {"qin": 100.0, "zhao": 0.0, "qi": 0.0, "chu": 0.0, "wei": 0.0, "yan": 0.0, "han": 0.0}
 		city["mainstream_culture"] = "qin"
 	GameManager._cultural_victory_turns["qin"] = 0
 	var before: int = int(GameManager._cultural_victory_turns.get("qin", 0))
