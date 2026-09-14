@@ -719,6 +719,7 @@
     "acquisition": {
       "building_interval_turns": 8,
       "battle_win_chance": 0.15,
+      "diplomacy_action_chance": 0.20,
       "base_probabilities": {
         "common": 0.6,
         "rare": 0.3,

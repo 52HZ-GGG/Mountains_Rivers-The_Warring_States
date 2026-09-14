@@ -28,6 +28,46 @@ func reset() -> void:
 	_minister_index.clear()
 
 
+## 战斗胜利/占城时尝试招募武大夫
+func try_acquire_military_minister(faction_id: String) -> Dictionary:
+	var capacity: int = int(DataManager.get_balance_param("minister.capacity.military"))
+	var current: int = (_military_ministers_by_faction.get(faction_id, []) as Array).size()
+	if current >= capacity:
+		return {"success": false, "reason": "CAPACITY_FULL"}
+	var chance: float = float(DataManager.get_balance_param("minister.acquisition.battle_win_chance"))
+	if _rng.randf() > chance:
+		return {"success": false, "reason": "NO_ROLL"}
+	if not _military_ministers_by_faction.has(faction_id):
+		_military_ministers_by_faction[faction_id] = []
+	var minister: Dictionary = _create_initial_military_minister(faction_id, {})
+	if minister.is_empty():
+		return {"success": false, "reason": "CREATE_FAILED"}
+	var mid: String = str(minister.get("id", ""))
+	_minister_index[mid] = minister
+	(_military_ministers_by_faction[faction_id] as Array).append(mid)
+	return {"success": true, "minister": minister, "minister_id": mid}
+
+
+## 外交行动成功时尝试招募外交大夫
+func try_acquire_diplomat_minister(faction_id: String) -> Dictionary:
+	var capacity: int = int(DataManager.get_balance_param("minister.capacity.diplomat"))
+	var current: int = (_diplomat_ministers_by_faction.get(faction_id, []) as Array).size()
+	if current >= capacity:
+		return {"success": false, "reason": "CAPACITY_FULL"}
+	var chance: float = float(DataManager.get_balance_param("minister.acquisition.diplomacy_action_chance"))
+	if _rng.randf() > chance:
+		return {"success": false, "reason": "NO_ROLL"}
+	if not _diplomat_ministers_by_faction.has(faction_id):
+		_diplomat_ministers_by_faction[faction_id] = []
+	var minister: Dictionary = _create_initial_diplomat_minister(faction_id, {})
+	if minister.is_empty():
+		return {"success": false, "reason": "CREATE_FAILED"}
+	var did: String = str(minister.get("id", ""))
+	_minister_index[did] = minister
+	(_diplomat_ministers_by_faction[faction_id] as Array).append(did)
+	return {"success": true, "minister": minister, "minister_id": did}
+
+
 func get_save_data() -> Dictionary:
 	return {
 		"civil_ministers_by_faction": _civil_ministers_by_faction.duplicate(true),

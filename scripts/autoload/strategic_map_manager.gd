@@ -291,7 +291,10 @@ func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
 	unit["acted"] = true
 	unit["mp"] = 0
 	if bool(result.get("destroyed", false)):
-		CityManager.change_ownership(city_id, str(unit["faction_id"]))
+		var captor: String = str(unit["faction_id"])
+		CityManager.change_ownership(city_id, captor)
+		# 占城胜利有机会招募武大夫
+		MinisterManager.try_acquire_military_minister(captor)
 	city_sieged.emit(city_id, unit_id, dmg)
 	units_changed.emit()
 	return {"ok": true, "damage": dmg, "destroyed": bool(result.get("destroyed", false))}
@@ -331,6 +334,12 @@ func _try_capture_city_if_clear(faction_id: String, city_id: String) -> void:
 	if int(city.get("current_hp", 0)) > 0:
 		return
 	CityManager.change_ownership(city_id, faction_id)
+	MinisterManager.try_acquire_military_minister(faction_id)
+
+
+## 公开：城防归零时尝试占城（供测试与 AI 调用）
+func try_capture_city_if_clear(faction_id: String, city_id: String) -> void:
+	_try_capture_city_if_clear(faction_id, city_id)
 
 
 func _get_unit_ref(unit_id: String) -> Dictionary:

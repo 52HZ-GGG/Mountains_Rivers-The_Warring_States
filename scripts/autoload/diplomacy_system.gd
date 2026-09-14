@@ -604,6 +604,8 @@ func open_trade_route(faction_a: String, faction_b: String) -> Dictionary:
 
 	SignalBus.trade_route_opened.emit(faction_a, faction_b)
 	SignalBus.diplomacy_action_performed.emit("trade_route", faction_a, faction_b)
+	MinisterManager.try_acquire_diplomat_minister(faction_a)
+	MinisterManager.try_acquire_diplomat_minister(faction_b)
 	return {"success": true}
 
 
@@ -652,6 +654,8 @@ func form_alliance(faction_a: String, faction_b: String) -> Dictionary:
 
 	SignalBus.alliance_formed.emit(faction_a, faction_b)
 	SignalBus.diplomacy_action_performed.emit("alliance", faction_a, faction_b)
+	MinisterManager.try_acquire_diplomat_minister(faction_a)
+	MinisterManager.try_acquire_diplomat_minister(faction_b)
 	return {"success": true}
 
 
