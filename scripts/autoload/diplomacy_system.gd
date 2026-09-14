@@ -48,6 +48,15 @@ var _lianheng_alliance: Dictionary = {}
 ## 战争借口: attacker -> defender -> source
 var _casus_belli: Dictionary = {}
 
+## 朝贡冷却: faction -> {tier: until_turn}
+var _tribute_cooldowns: Dictionary = {}
+
+## 已获册封: faction -> [type]
+var _enfeoffments: Dictionary = {}
+
+## 建筑外交声望加成缓存
+var _building_diplomacy_rep_bonus: Dictionary = {}
+
 ## 好感度衰减计数器
 var _decay_counter: int = 0
 
@@ -64,6 +73,8 @@ func _on_turn_started(turn_number: int, _faction_id: String) -> void:
 	_update_treaty_expiry()
 	_update_war_cooldowns()
 	_tick_hezong_lianheng()
+	_tick_tribute_reputation()
+	_apply_building_diplomacy_effects()
 
 
 func _on_turn_ended(turn_number: int, _faction_id: String) -> void:
@@ -92,6 +103,9 @@ func initialize(active_factions: Array[String]) -> void:
 	_hezong_alliance.clear()
 	_lianheng_alliance.clear()
 	_casus_belli.clear()
+	_tribute_cooldowns.clear()
+	_enfeoffments.clear()
+	_building_diplomacy_rep_bonus.clear()
 	_decay_counter = 0
 
 	# 初始化好感度（基于 initial_relations + 接壤修正）
@@ -349,6 +363,9 @@ func get_save_data() -> Dictionary:
 		"hezong_alliance": _hezong_alliance.duplicate(true),
 		"lianheng_alliance": _lianheng_alliance.duplicate(true),
 		"casus_belli": _casus_belli.duplicate(true),
+		"tribute_cooldowns": _tribute_cooldowns.duplicate(true),
+		"enfeoffments": _enfeoffments.duplicate(true),
+		"building_diplomacy_rep_bonus": _building_diplomacy_rep_bonus.duplicate(true),
 		"event_chain_flags": _event_chain_flags.duplicate(true),
 		"decay_counter": _decay_counter,
 	}
@@ -370,6 +387,9 @@ func load_save_data(data: Dictionary) -> void:
 	_hezong_alliance = (data.get("hezong_alliance", {}) as Dictionary).duplicate(true)
 	_lianheng_alliance = (data.get("lianheng_alliance", {}) as Dictionary).duplicate(true)
 	_casus_belli = (data.get("casus_belli", {}) as Dictionary).duplicate(true)
+	_tribute_cooldowns = (data.get("tribute_cooldowns", {}) as Dictionary).duplicate(true)
+	_enfeoffments = (data.get("enfeoffments", {}) as Dictionary).duplicate(true)
+	_building_diplomacy_rep_bonus = (data.get("building_diplomacy_rep_bonus", {}) as Dictionary).duplicate(true)
 	_event_chain_flags = (data.get("event_chain_flags", {}) as Dictionary).duplicate(true)
 	_decay_counter = int(data.get("decay_counter", 0))
 
@@ -499,6 +519,12 @@ func declare_war(attacker: String, defender: String) -> Dictionary:
 		opinion_all += int(justify.get("no_justification_extra_opinion_all", -5))
 	if war_kind == "surprise":
 		reputation_delta += int(justify.get("surprise_extra_reputation", -15))
+	# 方伯册封：宣战声望惩罚减半
+	reputation_delta = get_war_reputation_penalty(attacker, reputation_delta)
+
+	# 攻击周天子：严重惩罚
+	if defender == "zhou" or is_zhou_faction(defender):
+		apply_attack_zhou_penalty(attacker)
 
 	# 所有国家好感度变化（不宣而战惩罚）
 	for fid in _opinions:
@@ -749,6 +775,8 @@ func send_tribute(sender: String, tier: String) -> Dictionary:
 	if not tribute_cfg.has(tier):
 		return {"success": false, "reason": "invalid_tier"}
 	var tier_cfg: Dictionary = tribute_cfg.get(tier, {})
+	if is_tribute_on_cooldown(sender, tier):
+		return {"success": false, "reason": "cooldown"}
 	var gold_cost: int = int(tier_cfg.get("cost_gold", 0))
 	var food_cost: int = int(tier_cfg.get("cost_food", 0))
 	if GameManager.get_faction_resource(sender, "gold") < gold_cost or GameManager.get_faction_resource(sender, "food") < food_cost:
@@ -761,8 +789,40 @@ func send_tribute(sender: String, tier: String) -> Dictionary:
 	var effects: Dictionary = DataManager.get_action_effects("tribute")
 	_change_reputation(sender, int(tier_cfg.get("reputation_change", int(effects.get("reputation_change", 0)))))
 	_change_opinion(sender, "zhou", int(effects.get("opinion_change_target", 10)))
+	var cooldown: int = int(tier_cfg.get("cooldown_turns", 1))
+	if not _tribute_cooldowns.has(sender):
+		_tribute_cooldowns[sender] = {}
+	(_tribute_cooldowns[sender] as Dictionary)[tier] = GameManager.get_current_turn() + cooldown
 	SignalBus.diplomacy_action_performed.emit("tribute", sender, "zhou")
 	return {"success": true, "tribute": get_tribute(sender)}
+
+
+func is_tribute_on_cooldown(faction_id: String, tier: String) -> bool:
+	var until: int = int((_tribute_cooldowns.get(faction_id, {}) as Dictionary).get(tier, 0))
+	return until > GameManager.get_current_turn()
+
+
+func get_enfeoffments(faction_id: String) -> Array:
+	return (_enfeoffments.get(faction_id, []) as Array).duplicate()
+
+
+func has_enfeoffment(faction_id: String, type: String) -> bool:
+	return (_enfeoffments.get(faction_id, []) as Array).has(type)
+
+
+func get_enfeoffment_effects(faction_id: String) -> Dictionary:
+	var result := {
+		"war_penalty_reduction": 0.0,
+		"alliance_cost_reduction": 0.0,
+		"global_opinion_bonus": 0,
+	}
+	var params: Dictionary = DataManager.get_enfeoffment_params()
+	for type in get_enfeoffments(faction_id):
+		var cfg: Dictionary = params.get(type, {})
+		result["war_penalty_reduction"] = float(result["war_penalty_reduction"]) + float(cfg.get("war_penalty_reduction", 0.0))
+		result["alliance_cost_reduction"] = float(result["alliance_cost_reduction"]) + float(cfg.get("alliance_cost_reduction", 0.0))
+		result["global_opinion_bonus"] = int(result["global_opinion_bonus"]) + int(cfg.get("global_opinion_bonus", 0))
+	return result
 
 
 func request_enfeoffment(faction_id: String, type: String) -> Dictionary:
@@ -772,13 +832,65 @@ func request_enfeoffment(faction_id: String, type: String) -> Dictionary:
 	if not params.has(type):
 		return {"success": false, "reason": "invalid_type"}
 	var type_cfg: Dictionary = params.get(type, {})
+	if has_enfeoffment(faction_id, type):
+		return {"success": false, "reason": "already_enfeoffed"}
+	if get_reputation(faction_id) < 40:
+		_change_tribute(faction_id, int(params.get("failure_penalty_tribute", -5)))
+		return {"success": false, "reason": "reputation_too_low"}
 	if get_tribute(faction_id) < int(type_cfg.get("tribute_threshold", 0)):
+		_change_tribute(faction_id, int(params.get("failure_penalty_tribute", -5)))
 		return {"success": false, "reason": "tribute_too_low"}
 	var rep_boost: int = int(type_cfg.get("reputation_boost", 0))
 	_change_reputation(faction_id, rep_boost)
 	_change_opinion(faction_id, "zhou", int(type_cfg.get("opinion_boost_zhou", 0)))
+	if not _enfeoffments.has(faction_id):
+		_enfeoffments[faction_id] = []
+	(_enfeoffments[faction_id] as Array).append(type)
+	# 霸主：对所有国家好感 +5
+	var global_bonus: int = int(type_cfg.get("global_opinion_bonus", 0))
+	if global_bonus != 0:
+		for other in _opinions:
+			if other != faction_id and other != "zhou":
+				_change_opinion(other, faction_id, global_bonus)
 	SignalBus.diplomacy_action_performed.emit("enfeoffment", faction_id, type)
-	return {"success": true}
+	return {"success": true, "type": type, "enfeoffments": get_enfeoffments(faction_id)}
+
+
+## 朝贡度与声望联动（每回合）
+func _tick_tribute_reputation() -> void:
+	if is_zhou_destroyed():
+		return
+	var cfg: Dictionary = DataManager.get_tribute_params()
+	var low_th: int = int(cfg.get("tribute_low_threshold", 20))
+	var low_pen: int = int(cfg.get("tribute_low_reputation_penalty", -5))
+	var high_th: int = int(cfg.get("tribute_high_threshold", 80))
+	var high_bonus: int = int(cfg.get("tribute_high_reputation_bonus", 5))
+	var decay_interval: int = int(cfg.get("decay_interval_turns", 10))
+	var decay_amount: int = int(cfg.get("decay_amount", -5))
+	var turn: int = GameManager.get_current_turn()
+
+	for fid in _tribute.keys():
+		if str(fid) == "zhou":
+			continue
+		var trib: int = int(_tribute[fid])
+		if trib < low_th:
+			_change_reputation(str(fid), low_pen)
+		elif trib >= high_th:
+			_change_reputation(str(fid), high_bonus)
+		if decay_interval > 0 and turn > 1 and turn % decay_interval == 0:
+			_tribute[fid] = clampi(trib + decay_amount, 0, 100)
+
+
+## 攻击周天子时的严重惩罚
+func apply_attack_zhou_penalty(attacker: String) -> void:
+	if attacker == "" or attacker == "zhou":
+		return
+	var cfg: Dictionary = DataManager.get_tribute_params()
+	_change_tribute(attacker, int(cfg.get("attack_zhou_penalty", -50)))
+	_change_reputation(attacker, -20)
+	for fid in _opinions:
+		if fid != attacker:
+			_change_opinion(fid, attacker, -15)
 
 
 func send_hostage(sender: String, receiver: String, minister_id: String) -> Dictionary:
@@ -1110,14 +1222,54 @@ func _settle_trade_routes() -> void:
 
 
 func _apply_building_diplomacy_effects() -> void:
-	for faction_id in _opinions:
-		var cities: Array = DataManager.get_faction_cities(faction_id)
-		for city in cities:
-			# 驿站: diplomacy_bonus
-			# 王宫: diplomacy_reputation
-			# 长城: diplomacy_opinion_neighbor
-			# 这些效果在阶段2暂不逐城市追踪，留待阶段3完善
-			pass
+	# 王宫 diplomacy_reputation：每回合给所属国加声望
+	_building_diplomacy_rep_bonus.clear()
+	for fid in _opinions.keys():
+		if str(fid) == "zhou":
+			continue
+		var rep_bonus := 0
+		for city in CityManager.get_faction_cities(str(fid)):
+			var city_id: String = str(city.get("id", ""))
+			if city_id.is_empty():
+				continue
+			var state: Dictionary = CityManager.get_city_state(city_id)
+			if state.is_empty():
+				continue
+			for b in state.get("buildings", []):
+				var bid: String = str(b.get("building_id", ""))
+				var level: int = int(b.get("level", 1))
+				var bdata: Dictionary = DataManager.get_building(bid)
+				if bdata.is_empty():
+					continue
+				var blevels: Array = bdata.get("levels", [])
+				if level < 1 or level > blevels.size():
+					continue
+				var effects: Dictionary = blevels[level - 1].get("effects", {})
+				var dip_rep: Variant = effects.get("diplomacy_reputation")
+				if dip_rep != null and (dip_rep is int or dip_rep is float):
+					rep_bonus += int(dip_rep)
+				# 驿站情报力加成
+				var intel_range: Variant = effects.get("intelligence_range")
+				if intel_range != null and (intel_range is int or intel_range is float):
+					for other in _opinions.keys():
+						if other != fid:
+							add_intelligence_points(str(fid), str(other), int(intel_range))
+		if rep_bonus > 0:
+			_building_diplomacy_rep_bonus[str(fid)] = rep_bonus
+			_change_reputation(str(fid), rep_bonus)
+
+
+func get_building_diplomacy_reputation_bonus(faction_id: String) -> int:
+	return int(_building_diplomacy_rep_bonus.get(faction_id, 0))
+
+
+## 宣战声望惩罚（方伯册封可减半）
+func get_war_reputation_penalty(attacker: String, base_penalty: int) -> int:
+	var effects: Dictionary = get_enfeoffment_effects(attacker)
+	var reduction: float = float(effects.get("war_penalty_reduction", 0.0))
+	if reduction <= 0.0:
+		return base_penalty
+	return int(round(float(base_penalty) * (1.0 - clampf(reduction, 0.0, 0.9))))
 
 
 func _set_intelligence_war_state(attacker: String, defender: String) -> void:
@@ -1170,6 +1322,9 @@ func reset() -> void:
 	_hezong_alliance.clear()
 	_lianheng_alliance.clear()
 	_casus_belli.clear()
+	_tribute_cooldowns.clear()
+	_enfeoffments.clear()
+	_building_diplomacy_rep_bonus.clear()
 	_event_chain_flags.clear()
 	_decay_counter = 0
 

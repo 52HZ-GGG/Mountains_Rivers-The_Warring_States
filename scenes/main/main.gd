@@ -731,7 +731,7 @@ func _show_settings_panel() -> void:
 	_add_framework_placeholder_action("ToggleFullscreenButton", "切换全屏", _toggle_framework_fullscreen)
 	_add_framework_placeholder_action("VolDownBtn", "音量 -10%", _adjust_master_volume.bind(-0.1))
 	_add_framework_placeholder_action("VolUpBtn", "音量 +10%", _adjust_master_volume.bind(0.1))
-	_add_framework_placeholder_action("ToggleLangButton", "切换语言(中/英占位)", _toggle_framework_language)
+	_add_framework_placeholder_action("ToggleLangButton", "切换语言（当前：%s）" % I18n.get_locale(), _toggle_framework_language)
 	_add_framework_placeholder_action("ToggleDemoCheatButton", "切换作弊", _toggle_framework_demo_cheat)
 	_framework_placeholder_layer.visible = true
 
@@ -747,9 +747,7 @@ func _adjust_master_volume(delta: float) -> void:
 
 
 func _toggle_framework_language() -> void:
-	# 占位：记录切换，完整 i18n 后续接入
-	var lang: String = "en-US" if TranslationServer.get_locale().begins_with("zh") else "zh-CN"
-	TranslationServer.set_locale(lang)
+	I18n.toggle_locale()
 	_show_settings_panel()
 
 

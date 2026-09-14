@@ -10,6 +10,9 @@ class_name DiplomacyAI
 
 ## AI 外交决策入口，由 GameManager.process_ai_turn() 调用
 static func evaluate_diplomacy(faction_id: String, turn_number: int) -> void:
+	# 周天子：被动势力，不主动外交/宣战
+	if faction_id == "zhou" or DiplomacySystem.is_zhou_faction(faction_id):
+		return
 	if DiplomacySystem.is_vassal(faction_id):
 		_evaluate_vassal_escape(faction_id)
 		return
@@ -24,6 +27,25 @@ static func evaluate_diplomacy(faction_id: String, turn_number: int) -> void:
 	# 纵横家：声望/回合达标时尝试合纵或连横
 	if randf() < 0.25:
 		DiplomacySystem.try_ai_strategist_bloc(faction_id)
+	# 朝贡：声望较高时偶尔朝贡
+	if randf() < 0.15:
+		_try_ai_tribute(faction_id)
+
+
+static func _try_ai_tribute(faction_id: String) -> void:
+	if DiplomacySystem.is_zhou_destroyed():
+		return
+	if DiplomacySystem.get_reputation(faction_id) < 50:
+		return
+	var gold: int = GameManager.get_faction_resource(faction_id, "gold")
+	if gold < 150:
+		return
+	var tier: String = "small"
+	if gold >= 400:
+		tier = "large"
+	elif gold >= 250:
+		tier = "ceremony"
+	DiplomacySystem.send_tribute(faction_id, tier)
 
 
 # ============= 评估频率 =============
