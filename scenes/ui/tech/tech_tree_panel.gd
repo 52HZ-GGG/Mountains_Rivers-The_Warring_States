@@ -42,11 +42,11 @@ func _build_ui() -> void:
 	main_vbox.add_child(title_bar)
 
 	var title := Label.new()
-	title.text = "科 技 树"
+	title.text = I18n.t("tech.title")
 	title.add_theme_font_size_override("font_size", 24)
 	title_bar.add_child(title)
 
-	var close_btn := SkirmishTileTextures.styled_button("关闭")
+	var close_btn := SkirmishTileTextures.styled_button(I18n.t("ui.close"))
 	close_btn.pressed.connect(_on_close_pressed)
 	title_bar.add_child(close_btn)
 
@@ -77,13 +77,17 @@ func _build_ui() -> void:
 
 func _build_tree_grid(grid: GridContainer) -> void:
 	var categories := [
-		{"id": "military", "name": "军事"},
-		{"id": "economy", "name": "经济"},
-		{"id": "livelihood", "name": "民生"},
-		{"id": "architecture", "name": "建筑"},
+		{"id": "military", "name": I18n.t("tech.military")},
+		{"id": "economy", "name": I18n.t("tech.economy")},
+		{"id": "livelihood", "name": I18n.t("tech.livelihood")},
+		{"id": "architecture", "name": I18n.t("tech.architecture")},
 	]
 	var eras := ["early", "mid", "late"]
-	var era_names := {"early": "早期", "mid": "中期", "late": "晚期"}
+	var era_names := {
+		"early": I18n.t("tech.era_early"),
+		"mid": I18n.t("tech.era_mid"),
+		"late": I18n.t("tech.era_late"),
+	}
 
 	# 表头
 	var header_empty := Label.new()
@@ -158,8 +162,17 @@ func _show_tech_detail(tech_id: String) -> void:
 
 	# 类别和时代
 	var cat_era := Label.new()
-	var cat_names := {"military": "军事", "economy": "经济", "livelihood": "民生", "architecture": "建筑"}
-	var era_names := {"early": "早期", "mid": "中期", "late": "晚期"}
+	var cat_names := {
+		"military": I18n.t("tech.military"),
+		"economy": I18n.t("tech.economy"),
+		"livelihood": I18n.t("tech.livelihood"),
+		"architecture": I18n.t("tech.architecture"),
+	}
+	var era_names := {
+		"early": I18n.t("tech.era_early"),
+		"mid": I18n.t("tech.era_mid"),
+		"late": I18n.t("tech.era_late"),
+	}
 	cat_era.text = "%s · %s" % [cat_names.get(tech.get("category", ""), ""), era_names.get(tech.get("era", ""), "")]
 	cat_era.add_theme_font_size_override("font_size", 14)
 	cat_era.modulate = Color(0.7, 0.7, 0.7)
@@ -175,20 +188,20 @@ func _show_tech_detail(tech_id: String) -> void:
 
 	# 金币成本
 	var cost_label := Label.new()
-	cost_label.text = "研究费用: %d 金币" % tech.get("cost_gold", 0)
+	cost_label.text = I18n.t("tech.cost") % tech.get("cost_gold", 0)
 	cost_label.add_theme_font_size_override("font_size", 14)
 	_detail_panel.add_child(cost_label)
 
 	# 回合数
 	var turns := maxi(1, ceili(float(tech.get("cost_gold", 100)) / 100.0))
 	var turns_label := Label.new()
-	turns_label.text = "研究回合: %d" % turns
+	turns_label.text = I18n.t("tech.turns") % turns
 	turns_label.add_theme_font_size_override("font_size", 14)
 	_detail_panel.add_child(turns_label)
 
 	# 效果
 	var effect_label := Label.new()
-	effect_label.text = "效果: %s" % _format_effect(tech.get("effects", {}))
+	effect_label.text = I18n.t("tech.effect") % _format_effect(tech.get("effects", {}))
 	effect_label.add_theme_font_size_override("font_size", 14)
 	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_detail_panel.add_child(effect_label)
@@ -219,18 +232,18 @@ func _show_tech_detail(tech_id: String) -> void:
 	# 状态
 	var status_label := Label.new()
 	if TechSystem.is_researched(tech_id):
-		status_label.text = "状态: 已研究"
+		status_label.text = I18n.t("tech.status_researched")
 		status_label.modulate = COLOR_RESEARCHED
 	elif TechSystem.get_researching_tech() == tech_id:
 		var prog: int = TechSystem.get_research_progress()
 		var total: int = TechSystem.get_research_cost_turns()
-		status_label.text = "状态: 研究中 (%d/%d)" % [prog, total]
+		status_label.text = I18n.t("tech.status_researching") % [prog, total]
 		status_label.modulate = COLOR_RESEARCHING
 	elif TechSystem.is_available(tech_id):
-		status_label.text = "状态: 可研究"
+		status_label.text = I18n.t("tech.status_available")
 		status_label.modulate = COLOR_AVAILABLE
 	else:
-		status_label.text = "状态: 未解锁"
+		status_label.text = I18n.t("tech.status_locked")
 		status_label.modulate = COLOR_LOCKED
 	status_label.add_theme_font_size_override("font_size", 14)
 	_detail_panel.add_child(status_label)
@@ -240,11 +253,11 @@ func _show_tech_detail(tech_id: String) -> void:
 	_detail_panel.add_child(btn_container)
 
 	if TechSystem.is_available(tech_id) and TechSystem.get_researching_tech() == "":
-		var research_btn := SkirmishTileTextures.styled_button("开始研究")
+		var research_btn := SkirmishTileTextures.styled_button(I18n.t("tech.start_research"))
 		research_btn.pressed.connect(_on_start_research.bind(tech_id))
 		btn_container.add_child(research_btn)
 	elif TechSystem.get_researching_tech() == tech_id:
-		var cancel_btn := SkirmishTileTextures.styled_button("取消研究")
+		var cancel_btn := SkirmishTileTextures.styled_button(I18n.t("tech.cancel_research"))
 		cancel_btn.pressed.connect(_on_cancel_research)
 		btn_container.add_child(cancel_btn)
 

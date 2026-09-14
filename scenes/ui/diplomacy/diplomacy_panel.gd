@@ -28,11 +28,11 @@ func _build_ui() -> void:
 	main_vbox.add_child(title_bar)
 
 	var title := Label.new()
-	title.text = "外交"
+	title.text = I18n.t("diplomacy.title")
 	title.add_theme_font_size_override("font_size", 24)
 	title_bar.add_child(title)
 
-	var close_button := SkirmishTileTextures.styled_button("关闭")
+	var close_button := SkirmishTileTextures.styled_button(I18n.t("ui.close"))
 	close_button.pressed.connect(_on_close_pressed)
 	title_bar.add_child(close_button)
 
@@ -49,7 +49,7 @@ func _build_ui() -> void:
 	content.add_child(left_panel)
 
 	var faction_label := Label.new()
-	faction_label.text = "国家列表"
+	faction_label.text = I18n.t("diplomacy.faction_list")
 	left_panel.add_child(faction_label)
 
 	var faction_list := VBoxContainer.new()
@@ -63,7 +63,7 @@ func _build_ui() -> void:
 	content.add_child(right_panel)
 
 	var detail_label := Label.new()
-	detail_label.text = "外交详情"
+	detail_label.text = I18n.t("diplomacy.detail")
 	right_panel.add_child(detail_label)
 
 	var detail_container := VBoxContainer.new()
@@ -77,13 +77,13 @@ func _build_ui() -> void:
 	right_panel.add_child(action_bar)
 
 	# 创建动作按钮
-	_create_action_button(action_bar, "赠礼", _on_gift_pressed)
-	_create_action_button(action_bar, "宣战", _on_declare_war_pressed)
-	_create_action_button(action_bar, "停战", _on_ceasefire_pressed)
-	_create_action_button(action_bar, "互不侵犯", _on_non_aggression_pressed)
-	_create_action_button(action_bar, "结盟", _on_alliance_pressed)
-	_create_action_button(action_bar, "通行权", _on_military_access_pressed)
-	_create_action_button(action_bar, "商路", _on_trade_route_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.gift"), _on_gift_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.declare_war"), _on_declare_war_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.ceasefire"), _on_ceasefire_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.non_aggression"), _on_non_aggression_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.alliance"), _on_alliance_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.military_access"), _on_military_access_pressed)
+	_create_action_button(action_bar, I18n.t("diplomacy.trade_route"), _on_trade_route_pressed)
 
 	# 填充国家列表
 	_populate_faction_list()
@@ -167,23 +167,23 @@ func _update_detail_panel() -> void:
 
 	# 关系状态
 	var status_label := Label.new()
-	var status := "和平"
+	var status := I18n.t("diplomacy.peace")
 	if DiplomacySystem.are_at_war(player_faction, _selected_faction):
-		status = "战争中"
+		status = I18n.t("diplomacy.at_war")
 	elif DiplomacySystem.are_allied(player_faction, _selected_faction):
-		status = "同盟"
+		status = I18n.t("diplomacy.allied")
 	elif DiplomacySystem.have_non_aggression(player_faction, _selected_faction):
-		status = "互不侵犯"
+		status = I18n.t("diplomacy.non_aggression")
 	elif DiplomacySystem.have_trade_route(player_faction, _selected_faction):
-		status = "贸易中"
+		status = I18n.t("diplomacy.trading")
 	status_label.text = "关系: %s" % status
 	detail.add_child(status_label)
 
 	# 边境关系
 	var border_label := Label.new()
-	var border_text := "不接壤"
+	var border_text := I18n.t("diplomacy.not_bordering")
 	if DiplomacySystem.are_bordering(player_faction, _selected_faction):
-		border_text = "接壤"
+		border_text = I18n.t("diplomacy.bordering")
 	border_label.text = "边境: %s" % border_text
 	detail.add_child(border_label)
 
