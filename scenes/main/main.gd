@@ -240,11 +240,12 @@ func _framework_demo_mode_name() -> String:
 
 
 func _should_show_tutorial_guidance_ui() -> bool:
-	return DemoFlow.is_tutorial_enabled()
+	# 教程或完整 Demo 都要展示任务/简报/目标面板
+	return DemoFlow.is_tutorial_enabled() or DemoFlow.is_enabled()
 
 
 func _auto_start_skirmish_demo() -> void:
-	await get_tree().process_frame
+	# 直接启动，不再额外 await，保证测试/启动下一帧即可拿到面板
 	if not DemoFlow.is_enabled() or DemoFlow.requires_strategy_preparation():
 		return
 	_on_demo_sortie_requested()
@@ -412,32 +413,32 @@ func _create_framework_hub() -> void:
 	for module: Dictionary in _framework_modules():
 		modules.add_child(_create_framework_module_button(module))
 
-	if _should_show_tutorial_guidance_ui():
-		var briefing := PanelContainer.new()
-		briefing.name = "BriefingPanel"
-		briefing.custom_minimum_size = Vector2(330, 0)
-		briefing.add_theme_stylebox_override("panel", _framework_panel_style(Color(0.12, 0.10, 0.075, 0.92)))
-		content.add_child(briefing)
+	# 试玩骨架/目标简报始终展示
+	var briefing := PanelContainer.new()
+	briefing.name = "BriefingPanel"
+	briefing.custom_minimum_size = Vector2(330, 0)
+	briefing.add_theme_stylebox_override("panel", _framework_panel_style(Color(0.12, 0.10, 0.075, 0.92)))
+	content.add_child(briefing)
 
-		var briefing_box := VBoxContainer.new()
-		briefing_box.name = "BriefingBox"
-		briefing_box.add_theme_constant_override("separation", 10)
-		briefing.add_child(briefing_box)
+	var briefing_box := VBoxContainer.new()
+	briefing_box.name = "BriefingBox"
+	briefing_box.add_theme_constant_override("separation", 10)
+	briefing.add_child(briefing_box)
 
-		var briefing_title := Label.new()
-		briefing_title.text = "当前 Demo 目标"
-		briefing_title.add_theme_font_size_override("font_size", 20)
-		briefing_title.add_theme_color_override("font_color", Color(0.86, 0.69, 0.34, 1.0))
-		briefing_box.add_child(briefing_title)
+	var briefing_title := Label.new()
+	briefing_title.text = "当前 Demo 目标"
+	briefing_title.add_theme_font_size_override("font_size", 20)
+	briefing_title.add_theme_color_override("font_color", Color(0.86, 0.69, 0.34, 1.0))
+	briefing_box.add_child(briefing_title)
 
-		var briefing_text := RichTextLabel.new()
-		briefing_text.name = "BriefingText"
-		briefing_text.bbcode_enabled = true
-		briefing_text.fit_content = true
-		briefing_text.custom_minimum_size = Vector2(300, 280)
-		briefing_text.text = _framework_demo_briefing()
-		briefing_text.add_theme_color_override("default_color", Color(0.86, 0.82, 0.72, 1.0))
-		briefing_box.add_child(briefing_text)
+	var briefing_text := RichTextLabel.new()
+	briefing_text.name = "BriefingText"
+	briefing_text.bbcode_enabled = true
+	briefing_text.fit_content = true
+	briefing_text.custom_minimum_size = Vector2(300, 280)
+	briefing_text.text = _framework_demo_briefing()
+	briefing_text.add_theme_color_override("default_color", Color(0.86, 0.82, 0.72, 1.0))
+	briefing_box.add_child(briefing_text)
 
 
 func _hide_legacy_toolbar() -> void:
@@ -1064,7 +1065,7 @@ func _toggle_framework_demo_cheat() -> void:
 
 
 func _framework_save_load_summary() -> String:
-	return "[b]多槽存档[/b]\n%s\n\n[b]范围[/b]\n城市/资源/税率/外交/科技/学派/大夫/奇观/事件/Demo。\n玩家回合结束会自动写入「自动」槽。" % SaveManager.format_slots_text()
+	return "[b]多槽存档（含快速存档槽）[/b]\n%s\n\n[b]范围[/b]\n城市/资源/税率/外交/科技/学派/大夫/奇观/事件/Demo。\n玩家回合结束会自动写入「自动」槽。" % SaveManager.format_slots_text()
 
 
 func _save_framework_quick_save(slot: int = 0) -> void:
@@ -1072,8 +1073,16 @@ func _save_framework_quick_save(slot: int = 0) -> void:
 	if not bool(result.get("success", false)):
 		_framework_placeholder_body.text = "[b]保存失败[/b]\n槽位 %s：%s" % [str(slot + 1), str(result.get("reason", "WRITE_FAILED"))]
 		return
+	# 兼容旧单槽路径（测试/旧存档）
+	if slot == 0:
+		var mirror: Dictionary = SaveManager.build_save_data()
+		var file: FileAccess = FileAccess.open(FRAMEWORK_QUICK_SAVE_PATH, FileAccess.WRITE)
+		if file != null:
+			file.store_string(JSON.stringify(mirror, "\t"))
+			file.close()
 	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入 %s。\n\n%s" % [SaveManager.get_save_path(slot), _framework_save_load_summary()]
 	_show_save_load_panel()
+	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入 %s。\n\n%s" % [SaveManager.get_save_path(slot), _framework_save_load_summary()]
 
 
 func _load_framework_quick_save(slot: int = 0) -> void:
@@ -1849,9 +1858,10 @@ func _on_skirmish_button_pressed() -> void:
 
 
 func _on_skirmish_scenario_closed() -> void:
-	if TacticalSkirmishManager.is_active():
-		return
 	_set_end_turn_visible(false)
+	if TacticalSkirmishManager.is_active():
+		# 演武进行中：保持演武 UI，不恢复战略工具栏
+		return
 	_set_toolbar_visible(true)
 
 
@@ -2171,7 +2181,7 @@ func _on_next_turn_pressed() -> void:
 		_reenable_end_btn()
 		return
 
-	_show_turn_info("已结算敌方回合")
+	_show_turn_info("回合切换成功")
 	_reenable_end_btn()
 
 

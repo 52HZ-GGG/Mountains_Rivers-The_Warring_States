@@ -283,6 +283,18 @@ func get_available_quests(faction_id: String) -> Array:
 	return school.get("quest_pool", []) as Array
 
 
+## 学派领袖技能效果（等级 ≥2 生效）
+func get_leader_skill_effects(faction_id: String) -> Dictionary:
+	if get_school_level(faction_id) < 2:
+		return {}
+	var school_id: String = get_current_school(faction_id)
+	if school_id == "":
+		return {}
+	var school: Dictionary = DataManager.get_school(school_id)
+	var leader: Dictionary = school.get("leader_skill", {})
+	return leader.get("effects", {}) if leader is Dictionary else {}
+
+
 func get_completed_quests(faction_id: String) -> Array:
 	if not _school_state_by_faction.has(faction_id):
 		return []

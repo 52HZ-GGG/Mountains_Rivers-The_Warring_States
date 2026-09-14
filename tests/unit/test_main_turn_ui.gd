@@ -10,6 +10,12 @@ func before_each() -> void:
 	GameManager.reset()
 	CityManager.reset()
 	SchoolManager.reset()
+	MinisterManager.reset()
+	WonderManager.reset()
+	TechSystem.reset()
+	DiplomacySystem.reset()
+	StrategicMapManager.reset()
+	TacticalSkirmishManager.reset_skirmish()
 	DemoFlow.reset()
 	DemoFlow.set_full_demo_enabled(true)
 	TacticalSkirmishManager.set_demo_attack_multiplier(1.0)
@@ -377,8 +383,14 @@ func test_demo_strategy_preparation_tracks_map_and_capital() -> void:
 
 
 func test_framework_demo_briefing_shows_full_strategy_scope() -> void:
-	StartupFlow.start_demo_game_direct()
+	GameManager.reset()
+	CityManager.reset()
+	DemoFlow.reset()
+	DemoFlow.set_enabled(true)
+	DemoFlow.set_full_demo_enabled(true)
+	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
+	await wait_frames(1)
 	var framework_hub: Control = main_scene.get("_framework_hub") as Control
 	var briefing_text: RichTextLabel = _find_descendant_by_name(framework_hub, "BriefingText") as RichTextLabel
 
@@ -733,12 +745,22 @@ func test_demo_direct_start_uses_full_faction_rotation() -> void:
 
 
 func test_tutorial_enters_small_map_but_reuses_formal_strategy_components() -> void:
-	StartupFlow.start_demo_game_direct(StartupFlow.MODE_DEMO)
+	# 不走 start_demo_game_direct（会再切一次场景），直接在测试树里建 Main
+	GameManager.reset()
+	CityManager.reset()
+	TacticalSkirmishManager.reset_skirmish()
+	DemoFlow.reset()
+	DemoFlow.set_enabled(true)
+	DemoFlow.set_tutorial_enabled(true)
+	DemoFlow.set_full_demo_enabled(false)
+	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
-	await wait_frames(2)
+	# _auto_start_skirmish_demo 用 call_deferred，多等几帧
+	await wait_frames(5)
 
 	var demo_objective_panel: Control = main_scene.get("_demo_objective_panel") as Control
 	var skirmish_panel: CanvasLayer = main_scene.get("_active_skirmish_panel") as CanvasLayer
+	assert_not_null(demo_objective_panel, "应创建 Demo 目标面板")
 	var sortie_button: Button = demo_objective_panel.get_node("Margin/VBox/SortieButton") as Button
 
 	assert_true(DemoFlow.is_tutorial_enabled(), "MODE_DEMO 应作为新手教程运行")
@@ -829,8 +851,14 @@ func test_tutorial_enters_small_map_but_reuses_formal_strategy_components() -> v
 
 
 func test_end_turn_runs_all_ai_turns_and_returns_to_player() -> void:
-	StartupFlow.start_demo_game_direct()
+	GameManager.reset()
+	CityManager.reset()
+	DemoFlow.reset()
+	DemoFlow.set_enabled(true)
+	DemoFlow.set_full_demo_enabled(true)
+	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
+	await wait_frames(1)
 	var end_turn_btn: Button = main_scene.get("_persistent_end_btn") as Button
 
 	main_scene.call("_on_big_map_button_pressed")

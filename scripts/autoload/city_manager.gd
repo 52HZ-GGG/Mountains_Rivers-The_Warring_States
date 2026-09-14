@@ -1428,6 +1428,7 @@ func _process_stability(city_id: String, faction_id: String) -> void:
 		delta += float(stab_cfg.get("low_morale_stability_penalty", -3))
 	delta += float(MinisterManager.get_city_stability_bonus(city_id))
 	delta += float(MinisterManager.get_city_stability_regen_bonus(city_id))
+	delta += float(SchoolManager.get_leader_skill_effects(faction_id).get("stability_bonus", 0))
 
 	# 应用并 clamp
 	var new_stability: int = clampi(old_stability + int(delta), 0, 100)
