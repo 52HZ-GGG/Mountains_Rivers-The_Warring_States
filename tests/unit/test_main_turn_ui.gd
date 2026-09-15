@@ -351,6 +351,8 @@ func test_end_turn_can_be_triggered_multiple_times() -> void:
 
 func test_demo_sortie_opens_skirmish_panel() -> void:
 	DemoFlow.set_enabled(true)
+	DemoFlow.set_tutorial_enabled(true)
+	DemoFlow.set_full_demo_enabled(false)
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 	var demo_objective_panel: Control = main_scene.get("_demo_objective_panel") as Control
 
@@ -360,7 +362,7 @@ func test_demo_sortie_opens_skirmish_panel() -> void:
 	assert_true(TacticalSkirmishManager.is_active(), "点击出征洛邑后应启动演武管理器")
 	assert_not_null(skirmish_panel, "点击出征洛邑后应动态创建置顶演武面板")
 	assert_true(skirmish_panel.visible, "点击出征洛邑后应显示演武面板")
-	assert_true(demo_objective_panel.visible, "演武打开时保留 Demo 目标面板，避免黑屏时缺少状态锚点")
+	assert_true(demo_objective_panel.visible, "教程演武打开时保留 Demo 目标面板，避免黑屏时缺少状态锚点")
 	assert_gt(
 		int((main_scene.get("_demo_layer") as CanvasLayer).layer),
 		int(skirmish_panel.layer),
@@ -572,6 +574,8 @@ func test_main_menu_can_open_and_close_event_test_panel() -> void:
 
 func test_demo_objective_panel_can_collapse() -> void:
 	DemoFlow.set_enabled(true)
+	DemoFlow.set_tutorial_enabled(true)
+	DemoFlow.set_full_demo_enabled(false)
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 	var demo_objective_panel: Control = main_scene.get("_demo_objective_panel") as Control
 	var collapse_button: Button = demo_objective_panel.get_node("Margin/VBox/Header/CollapseButton") as Button
@@ -592,7 +596,10 @@ func test_demo_objective_panel_can_collapse() -> void:
 
 
 func test_demo_skirmish_victory_returns_to_main_and_shows_popup() -> void:
+	# 正式试玩（full_demo）：胜利后只弹胜利窗，不显示教程目标面板
 	DemoFlow.set_enabled(true)
+	DemoFlow.set_full_demo_enabled(true)
+	DemoFlow.set_tutorial_enabled(false)
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
 	main_scene.call("_on_demo_sortie_requested")
@@ -608,7 +615,7 @@ func test_demo_skirmish_victory_returns_to_main_and_shows_popup() -> void:
 	var luoyi: Dictionary = CityManager.get_city_state(DemoFlow.get_target_city_id())
 
 	assert_null(skirmish_panel_after, "Demo 演武胜利后应关闭演武面板，避免遮住胜利反馈")
-	assert_true(demo_objective_panel.visible, "Demo 演武胜利后应回到主界面并显示任务面板")
+	assert_false(demo_objective_panel.visible, "正式试玩演武胜利后不应显示教程目标面板")
 	assert_true(demo_victory_popup.visible, "Demo 演武胜利后应显示胜利弹窗")
 	assert_eq(luoyi.get("current_faction_id", ""), DemoFlow.get_player_faction_id(), "Demo 演武胜利后洛邑应归秦")
 	assert_false(DemoFlow.is_demo_complete(), "Demo 演武胜利后还需查看经营结果才完成闭环")

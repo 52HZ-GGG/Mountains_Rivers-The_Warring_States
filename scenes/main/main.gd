@@ -96,63 +96,25 @@ func _ready() -> void:
 	_resource_bar = $ResourceBar as Control
 	_resource_bar.visible = false
 
-	var diplomacy_button := $DiplomacyButton as Button
-	diplomacy_button.text = I18n.t("ui.diplomacy")
-	diplomacy_button.pressed.connect(_on_diplomacy_button_pressed)
-
-	var tech_button := $TechButton as Button
-	tech_button.text = I18n.t("ui.tech")
-	tech_button.pressed.connect(_on_tech_button_pressed)
-
-	var skirmish_button := $SkirmishButton as Button
-	skirmish_button.text = I18n.t("ui.military")
-	skirmish_button.pressed.connect(_on_skirmish_button_pressed)
-
-	var big_map_button := $BigMapButton as Button
-	big_map_button.text = I18n.t("ui.big_map")
-	big_map_button.pressed.connect(_on_big_map_button_pressed)
-
 	_init_game()
 
 	_event_popup = _event_popup_scene.instantiate() as Panel
 	add_child(_event_popup)
 
-	var big_map_btn := $BigMapButton as Button
 	if _debug_tools_enabled:
-		var event_test_btn := SkirmishTileTextures.styled_button("事件测试(Debug)")
-		event_test_btn.pressed.connect(_on_event_test_button_pressed)
-		big_map_btn.get_parent().add_child(event_test_btn)
-		big_map_btn.get_parent().move_child(event_test_btn, big_map_btn.get_index() + 1)
-		_event_test_btn = event_test_btn
+		_event_test_btn = SkirmishTileTextures.styled_button("事件测试(Debug)")
+		_event_test_btn.pressed.connect(_on_event_test_button_pressed)
+		add_child(_event_test_btn)
 
-	var return_mode_btn := SkirmishTileTextures.styled_button("返回模式")
-	return_mode_btn.pressed.connect(_on_return_mode_pressed)
-	big_map_btn.get_parent().add_child(return_mode_btn)
-	if is_instance_valid(_event_test_btn):
-		big_map_btn.get_parent().move_child(return_mode_btn, _event_test_btn.get_index() + 1)
-	else:
-		big_map_btn.get_parent().move_child(return_mode_btn, big_map_btn.get_index() + 1)
-	_return_mode_btn = return_mode_btn
-
-	_toolbar_elements = [
-		$Label as Control,
-		$DiplomacyButton as Control,
-		$TechButton as Control,
-		$SkirmishButton as Control,
-		$BigMapButton as Control,
-		return_mode_btn as Control,
-	]
-	if is_instance_valid(_event_test_btn):
-		_toolbar_elements.insert(_toolbar_elements.size() - 1, _event_test_btn)
+	_return_mode_btn = SkirmishTileTextures.styled_button("返回模式")
+	_return_mode_btn.pressed.connect(_on_return_mode_pressed)
+	add_child(_return_mode_btn)
 
 	_create_turn_info_popup()
 	_create_persistent_end_btn()
 	_set_end_turn_visible(false)
-	var built_in_skirmish_panel: CanvasLayer = $SkirmishPanel as CanvasLayer
-	built_in_skirmish_panel.visible = false
 	_create_framework_hub()
 	_create_framework_placeholder()
-	_hide_legacy_toolbar()
 	_toolbar_elements = [_framework_hub]
 	if DemoFlow.is_enabled():
 		_create_demo_ui()
@@ -254,8 +216,8 @@ func _framework_demo_mode_name() -> String:
 
 
 func _should_show_tutorial_guidance_ui() -> bool:
-	# 教程或完整 Demo 都要展示任务/简报/目标面板
-	return DemoFlow.is_tutorial_enabled() or DemoFlow.is_enabled()
+	# 仅新手教程展示「完整 Demo 目标」面板；正式试玩/战略中枢不显示
+	return DemoFlow.is_tutorial_enabled()
 
 
 func _auto_start_skirmish_demo() -> void:
@@ -453,20 +415,6 @@ func _create_framework_hub() -> void:
 	briefing_text.text = _framework_demo_briefing()
 	briefing_text.add_theme_color_override("default_color", Color(0.86, 0.82, 0.72, 1.0))
 	briefing_box.add_child(briefing_text)
-
-
-func _hide_legacy_toolbar() -> void:
-	for elem: Control in [
-		$Label as Control,
-		$DiplomacyButton as Control,
-		$TechButton as Control,
-		$SkirmishButton as Control,
-		$BigMapButton as Control,
-		_event_test_btn as Control,
-		_return_mode_btn as Control,
-	]:
-		if is_instance_valid(elem):
-			elem.visible = false
 
 
 func _create_framework_placeholder() -> void:

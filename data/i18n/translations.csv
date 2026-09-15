@@ -38,7 +38,7 @@ minister.city_label,驻城：%s,City: %s
 minister.target_label,派驻目标：%s,Target: %s
 big_map.political_on,政治地图：开,Political: On
 big_map.political_off,政治地图：关,Political: Off
-big_map.hover_hint,将鼠标移到格子上：显示地形与城市信息。,Hover a hex for terrain and city info.
+big_map.hover_hint,左键拖动平移视角；悬停格子查看地形与城市。,Left-drag to pan; hover a hex for terrain and city info.
 big_map.click_city,点击城市格：打开城池管理,Click city hex to manage
 big_map.impassable,不可通行,Impassable
 big_map.build_tag,建%d,B%d

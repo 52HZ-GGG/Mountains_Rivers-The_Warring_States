@@ -1,15 +1,25 @@
 extends Control
 class_name HexMapCanvas
 
-## 在 HexBoard 上一次性绘制全部六角地形贴图，避免逐格 Control._draw 叠加误差造成「假缝隙」。
+## 六角地图画布。
+## 支持分层绘制（地形 / 覆盖层）与视口裁剪：大地图把地形当静态缓存，只在脏标记时重绘。
 
 const _EXTRA_BLEED_SCALE: float = 1.2
 const _CAPTION_COLOR: Color = Color(1, 1, 1, 1)
 const _CAPTION_SHADOW_COLOR: Color = Color(0.05, 0.05, 0.10, 0.9)
 
+const LAYER_TERRAIN: int = 1
+const LAYER_OVERLAY: int = 2
+const LAYER_ALL: int = LAYER_TERRAIN | LAYER_OVERLAY
+
 var _payload_cells: Array = []
 var _payload_board_size: Vector2 = Vector2.ZERO
 var _use_payload: bool = false
+var _draw_layers: int = LAYER_ALL
+var _cull_rect: Rect2 = Rect2()
+var _cull_enabled: bool = false
+var _content_dirty: bool = true
+
 
 func _scale_poly_outward(poly: PackedVector2Array, cell_pos: Vector2, cell: SkirmishHexCell) -> PackedVector2Array:
 	var half_w: float = cell.custom_minimum_size.x * 0.5
@@ -24,6 +34,7 @@ func _scale_poly_outward(poly: PackedVector2Array, cell_pos: Vector2, cell: Skir
 		i += 1
 	return out
 
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = -40
@@ -35,8 +46,36 @@ func _ready() -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_RESIZED:
+	# 仅在内容脏时响应尺寸变化；缩放走 Control.scale，不应触发全图重绘
+	if what == NOTIFICATION_RESIZED and _content_dirty:
 		queue_redraw()
+
+
+func set_draw_layers(layers: int) -> void:
+	if _draw_layers == layers:
+		return
+	_draw_layers = layers
+	_content_dirty = true
+	queue_redraw()
+
+
+func set_cull_enabled(enabled: bool) -> void:
+	_cull_enabled = enabled
+	if not enabled:
+		_content_dirty = true
+		queue_redraw()
+
+
+func set_cull_rect(rect: Rect2) -> void:
+	if not _cull_enabled:
+		return
+	# 放大一点，避免滚动时边缘闪烁
+	var padded: Rect2 = rect.grow(maxf(_payload_board_size.x, _payload_board_size.y) * 0.02 + 80.0)
+	if _cull_rect == padded:
+		return
+	_cull_rect = padded
+	_content_dirty = true
+	queue_redraw()
 
 
 func _white_vertex_colors(n: int) -> PackedColorArray:
@@ -52,6 +91,7 @@ func set_payload_cells(cells: Array, board_size: Vector2) -> void:
 	_payload_cells = cells
 	_payload_board_size = board_size
 	_use_payload = true
+	_content_dirty = true
 	queue_redraw()
 
 
@@ -59,10 +99,36 @@ func clear_payload_cells() -> void:
 	_payload_cells = []
 	_payload_board_size = Vector2.ZERO
 	_use_payload = false
+	_content_dirty = true
 	queue_redraw()
 
 
+func _poly_aabb(poly: PackedVector2Array) -> Rect2:
+	if poly.is_empty():
+		return Rect2()
+	var min_v: Vector2 = poly[0]
+	var max_v: Vector2 = poly[0]
+	for p: Vector2 in poly:
+		min_v = Vector2(minf(min_v.x, p.x), minf(min_v.y, p.y))
+		max_v = Vector2(maxf(max_v.x, p.x), maxf(max_v.y, p.y))
+	return Rect2(min_v, max_v - min_v)
+
+
+func _payload_visible(payload: Dictionary) -> bool:
+	if not _cull_enabled or _cull_rect.size == Vector2.ZERO:
+		return true
+	var poly: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
+	if poly.size() < 3:
+		return false
+	var aabb: Rect2 = _poly_aabb(poly)
+	var caption_center: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
+	if caption_center != Vector2.ZERO:
+		aabb = aabb.expand(caption_center)
+	return aabb.intersects(_cull_rect)
+
+
 func _draw() -> void:
+	_content_dirty = false
 	if _use_payload:
 		_draw_payload_cells()
 		return
@@ -107,19 +173,26 @@ func _draw_payload_cells() -> void:
 		size = _payload_board_size
 	var font: Font = get_theme_default_font()
 	var font_size_default: int = get_theme_default_font_size()
+	var draw_terrain: bool = (_draw_layers & LAYER_TERRAIN) != 0
+	var draw_overlay: bool = (_draw_layers & LAYER_OVERLAY) != 0
 	for payload_v: Variant in _payload_cells:
 		if payload_v is not Dictionary:
 			continue
 		var payload: Dictionary = payload_v as Dictionary
+		if not _payload_visible(payload):
+			continue
 		var polygon: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
 		if polygon.size() < 3:
 			continue
-		var tex: Texture2D = payload.get("texture", null) as Texture2D
-		var uvs: PackedVector2Array = payload.get("uvs", PackedVector2Array()) as PackedVector2Array
-		if tex != null and polygon.size() == uvs.size():
-			draw_polygon(polygon, _white_vertex_colors(polygon.size()), uvs, tex)
-		else:
-			draw_colored_polygon(polygon, payload.get("fallback_color", SkirmishHexCell.fallback_terrain_color()) as Color)
+		if draw_terrain:
+			var tex: Texture2D = payload.get("texture", null) as Texture2D
+			var uvs: PackedVector2Array = payload.get("uvs", PackedVector2Array()) as PackedVector2Array
+			if tex != null and polygon.size() == uvs.size():
+				draw_polygon(polygon, _white_vertex_colors(polygon.size()), uvs, tex)
+			else:
+				draw_colored_polygon(polygon, payload.get("fallback_color", SkirmishHexCell.fallback_terrain_color()) as Color)
+		if not draw_overlay:
+			continue
 		var tint: Color = payload.get("tint", Color(0, 0, 0, 0)) as Color
 		if tint.a > 0.001:
 			draw_colored_polygon(polygon, tint)

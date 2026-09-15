@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 ## 大地图面板：100x70 六角地图的轻量渲染版。
-## 采用单画布绘制 + 单输入层命中检测，避免 7000 个 Control 带来的卡顿。
+## 分层：地形静态缓存 + 势力/部队覆盖层；视口裁剪，避免无变化时全图重绘。
 
 const _HEX_RADIUS_BASE_PX: float = 120.0
 const _HEX_BOARD_PAD_PX: float = 8.0
@@ -12,6 +12,7 @@ const _ZOOM_MAX: float = 3.0
 const _BOTTOM_ACTION_PAD_PX: float = 86.0
 const _HEX_FILL_BLEED_PX: float = 2.6
 const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
+const _DRAG_THRESHOLD_PX: float = 6.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 signal city_clicked(city_id: String)
@@ -30,8 +31,15 @@ var _cell_size: Vector2 = Vector2.ZERO
 var _board_origin_shift: Vector2 = Vector2.ZERO
 var _board_base_size: Vector2 = Vector2.ZERO
 var _cell_payload_by_axial: Dictionary = {}
+var _terrain_payload_cells: Array = []
+var _terrain_layout_dirty: bool = true
+var _overlay_dirty: bool = true
 var _minimap_cells: Array = []
 var _minimap_colors: PackedColorArray = PackedColorArray()
+var _drag_armed: bool = false
+var _drag_active: bool = false
+var _drag_press_pos: Vector2 = Vector2.ZERO
+var _city_hit_rects: Array = []
 
 @onready var _hex_board: Control = %HexBoard
 @onready var _hover_info: Label = %HoverInfo
@@ -75,6 +83,7 @@ func _ready() -> void:
 	var v_scroll: ScrollBar = _scroll.get_v_scroll_bar()
 	if v_scroll != null:
 		v_scroll.value_changed.connect(_on_scroll_value_changed)
+	_scroll.resized.connect(_on_scroll_view_resized)
 
 
 func open() -> void:
@@ -84,10 +93,14 @@ func open() -> void:
 	_build_political_control_grid()
 	_ensure_hex_buttons()
 	_ensure_board_backdrop()
+	_terrain_layout_dirty = true
+	_overlay_dirty = true
 	_refresh_display()
+	_build_city_hit_rects()
 	_refresh_minimap_viewport()
 	_hex_refit_pending = true
 	call_deferred("_deferred_refit_hex_radius_if_needed")
+	call_deferred("_update_draw_cull_rect")
 
 
 func focus_city(city_id: String) -> void:
@@ -123,6 +136,10 @@ func _on_zoom_reset_pressed() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and not mb.pressed and _drag_active:
+			# 拖拽中在覆盖层外松开：结束拖拽，避免卡死
+			_end_drag()
+			return
 		if not mb.pressed:
 			return
 		var scroll_rect: Rect2 = _scroll.get_global_rect()
@@ -174,16 +191,18 @@ func _apply_board_zoom_transform() -> void:
 	if _hex_board == null or _board_base_size == Vector2.ZERO:
 		return
 	_hex_board.custom_minimum_size = _board_base_size * _zoom_level
-	var map_canvas: HexMapCanvas = _hex_board.get_node_or_null("HexMapCanvas") as HexMapCanvas
-	if map_canvas != null:
-		map_canvas.scale = Vector2(_zoom_level, _zoom_level)
-		map_canvas.position = Vector2.ZERO
+	for canvas_name: String in ["HexMapTerrainCanvas", "HexMapOverlayCanvas", "HexMapCanvas"]:
+		var map_canvas: HexMapCanvas = _hex_board.get_node_or_null(canvas_name) as HexMapCanvas
+		if map_canvas != null:
+			map_canvas.scale = Vector2(_zoom_level, _zoom_level)
+			map_canvas.position = Vector2.ZERO
 	var overlay: Control = _hex_board.get_node_or_null("HexInputOverlay") as Control
 	if overlay != null:
 		overlay.scale = Vector2.ONE
 		overlay.position = Vector2.ZERO
 		overlay.custom_minimum_size = _board_base_size * _zoom_level
 		overlay.size = _board_base_size * _zoom_level
+	call_deferred("_update_draw_cull_rect")
 
 
 func _update_zoom_label() -> void:
@@ -196,7 +215,10 @@ func _rebuild_hex_grid() -> void:
 	_hex_board.set_meta("_hex_layout_v", 0)
 	_ensure_hex_buttons()
 	_ensure_board_backdrop()
+	_terrain_layout_dirty = true
+	_overlay_dirty = true
 	_refresh_display()
+	_build_city_hit_rects()
 	_refresh_minimap_viewport()
 
 
@@ -208,7 +230,8 @@ func _on_political_toggle() -> void:
 	if btn != null:
 		btn.text = I18n.t("big_map.political_on") if _political_mode else I18n.t("big_map.political_off")
 	_update_political_legend()
-	_refresh_display()
+	_overlay_dirty = true
+	_refresh_overlay_display()
 
 
 func _build_terrain_lookup() -> void:
@@ -259,8 +282,9 @@ func _build_political_control_grid() -> void:
 func _refresh_runtime_political_control(refresh_view: bool = true) -> void:
 	_build_city_lookup()
 	_build_political_control_grid()
+	_overlay_dirty = true
 	if refresh_view and visible:
-		_refresh_display()
+		_refresh_overlay_display()
 		_update_political_legend()
 
 
@@ -319,7 +343,7 @@ func _create_hex_input_overlay(board_size: Vector2) -> void:
 	overlay.custom_minimum_size = board_size * _zoom_level
 	overlay.size = board_size * _zoom_level
 	overlay.gui_input.connect(_on_overlay_gui_input)
-	overlay.mouse_exited.connect(_on_hex_mouse_exit)
+	overlay.mouse_exited.connect(_on_overlay_mouse_exited)
 	_hex_board.add_child(overlay)
 
 
@@ -349,7 +373,10 @@ func _deferred_refit_hex_radius_if_needed() -> void:
 		_hex_board.set_meta("_hex_layout_v", 0)
 		_ensure_hex_buttons()
 		_ensure_board_backdrop()
+		_terrain_layout_dirty = true
+		_overlay_dirty = true
 		_refresh_display()
+		_build_city_hit_rects()
 		_refresh_minimap_viewport()
 
 
@@ -396,83 +423,178 @@ func _ensure_board_backdrop() -> void:
 		_hex_board.add_child(bg)
 		_hex_board.move_child(bg, 0)
 	bg.color = Color(0.50, 0.55, 0.45, 1.0)
-	_ensure_hex_map_canvas()
+	# 兼容旧节点名：若仍是单画布则移除，改建分层画布
+	var legacy: Node = _hex_board.get_node_or_null("HexMapCanvas")
+	if legacy != null:
+		legacy.free()
+	_ensure_hex_layer_canvas("HexMapTerrainCanvas", HexMapCanvas.LAYER_TERRAIN, -40)
+	_ensure_hex_layer_canvas("HexMapOverlayCanvas", HexMapCanvas.LAYER_OVERLAY, -30)
 
 
-func _ensure_hex_map_canvas() -> void:
-	var cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapCanvas") as HexMapCanvas
+func _ensure_hex_layer_canvas(canvas_name: String, layers: int, z: int) -> void:
+	var cv: HexMapCanvas = _hex_board.get_node_or_null(canvas_name) as HexMapCanvas
 	if cv == null:
 		cv = HexMapCanvas.new()
-		cv.name = "HexMapCanvas"
+		cv.name = canvas_name
 		_hex_board.add_child(cv)
+	cv.z_index = z
+	cv.set_draw_layers(layers)
+	cv.set_cull_enabled(true)
 	var backdrop: Node = _hex_board.get_node_or_null("BoardBackdrop")
 	if backdrop != null:
 		var backdrop_index: int = backdrop.get_index()
-		if cv.get_index() != backdrop_index + 1:
+		if cv.get_index() < backdrop_index:
 			_hex_board.move_child(cv, backdrop_index + 1)
 	cv.scale = Vector2(_zoom_level, _zoom_level)
 	cv.queue_redraw()
 
 
-func _refresh_display() -> void:
+func _iter_map_cells() -> Array:
 	var w: int = int(_terrain_cfg.get("map_width", 30))
 	var h: int = int(_terrain_cfg.get("map_height", 20))
-	var payload_cells: Array = []
-	_cell_payload_by_axial.clear()
-	_minimap_cells.clear()
-	_minimap_colors = PackedColorArray()
-	var cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapCanvas") as HexMapCanvas
-	if cv == null:
-		return
 	var caption_font_size: int = clampi(int(_cell_radius_px * 0.35), 8, 14)
-	var map_size: Vector2i = Vector2i(w, h)
+	var cells: Array = []
 	for row: int in range(h):
 		var axial_col_shift: int = (row - (row & 1)) / 2
 		for col: int in range(w):
 			var cell_axial: Vector2i = Vector2i(col - axial_col_shift, row)
 			var cell_pos: Vector2 = _cell_top_left(cell_axial)
-			var polygon: PackedVector2Array = _world_hex_polygon(cell_pos)
-			var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
-			var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
-			var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
-			if not city.is_empty():
-				# 建筑可视化：城格上标注已建建筑数/队列
-				var built_count: int = (city.get("buildings", []) as Array).size()
-				var queue_count: int = (city.get("build_queue", []) as Array).size()
-				if built_count > 0 or queue_count > 0:
-					var b_tag: String = I18n.t("big_map.build_tag") % built_count
-					if queue_count > 0:
-						b_tag += "+%d" % queue_count
-					caption = "%s\n%s" % [caption, b_tag]
-			if not unit.is_empty():
-				var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
-				var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
-				caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
-			var tint: Color = _cell_tint(cell_axial, city)
-			var selected_id: String = StrategicMapManager.get_selected_unit_id()
-			if selected_id != "" and StrategicMapManager.get_reachable_cells(selected_id).has(cell_axial):
-				tint = Color(0.35, 0.75, 1.0, 0.35)
-			var payload: Dictionary = {
-				"polygon": polygon,
-				"uvs": _world_hex_uvs(),
-				"texture": SkirmishTileTextures.terrain_texture(str(_terrain_at_axial.get(cell_axial, "plains"))),
-				"fallback_color": SkirmishTileTextures.terrain_fallback_color(str(_terrain_at_axial.get(cell_axial, "plains"))),
-				"tint": tint,
-				"caption": caption,
-				"caption_center": cell_pos + _cell_size * 0.5,
+			cells.append({
+				"axial": cell_axial,
+				"pos": cell_pos,
+				"polygon": _world_hex_polygon(cell_pos),
 				"caption_font_size": caption_font_size,
-				"capital_texture": _capital_texture(city),
-				"capital_rect": _capital_rect(cell_pos),
-				"unit_texture": _unit_texture(unit),
-				"unit_rect": _unit_rect(cell_pos),
-			}
-			payload_cells.append(payload)
-			_cell_payload_by_axial[cell_axial] = {
-				"polygon": polygon,
-			}
-	cv.set_payload_cells(payload_cells, _hex_board.custom_minimum_size)
+			})
+	return cells
+
+
+func _build_terrain_payload_cells(layout_cells: Array) -> Array:
+	var payload_cells: Array = []
+	_cell_payload_by_axial.clear()
+	for entry: Dictionary in layout_cells:
+		var cell_axial: Vector2i = entry["axial"] as Vector2i
+		var cell_pos: Vector2 = entry["pos"] as Vector2
+		payload_cells.append({
+			"polygon": entry["polygon"],
+			"uvs": _world_hex_uvs(),
+			"texture": SkirmishTileTextures.terrain_texture(str(_terrain_at_axial.get(cell_axial, "plains"))),
+			"fallback_color": SkirmishTileTextures.terrain_fallback_color(str(_terrain_at_axial.get(cell_axial, "plains"))),
+			"tint": Color(0, 0, 0, 0),
+			"caption": "",
+			"caption_center": cell_pos + _cell_size * 0.5,
+			"caption_font_size": entry["caption_font_size"],
+			"capital_texture": null,
+			"capital_rect": Rect2(),
+			"unit_texture": null,
+			"unit_rect": Rect2(),
+		})
+		_cell_payload_by_axial[cell_axial] = {
+			"polygon": entry["polygon"],
+		}
+	return payload_cells
+
+
+func _apply_overlay_to_terrain_payload() -> void:
+	var selected_id: String = StrategicMapManager.get_selected_unit_id()
+	var reachable: Dictionary = {}
+	if selected_id != "":
+		reachable = StrategicMapManager.get_reachable_cells(selected_id)
+	for i: int in range(_terrain_payload_cells.size()):
+		var payload: Dictionary = _terrain_payload_cells[i] as Dictionary
+		# 用 caption_center 反推 axial 不可靠；按顺序与 _iter_map_cells 一致
+		# 通过 polygon 中心匹配太慢，改为在 build 时缓存 axial
+		var cell_axial: Vector2i = payload.get("_axial", Vector2i(-99999, -99999)) as Vector2i
+		if cell_axial.x <= -99999:
+			continue
+		var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
+		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
+		var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
+		if not city.is_empty():
+			var built_count: int = (city.get("buildings", []) as Array).size()
+			var queue_count: int = (city.get("build_queue", []) as Array).size()
+			if built_count > 0 or queue_count > 0:
+				var b_tag: String = I18n.t("big_map.build_tag") % built_count
+				if queue_count > 0:
+					b_tag += "+%d" % queue_count
+				caption = "%s\n%s" % [caption, b_tag]
+		if not unit.is_empty():
+			var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
+			var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
+			caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
+		var tint: Color = _cell_tint(cell_axial, city)
+		if reachable.has(cell_axial):
+			tint = Color(0.35, 0.75, 1.0, 0.35)
+		payload["tint"] = tint
+		payload["caption"] = caption
+		payload["capital_texture"] = _capital_texture(city)
+		payload["capital_rect"] = _capital_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+		payload["unit_texture"] = _unit_texture(unit)
+		payload["unit_rect"] = _unit_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+		_terrain_payload_cells[i] = payload
+
+
+func _refresh_display() -> void:
+	var w: int = int(_terrain_cfg.get("map_width", 30))
+	var h: int = int(_terrain_cfg.get("map_height", 20))
+	var map_size: Vector2i = Vector2i(w, h)
+	var layout_rebuilt: bool = false
+	if _terrain_layout_dirty or _terrain_payload_cells.is_empty():
+		var layout_cells: Array = _iter_map_cells()
+		_terrain_payload_cells = _build_terrain_payload_cells(layout_cells)
+		for i: int in range(layout_cells.size()):
+			var payload: Dictionary = _terrain_payload_cells[i] as Dictionary
+			payload["_axial"] = layout_cells[i]["axial"]
+			_terrain_payload_cells[i] = payload
+		_terrain_layout_dirty = false
+		_overlay_dirty = true
+		layout_rebuilt = true
+	if _overlay_dirty:
+		_apply_overlay_to_terrain_payload()
+		_overlay_dirty = false
+	var board_size: Vector2 = _hex_board.custom_minimum_size
+	if layout_rebuilt:
+		var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
+		if terrain_cv != null:
+			terrain_cv.set_payload_cells(_terrain_payload_cells, board_size)
+	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
+	if overlay_cv != null:
+		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
 	_rebuild_minimap_data(map_size)
 	_refresh_minimap_viewport()
+	call_deferred("_update_draw_cull_rect")
+
+
+func _refresh_overlay_display() -> void:
+	if _terrain_payload_cells.is_empty():
+		_terrain_layout_dirty = true
+		_refresh_display()
+		return
+	_apply_overlay_to_terrain_payload()
+	_overlay_dirty = false
+	var board_size: Vector2 = _hex_board.custom_minimum_size
+	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
+	if overlay_cv != null:
+		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
+	var map_size: Vector2i = Vector2i(int(_terrain_cfg.get("map_width", 30)), int(_terrain_cfg.get("map_height", 20)))
+	_rebuild_minimap_data(map_size)
+	_refresh_minimap_viewport()
+	call_deferred("_update_draw_cull_rect")
+
+
+func _update_draw_cull_rect() -> void:
+	if _scroll == null or _board_base_size == Vector2.ZERO:
+		return
+	var view_size: Vector2 = _scroll.size
+	if view_size.x < 1.0 or view_size.y < 1.0:
+		return
+	# 裁剪矩形使用未缩放逻辑坐标
+	var origin: Vector2 = Vector2(float(_scroll.scroll_horizontal), float(_scroll.scroll_vertical)) / maxf(_zoom_level, 0.001)
+	var size_logical: Vector2 = view_size / maxf(_zoom_level, 0.001)
+	var rect: Rect2 = Rect2(origin, size_logical)
+	for canvas_name: String in ["HexMapTerrainCanvas", "HexMapOverlayCanvas"]:
+		var cv: HexMapCanvas = _hex_board.get_node_or_null(canvas_name) as HexMapCanvas
+		if cv != null:
+			cv.set_cull_rect(rect)
 
 
 func _cell_top_left(cell_axial: Vector2i) -> Vector2:
@@ -577,6 +699,8 @@ func _unit_rect(cell_pos: Vector2) -> Rect2:
 
 func _rebuild_minimap_data(map_size: Vector2i) -> void:
 	var markers: Array = []
+	_minimap_cells.clear()
+	_minimap_colors = PackedColorArray()
 	var board_size: Vector2 = _board_base_size if _board_base_size != Vector2.ZERO else Vector2(float(map_size.x), float(map_size.y))
 	for row: int in range(map_size.y):
 		var axial_col_shift: int = (row - (row & 1)) / 2
@@ -666,6 +790,14 @@ func _update_political_legend() -> void:
 func _on_overlay_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var motion: InputEventMouseMotion = event as InputEventMouseMotion
+		if _drag_armed and (motion.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+			if not _drag_active and motion.position.distance_to(_drag_press_pos) >= _DRAG_THRESHOLD_PX:
+				_drag_active = true
+				_set_map_cursor(Control.CURSOR_MOVE)
+			if _drag_active:
+				_pan_by(-motion.relative)
+				motion.accept_event()
+				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
 			var cell_motion: Vector2i = hit_motion as Vector2i
@@ -674,16 +806,100 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 			_on_hex_mouse_exit()
 	elif event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
-			var hit_click: Variant = _axial_at_local_point(mb.position)
-			if hit_click is Vector2i:
-				var cell_click: Vector2i = hit_click as Vector2i
-				_on_hex_pressed(cell_click.x, cell_click.y)
-				mb.accept_event()
+		if mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mb.pressed:
+			_drag_armed = true
+			_drag_active = false
+			_drag_press_pos = mb.position
+			mb.accept_event()
+			return
+		var was_dragging: bool = _drag_active
+		_end_drag()
+		mb.accept_event()
+		if was_dragging:
+			return
+		# 固定城池触发区：优先直接进内政，不依赖六角多边形命中
+		var city_id: String = _city_id_at_local_point(mb.position)
+		if city_id != "":
+			StrategicMapManager.clear_selection()
+			city_clicked.emit(city_id)
+			return
+		var hit_click: Variant = _axial_at_local_point(mb.position)
+		if hit_click is Vector2i:
+			var cell_click: Vector2i = hit_click as Vector2i
+			_on_hex_pressed(cell_click.x, cell_click.y)
+
+
+func _build_city_hit_rects() -> void:
+	_city_hit_rects.clear()
+	if _cell_size == Vector2.ZERO:
+		return
+	for axial: Variant in _city_at_axial.keys():
+		var cell_axial: Vector2i = axial as Vector2i
+		var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
+		if city.is_empty():
+			continue
+		var cell_pos: Vector2 = _cell_top_left(cell_axial)
+		# 略大于格子，方便点中城池
+		var hit_rect: Rect2 = Rect2(cell_pos, _cell_size).grow(minf(_cell_size.x, _cell_size.y) * 0.08)
+		_city_hit_rects.append({
+			"rect": hit_rect,
+			"city_id": str(city.get("id", "")),
+		})
+
+
+func _city_id_at_local_point(point: Vector2) -> String:
+	if _city_hit_rects.is_empty():
+		return ""
+	var logical_point: Vector2 = point / maxf(_zoom_level, 0.001)
+	# 后建的在上层；多城重叠时取面积更小的命中
+	var best_id: String = ""
+	var best_area: float = INF
+	for entry: Dictionary in _city_hit_rects:
+		var rect: Rect2 = entry.get("rect", Rect2()) as Rect2
+		if not rect.has_point(logical_point):
+			continue
+		var area: float = rect.size.x * rect.size.y
+		if area < best_area:
+			best_area = area
+			best_id = str(entry.get("city_id", ""))
+	return best_id
+
+
+func _pan_by(delta: Vector2) -> void:
+	if _scroll == null:
+		return
+	var board_size: Vector2 = _hex_board.custom_minimum_size if _hex_board != null else Vector2.ZERO
+	var view_size: Vector2 = _scroll.size
+	var max_x: float = maxf(board_size.x - view_size.x, 0.0)
+	var max_y: float = maxf(board_size.y - view_size.y, 0.0)
+	_scroll.scroll_horizontal = int(clampf(float(_scroll.scroll_horizontal) + delta.x, 0.0, max_x))
+	_scroll.scroll_vertical = int(clampf(float(_scroll.scroll_vertical) + delta.y, 0.0, max_y))
+
+
+func _end_drag() -> void:
+	_drag_armed = false
+	if _drag_active:
+		_drag_active = false
+		_set_map_cursor(Control.CURSOR_ARROW)
+
+
+func _set_map_cursor(shape: Control.CursorShape) -> void:
+	if _hex_board == null:
+		return
+	var overlay: Control = _hex_board.get_node_or_null("HexInputOverlay") as Control
+	if overlay != null:
+		overlay.mouse_default_cursor_shape = shape
 
 
 func _on_scroll_value_changed(_value: float) -> void:
 	_refresh_minimap_viewport()
+	call_deferred("_update_draw_cull_rect")
+
+
+func _on_scroll_view_resized() -> void:
+	call_deferred("_update_draw_cull_rect")
 
 
 func _refresh_minimap_viewport() -> void:
@@ -770,24 +986,30 @@ func _on_hex_pressed(q: int, r: int) -> void:
 		if not selected.is_empty() and str(selected.get("faction_id", "")) == GameManager.get_player_faction():
 			if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) != GameManager.get_player_faction():
 				StrategicMapManager.try_attack_unit(selected_id, str(unit_here.get("id", "")))
-				_refresh_display()
+				_overlay_dirty = true
+				_refresh_overlay_display()
 				return
 			var city: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
 			if not city.is_empty() and str(city.get("current_faction_id", "")) != GameManager.get_player_faction():
 				StrategicMapManager.try_attack_city(selected_id, str(city.get("id", "")))
-				_refresh_display()
+				_overlay_dirty = true
+				_refresh_overlay_display()
 				return
 			var moved: Dictionary = StrategicMapManager.try_move_unit(selected_id, axial)
 			if bool(moved.get("ok", false)):
 				StrategicMapManager.clear_selection()
-				_refresh_display()
+				_overlay_dirty = true
+				_refresh_overlay_display()
 				return
 	# 选中己方单位
 	if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) == GameManager.get_player_faction():
 		StrategicMapManager.select_unit(str(unit_here.get("id", "")))
-		_refresh_display()
+		_overlay_dirty = true
+		_refresh_overlay_display()
 		return
 	StrategicMapManager.clear_selection()
+	_overlay_dirty = true
+	_refresh_overlay_display()
 	var city2: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
 	if not city2.is_empty():
 		city_clicked.emit(str(city2.get("id", "")))
@@ -795,6 +1017,12 @@ func _on_hex_pressed(q: int, r: int) -> void:
 
 func _on_hex_mouse_enter(q: int, r: int) -> void:
 	_hover_info.text = _build_hover_text(Vector2i(q, r))
+
+
+func _on_overlay_mouse_exited() -> void:
+	_on_hex_mouse_exit()
+	if _drag_armed and not _drag_active:
+		_end_drag()
 
 
 func _on_hex_mouse_exit() -> void:
