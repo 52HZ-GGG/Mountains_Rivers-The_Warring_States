@@ -1254,5 +1254,10 @@
       "frontline_garrison_bonus": 0.2,
       "conquered_city_garrison_ratio": 0.4
     }
+  },
+  "event_geography": {
+    "horse_trade": {
+      "north_border_r_max": 15
+    }
   }
 }

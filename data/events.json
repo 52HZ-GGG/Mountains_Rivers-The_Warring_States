@@ -4,7 +4,7 @@
     {
       "id": "evt_harvest_bumper",
       "title": "五谷丰登",
-      "description": "岁稔年丰，仓廪充盈。百姓箪食壶浆，以迎王师。",
+      "description": "岁稔年丰，五谷登场，仓廪为之充盈。乡野间笑语相闻，农家荷担而歌，皆感天时之厚，箪食壶浆以迎王师。粮价渐平，国用有余，此诚休养生息之良机也。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -30,7 +30,7 @@
     {
       "id": "evt_merchant_gather",
       "title": "商旅云集",
-      "description": "四方商贾辐辏，市井繁荣，国库日丰。",
+      "description": "关市无禁，四方商贾辐辏而至，市井愈见繁华，丝帛盐铁之利日有所进。国库渐丰，百姓亦得货殖之便。通商之利既显，货殖之道可兴矣。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -54,7 +54,7 @@
     {
       "id": "evt_drought",
       "title": "旱魃为虐",
-      "description": "赤地千里，禾苗枯槁。或开仓赈济，或强征于民？",
+      "description": "赤地千里，禾苗枯槁，井泉尽涸。民心惶惶，流言四起——或曰天罚，或曰国运衰微。仓廪所储有限，开仓赈济则民生得济而国库空虚；强征于民则粮草得补而怨声载道。当何以处之？",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -102,7 +102,7 @@
     {
       "id": "evt_mine_discovery",
       "title": "矿脉发现",
-      "description": "探子来报，山中有铁矿脉露。开采需费金帛，然利在长远。",
+      "description": "探子来报，南山之麓有矿脉显露，色泽青黑，似蕴良材。若征发民夫开采，需费金帛，然一朝得用，山泽之利可期；封存不采，则徒留宝藏于幽谷。取与舍之间，君其裁之。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -148,7 +148,7 @@
     {
       "id": "evt_bandit_uprising",
       "title": "匪寇蜂起",
-      "description": "山贼聚众劫掠，商旅断绝。或剿或抚，刻不容缓。",
+      "description": "山贼聚啸林莽，劫掠商旅，道路为之断绝，边邑频告警急。百姓不敢远行，市井萧然。发兵剿之则费金耗卒，招安抚之则养虎遗患。剿抚之间，当何以决？",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -197,7 +197,7 @@
     {
       "id": "evt_desertion",
       "title": "逃兵四起",
-      "description": "士卒思乡心切，夜遁者众。军心动摇，不可不察。",
+      "description": "久戍边陲，士卒思乡心切，夜遁者日众，营中缺员渐多，军心动摇。若不施以雷霆，恐溃于一旦。严刑峻法可止其势而寒军心，厚饷抚慰可安其志而耗国帑。何者更善，君其裁之。",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -243,7 +243,7 @@
     {
       "id": "evt_enemy_spy",
       "title": "敌军细作",
-      "description": "斥候擒获敌国间谍，搜出密信。或加固城防，或行反间之计。",
+      "description": "巡城斥候夜擒一人，搜出敌国密信，字迹间隐见军机，细作既落，敌情半明。然信中所言真伪难辨，或为敌之饵也。加强巡防可固守无虞，反间用计则或可乱敌。进退之间，君王自断。",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -291,7 +291,7 @@
     {
       "id": "evt_drill_success",
       "title": "练兵有方",
-      "description": "将士日夜操演，阵法精熟。三军锐气正盛，可堪一战。",
+      "description": "将士日夜操演，阵法渐精，进退有度，合击有序。校场之上，旌旗猎猎，三军锐气正盛，呼喝之声震于四野。兵精若此，来日临阵，可堪一战矣。",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -315,7 +315,7 @@
     {
       "id": "evt_grand_sacrifice",
       "title": "祭祀大典",
-      "description": "社稷之祭，国之大事。大祭耗费甚巨，小祭聊表诚心。",
+      "description": "岁首春至，正当祭社之时。礼官奏曰：国之大事，在祀与戎，当以诚敬昭告天地，祈福年丰。然大祭牺牲玉帛耗费甚巨，小祭亦足表诚心、安民心。丰俭之间，愿君上裁之。",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -365,7 +365,7 @@
     {
       "id": "evt_plague",
       "title": "瘟疫流行",
-      "description": "疫气蔓延，百姓染疾者众。延医问药耗费不赀，听之任之恐失民心。",
+      "description": "暑气未消，疫气忽起，百姓染疾者众，十室九空之谣渐起。医者言须广施汤药、隔离病者，然所费不赀。延医问药则国库受亏，听之任之则苍生倒悬、民心离散。救民与恤帑，孰轻孰重？",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -414,7 +414,7 @@
     {
       "id": "evt_scholar_visit",
       "title": "贤士来投",
-      "description": "远方贤士慕名来投，愿效力麾下。拜为客卿则费金帛，婉拒则失人才。",
+      "description": "有远方贤士负笈而来，愿效犬马之劳，言辞恳切，谈吐不凡，观其才学，足堪大用。然客卿之禄所费不赀。用之则国帑有亏，弃之则明珠暗投。用与不用，君其决之。",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -461,7 +461,7 @@
     {
       "id": "evt_public_anger",
       "title": "民怨沸腾",
-      "description": "百姓怨声载道，聚众请愿。减税安民则国库受损，强力弹压则民心尽失。",
+      "description": "连年赋役繁重，百姓怨声载道，竟有聚众请愿者，衙前日有喧哗，流言谓苛政猛于虎。减税安民则国库立损，强力弹压则民心尽失，且有伤天和。抚与镇之间，祸福系于君心。",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -507,7 +507,7 @@
     {
       "id": "evt_spring_farming",
       "title": "春耕农忙",
-      "description": "春风化雨，正是播种时节。农事繁忙，征兵暂缓。",
+      "description": "春风化雨，惊蛰雷动，正是布种之时。农人扶犁出耕，阡陌间人影如织，朝廷亦当宽徭薄赋，暂缓征发。然天时难测，雨泽不均，或得丰年之兆，或逢歉岁之忧。惟尽人事以待天命耳。",
       "category": "season",
       "trigger": {
         "type": "turn_start",
@@ -520,20 +520,35 @@
         "priority": 80,
         "one_shot": false
       },
-      "effects": {
-        "food_delta": 100,
-        "gold_delta": 0,
-        "morale_delta": 5,
-        "population_delta": 0,
-        "troops_delta": 0,
-        "wood_delta": 0
-      },
+      "effects_variants": [
+        {
+          "probability": 0.25,
+          "effects": {
+            "food_delta": 300,
+            "morale_delta": 10
+          }
+        },
+        {
+          "probability": 0.5,
+          "effects": {
+            "food_delta": 150,
+            "morale_delta": 5
+          }
+        },
+        {
+          "probability": 0.25,
+          "effects": {
+            "food_delta": -50,
+            "morale_delta": -3
+          }
+        }
+      ],
       "options": null
     },
     {
       "id": "evt_harsh_winter",
       "title": "寒冬苦厄",
-      "description": "朔风凛冽，大雪封路。或开仓放粮以济百姓，或紧缩度日以蓄国力？",
+      "description": "朔风凛冽，大雪封关，道路断绝，柴薪腾贵。百姓围炉而泣，老者多有冻馁之虞，流民哀号于道。天威难测，或得雪兆丰年之喜，或遭冻毙流亡之祸。今惟谨修政事，以度此严冬。",
       "category": "season",
       "trigger": {
         "type": "turn_start",
@@ -546,42 +561,33 @@
         "priority": 80,
         "one_shot": false
       },
-      "effects": null,
-      "options": [
+      "effects_variants": [
         {
-          "id": "A",
-          "text": "开仓放粮",
-          "cost": {
-            "food": 200
-          },
-          "outcomes": {
-            "food_delta": -200,
-            "gold_delta": 0,
-            "morale_delta": 10,
-            "population_delta": 0,
-            "troops_delta": 0,
-            "wood_delta": 0
+          "probability": 0.25,
+          "effects": {
+            "morale_delta": 15
           }
         },
         {
-          "id": "B",
-          "text": "紧缩度日",
-          "cost": {},
-          "outcomes": {
-            "food_delta": 0,
-            "gold_delta": 0,
-            "morale_delta": -10,
-            "population_delta": 0,
-            "troops_delta": 0,
-            "wood_delta": 0
+          "probability": 0.5,
+          "effects": {
+            "morale_delta": 8
+          }
+        },
+        {
+          "probability": 0.25,
+          "effects": {
+            "morale_delta": -5,
+            "population_delta": -200
           }
         }
-      ]
+      ],
+      "options": null
     },
     {
       "id": "evt_bumper_year",
       "title": "丰年有余",
-      "description": "秋收在望，五谷丰登。余粮可充实国库，亦可犒赏三军。",
+      "description": "秋高气爽，禾黍登场，田野间处处丰年之象。然岁入多寡，全系天时，或仓廪大实，或仅得温饱，尚难逆料。惟当量入为出，储粟备荒，以待来岁之需。",
       "category": "season",
       "trigger": {
         "type": "turn_start",
@@ -594,40 +600,34 @@
         "priority": 80,
         "one_shot": false
       },
-      "effects": null,
-      "options": [
+      "effects_variants": [
         {
-          "id": "A",
-          "text": "充实国库",
-          "cost": {},
-          "outcomes": {
-            "food_delta": 0,
-            "gold_delta": 150,
-            "morale_delta": 0,
-            "population_delta": 0,
-            "troops_delta": 0,
-            "wood_delta": 0
+          "probability": 0.25,
+          "effects": {
+            "gold_delta": 250,
+            "morale_delta": 10
           }
         },
         {
-          "id": "B",
-          "text": "犒赏三军",
-          "cost": {},
-          "outcomes": {
-            "food_delta": 0,
-            "gold_delta": 0,
-            "morale_delta": 15,
-            "population_delta": 0,
-            "troops_delta": 10,
-            "wood_delta": 0
+          "probability": 0.5,
+          "effects": {
+            "gold_delta": 150
+          }
+        },
+        {
+          "probability": 0.25,
+          "effects": {
+            "gold_delta": 50,
+            "morale_delta": -5
           }
         }
-      ]
+      ],
+      "options": null
     },
     {
       "id": "hist_maling",
       "title": "马陵之战",
-      "description": "齐魏交兵于马陵，孙膑减灶诱敌，庞涓中伏身死。",
+      "description": "魏军来势汹汹，齐师退避三舍，孙膑令士卒逐日减灶，示弱诱敌。庞涓果中计，轻骑疾进，夜至马陵道，见大树书字，方知中伏，乱箭之下身死名裂。此战之要，在智不在力，君将何以用兵？",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -683,7 +683,7 @@
     {
       "id": "hist_guiling",
       "title": "桂陵之战",
-      "description": "魏围邯郸，齐师救赵。孙膑献策围魏救赵，攻敌必救。",
+      "description": "魏国大军围困邯郸，赵都危如累卵，求救之使不绝于道。孙膑献策：与其赴赵攻坚，不若直捣魏都大梁，攻敌之所必救。兵法贵在避实击虚，此一策或可解围于无形。君其从之否？",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -739,7 +739,7 @@
     {
       "id": "hist_changping",
       "title": "长平之战",
-      "description": "秦赵对峙于长平，廉颇坚壁不出。白起反间换将，赵括纸上谈兵。",
+      "description": "秦赵大军对峙长平，廉颇深沟高垒，坚壁不出，两军相持经年。秦人施反间计，流言赵括善战，赵王竟信谗易将。赵括徒有纸上之谈，贸然出击，四十万赵卒尽陷重围。将帅之任，岂可轻授哉！",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -796,7 +796,7 @@
     {
       "id": "hist_handan",
       "title": "邯郸之战",
-      "description": "秦围邯郸，赵国危在旦夕。信陵君窃符救赵，合兵击秦。",
+      "description": "长平战后，秦军乘胜围困邯郸，城中粮尽援绝，赵人易子而食，危在旦夕。信陵君窃虎符、夺晋鄙军，率魏楚之师来援。守城以待援军，则或可转危为安；开门以降，则社稷从此休矣。死生之机，决于今日。",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -851,7 +851,7 @@
     {
       "id": "hist_jimo",
       "title": "即墨之战",
-      "description": "燕军长驱直入，齐仅余即墨、莒二城。田单据城坚守，伺机反攻。",
+      "description": "燕将乐毅连下七十余城，齐国仅存即墨、莒二城，山河破碎，人心惶惶。田单临危受命，据城坚守，暗蓄反攻之志。或效田单火牛破阵，出奇制胜；或遣使求和，割地以全残躯。存亡之际，何去何从？",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -909,7 +909,7 @@
     {
       "id": "hist_yique",
       "title": "伊阙之战",
-      "description": "韩魏联军据伊阙，白起以寡击众。各个击破，先弱后强。",
+      "description": "韩魏联军扼守伊阙天险，兵势浩大，秦军客地作战，兵少将寡。白起登高而望，见两军貌合神离，各怀私心，遂定各个击破之谋。是分而击之，以弱胜强，抑或聚兵一处，正面强攻？胜负之数，在君一念。",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -965,7 +965,7 @@
     {
       "id": "hist_miechu",
       "title": "灭楚之战",
-      "description": "秦欲灭楚，李信二十万兵败。王翦请六十万大军，稳扎稳打。",
+      "description": "秦欲吞楚，李信自恃年少气锐，率二十万众轻进，大败而归，折损过半。老将王翦坚请六十万大军，非此不足平楚。轻兵速进或重蹈覆辙，倾国而出则国中空虚。兵家大事，从老成之谋，抑或听少壮之言？",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -1023,7 +1023,7 @@
     {
       "id": "hist_leyi",
       "title": "乐毅伐齐",
-      "description": "燕昭王拜乐毅为上将军，联合五国伐齐。连下七十余城，齐国几亡。",
+      "description": "齐湣王暴虐，诸侯侧目。燕昭王雪耻心切，拜乐毅为上将军，合五国之兵共伐强齐。联军所向披靡，连下七十余城，齐都临淄亦告陷落。然合纵之兵，利在众而弊在分；独进之师，功在速而险在孤。将何以措置？",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -1081,7 +1081,7 @@
     {
       "id": "hist_shangyang",
       "title": "商鞅变法",
-      "description": "卫鞅入秦，说孝公变法。废井田、开阡陌、奖军功、行连坐。",
+      "description": "秦处西陲，六国卑之。卫鞅挟法家之术入秦，陈说变法之利：废井田、开阡陌、奖军功、行连坐。然变法必伤旧贵之利，朝野哗然。全力推行则国可骤强而怨谤丛生，渐进改良则阻力稍缓而收效亦迟。何去何从，惟君上裁之。",
       "category": "politics",
       "trigger": {
         "type": "turn_start",
@@ -1126,7 +1126,7 @@
     {
       "id": "hist_hufu",
       "title": "胡服骑射",
-      "description": "赵武灵王力排众议，推行胡服骑射。革车战之弊，兴骑射之利。",
+      "description": "赵国北临胡地，屡受胡骑侵扰，车战迟缓，难及追奔。赵武灵王倡胡服骑射，然易服改制，违背衣冠之旧，宗室大臣多以为耻。全面推行则兵可骤强而谤议四起，仅于边军试行则安妥而收效有限。改制之难，君知矣。",
       "category": "politics",
       "trigger": {
         "type": "turn_start",
@@ -1175,7 +1175,7 @@
     {
       "id": "hist_sanjiashenjin",
       "title": "三家分晋",
-      "description": "韩赵魏三家分晋，周天子册封为诸侯。战国大幕由此开启。",
+      "description": "晋室衰微，大权旁落，韩赵魏三家瓜分晋地，周天子亦无奈册封为诸侯。礼崩乐坏，以下犯上，而天下莫能正之。自此列国并争，战国之局开启，霸业之机亦在其中矣。",
       "category": "politics",
       "trigger": {
         "type": "turn_start",
@@ -1200,7 +1200,7 @@
     {
       "id": "hist_hezong",
       "title": "合纵连横",
-      "description": "苏秦佩六国相印，合纵抗秦。张仪连横破纵，各个击破。",
+      "description": "秦据崤函之险，虎视六国，诸侯震恐。苏秦佩六国相印，约纵抗秦，声势一时无两；张仪则以连横之术，远交近攻，各个击破。合纵则六国唇齿相依，连横则事秦而近攻邻邦。纵横之术，存乎一心，君欲何从？",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -1248,7 +1248,7 @@
     {
       "id": "hist_yuanjiao",
       "title": "远交近攻",
-      "description": "范雎献策远交近攻，结好远邦，蚕食邻国。秦之大略也。",
+      "description": "秦军东出屡屡受挫，兵锋虽锐而诸侯合纵之患日深。客卿范雎进言：远交而近攻，得寸则王之寸，得尺亦王之尺。结好远邦以分其势，蚕食近邻以实其地，此万全之策。抑或四面出击，毕其功于一役？国策所系，愿君三思。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -1298,7 +1298,7 @@
     {
       "id": "hist_zhangyi",
       "title": "张仪欺楚",
-      "description": "张仪以商於六百里地诈楚，楚怀王贪利受骗。齐楚断交，楚国孤立。",
+      "description": "秦使张仪入楚，许以商於之地六百里，惟愿楚与齐绝交。楚怀王贪利忘义，欣然应允，遂与齐断盟。及至索地，张仪翻脸称仅许六里，怀王始觉受欺，怒而伐秦，反遭大败。贪一时之利，失百年之盟，可不慎欤？今当何以自处？",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -1345,7 +1345,7 @@
     {
       "id": "hist_wanbi",
       "title": "完璧归赵",
-      "description": "秦昭王诈以十五城换和氏璧。蔺相如奉璧入秦，以智勇归璧。",
+      "description": "秦昭王遣使致书赵王，愿以十五城易和氏之璧，其意叵测。赵人皆知此乃强索之辞，然畏秦之威，莫敢拒绝。蔺相如慨然请行，奉璧入秦，廷斥秦王，完璧归赵，不辱使命。事之成败，系于一念之勇怯，今将何以处之？",
       "category": "special",
       "trigger": {
         "type": "turn_start",
@@ -1390,7 +1390,7 @@
     {
       "id": "hist_shaqiu",
       "title": "沙丘之变",
-      "description": "赵武灵王困死沙丘宫，公子成与李兑专权。赵国政局动荡。",
+      "description": "赵武灵王雄才大略，然晚年废长立幼，兄弟相争，终困死于沙丘宫中。公子成、李兑乘乱专权，朝局动荡，人心不安。乱局既成，是顺势拥立新君以定朝纲，抑或拨乱反正以正君臣之名？赵国存亡，系于今日之决。",
       "category": "special",
       "trigger": {
         "type": "turn_start",
@@ -1439,7 +1439,7 @@
     {
       "id": "hist_jingke",
       "title": "荆轲刺秦",
-      "description": "燕太子丹遣荆轲入秦，图穷匕见。功败垂成，秦王震怒。",
+      "description": "秦军东进，燕国危如累卵。太子丹孤注一掷，遣荆轲携督亢地图与樊於期之首入秦，图穷而匕见。惜乎一击不中，功败垂成，秦王震怒，兵锋直指燕都。行险则或可挽狂澜于既倒，守正则难免坐待灭亡。死生之际，君其决之。",
       "category": "special",
       "trigger": {
         "type": "turn_start",
@@ -1486,7 +1486,7 @@
     {
       "id": "hist_xinling",
       "title": "窃符救赵",
-      "description": "秦围邯郸，信陵君窃虎符夺军救赵。义薄云天，名震天下。",
+      "description": "秦军围困邯郸，赵求救于魏，魏王畏秦，按兵不动。信陵君窃虎符、夺晋鄙军，矫诏救赵，虽负君命而全大义，义声震于天下。然此举或招魏王猜忌。救赵则背君命而扬义名，旁观则守臣节而失大义。如何取舍，君其自择。",
       "category": "special",
       "trigger": {
         "type": "turn_start",
@@ -1533,7 +1533,7 @@
     {
       "id": "hist_lvbuiwei",
       "title": "奇货可居",
-      "description": "吕不韦见秦异人，以为奇货可居。千金投资，终成相国。",
+      "description": "大贾吕不韦往来邯郸，见秦国质子异人，抚掌而笑：此奇货可居也。遂散千金，游说华阳夫人立异人为嗣，异人归秦继位，吕氏位极人臣。商贾之智，可易储君矣。今有贵胄流落于外，君将扶植之以为奇货，抑或安于市利？",
       "category": "special",
       "trigger": {
         "type": "turn_start",
@@ -1580,7 +1580,7 @@
     {
       "id": "hist_dujiangyan",
       "title": "都江堰修建",
-      "description": "李冰父子主持修建都江堰，化水害为水利。沃野千里，天府之国。",
+      "description": "岷江出岷山而灌成都平原，水患频仍，民不聊生。郡守李冰父子察山川之势，欲凿离堆、筑鱼嘴，分水为二，化害为利。然工程浩大，所费不赀，非一时可成。兴之则蜀地永受其利，缓之则水患依旧为虐。当兴此万世之利否？",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -1628,7 +1628,7 @@
     {
       "id": "hist_zhengguoqu",
       "title": "郑国渠修建",
-      "description": "韩遣郑国间秦，劝修水渠以疲秦。秦知其计仍继续修建，反成强秦之基。",
+      "description": "韩国畏秦东出，遣水工郑国入秦，献凿泾水灌田之策，欲以巨役疲秦。工未半而计谋败露，郑国坦然自陈：渠成，虽为韩延数年之命，然为秦建万世之功。秦卒用其策，关中沃野千里，遂成强秦粮仓。功罪之间，君其裁之。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -1676,7 +1676,7 @@
     {
       "id": "hist_huanghe",
       "title": "黄河决口",
-      "description": "黄河暴涨，堤岸溃决。洪水泛滥，百姓流离失所。",
+      "description": "伏汛之际，黄河暴涨，堤岸溃决于一夜之间，洪水奔涌，田庐尽没。百姓攀树登屋，哀号之声不绝，流民塞道。征发民夫堵口治水，则所费浩繁而民力可苏；任其泛滥，则田赋尽失而饿殍载途。救与不救，惟君裁决。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -1726,7 +1726,7 @@
     {
       "id": "hist_guanzhong_drought",
       "title": "关中大旱",
-      "description": "关中久旱不雨，赤地千里。禾苗枯槁，饥民遍野。",
+      "description": "关中之地，自入夏以来滴雨未落，赤地千里，禾苗尽枯，井泉亦涸。饥民扶老携幼，乞食于道，饿殍载途。开仓赈济、以工代赈，则民可活而仓廪为之空；紧缩度日、先充军粮，则军无虞而民心尽失。仓廪与民心，孰轻孰重？",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -1777,7 +1777,7 @@
     {
       "id": "hist_locust",
       "title": "蝗灾",
-      "description": "蝗虫蔽天而至，所过之处禾稼一空。百姓号哭，饿殍遍野。",
+      "description": "秋禾将熟，蝗虫蔽天而至，声如风雨，所过之处，稼穑一空。农家号哭无策。或组织百姓捕扑，以人力胜天灾，虽所费不赀而可保半数之收；或祭祀祈祷，冀神明庇佑，然坐待之间，田禾尽矣。人力与天命，君信何者？",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -1827,7 +1827,7 @@
     {
       "id": "hist_earthquake",
       "title": "地震",
-      "description": "大地震动，房舍倾塌。百姓惊恐，流言四起。",
+      "description": "忽闻地底轰鸣，大地震动，房舍倾塌，城垣开裂，百姓惊骇夺路。是夜流言四起，或曰国之将亡，或曰天示警兆。紧急赈灾修城，可安黎庶而耗帑财；托言天意以安民心，则省费而难弭实祸。天灾当前，君将何以为政？",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -1874,7 +1874,7 @@
     {
       "id": "hist_jixia",
       "title": "稷下学宫",
-      "description": "齐国稷下学宫兴盛，天下贤士云集。百家争鸣，文风鼎盛。",
+      "description": "临淄稷下学宫，天下贤士辐辏于此，谈辩之声不绝，诸子百家各逞其说，文风之盛冠绝诸侯。大力资助则贤才云集而金帛日费，量入为出则文脉不绝而收效亦缓。养士之费，当以何为准？",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -1923,7 +1923,7 @@
     {
       "id": "hist_baijia",
       "title": "百家争鸣",
-      "description": "儒墨道法，各执一说。百花齐放，思想之盛空前绝后。",
+      "description": "当世儒墨道法，各执一说，聚徒讲学，游说诸侯，天下思想之盛，空前绝后。兼容并蓄则贤才竞至，国中智术泉涌；独尊一家则令行禁止，然未免钳制士人之口。文教之政，宽严之间，君其择焉。",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -1972,7 +1972,7 @@
     {
       "id": "hist_mengzi",
       "title": "孟子见梁惠王",
-      "description": "孟子入梁，说仁义之道。王曰利，孟子曰仁义而已矣。",
+      "description": "孟子游历至梁，惠王问曰：叟不远千里而来，亦将有以利吾国乎？孟子对曰：王何必曰利，亦有仁义而已矣，上下交征利则国危矣。行仁政则得民心而国本固，务功利则富强虽速而人心离。治国之道，义利之辨，君其择之。",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -2019,7 +2019,7 @@
     {
       "id": "hist_zhuangzi",
       "title": "庄子拒楚相",
-      "description": "楚王遣使聘庄子为相。庄子以宁为泥中曳尾之龟，辞而不就。",
+      "description": "楚王闻庄子贤名，遣二大夫持厚币往聘，欲拜为楚相。庄子方钓于濮水，持竿不顾，曰：吾宁曳尾于涂中，不愿留骨而贵。遂辞使者，逍遥而去。强邀则失其高节，成其志则天下贤士闻风来归。清名与实用，君将何取？",
       "category": "morale",
       "trigger": {
         "type": "turn_start",
@@ -2066,7 +2066,7 @@
     {
       "id": "school_confucian_debate",
       "title": "稷下论道",
-      "description": "学宫辩论盛况空前，诸子各执一词，当何以处之？",
+      "description": "稷下学宫之会，儒门诸子各执一说，辩论至日昃不休。礼治派倡重修礼乐，以正名分；仁政派主开仓济民，以安黎庶。两说皆有所本，而国帑有限，不能并施。兼听之下，当以何说为宗？",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2117,7 +2117,7 @@
     {
       "id": "school_confucian_ritual",
       "title": "礼乐大典",
-      "description": "春祭大典如期举行，钟鼓齐鸣，民心归附。",
+      "description": "春日融融，祭坛之上钟鼓齐鸣，八佾之舞庄重肃穆，礼官赞唱，士庶肃然环观，皆感教化之泽。礼乐既成，民心归附，国中气象为之一新。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2145,7 +2145,7 @@
     {
       "id": "school_legalist_reform",
       "title": "变法之争",
-      "description": "变法触动旧贵族利益，朝堂争论不休。坚持还是妥协？",
+      "description": "法家变法行至中途，触动旧贵族之利，朝堂之上攻讦四起，流言谓新法乱政。废新法则前功尽弃，行新法则怨诽日积。坚持到底，或可成就富国强兵之业；适度妥协，则能暂息风波而收效亦迟。进与退，君其裁之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2194,7 +2194,7 @@
     {
       "id": "school_legalist_informant",
       "title": "告密之风",
-      "description": "什伍连坐推行，民间人人自危，虽安却怨。",
+      "description": "什伍连坐之法既行，告密之风渐起，邻里相疑，人人自危，虽至亲亦不敢妄言。盗贼敛迹，境内晏然，然民心惴惴，怨望暗生。法网之密，亦见其弊矣。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2221,7 +2221,7 @@
     {
       "id": "school_mohist_siege",
       "title": "墨守成规",
-      "description": "敌军围城，墨者登城助守。坚守待援还是出城击敌？",
+      "description": "敌军兵临城下，围城数匝，城中守军寡不敌众，人心浮动。墨家弟子携守城之械登陴，愿与城共存亡，献策守御之方。据城坚守则稳如泰山而旷日持久，出城夜袭则或可破敌而险象环生。攻守之策，君其定夺。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2270,7 +2270,7 @@
     {
       "id": "school_daoist_hermit",
       "title": "隐士出山",
-      "description": "山中隐士闻名而来，愿献无为之策以佐国事。",
+      "description": "有隐士自深山而下，鹤发童颜，谈吐间暗合大道。自言愿以清静无为之道佐君，省刑薄赋，与民休息。纳其策则或可致治，然见效迂缓；厚赠遣之则不失礼贤之名。其言凿凿，信乎不信乎？",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2319,7 +2319,7 @@
     {
       "id": "school_military_spy",
       "title": "兵者诡道",
-      "description": "斥候探得敌军虚实，战机稍纵即逝。",
+      "description": "细作飞书来报，敌军粮道迂回，营垒未固，虚实尽在掌握。兵者诡道，战机稍纵即逝。用兵之要，贵在知彼，今敌情已明，破敌之机至矣。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2345,7 +2345,7 @@
     {
       "id": "school_diplomat_betray",
       "title": "纵横捭阖",
-      "description": "盟国暗中与敌国密谋，局势微妙。如何应对？",
+      "description": "谍报密呈：盟国使者数入敌境，与敌君夜谈，恐有贰心。纵有盟约在身，然人心难测，局势微妙。遣使质问、厚币弥缝，或可挽盟谊于既倒；反施离间、以彼之道还施彼身，则或可拆其暗盟。纵横捭阖，君其谋之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2395,7 +2395,7 @@
     {
       "id": "school_hundred_schools",
       "title": "百家争鸣",
-      "description": "诸国学派各异，思想碰撞激荡。兼容并蓄还是独尊一术？",
+      "description": "天下之士挟策游说，儒法墨道各倡其说，于朝堂之上辩难不休，思想碰撞激荡。兼容并蓄则博采众长，国中智术如百川归海；独尊一术则政令划一，然未免坐井观天。取与舍之间，君其定之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2443,7 +2443,7 @@
     {
       "id": "school_traveling_scholar",
       "title": "游士献策",
-      "description": "一游士远道而来，献治国之策，言辞恳切。",
+      "description": "一游士风尘仆仆而来，叩阙献书，言治国之策，劝农桑、省徭役、储粮备荒，言辞恳切。所言虽简，然皆当务之急。择其善者而从之，或可裨益国政。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2466,7 +2466,7 @@
     {
       "id": "school_mohist_craft",
       "title": "墨家机关",
-      "description": "墨家弟子精研守城器械，可否拨款支持其研制新式防御器具？",
+      "description": "墨家弟子呈上守城器械之图，连弩、转射机、籍车之属，构思精巧，言可倍增城防之力。然研制之费不赀，试制成败亦未可知。拨款研制则城防可固而帑财日耗，节省开支则军需无虞而守御如旧。器之利与财之费，君其权衡。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2515,7 +2515,7 @@
     {
       "id": "school_daoist_nature",
       "title": "天人感应",
-      "description": "有道家隐士进言：顺应天时，无为而治，则五谷丰登。可否试行？",
+      "description": "春耕之际，有道家隐士进言：顺应天时，省刑薄赋，无为而治，则万物自生，五谷可期丰登。然无为之说，与今之法制相违。试行则或见效于日后，守法则难脱扰民之弊。清静与有为，君其择之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2564,7 +2564,7 @@
     {
       "id": "school_military_drill",
       "title": "大阅三军",
-      "description": "将军奏请举行大规模军事演练，以振军心。可否拨款支持？",
+      "description": "将军上奏：承平日久，军心懈怠，请举行大阅，陈兵列阵，演练攻守，以振士气。大阅则声势浩大，足以慑敌壮威，然所费甚巨；小操则简约可行，惟振奋有限。帑费与军威，君其权衡。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2619,7 +2619,7 @@
     {
       "id": "school_diplomat_alliance",
       "title": "合纵之议",
-      "description": "纵横家献策：趁邻国疲弊，可联合数国共讨之。可否采纳？",
+      "description": "纵横家登堂献策：邻国连年用兵，国力疲弊，正当联合数国，共分其地。合纵之议，利在众擎易举，然盟约易定而人心难齐。暂不动兵则坐失良机，恐邻国休整之后更难图之。会盟之议，君其定夺。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2669,7 +2669,7 @@
     {
       "id": "school_general_merchant",
       "title": "商人逐利",
-      "description": "有大商贾请求在境内开设集市，愿缴纳重税。可否允准？",
+      "description": "有巨贾携重金求见，愿于境内开设市集，通有无之利，岁贡重税。开市则商税充盈而谷贱伤农之虑生；抑商则本业稳固而货殖之路绝。农与商，国之两翼，孰先孰后，君其裁之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2713,7 +2713,7 @@
     {
       "id": "school_general_omen",
       "title": "天降异象",
-      "description": "夜观天象，有流星坠于境内。百姓议论纷纷，主吉主凶？",
+      "description": "是夜有流星坠于境内，光耀如昼，百姓惊骇，聚而观之，议论纷纷。或曰天降祥瑞，或曰灾星示警。昭告天下以为吉兆，则人心可安而或有欺天之讥；祭天祈福以弭灾异，则耗费金帛而民心稍定。天意难测，君其处之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2760,7 +2760,7 @@
     {
       "id": "school_general_rumor",
       "title": "民间谣谚",
-      "description": "市井流传一首新谣谚，暗含对朝政的不满。如何应对？",
+      "description": "市井间忽传新谣，童谣俚曲，朗朗上口，然字里行间暗讽朝政，讥刺时弊。谣谚之兴，未必无因，或为怨望所积，或为奸人煽惑。严查禁绝则只塞其口而难服其心；反躬自省、革除弊政，则谣谚自息。堵与疏之间，君其择之。",
       "category": "school",
       "trigger": {
         "type": "turn_start",
@@ -2809,7 +2809,7 @@
     {
       "id": "school_general_refugee",
       "title": "流民归附",
-      "description": "邻国战乱，大批流民涌入境内。接纳可增人口，拒绝则保安定。",
+      "description": "邻国烽火连天，大批流民扶老携幼，涌至边境，啼饥号寒，望关而泣。开境接纳、编户齐民，则户口日增而粮储渐耗，或有奸细混迹之忧；闭境拒之，则境内晏然，然仁声扫地，寒天下归附之心。仁与安之间，君其决之。",
       "category": "school",
       "one_time": true,
       "trigger": {
@@ -2856,7 +2856,7 @@
     {
       "id": "school_general_festival",
       "title": "民间庆典",
-      "description": "百姓自发举行庆典，歌舞升平。拨款赞助可收民心，听之任之则节省开支。",
+      "description": "秋成之后，百姓自发张灯结彩，歌舞升平，庆贺丰年，市井间一片欢腾。官家出资赞助，与民同乐，则民心愈附而所费有数；听之任之，则百姓自得其乐而朝廷无所施恩。收心与节费，君其自度。",
       "category": "school",
       "one_time": true,
       "trigger": {
@@ -2906,7 +2906,7 @@
     {
       "id": "school_general_ancient_scroll",
       "title": "古籍现世",
-      "description": "农夫耕地时掘出竹简，上载先贤治国之道。献于学宫可兴文教，卖于商贾可换金帛。",
+      "description": "农夫犁地，于田垄间掘出竹简一束，墨迹斑驳，上载先贤治国之言，历经沧桑而字犹可辨。献于学宫，则文脉可续，教化可兴；鬻于市贾，则易金帛之利，然典籍流落，殊为可惜。文与利之间，君其权衡。",
       "category": "school",
       "one_time": true,
       "trigger": {
@@ -2952,7 +2952,7 @@
     {
       "id": "school_general_drought_relief",
       "title": "义仓施粥",
-      "description": "灾年歉收，有乡绅开义仓施粥。官府可褒奖以彰善行，或征用义仓充公。",
+      "description": "岁逢灾歉，米珠薪桂，有乡绅开义仓施粥，活人无算，乡里称颂。官府褒奖其行，则善风日长，四方效仿；征用其仓以充国用，则仓廪稍实而寒士庶之心。奖善与取利，君其择之。",
       "category": "school",
       "one_time": true,
       "trigger": {
@@ -3002,7 +3002,7 @@
     {
       "id": "school_general_enemy_defector",
       "title": "敌将来投",
-      "description": "敌国将领不堪暴政，率部来投。纳之可得兵将，拒之可免嫌疑。",
+      "description": "敌国一将，不堪其君暴虐，率麾下数百骑连夜来投，叩关请降，言辞恳切。纳之，则得骁将劲卒，然敌国必生疑隙，或疑其为诈降间谍；拒之，则无后顾之忧，然寒天下归附之心。用与疑之间，君其审之。",
       "category": "school",
       "one_time": true,
       "trigger": {
@@ -3050,7 +3050,7 @@
     {
       "id": "evt_master_craftsman",
       "title": "名匠来访",
-      "description": "远方名匠慕名而来，善造攻城利器。厚赐留之，则工匠日增。",
+      "description": "有远方名匠负囊而来，言善制攻城之器、营建之术，愿效力于国。厚赐留用，则匠艺流传，工匠日增，营建攻守皆得其助；赠金遣之，则不失礼贤之名，然绝此奇技。人才之得失，君其度之。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -3104,7 +3104,7 @@
     {
       "id": "evt_craftsman_accident",
       "title": "工匠坊事故",
-      "description": "工匠坊炉火失控，器具损毁，工匠伤亡。损失惨重，不得不修。",
+      "description": "工匠坊夜半炉火失控，烈焰冲天，器具尽毁，数名工匠葬身火海。翌日检点，损折甚重，匠人垂首恸哭。此灾虽属天祸，然防微杜渐之道，不可不省。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -3132,7 +3132,7 @@
     {
       "id": "evt_timber_discovery",
       "title": "良材发现",
-      "description": "探子来报，深山中有千年巨木，可作栋梁之材。",
+      "description": "探子来报：深山幽谷之中，有千年巨木参天而立，木质坚密，可作宫室栋梁。征发民夫入山采伐，则栋梁之材可得，然山路险峻，役夫辛苦；封存于山，则木自生自长，无扰于民。取与舍，君其定之。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -3186,7 +3186,7 @@
     {
       "id": "evt_quarry_open",
       "title": "采石场开辟",
-      "description": "境内发现优质石料，可供建筑之用。开辟采石场需费金帛。",
+      "description": "堪舆者来报，境内山麓石质坚良，纹理细密，堪为城垣殿宇之材。辟采石场以取之，则建材日足，然开山动众，需费金帛；暂缓其事，则资财可省，然工事所需或将无着。急缓之间，君其裁之。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -3240,13 +3240,14 @@
     {
       "id": "evt_horse_trade",
       "title": "胡马市集",
-      "description": "北方游牧部落遣使通商，愿以良马易粮帛。",
+      "description": "北地游牧部落遣使至边，牵良马数百匹，愿以马易我粮帛。胡马剽悍善驰，得之可壮骑兵，然以粮易之则仓廪渐虚，以金市之则帑财日耗，婉拒则互市之路绝。边郡通北，此机难得，君将何以应之？",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
         "probability": 0.08,
         "conditions": {
-          "turn_min": 5
+          "turn_min": 5,
+          "border_north": true
         },
         "priority": 30,
         "one_shot": false
@@ -3313,7 +3314,7 @@
     {
       "id": "evt_horse_plague",
       "title": "马瘟",
-      "description": "马厩突发瘟疫，战马倒毙者众。骑兵战力大损。",
+      "description": "马厩忽传疫讯，战马相继倒毙，医者束手无策，旬日之间损折甚众。骑兵失马，如鸟失翼，战力大损，军中流言四起，士气为之一挫。此疫之祸，恐非旬月可弭。",
       "category": "military",
       "trigger": {
         "type": "turn_start",
@@ -3344,7 +3345,7 @@
     {
       "id": "evt_iron_vein",
       "title": "铁矿脉发现",
-      "description": "探子来报，山中有铁矿脉露。开采需费金帛，然利在长远。",
+      "description": "探子来报，山腹之中铁矿显露，矿脉绵延，其质优良。若拨金开采，炼铁成兵，甲胄戈戟可自足，利在长远；若暂且封存，则免一时之费，然利器之资终须仰人。矿利之取舍，君其决之。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -3398,7 +3399,7 @@
     {
       "id": "evt_forge_breakthrough",
       "title": "铸铁改良",
-      "description": "工匠改良冶铁之法，精铁产量大增。",
+      "description": "匠师苦研经年，革新冶铁之法，炉温既高，去渣更净，精铁之产倍增，百工为之称贺。自此甲胄刀兵之材，不复匮乏，国用军需皆得其便。",
       "category": "economy",
       "trigger": {
         "type": "turn_start",
@@ -3424,38 +3425,10 @@
       "options": null
     },
     {
-      "id": "evt_tribute",
-      "title": "藩属进贡",
-      "description": "边境部落遣使来朝，献上良马、精铁等特产。",
-      "category": "diplomacy",
-      "trigger": {
-        "type": "turn_start",
-        "probability": 0.06,
-        "conditions": {
-          "turn_min": 8
-        },
-        "priority": 70,
-        "one_shot": false
-      },
-      "effects": {
-        "food_delta": 0,
-        "gold_delta": 30,
-        "morale_delta": 5,
-        "population_delta": 0,
-        "troops_delta": 0,
-        "wood_delta": 0,
-        "craftsmen_delta": 3,
-        "building_materials_delta": 3,
-        "horse_delta": 5,
-        "refined_iron_delta": 3
-      },
-      "options": null
-    },
-    {
       "_comment": "纵横家事件链 — 合纵系列。条件使用 turn_min 占位，实际触发需新增条件：reputation_min_any_faction、expanding_fast、hezong_active、hezong_turns_min，见决策文档待办事项",
       "id": "dip_hezong_proposal",
       "title": "合纵之议",
-      "description": "某国声威日盛，连下数城，诸侯震恐。纵横家奔走各国，倡议合纵抗之。",
+      "description": "某国兵锋正锐，连下数城，诸侯震恐，皆恐其蚕食之祸及于己身。纵横家乘势奔走列国，陈说唇亡齿寒之理，倡议合纵以抗强秦。会盟之约渐成，天下大势或将为之变。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3480,7 +3453,7 @@
     {
       "id": "dip_hezong_collapse",
       "title": "合纵瓦解",
-      "description": "合纵联盟日久，各国利益分歧，盟约名存实亡。纵横家叹息离去。",
+      "description": "合纵联盟结盟既久，各国各怀私利，争功诿过，盟约渐成空文。纵横家奔走斡旋，终无力回天，叹息而去。诸国复相疑忌，联盟之瓦解，只在旦夕之间矣。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3506,7 +3479,7 @@
     {
       "id": "dip_hezong_conflict",
       "title": "合纵内讧",
-      "description": "合纵联盟中，各国争夺战利品，分赃不均，联盟岌岌可危。",
+      "description": "合纵诸国连兵破城，及至分取战利，各不相让，争功夺地，几至兵戈相向。盟主调解无方，人心涣散，已有小国暗通敌国，联盟岌岌可危。同床异梦如此，纵有坚盟，其能久乎？",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3533,7 +3506,7 @@
       "_comment": "纵横家事件链 — 连横系列。条件使用 turn_min 占位，实际触发需新增条件：reputation_min_any_faction、has_strong_enemy、lianheng_active、lianheng_turns_min，见决策文档待办事项",
       "id": "dip_lianheng_plan",
       "title": "连横之策",
-      "description": "强敌环伺，有纵横家献策：远交近攻，联合远邦共伐近邻。",
+      "description": "强敌环伺，四境不宁，国中上下为之忧心。有纵横家献连横之策：厚结远邦，共伐近邻，得地则我独擅其利。其言娓娓，闻者动容。若行此策，邦交之势或将为之大变。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3558,7 +3531,7 @@
     {
       "id": "dip_lianheng_break",
       "title": "连横破裂",
-      "description": "连横联盟中，盟友各怀异心，盟约形同虚设。",
+      "description": "连横诸国本以利合，各怀异心，遇事则互相推诿，盟约渐成虚设。纵有使者往来，不过是貌合神离，暗地里各自算计。如此盟谊，破裂只在迟早之间。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3584,7 +3557,7 @@
     {
       "id": "dip_lianheng_backlash",
       "title": "连横反噬",
-      "description": "连横联盟中，盟友获利过多，引发其他盟友不满，联盟内部裂痕加深。",
+      "description": "连横盟约之下，某盟友屡屡得利，蚕食邻邦，坐大之势渐显。其余盟友侧目而视，怨其独占其利，恐其羽翼既丰反噬自身。联盟内部裂痕日深，猜忌之雾弥漫于会盟之堂。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3611,7 +3584,7 @@
       "_comment": "纵横家个人事件。条件使用 turn_min+faction 占位，实际触发需新增条件：faction_exists（检查任意国家是否存在）、faction_reputation_min（检查任意国家声望），见决策文档待办事项",
       "id": "dip_suqin_emerge",
       "title": "苏秦出山",
-      "description": "纵横家苏秦学成出山，游说诸侯合纵抗秦。其辩才无碍，诸侯为之动容。",
+      "description": "纵横家苏秦悬梁刺股，学成出山，怀六国相印之志，游说诸侯合纵抗秦。其辩才无碍，说辞如江河之泻，诸侯为之动容，争相延揽。合纵之局，自苏子而起。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3640,7 +3613,7 @@
     {
       "id": "dip_zhangyi_enter_qin",
       "title": "张仪入秦",
-      "description": "纵横家张仪入秦，献连横之策。秦王大喜，拜为客卿。",
+      "description": "纵横家张仪西行入秦，面陈连横之策，剖析天下大势，如数家珍。秦王闻之拊掌大喜，拜为客卿，待以上宾之礼。自此秦有张子，连横之谋行于天下。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3669,7 +3642,7 @@
     {
       "id": "dip_gongsun_persuade",
       "title": "公孙衍游说",
-      "description": "纵横家公孙衍游说诸国，言辞犀利，或合纵或连横，各国关系为之大变。",
+      "description": "纵横家公孙衍挟三寸不烂之舌，周游列国，今日说合纵，明日倡连横，翻云覆雨，尽在其口舌之间。诸侯或结盟，或反目，邦交之势因之一变。此人之言，不可不察。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3698,7 +3671,7 @@
       "_comment": "朝贡事件。条件使用 turn_min+at_war_with 占位，实际触发需新增条件：tribute_min、reputation_min，见决策文档待办事项",
       "id": "dip_zhou_aid_request",
       "title": "天子求援",
-      "description": "周天子遣使告急：强邻犯境，社稷危殆。望忠臣义士起兵勤王。",
+      "description": "周室衰微，王畿之地日蹙。忽有天子使者风尘仆仆而至，赍诏告急：强邻犯境，王城危殆，望诸侯勤王。名分所在，勤王则义声远播，然师出之名，亦当慎择。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3725,7 +3698,7 @@
       "_comment": "九鼎迁徙：朝贡度与声望双高",
       "id": "dip_nine_tripods",
       "title": "九鼎迁徙",
-      "description": "周室衰微，九鼎迁徙之事传遍天下。有诸侯上表请求迎鼎入国，以承天命。",
+      "description": "周室衰微，九鼎之重器，天下莫不觊觎。有诸侯上表，请迎九鼎入国，以承天命。九鼎者，王权之象征，得之则天命所归，然耗费巨万，且招诸侯之忌；辞让不受，则示谦德而失问鼎之机。天命之轻重，君其权衡。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3786,7 +3759,7 @@
       "_comment": "条件使用 turn_min+morale_min 占位，实际触发需新增条件：tribute_max(<=20)，见决策文档待办事项",
       "id": "dip_usurp_title",
       "title": "僭越称王",
-      "description": "国君自觉势大，欲效楚国旧例，僭越称王。此举虽彰显国威，然必招致天下非议。",
+      "description": "国势渐强，群臣上表：周室已衰，请效楚例，僭号称王，以正名分、彰国威。称王则名正言顺，然必招天下非议，失天子之欢心；守诸侯之名，则名分虽卑，而朝贡之谊不绝，免觊觎之祸。名与实之间，君其择之。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
@@ -3837,7 +3810,7 @@
       "_comment": "天子禅让：朝贡度与声望极高",
       "id": "dip_mandate_transfer",
       "title": "天子禅让",
-      "description": "周天子以天命将尽，欲禅让天下于有德之诸侯。此乃千载难逢之机。",
+      "description": "周室天命已尽，天子遣使奉玺绶而至，欲禅让天下于君，曰：惟德者居之。此千载难逢之机，受之则承天命而君临天下，然所需贡奉巨万，且恐诸侯不服；辞之则示谦让之德，然天命之机，稍纵即逝。受与辞之间，君其决之。",
       "category": "diplomacy",
       "trigger": {
         "type": "turn_start",
