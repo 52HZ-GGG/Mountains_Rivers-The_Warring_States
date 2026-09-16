@@ -84,6 +84,7 @@ func _on_turn_started(turn_number: int, _faction_id: String) -> void:
 	_tick_hezong_lianheng()
 	_tick_tribute_reputation()
 	_apply_building_diplomacy_effects()
+	_tick_border_friction()
 
 
 func _on_turn_ended(turn_number: int, _faction_id: String) -> void:
@@ -314,6 +315,52 @@ func _emit_border_changed(pair_key: String, now_bordering: bool) -> void:
 	if now_bordering:
 		_change_opinion(parts[0], parts[1], -5)
 		_change_opinion(parts[1], parts[0], -5)
+
+
+## 边境摩擦：接壤且好感低时，按接壤边长概率给 border_conflict 借口（决策 #202 / D4）
+func _tick_border_friction() -> void:
+	if is_zhou_destroyed():
+		pass
+	var cfg: Dictionary = DataManager.get_big_map_political_control().get("border_friction", {}) as Dictionary
+	var base: float = float(cfg.get("base_chance", 0.03))
+	var per_edge: float = float(cfg.get("per_border_edge", 0.002))
+	var opinion_th: int = int(cfg.get("opinion_threshold", 0))
+	if _border_pairs_dirty:
+		_rebuild_border_pairs()
+	var grid: Dictionary = DataManager.get_big_map_control_grid()
+	for key in _border_pairs:
+		var parts: PackedStringArray = String(key).split("_")
+		if parts.size() != 2:
+			continue
+		var a: String = parts[0]
+		var b: String = parts[1]
+		if a == "zhou" or b == "zhou":
+			continue
+		if get_opinion(a, b) >= opinion_th and get_opinion(b, a) >= opinion_th:
+			continue
+		var edges: int = _count_border_edges(grid, a, b) if not grid.is_empty() else 3
+		var chance: float = base + per_edge * float(maxi(edges, 1))
+		if randf() < chance:
+			# 双方都可能拿到借口；以好感更低的一方为主
+			if get_opinion(a, b) <= get_opinion(b, a):
+				grant_casus_belli(a, b, "border_conflict")
+			else:
+				grant_casus_belli(b, a, "border_conflict")
+
+
+func _count_border_edges(grid: Dictionary, faction_a: String, faction_b: String) -> int:
+	var count: int = 0
+	for cell_v: Variant in grid:
+		var cell: Vector2i = cell_v as Vector2i
+		var owner: String = str(grid[cell])
+		if owner != faction_a:
+			continue
+		for nb: Vector2i in HexAxial.neighbors_hex(cell):
+			if not grid.has(nb):
+				continue
+			if str(grid[nb]) == faction_b:
+				count += 1
+	return count
 
 
 func get_power_score(faction_id: String) -> float:

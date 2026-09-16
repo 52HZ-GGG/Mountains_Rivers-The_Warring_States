@@ -43,6 +43,11 @@
 	"bordering": {
 		"max_hex_distance": 1
 	},
+	"border_friction": {
+		"base_chance": 0.03,
+		"per_border_edge": 0.002,
+		"opinion_threshold": 0
+	},
 	"derived_radius_rules": {
 		"level_radii": {
 			"1": 4,
