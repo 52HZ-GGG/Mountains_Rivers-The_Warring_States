@@ -1253,20 +1253,15 @@ func _can_fire_attack(defender_terrain: String) -> bool:
 	return defender_terrain == "forest"
 
 
-## 构建火攻上下文（含兵家季节加成）
-func _get_fire_attack_ctx() -> Dictionary:
+## 构建火攻上下文（含兵家季节/政策火攻加成）
+func _get_fire_attack_ctx(faction_id: String = "") -> Dictionary:
 	var ctx: Dictionary = {"is_fire_attack": true}
 	var fire_bonus_v: Variant = DataManager.get_balance_param("combat.fire_atk_bonus")
-	ctx["fire_bonus"] = float(fire_bonus_v) if fire_bonus_v != null else 0.4
-	# 兵家学派夏秋加成
-	var school_data: Dictionary = DataManager.get_school("military")
-	if not school_data.is_empty():
-		for sb: Variant in school_data.get("season_bonus", []):
-			var bonus: Dictionary = sb as Dictionary
-			if bonus.get("effect", "") == "fire_attack_bonus":
-				var seasons: Array = bonus.get("season", [])
-				if seasons.has(_current_season):
-					ctx["school_atk"] = float(bonus.get("value", 0.0))
+	var fire_bonus: float = float(fire_bonus_v) if fire_bonus_v != null else 0.4
+	if faction_id != "":
+		# SchoolManager 已合并 season_bonus 与政策 fire_attack_bonus（§5.3/§12.2）
+		fire_bonus += SchoolManager.get_effect_float(faction_id, "fire_attack_bonus")
+	ctx["fire_bonus"] = fire_bonus
 	return ctx
 
 
@@ -1410,8 +1405,39 @@ func _get_passive_skill_bonus(skills: Array) -> float:
 	for skill: Variant in skills:
 		var s: Dictionary = skill as Dictionary
 		if s.get("type", "") == "passive":
+			# pack_tactics 按相邻友军数叠加，不在这里直接累加
+			if str(s.get("id", "")) == "pack_tactics":
+				continue
 			bonus += float(s.get("value", 0.0))
 	return bonus
+
+
+## pack_tactics（虎狼之师）：min(相邻友军, max_stacks) × value（§3.4）
+func get_pack_tactics_bonus(unit: Dictionary) -> float:
+	for skill: Variant in unit.get("skills", []):
+		var s: Dictionary = skill as Dictionary
+		if str(s.get("id", "")) != "pack_tactics":
+			continue
+		var value: float = float(s.get("value", 0.05))
+		var max_stacks: int = int(s.get("max_stacks", 3))
+		var allies: int = _count_adjacent_allies(unit)
+		return minf(float(allies), float(max_stacks)) * value
+	return 0.0
+
+
+func _count_adjacent_allies(unit: Dictionary) -> int:
+	var origin: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
+	var faction: String = str(unit["faction_id"])
+	var count: int = 0
+	for u: Dictionary in _units:
+		if str(u["faction_id"]) != faction:
+			continue
+		if str(u["id"]) == str(unit.get("id", "")):
+			continue
+		var cell: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
+		if HexLib.hex_distance_hex(origin, cell) == 1:
+			count += 1
+	return count
 
 
 ## 查找 move_after_attack 技能数据；无此技能返回空字典

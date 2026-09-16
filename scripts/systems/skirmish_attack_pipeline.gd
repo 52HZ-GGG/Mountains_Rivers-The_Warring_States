@@ -69,7 +69,7 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var def_ctx: Dictionary = {}
 	var is_fire: bool = m._can_fire_attack(def_terrain)
 	if is_fire:
-		atk_ctx = m._get_fire_attack_ctx()
+		atk_ctx = m._get_fire_attack_ctx(str(a["faction_id"]))
 	_add_ctx_offset(atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(a["faction_id"])))
 	_add_ctx_offset(atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(a["faction_id"])))
 	_add_ctx_offset(def_ctx, "faction_def", _get_grain_shortage_def_offset(str(d["faction_id"])))
@@ -77,6 +77,10 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var passive_bonus: float = m._get_passive_skill_bonus(a.get("skills", []))
 	if passive_bonus > 0.0:
 		atk_ctx["unit_ability_bonus"] = atk_ctx.get("unit_ability_bonus", 0.0) + passive_bonus
+	# pack_tactics（秦锐士虎狼之师）
+	var pack_bonus: float = m.get_pack_tactics_bonus(a)
+	if pack_bonus > 0.001:
+		atk_ctx["unit_ability_bonus"] = atk_ctx.get("unit_ability_bonus", 0.0) + pack_bonus
 	# 科技战斗修正
 	var atk_udata: Dictionary = DataManager.get_unit_type(str(a["unit_type_id"]))
 	var tech_atk: float = TechSystem.get_attack_modifier(str(atk_udata.get("category", "")))
@@ -90,6 +94,10 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var atk_school_bonus: Dictionary = m._get_school_combat_bonus(str(a["faction_id"]))
 	if atk_school_bonus.get("school_atk", 0.0) != 0.0:
 		atk_ctx["school_atk"] = atk_school_bonus["school_atk"]
+	# 兵家伏击伤害加成（仅在 CombatResolver 判定触发伏击后生效，§12.2）
+	var school_ambush: float = SchoolManager.get_effect_float(str(a["faction_id"]), "ambush_damage_bonus")
+	if school_ambush > 0.001:
+		atk_ctx["school_ambush_bonus"] = school_ambush
 	# 武大夫勇武%
 	var mil_atk: float = MinisterManager.get_faction_military_attack_bonus(str(a["faction_id"]))
 	if mil_atk > 0.001:
@@ -97,6 +105,14 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var def_school_bonus: Dictionary = m._get_school_combat_bonus(str(d["faction_id"]))
 	if def_school_bonus.get("school_def", 0.0) != 0.0:
 		def_ctx["school_def"] = def_school_bonus["school_def"]
+	# 奇观防御（万里长城 defense_national，§12.5）
+	var wonder_def: float = WonderManager.get_effect_float(str(d["faction_id"]), "defense_national")
+	if wonder_def > 0.001:
+		def_ctx["wonder_def"] = wonder_def
+	# 武大夫韬略%
+	var mil_def: float = MinisterManager.get_faction_military_defense_bonus(str(d["faction_id"]))
+	if mil_def > 0.001:
+		def_ctx["minister_strategy_pct"] = mil_def
 	# 关隘 crossing_rules 修正
 	var tdata_def: Dictionary = DataManager.get_terrain(def_terrain)
 	var cr: Variant = tdata_def.get("crossing_rules", null)

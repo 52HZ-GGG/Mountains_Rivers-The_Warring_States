@@ -14,10 +14,12 @@ static func _calc_atk_buff(ctx: Dictionary) -> float:
 	buff += ctx.get("minister_bravery_pct", 0.0)
 	buff += ctx.get("faction_atk", 0.0)
 	buff += ctx.get("morale_atk_offset", 0.0)
-	if ctx.get("is_ambush", false):
-		buff += ctx.get("ambush_bonus", 0.3)
-	elif ctx.get("is_fire_attack", false):
+	# 火攻与伏击互斥：主动火攻优先（§5.1/§5.3）
+	if ctx.get("is_fire_attack", false):
 		buff += ctx.get("fire_bonus", 0.4)
+	elif ctx.get("is_ambush", false):
+		buff += ctx.get("ambush_bonus", 0.3)
+		buff += ctx.get("school_ambush_bonus", 0.0)
 	buff += ctx.get("school_atk", 0.0)
 	buff += ctx.get("tech_atk", 0.0)
 	buff += ctx.get("unit_ability_bonus", 0.0)
@@ -34,6 +36,7 @@ static func _calc_def_buff(ctx: Dictionary) -> float:
 	buff += ctx.get("school_def", 0.0)
 	buff += ctx.get("tech_def", 0.0)
 	buff += ctx.get("building_def", 0.0)
+	buff += ctx.get("wonder_def", 0.0)
 	return buff
 
 
@@ -127,6 +130,22 @@ func get_momentum_bonus(tiles_moved: int) -> float:
 	return minf(bonus, max_bonus)
 
 
+# ============= 伏击判定（需要 DataManager）=============
+
+## 在加法层之前掷伏击骰。火攻主动选择时跳过（与伏击互斥，§5.1/§5.3）。
+## p_atk_ctx 可传 disable_ambush=true 供确定性测试使用。
+func roll_ambush(terrain: Dictionary, is_fire_attack: bool, p_rng: RandomNumberGenerator) -> bool:
+	if is_fire_attack:
+		return false
+	var ambush_base_v: Variant = DataManager.get_balance_param("combat.ambush_base_chance")
+	var ab: float = float(ambush_base_v) if ambush_base_v != null else 0.05
+	var terrain_ambush: float = float(terrain.get("ambush_chance", 0.0))
+	var cap_v: Variant = DataManager.get_balance_param("combat.ambush_chance_cap")
+	var cap: float = float(cap_v) if cap_v != null else 0.95
+	var ambush_p: float = clampf(ab + terrain_ambush, 0.0, cap)
+	return p_rng.randf() < ambush_p
+
+
 # ============= 完整伤害计算（需要 DataManager）=============
 
 func compute_damage(
@@ -151,8 +170,32 @@ func compute_damage(
 	if bp is Dictionary:
 		morale_params = bp
 
-	# --- 攻击加法层 ---
 	var atk_ctx: Dictionary = p_atk_ctx.duplicate()
+
+	# --- 伏击/火攻互斥（在加法层之前判定，§5.1/§5.3）---
+	var is_fire: bool = bool(atk_ctx.get("is_fire_attack", false))
+	var was_ambush: bool = false
+	if is_fire:
+		# 确保不会同时走伏击分支
+		atk_ctx.erase("is_ambush")
+		if not atk_ctx.has("fire_bonus"):
+			var fire_b_v: Variant = DataManager.get_balance_param("combat.fire_atk_bonus")
+			atk_ctx["fire_bonus"] = float(fire_b_v) if fire_b_v != null else 0.4
+	elif bool(p_atk_ctx.get("is_ambush", false)):
+		# 调用方强制伏击（测试/特殊规则）
+		was_ambush = true
+		if not atk_ctx.has("ambush_bonus"):
+			var amb_b_v0: Variant = DataManager.get_balance_param("combat.ambush_atk_bonus")
+			atk_ctx["ambush_bonus"] = float(amb_b_v0) if amb_b_v0 != null else 0.3
+	elif not bool(atk_ctx.get("disable_ambush", false)):
+		was_ambush = roll_ambush(terrain, false, p_rng)
+		if was_ambush:
+			atk_ctx["is_ambush"] = true
+			if not atk_ctx.has("ambush_bonus"):
+				var amb_b_v: Variant = DataManager.get_balance_param("combat.ambush_atk_bonus")
+				atk_ctx["ambush_bonus"] = float(amb_b_v) if amb_b_v != null else 0.3
+
+	# --- 攻击加法层 ---
 	atk_ctx["terrain_atk_offset"] = float(terrain.get("atk_mod", 1.0)) - 1.0
 	atk_ctx["morale_atk_offset"] = _get_morale_atk_offset(p_attacker_morale, morale_params)
 	var atk_buff: float = _calc_atk_buff(atk_ctx)
@@ -191,18 +234,14 @@ func compute_damage(
 	var rand_spread: float = p_rng.randf_range(spread.x, spread.y)
 	var dmg: float = raw_dmg * rand_spread
 
-	# --- 伏击判定 ---
-	var was_ambush: bool = false
-	if not atk_ctx.get("is_fire_attack", false):
-		var ambush_base_v: Variant = DataManager.get_balance_param("combat.ambush_base_chance")
-		var ab: float = float(ambush_base_v) if ambush_base_v != null else 0.05
-		var terrain_ambush: float = float(terrain.get("ambush_chance", 0.0))
-		var cap_v: Variant = DataManager.get_balance_param("combat.ambush_chance_cap")
-		var cap: float = float(cap_v) if cap_v != null else 0.95
-		var ambush_p: float = clampf(ab + terrain_ambush, 0.0, cap)
-		was_ambush = p_rng.randf() < ambush_p
-
-	return {"damage": int(floor(dmg)), "was_ambush": was_ambush, "skipped": false, "effective_atk": effective_atk}
+	return {
+		"damage": int(floor(dmg)),
+		"was_ambush": was_ambush,
+		"is_fire_attack": is_fire,
+		"skipped": false,
+		"effective_atk": effective_atk,
+		"atk_buff": atk_buff,
+	}
 
 
 # ============= 反击伤害计算（需要 DataManager）=============
@@ -245,10 +284,15 @@ static func compute_siege_damage(
 	if unit_data.is_empty() or attacker_count <= 0:
 		return {"damage": 0, "city_destroyed": false}
 	var base_atk: float = float(unit_data.get("attack", 0)) * attacker_count
-	# 攻城加成（special = "siege"）
+	# 攻城加成（special = "siege_bonus"，§3.2；默认取 balance_params.siege_damage_multiplier）
 	var siege_bonus: float = 1.0
-	if unit_data.get("special", "") == "siege":
-		siege_bonus = float(unit_data.get("special_value", 2.0))
+	var special: String = str(unit_data.get("special", ""))
+	if special == "siege_bonus" or special == "siege":
+		if unit_data.has("special_value"):
+			siege_bonus = float(unit_data.get("special_value"))
+		else:
+			var sm_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
+			siege_bonus = float(sm_v) if sm_v != null else 3.0
 	# 攻击加法层
 	var atk_buff: float = 1.0
 	atk_buff += atk_ctx.get("tech_atk", 0.0)

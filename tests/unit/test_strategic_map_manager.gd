@@ -59,6 +59,8 @@ func test_strategic_combat_damages_enemy() -> void:
 	var spawn_enemy: Dictionary = StrategicMapManager.spawn_unit_at_city("zhao", "militia", 0, 0, 1)
 	assert_true(bool(spawn_enemy.get("success", false)))
 	var enemy_id: String = str(spawn_enemy.get("unit_id", ""))
+	# 决策 #89：未宣战禁止战略攻击
+	DiplomacySystem.declare_war("qin", "zhao")
 	# 把我方单位挪到敌方旁
 	var enemy: Dictionary = StrategicMapManager.get_unit(enemy_id)
 	var enemy_axial: Vector2i = Vector2i(int(enemy["q"]), int(enemy["r"]))
