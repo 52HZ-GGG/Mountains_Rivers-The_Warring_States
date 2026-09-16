@@ -12,6 +12,8 @@ var _city_panel_scene: PackedScene = preload("res://scenes/ui/city_panel/city_pa
 var _city_panel: Panel = null
 var _last_big_map_city_focus_id: String = ""
 var _formal_demo_big_map_opened: bool = false
+## 从大地图顶栏打开子面板后，关闭时应退回大地图而非控制中枢
+var _return_to_big_map_after_panel: bool = false
 var _event_popup_scene: PackedScene = preload("res://scenes/ui/event_popup/event_popup.tscn")
 var _event_popup: Panel = null
 var _event_test_scene: PackedScene = preload("res://scenes/ui/event_test/event_test_panel.tscn")
@@ -609,9 +611,12 @@ func _show_framework_placeholder(title: String, body: String) -> void:
 	_framework_placeholder_layer.visible = true
 
 
-func _hide_framework_placeholder() -> void:
+func _hide_framework_placeholder(user_closed: bool = true) -> void:
 	if is_instance_valid(_framework_placeholder_layer):
 		_framework_placeholder_layer.visible = false
+	# 仅用户点关闭时恢复场景；子页切换等内部调用不触发
+	if user_closed:
+		_restore_after_panel_closed()
 
 
 func _change_framework_zoom(delta: float) -> void:
@@ -745,16 +750,15 @@ func _open_formal_minister_panel() -> void:
 	_minister_panel.panel_closed.connect(_on_minister_panel_closed)
 	var fid: String = _resolve_player_faction_id()
 	_minister_panel.open(fid)
-	_set_toolbar_visible(false)
+	_hide_framework_hub()
 	_set_end_turn_visible(false)
 
 
 func _on_minister_panel_closed() -> void:
-	_set_toolbar_visible(true)
-	_set_end_turn_visible(false)
 	if is_instance_valid(_minister_panel):
 		_minister_panel.queue_free()
 		_minister_panel = null
+	_restore_after_panel_closed()
 
 
 func _show_ministers_panel() -> void:
@@ -973,27 +977,27 @@ func _open_school_events_panel() -> void:
 
 
 func _open_school_tech_panel() -> void:
-	_hide_framework_placeholder()
+	_hide_framework_placeholder(false)
 	_on_tech_button_pressed()
 
 
 func _open_minister_city_panel() -> void:
-	_hide_framework_placeholder()
+	_hide_framework_placeholder(false)
 	_open_player_capital_panel()
 
 
 func _open_minister_diplomacy_panel() -> void:
-	_hide_framework_placeholder()
+	_hide_framework_placeholder(false)
 	_on_diplomacy_button_pressed()
 
 
 func _open_intelligence_big_map() -> void:
-	_hide_framework_placeholder()
+	_hide_framework_placeholder(false)
 	_on_big_map_button_pressed()
 
 
 func _open_intelligence_diplomacy() -> void:
-	_hide_framework_placeholder()
+	_hide_framework_placeholder(false)
 	_on_diplomacy_button_pressed()
 
 
@@ -1811,26 +1815,64 @@ func _on_big_map_hub_action(action: String) -> void:
 				panel.visible = true
 				_tech_layer.visible = true
 		"diplomacy":
+			_return_to_big_map_after_panel = true
 			_close_big_map()
-			_on_diplomacy_button_pressed()
+			_hide_framework_hub()
+			_set_end_turn_visible(true)
+			if not is_instance_valid(_diplomacy_panel):
+				_diplomacy_panel = _diplomacy_scene.instantiate() as Panel
+				_diplomacy_panel.diplomacy_panel_closed.connect(_on_diplomacy_closed)
+				add_child(_diplomacy_panel)
+			_diplomacy_panel.open()
 		"ministers":
+			_return_to_big_map_after_panel = true
 			_close_big_map()
-			_set_toolbar_visible(false)
+			_hide_framework_hub()
 			_set_end_turn_visible(true)
 			_open_formal_minister_panel()
 		"schools":
+			_return_to_big_map_after_panel = true
 			_close_big_map()
-			_set_toolbar_visible(false)
+			_hide_framework_hub()
 			_set_end_turn_visible(true)
 			_show_schools_panel()
 		"save":
+			# 存档面板叠在大地图上，不关图
 			_show_save_load_panel()
+
+
+func _hide_framework_hub() -> void:
+	if is_instance_valid(_framework_hub):
+		_framework_hub.visible = false
+	_set_toolbar_visible(false)
+
+
+## 子面板关闭后：来自大地图则退回大地图，否则恢复控制中枢
+func _restore_after_panel_closed() -> void:
+	if _return_to_big_map_after_panel:
+		_return_to_big_map_after_panel = false
+		_reopen_big_map()
+		return
+	if is_instance_valid(_framework_hub):
+		_framework_hub.visible = true
+	_set_toolbar_visible(true)
+	_set_end_turn_visible(false)
+
+
+func _reopen_big_map() -> void:
+	_hide_framework_hub()
+	_set_end_turn_visible(true)
+	_ensure_big_map()
+	_big_map_panel.open()
+	if _last_big_map_city_focus_id != "" and _big_map_panel.has_method("focus_city"):
+		_big_map_panel.focus_city(_last_big_map_city_focus_id)
+	_embed_resource_bar(_big_map_panel.get_resource_bar_slot())
 
 
 func _on_diplomacy_button_pressed() -> void:
 	_close_big_map()
 	_close_city_panel()
-	_set_toolbar_visible(false)
+	_hide_framework_hub()
 	_set_end_turn_visible(true)
 
 	if not is_instance_valid(_diplomacy_panel):
@@ -1843,8 +1885,7 @@ func _on_diplomacy_button_pressed() -> void:
 
 func _on_diplomacy_closed() -> void:
 	_diplomacy_panel = null
-	_set_end_turn_visible(false)
-	_set_toolbar_visible(true)
+	_restore_after_panel_closed()
 
 
 func _on_tech_button_pressed() -> void:
@@ -1908,7 +1949,11 @@ func _on_big_map_button_pressed() -> void:
 
 
 func _on_big_map_closed() -> void:
+	# 用户主动关大地图：回到控制中枢
+	_return_to_big_map_after_panel = false
 	_set_end_turn_visible(false)
+	if is_instance_valid(_framework_hub):
+		_framework_hub.visible = true
 	_set_toolbar_visible(true)
 	_close_big_map()
 
