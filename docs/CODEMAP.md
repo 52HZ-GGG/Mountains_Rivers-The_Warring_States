@@ -308,12 +308,12 @@ Buff/Debuff 信息面板。显示激活效果+图标/持续时间/来源/描述�
 | diplomacy.json | 8KB | 外交参数：礼物/行动效果/AI 决策阈值 | DiplomacySystem |
 | events.json | 99KB | 88 个随机事件（8 类别）+ 2 条事件链 | EventManager |
 | factions.json | 4KB | 七国定义：AI 性格/颜色/学派/加成 | GameManager, DiplomacyAI |
-| ministers.json | 16KB | 大夫模板（文武外交三类） | DataManager (加载，运行时管理器未实现) |
-| schools.json | 22KB | 六大学派定义与效果 | DataManager（已加载，完整系统待实现） |
+| ministers.json | 16KB | 大夫模板（文武外交三类） | DataManager + MinisterManager |
+| schools.json | 22KB | 六大学派定义与效果 | DataManager + SchoolManager |
 | skirmish_scenarios.json | 14KB | 7 个演武场景定义 | TacticalSkirmishManager |
 | tactical_skirmish_mvp.json | 1KB | MVP 演武地图 | TacticalSkirmishManager |
-| tech_events.json | 8KB | 科技触发事件 | DataManager (加载，对接待实现) |
-| tech_synergies.json | 6KB | 科技协同组合 | DataManager (加载，对接待实现) |
+| tech_events.json | 8KB | 科技触发事件 | DataManager (加载，事件对接需再核) |
+| tech_synergies.json | 6KB | 科技协同组合 | DataManager (加载，联动生效需再核) |
 | tech_tree.json | 85KB | 72 项科技树 | TechSystem |
 | terrain.json | 7KB | 11 种地形 | DataManager, CombatResolver |
 | units.json | 14KB | 19 种兵种（含国家变体） | DataManager, CombatResolver |

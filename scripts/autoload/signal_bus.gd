@@ -89,6 +89,10 @@ signal revolt_occurred(city_id: String, stability: int)
 signal city_revolted(city_id: String, old_faction: String)
 signal garrison_changed(city_id: String, old_value: int, new_value: int)
 
+# ============= 文化 =============
+signal culture_mainstream_changed(city_id: String, old_faction: String, new_faction: String)
+signal culture_coverage_threshold(faction_id: String, ratio: float, threshold: float)
+
 # ============= 学派系统 =============
 signal school_exp_gained(amount: int)
 signal school_level_changed(school_id: String, old_level: int, new_level: int)

@@ -1520,6 +1520,10 @@ func _check_cultural_victory() -> String:
 	return ""
 
 
+func get_cultural_victory_hold_turns(faction_id: String) -> int:
+	return int(_cultural_victory_turns.get(faction_id, 0))
+
+
 func _sort_factions_by_speed() -> void:
 	_faction_order = _active_factions.duplicate()
 	_faction_order.sort_custom(func(a: String, b: String) -> bool:

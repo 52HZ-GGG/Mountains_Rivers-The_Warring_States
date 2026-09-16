@@ -18,6 +18,8 @@ const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_politica
 signal city_clicked(city_id: String)
 signal map_closed
 signal hub_action_requested(action: String)
+signal building_placed(city_id: String, building_id: String, hex_q: int, hex_r: int)
+signal building_placement_cancelled
 
 var _city_at_axial: Dictionary = {}
 var _terrain_at_axial: Dictionary = {}
@@ -26,6 +28,7 @@ var _political_control_grid: Dictionary = {}
 var _hex_refit_pending: bool = false
 var _zoom_level: float = 1.0
 var _political_mode: bool = false
+var _culture_mode: bool = false
 var _cell_radius_px: float = 0.0
 var _cell_size: Vector2 = Vector2.ZERO
 var _board_origin_shift: Vector2 = Vector2.ZERO
@@ -40,6 +43,10 @@ var _drag_armed: bool = false
 var _drag_active: bool = false
 var _drag_press_pos: Vector2 = Vector2.ZERO
 var _city_hit_rects: Array = []
+var _placement_city_id: String = ""
+var _placement_building_id: String = ""
+var _placement_flash_hex: Vector2i = Vector2i(-9999, -9999)
+var _placement_flash_until_ms: int = 0
 
 @onready var _hex_board: Control = %HexBoard
 @onready var _hover_info: Label = %HoverInfo
@@ -57,6 +64,7 @@ func _ready() -> void:
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomInBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomResetBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/PoliticalBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/CultureBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubTechBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubDiplomacyBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubMinisterBtn)
@@ -68,6 +76,7 @@ func _ready() -> void:
 	$MarginContainer/MainVBox/TitleBar/ZoomOutBtn.pressed.connect(_on_zoom_out_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomResetBtn.pressed.connect(_on_zoom_reset_pressed)
 	$MarginContainer/MainVBox/TitleBar/PoliticalBtn.pressed.connect(_on_political_toggle)
+	$MarginContainer/MainVBox/TitleBar/CultureBtn.pressed.connect(_on_culture_toggle)
 	$MarginContainer/MainVBox/TitleBar/HubTechBtn.pressed.connect(func() -> void: hub_action_requested.emit("tech"))
 	$MarginContainer/MainVBox/TitleBar/HubDiplomacyBtn.pressed.connect(func() -> void: hub_action_requested.emit("diplomacy"))
 	$MarginContainer/MainVBox/TitleBar/HubMinisterBtn.pressed.connect(func() -> void: hub_action_requested.emit("ministers"))
@@ -103,6 +112,110 @@ func open() -> void:
 	call_deferred("_update_draw_cull_rect")
 
 
+
+func is_building_placement_mode() -> bool:
+	return _placement_city_id != ""
+
+
+func begin_building_placement(city_id: String, building_id: String) -> void:
+	_placement_city_id = city_id
+	_placement_building_id = building_id
+	_overlay_dirty = true
+	_refresh_overlay_display()
+	focus_city(city_id)
+	var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
+	_hover_info.text = "放置模式：点击绿色辖区格建造「%s」（右键取消）" % bname
+
+
+func cancel_building_placement() -> void:
+	if _placement_city_id == "":
+		return
+	_placement_city_id = ""
+	_placement_building_id = ""
+	_overlay_dirty = true
+	_refresh_overlay_display()
+	_hover_info.text = I18n.t("big_map.hover_hint")
+	building_placement_cancelled.emit()
+
+
+func _try_place_building_at(axial: Vector2i) -> void:
+	if _placement_city_id == "" or _placement_building_id == "":
+		return
+	if CityManager.start_build(_placement_city_id, _placement_building_id, axial):
+		var cid: String = _placement_city_id
+		var bid: String = _placement_building_id
+		_placement_flash_hex = axial
+		_placement_flash_until_ms = Time.get_ticks_msec() + 900
+		_placement_city_id = ""
+		_placement_building_id = ""
+		_overlay_dirty = true
+		_refresh_overlay_display()
+		get_tree().create_timer(0.95).timeout.connect(func() -> void:
+			_overlay_dirty = true
+			_refresh_overlay_display()
+		)
+		building_placed.emit(cid, bid, axial.x, axial.y)
+		_hover_info.text = "已在 (%d,%d) 放置建筑" % [axial.x, axial.y]
+	else:
+		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, axial)
+		_hover_info.text = "无法放置：%s" % str(check.get("reason", ""))
+
+
+func _placement_highlight_map() -> Dictionary:
+	var out: Dictionary = {}
+	if _placement_city_id == "":
+		return out
+	for cell: Vector2i in CityManager.get_jurisdiction_hexes(_placement_city_id):
+		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, cell)
+		if bool(check.get("allowed", false)):
+			out[cell] = Color(0.25, 0.95, 0.35, 0.55)
+		else:
+			var reason: String = str(check.get("reason", ""))
+			if reason == "HEX_OCCUPIED" or reason == "HEX_RESERVED":
+				out[cell] = Color(0.9, 0.55, 0.15, 0.5)
+			else:
+				out[cell] = Color(0.9, 0.2, 0.2, 0.4)
+	return out
+
+
+func _building_category_color(category: String, disabled: bool) -> Color:
+	if disabled:
+		return Color(0.45, 0.45, 0.45, 0.55)
+	match category:
+		"defense":
+			return Color(0.85, 0.25, 0.2, 0.55)
+		"military":
+			return Color(0.25, 0.45, 0.9, 0.5)
+		"economy":
+			return Color(0.25, 0.7, 0.3, 0.5)
+		"politics":
+			return Color(0.85, 0.7, 0.2, 0.5)
+		"special":
+			return Color(0.7, 0.35, 0.85, 0.5)
+	return Color(0.6, 0.6, 0.5, 0.45)
+
+
+func _building_mark_map() -> Dictionary:
+	var out: Dictionary = {}
+	for city in CityManager.get_all_city_states():
+		for entry: Variant in city.get("buildings", []):
+			var e: Dictionary = entry as Dictionary
+			if not e.has("hex_q") or not e.has("hex_r"):
+				continue
+			var axial: Vector2i = Vector2i(int(e["hex_q"]), int(e["hex_r"]))
+			var bid: String = str(e.get("building_id", ""))
+			var bdata: Dictionary = DataManager.get_building(bid)
+			var name: String = str(bdata.get("name", bid))
+			var letter: String = name.substr(0, 1) if name.length() > 0 else "?"
+			if bool(e.get("disabled", false)):
+				letter = "×"
+			out[axial] = {
+				"letter": letter,
+				"color": _building_category_color(str(bdata.get("category", "")), bool(e.get("disabled", false))),
+			}
+	return out
+
+
 func focus_city(city_id: String) -> void:
 	if city_id.is_empty():
 		return
@@ -110,6 +223,8 @@ func focus_city(city_id: String) -> void:
 
 
 func close() -> void:
+	if _placement_city_id != "":
+		cancel_building_placement()
 	queue_free()
 
 
@@ -225,13 +340,31 @@ func _rebuild_hex_grid() -> void:
 func _on_political_toggle() -> void:
 	_political_mode = not _political_mode
 	if _political_mode:
+		_culture_mode = false
 		_refresh_runtime_political_control(false)
-	var btn: Button = $MarginContainer/MainVBox/TitleBar/PoliticalBtn as Button
-	if btn != null:
-		btn.text = I18n.t("big_map.political_on") if _political_mode else I18n.t("big_map.political_off")
+	_sync_map_mode_buttons()
 	_update_political_legend()
 	_overlay_dirty = true
 	_refresh_overlay_display()
+
+
+func _on_culture_toggle() -> void:
+	_culture_mode = not _culture_mode
+	if _culture_mode:
+		_political_mode = false
+	_sync_map_mode_buttons()
+	_update_political_legend()
+	_overlay_dirty = true
+	_refresh_overlay_display()
+
+
+func _sync_map_mode_buttons() -> void:
+	var pbtn: Button = $MarginContainer/MainVBox/TitleBar/PoliticalBtn as Button
+	if pbtn != null:
+		pbtn.text = I18n.t("big_map.political_on") if _political_mode else I18n.t("big_map.political_off")
+	var cbtn: Button = $MarginContainer/MainVBox/TitleBar/CultureBtn as Button
+	if cbtn != null:
+		cbtn.text = I18n.t("big_map.culture_on") if _culture_mode else I18n.t("big_map.culture_off")
 
 
 func _build_terrain_lookup() -> void:
@@ -499,6 +632,8 @@ func _apply_overlay_to_terrain_payload() -> void:
 	var reachable: Dictionary = {}
 	if selected_id != "":
 		reachable = StrategicMapManager.get_reachable_cells(selected_id)
+	var placement_cells: Dictionary = _placement_highlight_map()
+	var building_marks: Dictionary = _building_mark_map()
 	for i: int in range(_terrain_payload_cells.size()):
 		var payload: Dictionary = _terrain_payload_cells[i] as Dictionary
 		# 用 caption_center 反推 axial 不可靠；按顺序与 _iter_map_cells 一致
@@ -521,9 +656,19 @@ func _apply_overlay_to_terrain_payload() -> void:
 			var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
 			var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
 			caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
+		if building_marks.has(cell_axial):
+			var letter: String = str((building_marks[cell_axial] as Dictionary).get("letter", ""))
+			if letter != "":
+				caption = letter if caption.is_empty() else "%s\n%s" % [caption, letter]
 		var tint: Color = _cell_tint(cell_axial, city)
+		if building_marks.has(cell_axial):
+			tint = (building_marks[cell_axial] as Dictionary).get("color", tint) as Color
 		if reachable.has(cell_axial):
 			tint = Color(0.35, 0.75, 1.0, 0.35)
+		if placement_cells.has(cell_axial):
+			tint = placement_cells[cell_axial] as Color
+		if _placement_flash_hex == cell_axial and Time.get_ticks_msec() < _placement_flash_until_ms:
+			tint = Color(0.3, 1.0, 0.4, 0.7)
 		payload["tint"] = tint
 		payload["caption"] = caption
 		payload["capital_texture"] = _capital_texture(city)
@@ -642,10 +787,31 @@ func _world_hex_uvs() -> PackedVector2Array:
 func _cell_tint(cell: Vector2i, city: Dictionary) -> Color:
 	if _political_mode:
 		return _political_tint(cell, city)
+	if _culture_mode:
+		return _culture_tint(cell, city)
 	if city.is_empty():
 		return Color(0, 0, 0, 0)
 	var fid: String = str(city.get("current_faction_id", city.get("faction_id", "neutral")))
 	return _city_tint_color(fid, bool(city.get("is_capital", false)))
+
+
+func _culture_tint(_cell: Vector2i, city: Dictionary) -> Color:
+	if city.is_empty():
+		return Color(0, 0, 0, 0)
+	var city_id: String = str(city.get("id", ""))
+	if city_id.is_empty():
+		return Color(0, 0, 0, 0)
+	var mainstream: String = CityManager.get_mainstream_culture(city_id)
+	if mainstream.is_empty():
+		return Color(0.45, 0.45, 0.45, 0.20)
+	var owner: String = str(CityManager.get_city_state(city_id).get("current_faction_id", city.get("current_faction_id", "neutral")))
+	var mismatch: bool = mainstream != owner
+	var fdata: Dictionary = DataManager.get_faction(mainstream)
+	if fdata.is_empty():
+		return Color(0.45, 0.45, 0.45, 0.25)
+	var color: Color = Color.html(str(fdata.get("color", "#888888")))
+	color.a = 0.78 if mismatch else 0.48
+	return color
 
 
 func _political_tint(cell: Vector2i, city: Dictionary) -> Color:
@@ -761,15 +927,21 @@ func _update_political_legend() -> void:
 		return
 	for child: Node in legend.get_children():
 		child.queue_free()
-	if not _political_mode:
+	if not _political_mode and not _culture_mode:
 		legend.visible = false
 		return
 	legend.visible = true
 	var title: Label = Label.new()
-	title.text = "政治地图图例"
+	title.text = I18n.t("big_map.culture_legend") if _culture_mode else I18n.t("big_map.political_legend")
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(1, 1, 1, 1))
 	legend.add_child(title)
+	if _culture_mode:
+		var hint: Label = Label.new()
+		hint.text = I18n.t("big_map.culture_legend_hint")
+		hint.add_theme_font_size_override("font_size", 11)
+		hint.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.9))
+		legend.add_child(hint)
 	for faction_id: String in GameManager.FACTION_IDS:
 		var fdata: Dictionary = DataManager.get_faction(faction_id)
 		if fdata.is_empty():
@@ -780,7 +952,11 @@ func _update_political_legend() -> void:
 		swatch.color = Color.html(str(fdata.get("color", "#888888")))
 		row.add_child(swatch)
 		var label: Label = Label.new()
-		label.text = str(fdata.get("name", ""))
+		if _culture_mode:
+			var cov: float = CityManager.get_culture_coverage_ratio(faction_id)
+			label.text = "%s %d%%" % [str(fdata.get("name", "")), int(round(cov * 100.0))]
+		else:
+			label.text = str(fdata.get("name", ""))
 		label.add_theme_font_size_override("font_size", 13)
 		label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
 		row.add_child(label)
@@ -806,6 +982,10 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 			_on_hex_mouse_exit()
 	elif event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _placement_city_id != "":
+			cancel_building_placement()
+			mb.accept_event()
+			return
 		if mb.button_index != MOUSE_BUTTON_LEFT:
 			return
 		if mb.pressed:
@@ -818,6 +998,11 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 		_end_drag()
 		mb.accept_event()
 		if was_dragging:
+			return
+		if _placement_city_id != "":
+			var hit_place: Variant = _axial_at_local_point(mb.position)
+			if hit_place is Vector2i:
+				_try_place_building_at(hit_place as Vector2i)
 			return
 		# 固定城池触发区：优先直接进内政，不依赖六角多边形命中
 		var city_id: String = _city_id_at_local_point(mb.position)
@@ -978,6 +1163,9 @@ func _axial_at_local_point(point: Vector2) -> Variant:
 
 func _on_hex_pressed(q: int, r: int) -> void:
 	var axial: Vector2i = Vector2i(q, r)
+	if _placement_city_id != "":
+		_try_place_building_at(axial)
+		return
 	# 战略单位交互：选中己方 → 点可达格移动；点邻接敌军/敌城攻击
 	var selected_id: String = StrategicMapManager.get_selected_unit_id()
 	var unit_here: Dictionary = StrategicMapManager.get_unit_at_axial(axial)
@@ -1016,6 +1204,14 @@ func _on_hex_pressed(q: int, r: int) -> void:
 
 
 func _on_hex_mouse_enter(q: int, r: int) -> void:
+	if _placement_city_id != "":
+		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, Vector2i(q, r))
+		var bname: String = str(DataManager.get_building(_placement_building_id).get("name", _placement_building_id))
+		if bool(check.get("allowed", false)):
+			_hover_info.text = "点击放置「%s」于 (%d,%d)" % [bname, q, r]
+		else:
+			_hover_info.text = "(%d,%d) 不可放置：%s" % [q, r, str(check.get("reason", ""))]
+		return
 	_hover_info.text = _build_hover_text(Vector2i(q, r))
 
 
@@ -1069,6 +1265,32 @@ func _build_hover_text(cell: Vector2i) -> String:
 			build_text
 		])
 		lines.append(I18n.t("big_map.click_city"))
+		var cult: Dictionary = CityManager.get_city_culture(city_id)
+		if not cult.is_empty():
+			var ranked: Array = []
+			for fid_key in cult:
+				ranked.append({"id": str(fid_key), "v": float(cult[fid_key])})
+			ranked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+				return float(a["v"]) > float(b["v"])
+			)
+			var total: float = 0.0
+			for item in ranked:
+				total += float(item["v"])
+			if total > 0.0:
+				var parts: PackedStringArray = PackedStringArray()
+				for i in range(mini(2, ranked.size())):
+					var item: Dictionary = ranked[i]
+					var pct: int = int(round(float(item["v"]) / total * 100.0))
+					parts.append("%s %d%%" % [_faction_display_name(str(item["id"])), pct])
+				var mainstream: String = CityManager.get_mainstream_culture(city_id)
+				var mismatch_tag: String = ""
+				if mainstream != "" and mainstream != fid:
+					mismatch_tag = " ｜ " + I18n.t("big_map.culture_mismatch")
+				lines.append(I18n.t("big_map.culture_line") % [
+					"、".join(parts),
+					_faction_display_name(mainstream) if mainstream != "" else "-",
+					mismatch_tag
+				])
 	var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell)
 	if not unit.is_empty():
 		var u_type: Dictionary = DataManager.get_unit_type(str(unit.get("unit_type_id", "")))

@@ -54,6 +54,7 @@ var _turn_info_tween: Tween = null
 
 var _end_turn_layer: CanvasLayer = null
 var _persistent_end_btn: Button = null
+var _culture_hud_label: Label = null
 var _is_processing_turn: bool = false
 
 ## 高层级 UI 容器：科技/城池等普通 Control 必须放进 CanvasLayer，否则被大地图/中枢盖住
@@ -1714,7 +1715,54 @@ func _create_persistent_end_btn() -> void:
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hbox.add_child(vbox)
 
+	_culture_hud_label = Label.new()
+	_culture_hud_label.name = "CultureHud"
+	_culture_hud_label.add_theme_font_size_override("font_size", 13)
+	_culture_hud_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72, 0.95))
+	_culture_hud_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_culture_hud_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(_culture_hud_label)
+
 	vbox.add_child(_persistent_end_btn)
+	_refresh_culture_hud()
+	SignalBus.turn_started.connect(_on_culture_hud_turn)
+	SignalBus.culture_mainstream_changed.connect(_on_culture_mainstream_changed)
+	SignalBus.city_occupied.connect(func(_c: String, _o: String, _n: String) -> void: _refresh_culture_hud())
+
+
+func _on_culture_hud_turn(_turn: int, _faction: String) -> void:
+	_refresh_culture_hud()
+
+
+func _refresh_culture_hud() -> void:
+	if not is_instance_valid(_culture_hud_label):
+		return
+	var player: String = _resolve_player_faction_id()
+	if player.is_empty():
+		_culture_hud_label.text = ""
+		return
+	var ratio: float = CityManager.get_culture_coverage_ratio(player)
+	var cfg: Dictionary = DataManager.get_balance_param("victory.cultural")
+	var target: float = float(cfg.get("city_ratio", 0.7))
+	var maintain: int = int(cfg.get("maintain_turns", 10))
+	var held: int = GameManager.get_cultural_victory_hold_turns(player)
+	var pct: int = int(round(ratio * 100.0))
+	var target_pct: int = int(round(target * 100.0))
+	if ratio >= target:
+		_culture_hud_label.text = I18n.t("hud.culture_progress_active") % [pct, target_pct, held, maintain]
+		_culture_hud_label.add_theme_color_override("font_color", Color(0.55, 0.92, 0.55, 1.0))
+	else:
+		_culture_hud_label.text = I18n.t("hud.culture_progress") % [pct, target_pct]
+		_culture_hud_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72, 0.95))
+
+
+func _on_culture_mainstream_changed(city_id: String, old_faction: String, new_faction: String) -> void:
+	_refresh_culture_hud()
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	var city_name: String = str(city.get("name", city_id))
+	var player: String = _resolve_player_faction_id()
+	if new_faction == player or old_faction == player or str(city.get("current_faction_id", "")) == player:
+		_show_turn_info(I18n.t("hud.culture_flip") % [city_name, _faction_display_name(new_faction)])
 
 
 func _create_turn_info_popup() -> void:
