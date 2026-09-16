@@ -38,6 +38,16 @@ minister.city_label,驻城：%s,City: %s
 minister.target_label,派驻目标：%s,Target: %s
 big_map.political_on,政治地图：开,Political: On
 big_map.political_off,政治地图：关,Political: Off
+big_map.culture_on,文化地图：开,Culture: On
+big_map.culture_off,文化地图：关,Culture: Off
+big_map.political_legend,政治地图图例,Political Legend
+big_map.culture_legend,文化地图图例,Culture Legend
+big_map.culture_legend_hint,高饱和=主流≠归属,High sat = culture conflict
+big_map.culture_line,文化 top：%s ｜ 主流：%s%s,Culture top: %s ｜ Mainstream: %s%s
+big_map.culture_mismatch,文化冲突,Culture Conflict
+hud.culture_progress,文化 %d%% / 目标 %d%%,Culture %d%% / Target %d%%
+hud.culture_progress_active,文化 %d%% / %d%% · 维持 %d/%d,Culture %d%% / %d%% · Hold %d/%d
+hud.culture_flip,文化倒戈：%s 主流变为 %s,Culture flip: %s mainstream → %s
 big_map.hover_hint,左键拖动平移视角；悬停格子查看地形与城市。,Left-drag to pan; hover a hex for terrain and city info.
 big_map.click_city,点击城市格：打开城池管理,Click city hex to manage
 big_map.impassable,不可通行,Impassable
@@ -134,6 +144,11 @@ city.category_economic,经济,Economy
 city.category_military,军事,Military
 city.category_political,政治,Political
 city.category_special,特殊,Special
+city.culture_title,── 文化 ──,── Culture ──
+city.culture_empty,暂无文化数据,No culture data
+city.culture_mainstream,主流：%s,Mainstream: %s
+city.culture_match,与归属一致,Matches owner
+city.culture_conflict,文化冲突,Culture conflict
 event.title,事件,Event
 event.unknown,未知事件,Unknown Event
 event.effect_preview,效果预览\n将鼠标悬停在右侧选项上。,Effect Preview\nHover options on the right.

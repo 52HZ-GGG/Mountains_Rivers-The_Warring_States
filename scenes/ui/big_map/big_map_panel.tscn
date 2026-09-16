@@ -66,6 +66,10 @@ text = "重置"
 layout_mode = 2
 text = "政治地图：关"
 
+[node name="CultureBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "文化地图：关"
+
 [node name="HubTechBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
 layout_mode = 2
 text = "科技"
