@@ -14,7 +14,7 @@ config/name="山河策"
 config/description="战国回合制策略游戏 — 三人合作开发，Godot 4.3.stable"
 run/main_scene="res://scenes/ui/splash/splash_screen.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://assets/icon.svg"
 
 [autoload]
 

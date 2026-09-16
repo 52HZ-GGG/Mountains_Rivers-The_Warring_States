@@ -178,9 +178,9 @@ data/units.json	addons/skirmish_scenario_editor/scenario_document.gd	7	const UNI
 data/units.json	scripts/autoload/data_manager.gd	10	const UNITS_PATH := "res://data/units.json"
 data/wonders.json	scripts/autoload/data_manager.gd	15	const WONDERS_PATH := "res://data/wonders.json"
 export_presets.cfg	tests/unit/test_release_config.gd	4	const EXPORT_PRESETS_PATH: String = "res://export_presets.cfg"
-icon.svg	project.godot	17	config/icon="res://icon.svg"
-icon.svg	tests/unit/test_release_config.gd	19	"res://icon.svg",
-icon.svg	tests/unit/test_release_config.gd	40	assert_eq(str(config.get_value("preset.0.options", "application/icon", "")), "res://icon.svg", "Windows 导出预设应绑定正式图标")
+assets/icon.svg	project.godot	17	config/icon="res://assets/icon.svg"
+assets/icon.svg	tests/unit/test_release_config.gd	19	"res://assets/icon.svg",
+assets/icon.svg	tests/unit/test_release_config.gd	40	assert_eq(str(config.get_value("preset.0.options", "application/icon", "")), "res://assets/icon.svg", "Windows 导出预设应绑定正式图标")
 project.godot	tests/unit/test_main_turn_ui.gd	5	const PROJECT_CONFIG_PATH: String = "res://project.godot"
 project.godot	tests/unit/test_release_config.gd	3	const PROJECT_CONFIG_PATH: String = "res://project.godot"
 scenes/main/main.gd	scenes/main/main.tscn	3	[ext_resource type="Script" path="res://scenes/main/main.gd" id="1"]

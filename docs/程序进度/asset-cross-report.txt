@@ -127,7 +127,7 @@ data/tech_tree.json
 data/terrain.json
 data/units.json
 data/wonders.json
-icon.svg
+assets/icon.svg
 project.godot
 scenes/main/main.gd
 scenes/main/main.tscn
