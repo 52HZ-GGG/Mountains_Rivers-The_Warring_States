@@ -319,8 +319,6 @@ func _emit_border_changed(pair_key: String, now_bordering: bool) -> void:
 
 ## 边境摩擦：接壤且好感低时，按接壤边长概率给 border_conflict 借口（决策 #202 / D4）
 func _tick_border_friction() -> void:
-	if is_zhou_destroyed():
-		pass
 	var cfg: Dictionary = DataManager.get_big_map_political_control().get("border_friction", {}) as Dictionary
 	var base: float = float(cfg.get("base_chance", 0.03))
 	var per_edge: float = float(cfg.get("per_border_edge", 0.002))
@@ -336,12 +334,14 @@ func _tick_border_friction() -> void:
 		var b: String = parts[1]
 		if a == "zhou" or b == "zhou":
 			continue
+		if CityManager.is_faction_eliminated(a) or CityManager.is_faction_eliminated(b):
+			continue
 		if get_opinion(a, b) >= opinion_th and get_opinion(b, a) >= opinion_th:
 			continue
 		var edges: int = _count_border_edges(grid, a, b) if not grid.is_empty() else 3
 		var chance: float = base + per_edge * float(maxi(edges, 1))
 		if randf() < chance:
-			# 双方都可能拿到借口；以好感更低的一方为主
+			# 好感更低的一方拿到借口
 			if get_opinion(a, b) <= get_opinion(b, a):
 				grant_casus_belli(a, b, "border_conflict")
 			else:
