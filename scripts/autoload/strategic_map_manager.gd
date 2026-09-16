@@ -204,6 +204,8 @@ func _apply_move(unit: Dictionary, dest_axial: Vector2i, cost: int) -> Dictionar
 		unit["mp"] = 0
 	# 仍有移动力可继续行动
 	unit["acted"] = false
+	# 无血量建筑敌占：停留即失效（决策 #124）
+	_apply_building_occupation(unit, dest_axial)
 	# 移动到敌城且城防为 0 → 占领
 	var city_id: String = _city_id_at_offset(offset.x, offset.y)
 	if city_id != "":
@@ -211,6 +213,24 @@ func _apply_move(unit: Dictionary, dest_axial: Vector2i, cost: int) -> Dictionar
 	unit_moved.emit(unit_id, from, dest_axial)
 	units_changed.emit()
 	return {"ok": true}
+
+
+## 敌军踏上无血量建筑格 → 立即标记失效（可通行建筑，决策 #124）
+func _apply_building_occupation(unit: Dictionary, axial: Vector2i) -> void:
+	var b: Dictionary = CityManager.get_building_at_hex(axial)
+	if b.is_empty():
+		return
+	if CityManager.is_defense_building_hex(axial):
+		return
+	var city_id: String = str(b.get("city_id", ""))
+	if city_id == "":
+		return
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	if city.is_empty():
+		return
+	if str(city.get("current_faction_id", "")) == str(unit["faction_id"]):
+		return
+	CityManager.disable_building_at_hex(axial)
 
 
 ## 一步移动到目标方向最近可达格（供 AI 用）。
@@ -259,11 +279,173 @@ func try_attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	defender["hp"] = int(defender["hp"]) - dmg
 	attacker["acted"] = true
 	attacker["mp"] = 0
+	var counter_dmg: int = 0
+	if int(defender["hp"]) > 0:
+		counter_dmg = _try_counter_attack(attacker, defender)
 	if int(defender["hp"]) <= 0:
+		_apply_kill_morale(attacker, defender)
 		_remove_unit(str(defender["id"]))
 	unit_attacked.emit(attacker_id, defender_id, dmg)
 	units_changed.emit()
-	return {"ok": true, "damage": dmg}
+	return {"ok": true, "damage": dmg, "counter_damage": counter_dmg}
+
+
+## 攻击辖区格上的防御建筑（墙/塔/瓮城，§7.4）
+func try_attack_building(attacker_id: String, target_axial: Vector2i) -> Dictionary:
+	var attacker: Dictionary = _get_unit_ref(attacker_id)
+	if attacker.is_empty():
+		return {"ok": false, "reason": "NO_UNIT"}
+	if bool(attacker.get("acted", false)):
+		return {"ok": false, "reason": "ALREADY_ACTED"}
+	var b: Dictionary = CityManager.get_building_at_hex(target_axial)
+	if b.is_empty() or not CityManager.is_defense_building_hex(target_axial):
+		return {"ok": false, "reason": "NOT_DEFENSE_BUILDING"}
+	if CityManager.is_hex_passable_for_units(target_axial):
+		return {"ok": false, "reason": "ALREADY_BREACHED"}
+	var a_pos: Vector2i = Vector2i(int(attacker["q"]), int(attacker["r"]))
+	var a_type: Dictionary = DataManager.get_unit_type(str(attacker["unit_type_id"]))
+	var range: int = int(a_type.get("range", 1))
+	if HexLib.hex_distance_hex(a_pos, target_axial) > range:
+		return {"ok": false, "reason": "OUT_OF_RANGE"}
+	# 攻城器械对结构 ×3
+	var siege_mult: float = 1.0
+	if str(a_type.get("special", "")) == "siege_bonus" or str(a_type.get("category", "")) == "siege":
+		siege_mult = float(DataManager.get_balance_param("city_combat.siege_damage_multiplier"))
+	var atk: float = float(a_type.get("attack", 10))
+	var tech_atk: float = TechSystem.get_attack_modifier(str(a_type.get("category", "")))
+	if tech_atk != 0.0:
+		atk *= (1.0 + tech_atk)
+	var school_atk: float = SchoolManager.get_effect_float(str(attacker["faction_id"]), "attack_bonus")
+	if school_atk != 0.0:
+		atk *= (1.0 + school_atk)
+	var struct_def: float = 5.0
+	# 墙/塔结构防御从 buildings.json levels 推断（默认 5）
+	var raw_dmg: float = maxf(atk * siege_mult * 20.0 / (20.0 + struct_def), 1.0)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var dmg: int = maxi(1, int(floor(raw_dmg * rng.randf_range(0.9, 1.1))))
+	var result: Dictionary = CityManager.damage_building_at_hex(target_axial, dmg)
+	attacker["acted"] = true
+	attacker["mp"] = 0
+	units_changed.emit()
+	return {
+		"ok": true,
+		"damage": dmg,
+		"destroyed": bool(result.get("destroyed", false)),
+		"remaining_hp": int(result.get("remaining_hp", 0)),
+		"building_id": str(result.get("building_id", b.get("building_id", ""))),
+	}
+
+
+## 近战反击：远程主动攻击不触发；远程被近战攻击时用 melee_attack（§2.4/§5.5）
+func _try_counter_attack(attacker: Dictionary, defender: Dictionary) -> int:
+	var a_type_id: String = str(attacker["unit_type_id"])
+	var d_type_id: String = str(defender["unit_type_id"])
+	var is_ranged_atk: bool = _combat.is_ranged_unit(a_type_id)
+	if not _combat.should_trigger_counter(d_type_id, is_ranged_atk):
+		return 0
+	var c_atk_ctx: Dictionary = _build_combat_ctx(d_type_id, str(defender["faction_id"]), true)
+	var c_def_ctx: Dictionary = _build_combat_ctx(a_type_id, str(attacker["faction_id"]), false)
+	if _combat.is_ranged_unit(d_type_id):
+		var d_data: Dictionary = DataManager.get_unit_type(d_type_id)
+		if d_data.has("melee_attack"):
+			c_atk_ctx["override_attack"] = int(d_data.get("melee_attack"))
+	var a_offset: Vector2i = HexLib.axial_to_offset_odd_r(int(attacker["q"]), int(attacker["r"]))
+	var a_terrain: String = CityManager.get_big_map_terrain_id(a_offset.x, a_offset.y)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var result: Dictionary = _combat.compute_counter_attack(
+		d_type_id, a_type_id, a_terrain,
+		int(defender.get("morale", 100)), int(attacker.get("morale", 100)),
+		rng, c_atk_ctx, c_def_ctx,
+	)
+	var counter_dmg: int = maxi(1, int(result.get("damage", 0)))
+	counter_dmg = mini(counter_dmg, int(attacker["hp"]))
+	attacker["hp"] = int(attacker["hp"]) - counter_dmg
+	if int(attacker["hp"]) <= 0:
+		_apply_kill_morale(defender, attacker)
+		_remove_unit(str(attacker["id"]))
+	return counter_dmg
+
+
+## 构建攻/防 context：科技 + 学派 + 大夫 + 奇观 + 国家民心 + 断粮（对齐演武层）
+func _build_combat_ctx(unit_type_id: String, faction_id: String, is_attacker: bool) -> Dictionary:
+	var ctx: Dictionary = {}
+	var udata: Dictionary = DataManager.get_unit_type(unit_type_id)
+	var category: String = str(udata.get("category", ""))
+	if is_attacker:
+		var tech_atk: float = TechSystem.get_attack_modifier(category)
+		if tech_atk != 0.0:
+			ctx["tech_atk"] = tech_atk
+		var school_atk: float = SchoolManager.get_effect_float(faction_id, "attack_bonus")
+		if school_atk != 0.0:
+			ctx["school_atk"] = school_atk
+		var mil_atk: float = MinisterManager.get_faction_military_attack_bonus(faction_id)
+		if mil_atk > 0.001:
+			ctx["minister_bravery_pct"] = mil_atk
+		if GameManager.is_player_faction(faction_id):
+			var morale_mod: float = float(GameManager.get_morale_threshold_effect().get("morale_atk_mod", 1.0))
+			if absf(morale_mod - 1.0) > 0.001:
+				ctx["faction_atk"] = float(ctx.get("faction_atk", 0.0)) + (morale_mod - 1.0)
+		var grain_atk: float = GameManager.get_grain_shortage_attack_mod(faction_id) - 1.0
+		if absf(grain_atk) > 0.001:
+			ctx["faction_atk"] = float(ctx.get("faction_atk", 0.0)) + grain_atk
+	else:
+		var tech_def: float = TechSystem.get_defense_modifier(category)
+		if tech_def != 0.0:
+			ctx["tech_def"] = tech_def
+		var school_def: float = SchoolManager.get_effect_float(faction_id, "defense_bonus")
+		if school_def != 0.0:
+			ctx["school_def"] = school_def
+		var mil_def: float = MinisterManager.get_faction_military_defense_bonus(faction_id)
+		if mil_def > 0.001:
+			ctx["minister_strategy_pct"] = mil_def
+		var wonder_def: float = WonderManager.get_effect_float(faction_id, "defense_national")
+		if wonder_def > 0.001:
+			ctx["wonder_def"] = wonder_def
+		var grain_def: float = GameManager.get_grain_shortage_defense_mod(faction_id) - 1.0
+		if absf(grain_def) > 0.001:
+			ctx["faction_def"] = grain_def
+	return ctx
+
+
+## 击杀/阵亡士气：亲自击杀 + 自身阵营击杀 + 敌方阵亡（§6.2）
+func _apply_kill_morale(killer: Dictionary, victim: Dictionary) -> void:
+	var self_gain_v: Variant = DataManager.get_balance_param("unit_morale.morale_gain_on_self_kill")
+	var ally_gain_v: Variant = DataManager.get_balance_param("unit_morale.morale_gain_on_ally_kill")
+	var ally_loss_v: Variant = DataManager.get_balance_param("unit_morale.morale_loss_on_ally_death")
+	var self_gain: int = int(self_gain_v) if self_gain_v != null else 10
+	var ally_gain: int = int(ally_gain_v) if ally_gain_v != null else 5
+	var ally_loss: int = int(ally_loss_v) if ally_loss_v != null else -5
+	if killer.has("morale"):
+		killer["morale"] = clampi(int(killer["morale"]) + self_gain + ally_gain, 0, 130)
+	for u: Dictionary in _units:
+		if str(u["faction_id"]) == str(killer["faction_id"]) and str(u["id"]) != str(killer.get("id", "")):
+			u["morale"] = clampi(int(u.get("morale", 100)) + ally_gain, 0, 130)
+		elif str(u["faction_id"]) == str(victim["faction_id"]):
+			u["morale"] = clampi(int(u.get("morale", 100)) + ally_loss, 0, 130)
+
+
+func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
+	var a_type_id: String = str(attacker["unit_type_id"])
+	var d_type_id: String = str(defender["unit_type_id"])
+	var d_offset: Vector2i = HexLib.axial_to_offset_odd_r(int(defender["q"]), int(defender["r"]))
+	var d_terrain_id: String = CityManager.get_big_map_terrain_id(d_offset.x, d_offset.y)
+	var atk_ctx: Dictionary = _build_combat_ctx(a_type_id, str(attacker["faction_id"]), true)
+	var def_ctx: Dictionary = _build_combat_ctx(d_type_id, str(defender["faction_id"]), false)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var result: Dictionary = _combat.compute_damage(
+		a_type_id,
+		d_type_id,
+		d_terrain_id,
+		int(attacker.get("morale", 100)),
+		int(defender.get("morale", 100)),
+		rng,
+		atk_ctx,
+		def_ctx,
+	)
+	return maxi(1, int(result.get("damage", 1)))
 
 
 func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
@@ -290,11 +472,19 @@ func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
 		return {"ok": false, "reason": "OUT_OF_RANGE"}
 	var atk: int = int(a_type.get("attack", 10))
 	var siege_mult: float = 1.0
-	if str(a_type.get("category", "")) == "siege":
+	var special: String = str(a_type.get("special", ""))
+	if str(a_type.get("category", "")) == "siege" or special == "siege_bonus" or special == "siege":
 		siege_mult = float(DataManager.get_balance_param("city_combat.siege_damage_multiplier"))
 	var city_def: float = float(CityManager.get_city_defense(city_id))
-	var coeff: float = 20.0
-	var dmg: int = maxi(1, int(float(atk) * siege_mult * coeff / (coeff + maxf(city_def, 0.0))))
+	var atk_ctx: Dictionary = _build_combat_ctx(str(unit["unit_type_id"]), str(unit["faction_id"]), true)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var siege_info: Dictionary = CombatLib.compute_siege_damage(
+		str(unit["unit_type_id"]), 1, int(city_def), int(city.get("current_hp", 1)), rng, atk_ctx,
+	)
+	var dmg: int = int(siege_info.get("damage", 1))
+	if dmg <= 0:
+		dmg = maxi(1, int(float(atk) * siege_mult * 20.0 / (20.0 + maxf(city_def, 0.0))))
 	var result: Dictionary = CityManager.damage_city(city_id, dmg)
 	unit["acted"] = true
 	unit["mp"] = 0
@@ -313,24 +503,6 @@ func _city_id_at_offset(col: int, row: int) -> String:
 		if int(city.get("hex_q", -1)) == col and int(city.get("hex_r", -1)) == row:
 			return str(city.get("id", ""))
 	return ""
-
-
-func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
-	var a_type_id: String = str(attacker["unit_type_id"])
-	var d_type_id: String = str(defender["unit_type_id"])
-	var d_offset: Vector2i = HexLib.axial_to_offset_odd_r(int(defender["q"]), int(defender["r"]))
-	var d_terrain_id: String = CityManager.get_big_map_terrain_id(d_offset.x, d_offset.y)
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.randomize()
-	var result: Dictionary = _combat.compute_damage(
-		a_type_id,
-		d_type_id,
-		d_terrain_id,
-		int(attacker.get("morale", 100)),
-		int(defender.get("morale", 100)),
-		rng
-	)
-	return maxi(1, int(result.get("damage", 1)))
 
 
 func _try_capture_city_if_clear(faction_id: String, city_id: String) -> void:

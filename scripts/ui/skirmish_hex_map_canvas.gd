@@ -204,6 +204,10 @@ func _draw_payload_cells() -> void:
 		var unit_tex: Texture2D = payload.get("unit_texture", null) as Texture2D
 		if unit_tex != null and unit_rect.size.x > 0.0 and unit_rect.size.y > 0.0:
 			draw_texture_rect(unit_tex, unit_rect, false)
+		var building_rect: Rect2 = payload.get("building_rect", Rect2()) as Rect2
+		var building_tex: Texture2D = payload.get("building_texture", null) as Texture2D
+		if building_tex != null and building_rect.size.x > 0.0 and building_rect.size.y > 0.0:
+			draw_texture_rect(building_tex, building_rect, false)
 		var caption_text: String = str(payload.get("caption", ""))
 		if caption_text.is_empty() or font == null:
 			continue

@@ -107,6 +107,24 @@ static func hex_distance_axial(q1: int, r1: int, q2: int, r2: int) -> int:
 	return maxi(dq, maxi(dr, ds))
 
 
+## 与大地图 offset_odd_r_flat_top_cell_top_left_rect 一致的视觉邻格。
+## 该布局「奇数列下移」，邻格必须按 odd-Q 偏移规则，不能直接用 odd-R 轴向邻格。
+static func offset_visual_neighbors(col: int, row: int) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var even_dirs: Array[Vector2i] = [
+		Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
+		Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(0, 1),
+	]
+	var odd_dirs: Array[Vector2i] = [
+		Vector2i(1, 1), Vector2i(1, 0), Vector2i(0, -1),
+		Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1),
+	]
+	var dirs: Array[Vector2i] = even_dirs if (col & 1) == 0 else odd_dirs
+	for d: Vector2i in dirs:
+		out.append(Vector2i(col + d.x, row + d.y))
+	return out
+
+
 static func neighbors_hex(cell: Vector2i) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for d: Vector2i in DIRECTIONS:
