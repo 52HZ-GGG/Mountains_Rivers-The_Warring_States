@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends EditorScript
 ## 生成 Splash 素材：splash_logo.png / splash_title.png / splash_title_mask.png
 ## 在 Godot 编辑器中：工具 → 运行脚本 (Run Script)
@@ -22,7 +22,7 @@ const COL_DARK_BROWN := Color("3B2507")
 const COL_CREAM := Color("E8D5B0")
 
 # 源素材
-const LOGO_SRC := "res://photos/logo/logo_shanhece.png"
+const LOGO_SRC := "res://assets/ui/logo/logo_shanhece.png"
 
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(OUTPUT_DIR)

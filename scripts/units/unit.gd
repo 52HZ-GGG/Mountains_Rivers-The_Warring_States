@@ -1,4 +1,4 @@
-extends Node2D
+﻿extends Node2D
 class_name Unit
 
 ## 单位动画状态
@@ -114,10 +114,10 @@ func _sprite_base_paths() -> Array[String]:
 	var normalized_id: String = _normalized_unit_id(unit_type)
 	var unit_dir: String = "unit_%s" % normalized_id
 	return [
-		"res://assets/sprites/units/%s/%s/" % [faction, unit_type],
-		"res://assets/sprites/units/%s/%s/" % [faction, unit_dir],
-		"res://assets/sprites/units/base/%s/" % unit_type,
-		"res://assets/sprites/units/base/%s/" % unit_dir,
+		"res://assets/units/animations/%s/%s/" % [faction, unit_type],
+		"res://assets/units/animations/%s/%s/" % [faction, unit_dir],
+		"res://assets/units/animations/base/%s/" % unit_type,
+		"res://assets/units/animations/base/%s/" % unit_dir,
 	]
 
 

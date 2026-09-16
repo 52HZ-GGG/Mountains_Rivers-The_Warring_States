@@ -11,7 +11,7 @@ extends EditorScript
 ##   tile_city_neutral_01.png — 中立城
 ##   tile_arrow_tower_01.png — 箭楼
 
-const OUTPUT_DIR := "res://assets/sprites/tiles/"
+const OUTPUT_DIR := "res://assets/tiles/"
 const S := 32  # 图块尺寸
 
 # ── 32 色调色板（战国低饱和暖色调）──

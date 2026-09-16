@@ -1,20 +1,20 @@
-extends RefCounted
+﻿extends RefCounted
 class_name SkirmishTileTextures
 
 ## 战术演武：地形 / 兵种贴图路径（占位美术），运行时缓存 Texture2D。
 
 const _TERRAIN_PATHS: Dictionary = {
-	"plains": "res://photos/terrain/tile_plain_01.png",
-	"forest": "res://photos/terrain/tile_forest_01.png",
-	"mountain": "res://photos/terrain/tile_mountain_01.png",
-	"river": "res://photos/terrain/tile_river_01.png",
-	"marsh": "res://photos/terrain/tile_marsh_01.png",
-	"pass": "res://photos/terrain/tile_pass_01.png",
-	"ford": "res://photos/terrain/tile_ford_01.png",
-	"desert": "res://photos/terrain/tile_desert_01.png",
+	"plains": "res://assets/terrain/tile_plain_01.png",
+	"forest": "res://assets/terrain/tile_forest_01.png",
+	"mountain": "res://assets/terrain/tile_mountain_01.png",
+	"river": "res://assets/terrain/tile_river_01.png",
+	"marsh": "res://assets/terrain/tile_marsh_01.png",
+	"pass": "res://assets/terrain/tile_pass_01.png",
+	"ford": "res://assets/terrain/tile_ford_01.png",
+	"desert": "res://assets/terrain/tile_desert_01.png",
 	"tundra": "",
-	"deep_ocean": "res://photos/terrain/tile_deepsea_01.png",
-	"shallow_ocean": "res://photos/terrain/tile_shallowsea_01.png",
+	"deep_ocean": "res://assets/terrain/tile_deepsea_01.png",
+	"shallow_ocean": "res://assets/terrain/tile_shallowsea_01.png",
 }
 
 const _TERRAIN_FALLBACK_COLORS: Dictionary = {
@@ -33,83 +33,83 @@ const _TERRAIN_FALLBACK_COLORS: Dictionary = {
 
 ## 战术演武城格据点：七国首都（美工资源）
 const _CAPITAL_PATHS: Dictionary = {
-	"qin": "res://photos/city/tile_city_qin_capital.png",
-	"zhao": "res://photos/city/tile_city_zhao_capital.png",
-	"chu": "res://photos/city/tile_city_chu_capital.png",
-	"qi": "res://photos/city/tile_city_qi_capital.png",
-	"wei": "res://photos/city/tile_city_wei_capital.png",
-	"yan": "res://photos/city/tile_city_yan_capital.png",
-	"han": "res://photos/city/tile_city_han_capital.png",
+	"qin": "res://assets/tiles/tile_city_qin_capital.png",
+	"zhao": "res://assets/tiles/tile_city_zhao_capital.png",
+	"chu": "res://assets/tiles/tile_city_chu_capital.png",
+	"qi": "res://assets/tiles/tile_city_qi_capital.png",
+	"wei": "res://assets/tiles/tile_city_wei_capital.png",
+	"yan": "res://assets/tiles/tile_city_yan_capital.png",
+	"han": "res://assets/tiles/tile_city_han_capital.png",
 }
 
 ## 事件插画：按事件 ID 映射，category 做后备
 const _EVENT_ID_PATHS: Dictionary = {
-	"drought": "res://photos/event/event_drought.png",
-	"harvest": "res://photos/event/event_harvest.png",
-	"flood": "res://photos/event/event_flood.png",
-	"ambush": "res://photos/event/event_ambush.png",
-	"siege": "res://photos/event/event_siege.png",
-	"alliance": "res://photos/event/event_alliance.png",
-	"coalition": "res://photos/event/event_coalition.png",
-	"reform": "res://photos/event/event_reform.png",
-	"philosophy": "res://photos/event/event_philosophy.png",
-	"trade": "res://photos/event/event_trade.png",
-	"fortify": "res://photos/event/event_fortify.png",
-	"changping": "res://photos/event/event_changping.png",
-	"dynasty_fall": "res://photos/event/event_dynasty_fall.png",
-	"king_rise": "res://photos/event/event_king_rise.png",
-	"general_death": "res://photos/event/event_general_death.png",
+	"drought": "res://assets/events/event_drought.png",
+	"harvest": "res://assets/events/event_harvest.png",
+	"flood": "res://assets/events/event_flood.png",
+	"ambush": "res://assets/events/event_ambush.png",
+	"siege": "res://assets/events/event_siege.png",
+	"alliance": "res://assets/events/event_alliance.png",
+	"coalition": "res://assets/events/event_coalition.png",
+	"reform": "res://assets/events/event_reform.png",
+	"philosophy": "res://assets/events/event_philosophy.png",
+	"trade": "res://assets/events/event_trade.png",
+	"fortify": "res://assets/events/event_fortify.png",
+	"changping": "res://assets/events/event_changping.png",
+	"dynasty_fall": "res://assets/events/event_dynasty_fall.png",
+	"king_rise": "res://assets/events/event_king_rise.png",
+	"general_death": "res://assets/events/event_general_death.png",
 }
 
 ## 事件分类后备图（ID 无匹配时使用）
 const _EVENT_CATEGORY_PATHS: Dictionary = {
-	"economy": "res://photos/event/event_trade.png",
-	"military": "res://photos/event/event_siege.png",
-	"morale": "res://photos/event/event_harvest.png",
-	"season": "res://photos/event/event_flood.png",
-	"politics": "res://photos/event/event_reform.png",
-	"diplomacy": "res://photos/event/event_alliance.png",
-	"special": "res://photos/event/event_dynasty_fall.png",
-	"school": "res://photos/event/event_philosophy.png",
+	"economy": "res://assets/events/event_trade.png",
+	"military": "res://assets/events/event_siege.png",
+	"morale": "res://assets/events/event_harvest.png",
+	"season": "res://assets/events/event_flood.png",
+	"politics": "res://assets/events/event_reform.png",
+	"diplomacy": "res://assets/events/event_alliance.png",
+	"special": "res://assets/events/event_dynasty_fall.png",
+	"school": "res://assets/events/event_philosophy.png",
 }
 
 const _UNIT_PATHS: Dictionary = {
 	# 基础步兵
-	"militia": "res://photos/unit/unit_militia.png",
-	"infantry": "res://photos/unit/unit_infantry.png",
-	"spear": "res://photos/unit/unit_spear.png",
-	"iron_armored": "res://photos/unit/unit_heavy_infantry.png",
+	"militia": "res://assets/units/portraits/unit_militia.png",
+	"infantry": "res://assets/units/portraits/unit_infantry.png",
+	"spear": "res://assets/units/portraits/unit_spear.png",
+	"iron_armored": "res://assets/units/portraits/unit_heavy_infantry.png",
 	# 基础骑兵
-	"scout_team": "res://photos/unit/unit_scout.png",
-	"scout_cavalry": "res://photos/unit/unit_scout_cavalry.png",
-	"cavalry": "res://photos/unit/unit_cavalry.png",
-	"shock_cavalry": "res://photos/unit/unit_shock_cavalry.png",
-	"heavy_cavalry": "res://photos/unit/unit_heavy_cavalry.png",
-	"chariot": "res://photos/unit/unit_chariot.png",
-	"horse_archer": "res://photos/unit/unit_horse_archer.png",
+	"scout_team": "res://assets/units/portraits/unit_scout.png",
+	"scout_cavalry": "res://assets/units/portraits/unit_scout_cavalry.png",
+	"cavalry": "res://assets/units/portraits/unit_cavalry.png",
+	"shock_cavalry": "res://assets/units/portraits/unit_shock_cavalry.png",
+	"heavy_cavalry": "res://assets/units/portraits/unit_heavy_cavalry.png",
+	"chariot": "res://assets/units/portraits/unit_chariot.png",
+	"horse_archer": "res://assets/units/portraits/unit_horse_archer.png",
 	# 基础远程
-	"archer": "res://photos/unit/unit_archer.png",
-	"crossbow": "res://photos/unit/unit_crossbow.png",
+	"archer": "res://assets/units/portraits/unit_archer.png",
+	"crossbow": "res://assets/units/portraits/unit_crossbow.png",
 	# 攻城器械
-	"battering_ram": "res://photos/unit/unit_battering_ram.png",
-	"catapult": "res://photos/unit/unit_catapult.png",
-	"siege": "res://photos/unit/unit_siege.png",
-	"ballista": "res://photos/unit/unit_siege_crossbow.png",
+	"battering_ram": "res://assets/units/portraits/unit_battering_ram.png",
+	"catapult": "res://assets/units/portraits/unit_catapult.png",
+	"siege": "res://assets/units/portraits/unit_siege.png",
+	"ballista": "res://assets/units/portraits/unit_siege_crossbow.png",
 	# 水军
-	"mengchong": "res://photos/unit/unit_mengchong.png",
-	"dayi": "res://photos/unit/unit_dayi.png",
-	"great_wing": "res://photos/unit/unit_dayi.png",
-	"louchuan": "res://photos/unit/unit_louchuan.png",
-	"tower_ship": "res://photos/unit/unit_louchuan.png",
-	"navy": "res://photos/unit/unit_mengchong.png",
+	"mengchong": "res://assets/units/portraits/unit_mengchong.png",
+	"dayi": "res://assets/units/portraits/unit_dayi.png",
+	"great_wing": "res://assets/units/portraits/unit_dayi.png",
+	"louchuan": "res://assets/units/portraits/unit_louchuan.png",
+	"tower_ship": "res://assets/units/portraits/unit_louchuan.png",
+	"navy": "res://assets/units/portraits/unit_mengchong.png",
 	# 国家变体
-	"rushi": "res://photos/unit/unit_qin_ruishi.png",
-	"hufu_qibing": "res://photos/unit/unit_zhao_hufu.png",
-	"jijishou": "res://photos/unit/unit_qi_jiji.png",
-	"shenxi_zhishi": "res://photos/unit/unit_chu_shenxi.png",
-	"wuzu": "res://photos/unit/unit_wei_wuzu.png",
-	"liaodong_gongqi": "res://photos/unit/unit_yan_liaodong.png",
-	"jinnu": "res://photos/unit/unit_han_jingnu.png",
+	"rushi": "res://assets/units/portraits/unit_qin_ruishi.png",
+	"hufu_qibing": "res://assets/units/portraits/unit_zhao_hufu.png",
+	"jijishou": "res://assets/units/portraits/unit_qi_jiji.png",
+	"shenxi_zhishi": "res://assets/units/portraits/unit_chu_shenxi.png",
+	"wuzu": "res://assets/units/portraits/unit_wei_wuzu.png",
+	"liaodong_gongqi": "res://assets/units/portraits/unit_yan_liaodong.png",
+	"jinnu": "res://assets/units/portraits/unit_han_jingnu.png",
 }
 
 static var _cache: Dictionary = {}
@@ -243,7 +243,7 @@ static func update_button_disabled(btn: Button) -> void:
 
 ## 动态创建特效 SpriteFrames（15 个特效 × 8 帧）
 static func effect_frames(effect_id: String) -> SpriteFrames:
-	var base_path := "res://assets/sprites/units/effects/%s/" % effect_id
+	var base_path := "res://assets/units/effects/%s/" % effect_id
 	var dir := DirAccess.open(base_path)
 	if not dir:
 		return null

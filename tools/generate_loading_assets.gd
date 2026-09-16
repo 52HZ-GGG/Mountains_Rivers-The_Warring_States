@@ -50,8 +50,8 @@ func _draw_thick_line(img: Image, a: Vector2, b: Vector2, width: float, color: C
 	var half_w := width / 2.0
 	for i in steps:
 		var t := float(i) / float(steps)
-		var px := lerp(a.x, b.x, t)
-		var py := lerp(a.y, b.y, t)
+		var px: float = lerp(a.x, b.x, t)
+		var py: float = lerp(a.y, b.y, t)
 		for dy in range(-int(half_w), int(half_w) + 1):
 			for dx in range(-int(half_w), int(half_w) + 1):
 				if Vector2(dx, dy).length() <= half_w:

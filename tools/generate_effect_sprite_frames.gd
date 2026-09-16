@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 class_name GenerateEffectSpriteFrames
 extends EditorScript
 ## 一键生成所有战斗特效的 SpriteFrames 资源
@@ -17,7 +17,7 @@ extends EditorScript
 const FPS: float = 8.0
 
 ## 特效根目录
-const EFFECTS_ROOT: String = "res://assets/sprites/units/effects/"
+const EFFECTS_ROOT: String = "res://assets/units/effects/"
 
 
 func _run() -> void:

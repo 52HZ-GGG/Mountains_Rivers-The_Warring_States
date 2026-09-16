@@ -1,4 +1,4 @@
-extends CanvasLayer
+﻿extends CanvasLayer
 
 ## 阶段1战术演武 UI：odd-R 矩形蜂巢密铺（JSON 列/行 → 轴向寻路）+ 地形/兵种贴图 + 悬停信息栏
 ## 选中己方单位后：可走格移动，或直接点击射程内敌军攻击（无需切换模式）
@@ -1304,10 +1304,10 @@ func _unit_sprite_base_paths(unit_type_id: String, faction_id: String) -> Array[
 	var normalized_id: String = _normalized_unit_id(unit_type_id)
 	var unit_dir: String = "unit_%s" % normalized_id
 	return [
-		"res://assets/sprites/units/%s/%s/" % [faction_id, unit_type_id],
-		"res://assets/sprites/units/%s/%s/" % [faction_id, unit_dir],
-		"res://assets/sprites/units/base/%s/" % unit_type_id,
-		"res://assets/sprites/units/base/%s/" % unit_dir,
+		"res://assets/units/animations/%s/%s/" % [faction_id, unit_type_id],
+		"res://assets/units/animations/%s/%s/" % [faction_id, unit_dir],
+		"res://assets/units/animations/base/%s/" % unit_type_id,
+		"res://assets/units/animations/base/%s/" % unit_dir,
 	]
 
 

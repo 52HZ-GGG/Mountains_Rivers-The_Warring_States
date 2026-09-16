@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends EditorScript
 ## 生成 App 图标 icon_app_1024.png
 ## 在 Godot 编辑器中：工具 → 运行脚本 (Run Script)
@@ -19,8 +19,8 @@ const COL_GOLD := Color("C8A84E")
 const COL_HEX_LINE := Color(0.22, 0.14, 0.03, 0.2)
 
 # 已有素材路径
-const PORTRAIT_PATH := "res://photos/portrait/portrait_monarch_qin_hires.png"
-const LOGO_PATH := "res://photos/logo/logo_shanhece.png"
+const PORTRAIT_PATH := "res://assets/units/portraits_hires/portrait_monarch_qin_hires.png"
+const LOGO_PATH := "res://assets/ui/logo/logo_shanhece.png"
 
 func _run() -> void:
 	var img := Image.create_empty(SIZE, SIZE, false, Image.FORMAT_RGBA8)

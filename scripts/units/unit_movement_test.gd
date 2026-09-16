@@ -59,7 +59,7 @@ func _ready() -> void:
 
 ## 测试加载图片
 func _test_load_image() -> void:
-	var test_path := "res://assets/sprites/units/base/unit_infantry/idle_01.png"
+	var test_path := "res://assets/units/animations/base/unit_infantry/unit_infantry_idle_01.png"
 	if ResourceLoader.exists(test_path):
 		var tex := load(test_path) as Texture2D
 		if tex:

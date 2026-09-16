@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 class_name GenerateUnitSpriteFrames
 extends EditorScript
 ## 一键生成所有兵种的 SpriteFrames 资源
@@ -23,7 +23,7 @@ const ANIM_NAMES: Array[String] = ["idle", "move", "attack", "hurt", "death"]
 const LOOP_ANIMS: Array[String] = ["idle", "move"]
 
 ## 单位根目录
-const UNITS_ROOT: String = "res://assets/sprites/units/"
+const UNITS_ROOT: String = "res://assets/units/animations/"
 
 
 func _run() -> void:
