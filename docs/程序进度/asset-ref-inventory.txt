@@ -1,0 +1,300 @@
+﻿addons/big_map_editor/big_map_document.gd	addons/big_map_editor/big_map_editor_canvas.gd	5	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
+addons/big_map_editor/big_map_document.gd	addons/big_map_editor/big_map_editor_panel.gd	4	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
+addons/big_map_editor/big_map_document.gd	tests/unit/test_big_map_document.gd	3	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
+addons/big_map_editor/big_map_editor_canvas.gd	addons/big_map_editor/big_map_editor_panel.gd	5	const CanvasScript := preload("res://addons/big_map_editor/big_map_editor_canvas.gd")
+addons/big_map_editor/big_map_editor_panel.gd	addons/big_map_editor/big_map_editor_panel.tscn	3	[ext_resource type="Script" path="res://addons/big_map_editor/big_map_editor_panel.gd" id="1"]
+addons/big_map_editor/big_map_editor_panel.tscn	addons/big_map_editor/plugin.gd	9	_panel = preload("res://addons/big_map_editor/big_map_editor_panel.tscn").instantiate() as Control
+addons/big_map_editor/plugin.cfg	project.godot	51	enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/skirmish_scenario_editor/plugin.cfg", "res://addons/big_map_editor/plugin.cfg")
+addons/gut/plugin.cfg	project.godot	51	enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/skirmish_scenario_editor/plugin.cfg", "res://addons/big_map_editor/plugin.cfg")
+addons/skirmish_scenario_editor/plugin.cfg	project.godot	51	enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/skirmish_scenario_editor/plugin.cfg", "res://addons/big_map_editor/plugin.cfg")
+addons/skirmish_scenario_editor/scenario_document.gd	addons/skirmish_scenario_editor/scenario_editor_panel.gd	4	const DocumentScript := preload("res://addons/skirmish_scenario_editor/scenario_document.gd")
+addons/skirmish_scenario_editor/scenario_document.gd	tests/unit/test_skirmish_scenario_document.gd	3	const DocumentScript := preload("res://addons/skirmish_scenario_editor/scenario_document.gd")
+addons/skirmish_scenario_editor/scenario_editor_panel.gd	addons/skirmish_scenario_editor/scenario_editor_panel.tscn	3	[ext_resource type="Script" path="res://addons/skirmish_scenario_editor/scenario_editor_panel.gd" id="1"]
+addons/skirmish_scenario_editor/scenario_editor_panel.tscn	addons/skirmish_scenario_editor/plugin.gd	9	_panel = preload("res://addons/skirmish_scenario_editor/scenario_editor_panel.tscn").instantiate() as Control
+addons/skirmish_scenario_editor/scenario_map_canvas.gd	addons/skirmish_scenario_editor/scenario_editor_panel.gd	5	const MapCanvasScript := preload("res://addons/skirmish_scenario_editor/scenario_map_canvas.gd")
+assets/events/event_alliance.png	scripts/ui/skirmish_tile_textures.gd	52	"alliance": "res://assets/events/event_alliance.png",
+assets/events/event_alliance.png	scripts/ui/skirmish_tile_textures.gd	71	"diplomacy": "res://assets/events/event_alliance.png",
+assets/events/event_ambush.png	scripts/ui/skirmish_tile_textures.gd	50	"ambush": "res://assets/events/event_ambush.png",
+assets/events/event_changping.png	scripts/ui/skirmish_tile_textures.gd	58	"changping": "res://assets/events/event_changping.png",
+assets/events/event_coalition.png	scripts/ui/skirmish_tile_textures.gd	53	"coalition": "res://assets/events/event_coalition.png",
+assets/events/event_drought.png	scripts/ui/skirmish_tile_textures.gd	47	"drought": "res://assets/events/event_drought.png",
+assets/events/event_dynasty_fall.png	scripts/ui/skirmish_tile_textures.gd	59	"dynasty_fall": "res://assets/events/event_dynasty_fall.png",
+assets/events/event_dynasty_fall.png	scripts/ui/skirmish_tile_textures.gd	72	"special": "res://assets/events/event_dynasty_fall.png",
+assets/events/event_flood.png	scripts/ui/skirmish_tile_textures.gd	49	"flood": "res://assets/events/event_flood.png",
+assets/events/event_flood.png	scripts/ui/skirmish_tile_textures.gd	69	"season": "res://assets/events/event_flood.png",
+assets/events/event_fortify.png	scripts/ui/skirmish_tile_textures.gd	57	"fortify": "res://assets/events/event_fortify.png",
+assets/events/event_general_death.png	scripts/ui/skirmish_tile_textures.gd	61	"general_death": "res://assets/events/event_general_death.png",
+assets/events/event_harvest.png	scripts/ui/skirmish_tile_textures.gd	48	"harvest": "res://assets/events/event_harvest.png",
+assets/events/event_harvest.png	scripts/ui/skirmish_tile_textures.gd	68	"morale": "res://assets/events/event_harvest.png",
+assets/events/event_king_rise.png	scripts/ui/skirmish_tile_textures.gd	60	"king_rise": "res://assets/events/event_king_rise.png",
+assets/events/event_philosophy.png	scripts/ui/skirmish_tile_textures.gd	55	"philosophy": "res://assets/events/event_philosophy.png",
+assets/events/event_philosophy.png	scripts/ui/skirmish_tile_textures.gd	73	"school": "res://assets/events/event_philosophy.png",
+assets/events/event_reform.png	scripts/ui/skirmish_tile_textures.gd	54	"reform": "res://assets/events/event_reform.png",
+assets/events/event_reform.png	scripts/ui/skirmish_tile_textures.gd	70	"politics": "res://assets/events/event_reform.png",
+assets/events/event_siege.png	scripts/ui/skirmish_tile_textures.gd	51	"siege": "res://assets/events/event_siege.png",
+assets/events/event_siege.png	scripts/ui/skirmish_tile_textures.gd	67	"military": "res://assets/events/event_siege.png",
+assets/events/event_trade.png	scripts/ui/skirmish_tile_textures.gd	56	"trade": "res://assets/events/event_trade.png",
+assets/events/event_trade.png	scripts/ui/skirmish_tile_textures.gd	66	"economy": "res://assets/events/event_trade.png",
+assets/fonts/pixel_lishu_0.png	assets/fonts/pixel_lishu.tres	3	[ext_resource type="Texture2D" path="res://assets/fonts/pixel_lishu_0.png" id="1"]
+assets/fonts/pixel_lishu_dynamic.tres	project.godot	55	theme/default_font="res://assets/fonts/pixel_lishu_dynamic.tres"
+assets/fonts/pixel_lishu_dynamic.tres	scripts/ui/skirmish_tile_textures.gd	273	var font_path := "res://assets/fonts/pixel_lishu_dynamic.tres"
+assets/fonts/STLITI.TTF	assets/fonts/pixel_lishu_dynamic.tres	3	[ext_resource type="FontFile" path="res://assets/fonts/STLITI.TTF" id="1"]
+assets/shaders/culture_overlay.gdshader	scripts/ui/shader_helpers.gd	32	mat.shader = load("res://assets/shaders/culture_overlay.gdshader")
+assets/shaders/splash_brush_reveal.gdshader	scenes/ui/splash/splash_screen.tscn	4	[ext_resource type="Shader" path="res://assets/shaders/splash_brush_reveal.gdshader" id="2"]
+assets/shaders/ui_button.gdshader	scripts/ui/shader_helpers.gd	49	mat.shader = load("res://assets/shaders/ui_button.gdshader")
+assets/shaders/ui_highlight_pulse.gdshader	scripts/ui/shader_helpers.gd	61	mat.shader = load("res://assets/shaders/ui_highlight_pulse.gdshader")
+assets/shaders/ui_icon_glow.gdshader	scripts/ui/shader_helpers.gd	69	mat.shader = load("res://assets/shaders/ui_icon_glow.gdshader")
+assets/shaders/ui_parchment.gdshader	scripts/ui/shader_helpers.gd	42	mat.shader = load("res://assets/shaders/ui_parchment.gdshader")
+assets/shaders/ui_progress_bar.gdshader	scripts/ui/shader_helpers.gd	79	mat.shader = load("res://assets/shaders/ui_progress_bar.gdshader")
+assets/terrain/tile_deepsea_01.png	scripts/ui/skirmish_tile_textures.gd	16	"deep_ocean": "res://assets/terrain/tile_deepsea_01.png",
+assets/terrain/tile_desert_01.png	scripts/ui/skirmish_tile_textures.gd	14	"desert": "res://assets/terrain/tile_desert_01.png",
+assets/terrain/tile_ford_01.png	scripts/ui/skirmish_tile_textures.gd	13	"ford": "res://assets/terrain/tile_ford_01.png",
+assets/terrain/tile_forest_01.png	scripts/ui/skirmish_tile_textures.gd	8	"forest": "res://assets/terrain/tile_forest_01.png",
+assets/terrain/tile_marsh_01.png	scripts/ui/skirmish_tile_textures.gd	11	"marsh": "res://assets/terrain/tile_marsh_01.png",
+assets/terrain/tile_mountain_01.png	scripts/ui/skirmish_tile_textures.gd	9	"mountain": "res://assets/terrain/tile_mountain_01.png",
+assets/terrain/tile_pass_01.png	scripts/ui/skirmish_tile_textures.gd	12	"pass": "res://assets/terrain/tile_pass_01.png",
+assets/terrain/tile_plain_01.png	scripts/ui/skirmish_tile_textures.gd	7	"plains": "res://assets/terrain/tile_plain_01.png",
+assets/terrain/tile_river_01.png	scripts/ui/skirmish_tile_textures.gd	10	"river": "res://assets/terrain/tile_river_01.png",
+assets/terrain/tile_shallowsea_01.png	scripts/ui/skirmish_tile_textures.gd	17	"shallow_ocean": "res://assets/terrain/tile_shallowsea_01.png",
+assets/tiles/	tools/generate_city_tiles.gd	14	const OUTPUT_DIR := "res://assets/tiles/"
+assets/tiles/tile_city_chu_capital.png	scripts/ui/skirmish_tile_textures.gd	38	"chu": "res://assets/tiles/tile_city_chu_capital.png",
+assets/tiles/tile_city_han_capital.png	scripts/ui/skirmish_tile_textures.gd	42	"han": "res://assets/tiles/tile_city_han_capital.png",
+assets/tiles/tile_city_qi_capital.png	scripts/ui/skirmish_tile_textures.gd	39	"qi": "res://assets/tiles/tile_city_qi_capital.png",
+assets/tiles/tile_city_qin_capital.png	scripts/ui/skirmish_tile_textures.gd	36	"qin": "res://assets/tiles/tile_city_qin_capital.png",
+assets/tiles/tile_city_wei_capital.png	scripts/ui/skirmish_tile_textures.gd	40	"wei": "res://assets/tiles/tile_city_wei_capital.png",
+assets/tiles/tile_city_yan_capital.png	scripts/ui/skirmish_tile_textures.gd	41	"yan": "res://assets/tiles/tile_city_yan_capital.png",
+assets/tiles/tile_city_zhao_capital.png	scripts/ui/skirmish_tile_textures.gd	37	"zhao": "res://assets/tiles/tile_city_zhao_capital.png",
+assets/ui/	tools/generate_app_icon.gd	12	const OUTPUT_DIR := "res://assets/ui/"
+assets/ui/bars/	tools/generate_battle_p2_assets.gd	9	const OUT_BARS    := "res://assets/ui/bars/"
+assets/ui/bars/	tools/generate_battle_ui_assets.gd	7	const OUTPUT_HP := "res://assets/ui/bars/"
+assets/ui/battle/ui_battle_panel.png	scripts/ui/skirmish_tile_textures.gd	166	"battle": "res://assets/ui/battle/ui_battle_panel.png",
+assets/ui/highlights/	tools/generate_battle_p2_assets.gd	8	const OUT_HL      := "res://assets/ui/highlights/"
+assets/ui/highlights/	tools/generate_unit_selection_assets.gd	6	const OUTPUT_DIR := "res://assets/ui/highlights/"
+assets/ui/icons/	scripts/ui/skirmish_tile_textures.gd	183	const _ICON_BASE_PATH: String = "res://assets/ui/icons/"
+assets/ui/icons/	tools/generate_battle_p2_assets.gd	6	const OUT_ICONS   := "res://assets/ui/icons/"
+assets/ui/icons/	tools/generate_battle_ui_assets.gd	6	const OUTPUT_ICONS := "res://assets/ui/icons/"
+assets/ui/icons/	tools/generate_loading_assets.gd	6	const OUTPUT_DIR := "res://assets/ui/icons/"
+assets/ui/icons/icon_buff_%s.png	scenes/ui/buff/buff_panel.gd	67	var icon_path := "res://assets/ui/icons/icon_buff_%s.png" % icon_name
+assets/ui/icons/icon_debuff_%s.png	scenes/ui/buff/buff_panel.gd	69	icon_path = "res://assets/ui/icons/icon_debuff_%s.png" % icon_name
+assets/ui/icons/ui_loading_bow.png	scenes/ui/splash/loading_screen.gd	53	"res://assets/ui/icons/ui_loading_bow.png",
+assets/ui/icons/ui_loading_hex.png	scenes/ui/splash/loading_screen.tscn	4	[ext_resource type="Texture2D" path="res://assets/ui/icons/ui_loading_hex.png" id="2"]
+assets/ui/icons/ui_loading_horse.png	scenes/ui/splash/loading_screen.gd	55	"res://assets/ui/icons/ui_loading_horse.png",
+assets/ui/icons/ui_loading_shield.png	scenes/ui/splash/loading_screen.gd	54	"res://assets/ui/icons/ui_loading_shield.png",
+assets/ui/icons/ui_loading_sword.png	scenes/ui/splash/loading_screen.gd	52	"res://assets/ui/icons/ui_loading_sword.png",
+assets/ui/logo/logo.png	scenes/ui/splash/splash_screen.gd	23	var logo_path := "res://assets/ui/logo/logo.png"
+assets/ui/logo/logo_shanhece.png	tools/generate_app_icon.gd	23	const LOGO_PATH := "res://assets/ui/logo/logo_shanhece.png"
+assets/ui/logo/logo_shanhece.png	tools/generate_splash_assets.gd	25	const LOGO_SRC := "res://assets/ui/logo/logo_shanhece.png"
+assets/ui/overlays/	tools/generate_battle_p2_assets.gd	7	const OUT_OVERLAY := "res://assets/ui/overlays/"
+assets/ui/panels/	tools/generate_announcement_assets.gd	6	const OUTPUT_DIR := "res://assets/ui/panels/"
+assets/ui/panels/	tools/generate_battle_p2_assets.gd	10	const OUT_PANELS  := "res://assets/ui/panels/"
+assets/ui/panels/	tools/generate_faction_select_assets.gd	6	const OUTPUT_DIR := "res://assets/ui/panels/"
+assets/ui/panels/	tools/generate_mode_select_assets.gd	6	const OUTPUT_DIR := "res://assets/ui/panels/"
+assets/ui/panels/ui_announcement_bg_v2.png	scenes/ui/splash/announcement_popup.tscn	4	[ext_resource type="Texture2D" path="res://assets/ui/panels/ui_announcement_bg_v2.png" id="2"]
+assets/ui/panels/ui_announcement_seal.png	scenes/ui/splash/announcement_popup.tscn	5	[ext_resource type="Texture2D" path="res://assets/ui/panels/ui_announcement_seal.png" id="3"]
+assets/ui/panels/ui_city_panel.png	scripts/ui/skirmish_tile_textures.gd	161	"city": "res://assets/ui/panels/ui_city_panel.png",
+assets/ui/panels/ui_defeat.png	scripts/ui/skirmish_tile_textures.gd	170	"defeat": "res://assets/ui/panels/ui_defeat.png",
+assets/ui/panels/ui_diplomacy_panel.png	scripts/ui/skirmish_tile_textures.gd	162	"diplomacy": "res://assets/ui/panels/ui_diplomacy_panel.png",
+assets/ui/panels/ui_event_popup.png	scripts/ui/skirmish_tile_textures.gd	163	"event_popup": "res://assets/ui/panels/ui_event_popup.png",
+assets/ui/panels/ui_faction_card_%s.png	scenes/ui/splash/faction_select.gd	49	var card_path := "res://assets/ui/panels/ui_faction_card_%s.png" % f["id"]
+assets/ui/panels/ui_new_game.png	scripts/ui/skirmish_tile_textures.gd	171	"new_game": "res://assets/ui/panels/ui_new_game.png",
+assets/ui/panels/ui_save_load.png	scripts/ui/skirmish_tile_textures.gd	168	"save_load": "res://assets/ui/panels/ui_save_load.png",
+assets/ui/panels/ui_school_panel.png	scripts/ui/skirmish_tile_textures.gd	165	"school": "res://assets/ui/panels/ui_school_panel.png",
+assets/ui/panels/ui_select_bg.png	scenes/ui/splash/faction_select.tscn	4	[ext_resource type="Texture2D" path="res://assets/ui/panels/ui_select_bg.png" id="2"]
+assets/ui/panels/ui_settings.png	scripts/ui/skirmish_tile_textures.gd	167	"settings": "res://assets/ui/panels/ui_settings.png",
+assets/ui/panels/ui_tech_panel.png	scripts/ui/skirmish_tile_textures.gd	164	"tech": "res://assets/ui/panels/ui_tech_panel.png",
+assets/ui/panels/ui_unit_info.png	scripts/ui/skirmish_tile_textures.gd	172	"unit_info": "res://assets/ui/panels/ui_unit_info.png",
+assets/ui/panels/ui_victory.png	scripts/ui/skirmish_tile_textures.gd	169	"victory": "res://assets/ui/panels/ui_victory.png",
+assets/ui/splash/	tools/generate_splash_assets.gd	10	const OUTPUT_DIR := "res://assets/ui/splash/"
+assets/units/animations/	tools/generate_unit_sprite_frames.gd	26	const UNITS_ROOT: String = "res://assets/units/animations/"
+assets/units/animations/%s/%s/	scenes/ui/skirmish/skirmish_mvp_panel.gd	1307	"res://assets/units/animations/%s/%s/" % [faction_id, unit_type_id],
+assets/units/animations/%s/%s/	scenes/ui/skirmish/skirmish_mvp_panel.gd	1308	"res://assets/units/animations/%s/%s/" % [faction_id, unit_dir],
+assets/units/animations/%s/%s/	scripts/units/unit.gd	117	"res://assets/units/animations/%s/%s/" % [faction, unit_type],
+assets/units/animations/%s/%s/	scripts/units/unit.gd	118	"res://assets/units/animations/%s/%s/" % [faction, unit_dir],
+assets/units/animations/base/%s/	scenes/ui/skirmish/skirmish_mvp_panel.gd	1309	"res://assets/units/animations/base/%s/" % unit_type_id,
+assets/units/animations/base/%s/	scenes/ui/skirmish/skirmish_mvp_panel.gd	1310	"res://assets/units/animations/base/%s/" % unit_dir,
+assets/units/animations/base/%s/	scripts/units/unit.gd	119	"res://assets/units/animations/base/%s/" % unit_type,
+assets/units/animations/base/%s/	scripts/units/unit.gd	120	"res://assets/units/animations/base/%s/" % unit_dir,
+assets/units/animations/base/unit_infantry/unit_infantry_idle_01.png	scripts/units/unit_movement_test.gd	62	var test_path := "res://assets/units/animations/base/unit_infantry/unit_infantry_idle_01.png"
+assets/units/effects/	tools/generate_effect_sprite_frames.gd	20	const EFFECTS_ROOT: String = "res://assets/units/effects/"
+assets/units/effects/%s/	scripts/ui/skirmish_tile_textures.gd	246	var base_path := "res://assets/units/effects/%s/" % effect_id
+assets/units/portraits/unit_archer.png	scripts/ui/skirmish_tile_textures.gd	91	"archer": "res://assets/units/portraits/unit_archer.png",
+assets/units/portraits/unit_battering_ram.png	scripts/ui/skirmish_tile_textures.gd	94	"battering_ram": "res://assets/units/portraits/unit_battering_ram.png",
+assets/units/portraits/unit_catapult.png	scripts/ui/skirmish_tile_textures.gd	95	"catapult": "res://assets/units/portraits/unit_catapult.png",
+assets/units/portraits/unit_cavalry.png	scripts/ui/skirmish_tile_textures.gd	85	"cavalry": "res://assets/units/portraits/unit_cavalry.png",
+assets/units/portraits/unit_chariot.png	scripts/ui/skirmish_tile_textures.gd	88	"chariot": "res://assets/units/portraits/unit_chariot.png",
+assets/units/portraits/unit_chu_shenxi.png	scripts/ui/skirmish_tile_textures.gd	109	"shenxi_zhishi": "res://assets/units/portraits/unit_chu_shenxi.png",
+assets/units/portraits/unit_crossbow.png	scripts/ui/skirmish_tile_textures.gd	92	"crossbow": "res://assets/units/portraits/unit_crossbow.png",
+assets/units/portraits/unit_dayi.png	scripts/ui/skirmish_tile_textures.gd	100	"dayi": "res://assets/units/portraits/unit_dayi.png",
+assets/units/portraits/unit_dayi.png	scripts/ui/skirmish_tile_textures.gd	101	"great_wing": "res://assets/units/portraits/unit_dayi.png",
+assets/units/portraits/unit_han_jingnu.png	scripts/ui/skirmish_tile_textures.gd	112	"jinnu": "res://assets/units/portraits/unit_han_jingnu.png",
+assets/units/portraits/unit_heavy_cavalry.png	scripts/ui/skirmish_tile_textures.gd	87	"heavy_cavalry": "res://assets/units/portraits/unit_heavy_cavalry.png",
+assets/units/portraits/unit_heavy_infantry.png	scripts/ui/skirmish_tile_textures.gd	81	"iron_armored": "res://assets/units/portraits/unit_heavy_infantry.png",
+assets/units/portraits/unit_horse_archer.png	scripts/ui/skirmish_tile_textures.gd	89	"horse_archer": "res://assets/units/portraits/unit_horse_archer.png",
+assets/units/portraits/unit_infantry.png	scripts/ui/skirmish_tile_textures.gd	79	"infantry": "res://assets/units/portraits/unit_infantry.png",
+assets/units/portraits/unit_louchuan.png	scripts/ui/skirmish_tile_textures.gd	102	"louchuan": "res://assets/units/portraits/unit_louchuan.png",
+assets/units/portraits/unit_louchuan.png	scripts/ui/skirmish_tile_textures.gd	103	"tower_ship": "res://assets/units/portraits/unit_louchuan.png",
+assets/units/portraits/unit_mengchong.png	scripts/ui/skirmish_tile_textures.gd	104	"navy": "res://assets/units/portraits/unit_mengchong.png",
+assets/units/portraits/unit_mengchong.png	scripts/ui/skirmish_tile_textures.gd	99	"mengchong": "res://assets/units/portraits/unit_mengchong.png",
+assets/units/portraits/unit_militia.png	scripts/ui/skirmish_tile_textures.gd	78	"militia": "res://assets/units/portraits/unit_militia.png",
+assets/units/portraits/unit_qi_jiji.png	scripts/ui/skirmish_tile_textures.gd	108	"jijishou": "res://assets/units/portraits/unit_qi_jiji.png",
+assets/units/portraits/unit_qin_ruishi.png	scripts/ui/skirmish_tile_textures.gd	106	"rushi": "res://assets/units/portraits/unit_qin_ruishi.png",
+assets/units/portraits/unit_scout.png	scripts/ui/skirmish_tile_textures.gd	83	"scout_team": "res://assets/units/portraits/unit_scout.png",
+assets/units/portraits/unit_scout_cavalry.png	scripts/ui/skirmish_tile_textures.gd	84	"scout_cavalry": "res://assets/units/portraits/unit_scout_cavalry.png",
+assets/units/portraits/unit_shock_cavalry.png	scripts/ui/skirmish_tile_textures.gd	86	"shock_cavalry": "res://assets/units/portraits/unit_shock_cavalry.png",
+assets/units/portraits/unit_siege.png	scripts/ui/skirmish_tile_textures.gd	96	"siege": "res://assets/units/portraits/unit_siege.png",
+assets/units/portraits/unit_siege_crossbow.png	scripts/ui/skirmish_tile_textures.gd	97	"ballista": "res://assets/units/portraits/unit_siege_crossbow.png",
+assets/units/portraits/unit_spear.png	scripts/ui/skirmish_tile_textures.gd	80	"spear": "res://assets/units/portraits/unit_spear.png",
+assets/units/portraits/unit_wei_wuzu.png	scripts/ui/skirmish_tile_textures.gd	110	"wuzu": "res://assets/units/portraits/unit_wei_wuzu.png",
+assets/units/portraits/unit_yan_liaodong.png	scripts/ui/skirmish_tile_textures.gd	111	"liaodong_gongqi": "res://assets/units/portraits/unit_yan_liaodong.png",
+assets/units/portraits/unit_zhao_hufu.png	scripts/ui/skirmish_tile_textures.gd	107	"hufu_qibing": "res://assets/units/portraits/unit_zhao_hufu.png",
+assets/units/portraits_hires/portrait_monarch_%s_hires.png	scenes/ui/splash/faction_select.gd	73	var portrait_path := "res://assets/units/portraits_hires/portrait_monarch_%s_hires.png" % faction_id
+assets/units/portraits_hires/portrait_monarch_qin_hires.png	tools/generate_app_icon.gd	22	const PORTRAIT_PATH := "res://assets/units/portraits_hires/portrait_monarch_qin_hires.png"
+data/balance_params.json	scripts/autoload/data_manager.gd	14	const BALANCE_PARAMS_PATH := "res://data/balance_params.json"
+data/big_map_political_control.json	addons/big_map_editor/big_map_document.gd	9	const BIG_MAP_CONTROL_PATH: String = "res://data/big_map_political_control.json"
+data/big_map_political_control.json	scripts/autoload/data_manager.gd	20	const BIG_MAP_POLITICAL_CONTROL_PATH := "res://data/big_map_political_control.json"
+data/big_map_terrain.json	addons/big_map_editor/big_map_document.gd	7	const BIG_MAP_TERRAIN_PATH: String = "res://data/big_map_terrain.json"
+data/big_map_terrain.json	scenes/ui/big_map/big_map_panel.gd	239	var fa: FileAccess = FileAccess.open("res://data/big_map_terrain.json", FileAccess.READ)
+data/big_map_terrain.json	scripts/autoload/city_manager.gd	1777	var fa: FileAccess = FileAccess.open("res://data/big_map_terrain.json", FileAccess.READ)
+data/big_map_terrain.json	scripts/autoload/data_manager.gd	19	const BIG_MAP_TERRAIN_PATH := "res://data/big_map_terrain.json"
+data/buildings.json	scripts/autoload/data_manager.gd	13	const BUILDINGS_PATH := "res://data/buildings.json"
+data/cities.json	addons/big_map_editor/big_map_document.gd	8	const CITIES_PATH: String = "res://data/cities.json"
+data/cities.json	scripts/autoload/data_manager.gd	11	const CITIES_PATH := "res://data/cities.json"
+data/diplomacy.json	scripts/autoload/data_manager.gd	17	const DIPLOMACY_PATH := "res://data/diplomacy.json"
+data/events.json	scripts/autoload/data_manager.gd	12	const EVENTS_PATH := "res://data/events.json"
+data/factions.json	addons/big_map_editor/big_map_document.gd	6	const FACTIONS_SOURCE_PATH: String = "res://data/factions.json"
+data/factions.json	addons/skirmish_scenario_editor/scenario_document.gd	8	const FACTIONS_PATH: String = "res://data/factions.json"
+data/factions.json	scripts/autoload/data_manager.gd	16	const FACTIONS_PATH := "res://data/factions.json"
+data/i18n/translations.csv	scripts/autoload/i18n.gd	18	var file := FileAccess.open("res://data/i18n/translations.csv", FileAccess.READ)
+data/ministers.json	scripts/autoload/data_manager.gd	24	const MINISTERS_PATH := "res://data/ministers.json"
+data/schools.json	scripts/autoload/data_manager.gd	22	const SCHOOLS_PATH := "res://data/schools.json"
+data/skirmish_scenarios.json	addons/skirmish_scenario_editor/scenario_document.gd	5	const DEFAULT_PATH: String = "res://data/skirmish_scenarios.json"
+data/skirmish_scenarios.json	scripts/autoload/data_manager.gd	23	const SKIRMISH_SCENARIOS_PATH := "res://data/skirmish_scenarios.json"
+data/tactical_skirmish_mvp.json	scripts/autoload/data_manager.gd	21	const TACTICAL_SKIRMISH_MVP_PATH := "res://data/tactical_skirmish_mvp.json"
+data/tech_tree.json	scripts/autoload/data_manager.gd	18	const TECH_TREE_PATH := "res://data/tech_tree.json"
+data/terrain.json	addons/big_map_editor/big_map_document.gd	5	const TERRAIN_SOURCE_PATH: String = "res://data/terrain.json"
+data/terrain.json	addons/skirmish_scenario_editor/scenario_document.gd	6	const TERRAIN_PATH: String = "res://data/terrain.json"
+data/terrain.json	scripts/autoload/data_manager.gd	9	const TERRAIN_PATH := "res://data/terrain.json"
+data/units.json	addons/skirmish_scenario_editor/scenario_document.gd	7	const UNITS_PATH: String = "res://data/units.json"
+data/units.json	scripts/autoload/data_manager.gd	10	const UNITS_PATH := "res://data/units.json"
+data/wonders.json	scripts/autoload/data_manager.gd	15	const WONDERS_PATH := "res://data/wonders.json"
+export_presets.cfg	tests/unit/test_release_config.gd	4	const EXPORT_PRESETS_PATH: String = "res://export_presets.cfg"
+icon.svg	project.godot	17	config/icon="res://icon.svg"
+icon.svg	tests/unit/test_release_config.gd	19	"res://icon.svg",
+icon.svg	tests/unit/test_release_config.gd	40	assert_eq(str(config.get_value("preset.0.options", "application/icon", "")), "res://icon.svg", "Windows 导出预设应绑定正式图标")
+project.godot	tests/unit/test_main_turn_ui.gd	5	const PROJECT_CONFIG_PATH: String = "res://project.godot"
+project.godot	tests/unit/test_release_config.gd	3	const PROJECT_CONFIG_PATH: String = "res://project.godot"
+scenes/main/main.gd	scenes/main/main.tscn	3	[ext_resource type="Script" path="res://scenes/main/main.gd" id="1"]
+scenes/main/main.tscn	scenes/ui/splash/loading_screen.gd	6	##   loading.start_loading("res://scenes/main/main.tscn")
+scenes/main/main.tscn	scripts/autoload/startup_flow.gd	32	@export var game_scene: String = "res://scenes/main/main.tscn"
+scenes/main/main.tscn	tests/unit/test_main_turn_ui.gd	3	const MAIN_SCENE: PackedScene = preload("res://scenes/main/main.tscn")
+scenes/ui/big_map/big_map_panel.gd	scenes/ui/big_map/big_map_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/big_map/big_map_panel.gd" id="1"]
+scenes/ui/big_map/big_map_panel.tscn	scenes/main/main.gd	9	var _big_map_scene: PackedScene = preload("res://scenes/ui/big_map/big_map_panel.tscn")
+scenes/ui/buff/buff_panel.gd	scenes/ui/buff/buff_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/buff/buff_panel.gd" id="1"]
+scenes/ui/city_panel/city_panel.gd	scenes/ui/city_panel/city_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/city_panel/city_panel.gd" id="1"]
+scenes/ui/city_panel/city_panel.tscn	scenes/main/main.gd	11	var _city_panel_scene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
+scenes/ui/city_panel/city_panel.tscn	scenes/ui/skirmish/skirmish_mvp_panel.gd	17	const _CityPanelScene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
+scenes/ui/demo/demo_objective_panel.gd	scenes/ui/demo/demo_objective_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/demo/demo_objective_panel.gd" id="1"]
+scenes/ui/demo/demo_objective_panel.tscn	scenes/main/main.gd	23	var _demo_objective_scene: PackedScene = preload("res://scenes/ui/demo/demo_objective_panel.tscn")
+scenes/ui/demo/demo_victory_popup.gd	scenes/ui/demo/demo_victory_popup.tscn	3	[ext_resource type="Script" path="res://scenes/ui/demo/demo_victory_popup.gd" id="1"]
+scenes/ui/demo/demo_victory_popup.tscn	scenes/main/main.gd	24	var _demo_victory_scene: PackedScene = preload("res://scenes/ui/demo/demo_victory_popup.tscn")
+scenes/ui/diplomacy/diplomacy_panel.gd	scenes/ui/diplomacy/diplomacy_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/diplomacy/diplomacy_panel.gd" id="1"]
+scenes/ui/diplomacy/diplomacy_panel.tscn	scenes/main/main.gd	5	var _diplomacy_scene: PackedScene = preload("res://scenes/ui/diplomacy/diplomacy_panel.tscn")
+scenes/ui/diplomacy/negotiation_dialog.gd	scenes/ui/diplomacy/negotiation_dialog.tscn	3	[ext_resource type="Script" path="res://scenes/ui/diplomacy/negotiation_dialog.gd" id="1"]
+scenes/ui/event_popup/event_popup.gd	scenes/ui/event_popup/event_popup.tscn	3	[ext_resource type="Script" path="res://scenes/ui/event_popup/event_popup.gd" id="1"]
+scenes/ui/event_popup/event_popup.tscn	scenes/main/main.gd	15	var _event_popup_scene: PackedScene = preload("res://scenes/ui/event_popup/event_popup.tscn")
+scenes/ui/event_test/event_test_panel.gd	scenes/ui/event_test/event_test_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/event_test/event_test_panel.gd" id="1"]
+scenes/ui/event_test/event_test_panel.tscn	scenes/main/main.gd	17	var _event_test_scene: PackedScene = preload("res://scenes/ui/event_test/event_test_panel.tscn")
+scenes/ui/minister_panel/minister_panel.gd	scenes/ui/minister_panel/minister_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/minister_panel/minister_panel.gd" id="1"]
+scenes/ui/minister_panel/minister_panel.tscn	scenes/main/main.gd	7	var _minister_panel_scene: PackedScene = preload("res://scenes/ui/minister_panel/minister_panel.tscn")
+scenes/ui/minister_panel/minister_panel.tscn	tests/unit/test_minister_panel.gd	6	const MINISTER_SCENE: PackedScene = preload("res://scenes/ui/minister_panel/minister_panel.tscn")
+scenes/ui/resource_bar/resource_bar.gd	scenes/main/main.tscn	5	[ext_resource type="Script" path="res://scenes/ui/resource_bar/resource_bar.gd" id="5"]
+scenes/ui/resource_bar/resource_bar.gd	scenes/ui/skirmish/skirmish_mvp_panel.gd	16	const _ResourceBarScript: Script = preload("res://scenes/ui/resource_bar/resource_bar.gd")
+scenes/ui/skirmish/skirmish_mvp_panel.gd	scenes/ui/skirmish/skirmish_mvp_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/skirmish/skirmish_mvp_panel.gd" id="1"]
+scenes/ui/skirmish/skirmish_mvp_panel.tscn	scenes/main/main.gd	21	var _skirmish_panel_scene: PackedScene = preload("res://scenes/ui/skirmish/skirmish_mvp_panel.tscn")
+scenes/ui/skirmish/skirmish_scenario_panel.gd	scenes/ui/skirmish/skirmish_scenario_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/skirmish/skirmish_scenario_panel.gd" id="1"]
+scenes/ui/skirmish/skirmish_scenario_panel.tscn	scenes/main/main.gd	19	var _scenario_panel_scene: PackedScene = preload("res://scenes/ui/skirmish/skirmish_scenario_panel.tscn")
+scenes/ui/skirmish/skirmish_test_guide_panel.gd	scenes/ui/skirmish/skirmish_test_guide_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/skirmish/skirmish_test_guide_panel.gd" id="1"]
+scenes/ui/skirmish/skirmish_test_guide_panel.tscn	scenes/ui/skirmish/skirmish_scenario_panel.gd	9	var _guide_panel_scene: PackedScene = preload("res://scenes/ui/skirmish/skirmish_test_guide_panel.tscn")
+scenes/ui/splash/announcement_popup.gd	scenes/ui/splash/announcement_popup.tscn	3	[ext_resource type="Script" path="res://scenes/ui/splash/announcement_popup.gd" id="1"]
+scenes/ui/splash/announcement_popup.tscn	scenes/ui/splash/announcement_popup.gd	5	##   var popup = preload("res://scenes/ui/splash/announcement_popup.tscn").instantiate()
+scenes/ui/splash/announcement_popup.tscn	scenes/ui/splash/mode_select.gd	7	const ANNOUNCEMENT_POPUP_SCENE: PackedScene = preload("res://scenes/ui/splash/announcement_popup.tscn")
+scenes/ui/splash/faction_select.gd	scenes/ui/splash/faction_select.tscn	3	[ext_resource type="Script" path="res://scenes/ui/splash/faction_select.gd" id="1"]
+scenes/ui/splash/faction_select.tscn	scripts/autoload/startup_flow.gd	30	@export var faction_select_scene: String = "res://scenes/ui/splash/faction_select.tscn"
+scenes/ui/splash/loading_screen.gd	scenes/ui/splash/loading_screen.tscn	3	[ext_resource type="Script" path="res://scenes/ui/splash/loading_screen.gd" id="1"]
+scenes/ui/splash/loading_screen.tscn	scenes/ui/splash/loading_screen.gd	5	##   var loading = preload("res://scenes/ui/splash/loading_screen.tscn").instantiate()
+scenes/ui/splash/loading_screen.tscn	scripts/autoload/startup_flow.gd	31	@export var loading_scene: String = "res://scenes/ui/splash/loading_screen.tscn"
+scenes/ui/splash/mode_select.gd	scenes/ui/splash/mode_select.tscn	3	[ext_resource type="Script" path="res://scenes/ui/splash/mode_select.gd" id="1"]
+scenes/ui/splash/mode_select.tscn	scripts/autoload/startup_flow.gd	29	@export var mode_select_scene: String = "res://scenes/ui/splash/mode_select.tscn"
+scenes/ui/splash/mode_select.tscn	tests/unit/test_mode_select.gd	3	const MODE_SELECT_SCENE: PackedScene = preload("res://scenes/ui/splash/mode_select.tscn")
+scenes/ui/splash/splash_screen.gd	scenes/ui/splash/splash_screen.tscn	3	[ext_resource type="Script" path="res://scenes/ui/splash/splash_screen.gd" id="1"]
+scenes/ui/splash/splash_screen.tscn	project.godot	15	run/main_scene="res://scenes/ui/splash/splash_screen.tscn"
+scenes/ui/splash/splash_screen.tscn	scripts/autoload/startup_flow.gd	28	@export var splash_scene: String = "res://scenes/ui/splash/splash_screen.tscn"
+scenes/ui/splash/splash_screen.tscn	tests/unit/test_main_turn_ui.gd	45	assert_eq(main_scene_path, "res://scenes/ui/splash/splash_screen.tscn", "Release 入口应先进入开场动画与模式选择")
+scenes/ui/splash/splash_screen.tscn	tests/unit/test_release_config.gd	14	"res://scenes/ui/splash/splash_screen.tscn",
+scenes/ui/tech/tech_tree_panel.gd	scenes/main/main.tscn	4	[ext_resource type="Script" path="res://scenes/ui/tech/tech_tree_panel.gd" id="3"]
+scripts/ai/military_ai.gd	tests/unit/test_military_ai.gd	10	const MilitaryLib := preload("res://scripts/ai/military_ai.gd")
+scripts/autoload/city_manager.gd	project.godot	26	CityManager="*res://scripts/autoload/city_manager.gd"
+scripts/autoload/data_manager.gd	project.godot	22	DataManager="*res://scripts/autoload/data_manager.gd"
+scripts/autoload/demo_flow.gd	project.godot	33	DemoFlow="*res://scripts/autoload/demo_flow.gd"
+scripts/autoload/diplomacy_system.gd	project.godot	30	DiplomacySystem="*res://scripts/autoload/diplomacy_system.gd"
+scripts/autoload/disaster_manager.gd	project.godot	37	DisasterManager="*res://scripts/autoload/disaster_manager.gd"
+scripts/autoload/event_manager.gd	project.godot	24	EventManager="*res://scripts/autoload/event_manager.gd"
+scripts/autoload/game_manager.gd	project.godot	25	GameManager="*res://scripts/autoload/game_manager.gd"
+scripts/autoload/i18n.gd	project.godot	36	I18n="*res://scripts/autoload/i18n.gd"
+scripts/autoload/minister_manager.gd	project.godot	27	MinisterManager="*res://scripts/autoload/minister_manager.gd"
+scripts/autoload/save_manager.gd	project.godot	34	SaveManager="*res://scripts/autoload/save_manager.gd"
+scripts/autoload/school_manager.gd	project.godot	28	SchoolManager="*res://scripts/autoload/school_manager.gd"
+scripts/autoload/signal_bus.gd	project.godot	21	SignalBus="*res://scripts/autoload/signal_bus.gd"
+scripts/autoload/startup_flow.gd	project.godot	23	StartupFlow="*res://scripts/autoload/startup_flow.gd"
+scripts/autoload/strategic_map_manager.gd	project.godot	35	StrategicMapManager="*res://scripts/autoload/strategic_map_manager.gd"
+scripts/autoload/tactical_skirmish_manager.gd	project.godot	32	TacticalSkirmishManager="*res://scripts/autoload/tactical_skirmish_manager.gd"
+scripts/autoload/wonder_manager.gd	project.godot	29	WonderManager="*res://scripts/autoload/wonder_manager.gd"
+scripts/systems/big_map_political_control.gd	addons/big_map_editor/big_map_document.gd	10	const BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
+scripts/systems/big_map_political_control.gd	scenes/ui/big_map/big_map_panel.gd	17	const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
+scripts/systems/big_map_political_control.gd	scripts/autoload/data_manager.gd	25	const BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
+scripts/systems/big_map_political_control.gd	tests/unit/test_big_map_political_control.gd	3	const PoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
+scripts/systems/combat_resolver.gd	scripts/autoload/strategic_map_manager.gd	13	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	scripts/autoload/tactical_skirmish_manager.gd	7	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_city_combat.gd	7	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_combat_modifiers.gd	6	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_combat_resolver.gd	6	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_fire_attack.gd	6	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_game_manager.gd	12	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_pass_combat.gd	7	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_unit_morale.gd	6	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/combat_resolver.gd	tests/unit/test_unit_skills.gd	6	const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+scripts/systems/hex_axial.gd	addons/big_map_editor/big_map_document.gd	11	const HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	addons/big_map_editor/big_map_editor_canvas.gd	6	const HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	addons/big_map_editor/big_map_editor_panel.gd	6	const HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	addons/skirmish_scenario_editor/scenario_map_canvas.gd	7	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scenes/ui/big_map/big_map_panel.gd	16	const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scenes/ui/skirmish/skirmish_mvp_panel.gd	15	const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scripts/autoload/city_manager.gd	3	const HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scripts/autoload/strategic_map_manager.gd	12	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scripts/autoload/tactical_skirmish_manager.gd	6	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scripts/systems/big_map_political_control.gd	4	const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scripts/systems/skirmish_attack_pipeline.gd	9	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	scripts/ui/skirmish_hex_cell.gd	4	const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/smoke/full_flow_smoke.gd	9	const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_big_map_political_control.gd	4	const HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_city_combat.gd	6	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_damage_overflow.gd	6	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_hex_axial.gd	3	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_main_turn_ui.gd	4	const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_naval_combat.gd	6	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_pass_combat.gd	6	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_ranged_obstruction.gd	6	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/hex_axial.gd	tests/unit/test_unit_morale.gd	7	const HexLib := preload("res://scripts/systems/hex_axial.gd")
+scripts/systems/skirmish_ai.gd	scripts/autoload/tactical_skirmish_manager.gd	8	const AILib := preload("res://scripts/systems/skirmish_ai.gd")
+scripts/systems/skirmish_attack_pipeline.gd	scripts/autoload/tactical_skirmish_manager.gd	9	const AttackPipelineLib := preload("res://scripts/systems/skirmish_attack_pipeline.gd")
+scripts/systems/tech_system.gd	project.godot	31	TechSystem="*res://scripts/systems/tech_system.gd"
+scripts/systems/unit_movement_manager.gd	scenes/units/unit_movement_test.tscn	4	[ext_resource type="Script" path="res://scripts/systems/unit_movement_manager.gd" id="2"]
+scripts/ui/big_map_minimap.gd	scenes/ui/big_map/big_map_panel.tscn	4	[ext_resource type="Script" path="res://scripts/ui/big_map_minimap.gd" id="2"]
+scripts/ui/skirmish_tile_textures.gd	addons/big_map_editor/big_map_editor_canvas.gd	7	const TileTextures := preload("res://scripts/ui/skirmish_tile_textures.gd")
+scripts/ui/skirmish_tile_textures.gd	addons/skirmish_scenario_editor/scenario_map_canvas.gd	8	const TileTextures := preload("res://scripts/ui/skirmish_tile_textures.gd")
+scripts/units/unit.gd	scenes/units/unit.tscn	3	[ext_resource type="Script" path="res://scripts/units/unit.gd" id="1"]
+scripts/units/unit.gd	scenes/units/unit_movement_test.tscn	3	[ext_resource type="Script" path="res://scripts/units/unit.gd" id="1"]
+scripts/units/unit_movement_test.gd	scenes/units/unit_movement_test.tscn	5	[ext_resource type="Script" path="res://scripts/units/unit_movement_test.gd" id="3"]
+temp/	scripts/autoload/startup_flow.gd	213	if path == splash_scene or path.begins_with("res://temp/"):
+tests	tests/unit/test_data_manager.gd	7	##         或 godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests
+tests/smoke/full_flow_smoke.gd	tests/smoke/full_flow_smoke.gd	6	##   Godot --headless --path <proj> -s res://tests/smoke/full_flow_smoke.gd
