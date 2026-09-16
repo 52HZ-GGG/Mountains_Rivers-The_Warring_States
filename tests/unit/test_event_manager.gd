@@ -247,3 +247,257 @@ func test_morale_max_condition() -> void:
 	var result: bool = EventManager._check_conditions(conditions, 1, "qin")
 	# 默认民心通常 < 100，应通过
 	assert_true(result, "民心 < 100 应满足 morale_max=100")
+
+
+# ============= AI 势力事件 =============
+
+func test_ai_trigger_no_options_event_applies_to_ai_resources() -> void:
+	# AI 无选项事件：效果应加到 AI 自己的资源（food/gold/morale），不碰玩家资源
+	# 注意：AI 初始资源会被 GameManager 钳制到资源上限（zhao food cap=200/gold cap=500），
+	# 故先手动下调 AI 资源再触发，确保增量断言不受上限截断影响。
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	GameManager.apply_faction_resource_delta("zhao", "food", -150)
+	GameManager.apply_faction_resource_delta("zhao", "gold", -300)
+	var ai_food_before: int = GameManager.get_faction_resource("zhao", "food")
+	var ai_gold_before: int = GameManager.get_faction_resource("zhao", "gold")
+	var ai_morale_before: int = GameManager.get_faction_resource("zhao", "morale")
+	var player_food_before: int = GameManager.get_player_food()
+	var evt: Dictionary = {
+		"id": "test_ai_noopt",
+		"category": "economy",
+		"title": "AI 无选项事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": {"food_delta": 100, "gold_delta": 50, "morale_delta": 5},
+		"options": null
+	}
+	EventManager._trigger_event(evt, "zhao")
+	assert_eq(GameManager.get_faction_resource("zhao", "food"), ai_food_before + 100, "AI 无选项事件 food 应加到 AI 自身")
+	assert_eq(GameManager.get_faction_resource("zhao", "gold"), ai_gold_before + 50, "AI 无选项事件 gold 应加到 AI 自身")
+	assert_eq(GameManager.get_faction_resource("zhao", "morale"), ai_morale_before + 5, "AI 无选项事件 morale 应加到 AI 自身")
+	assert_eq(GameManager.get_player_food(), player_food_before, "AI 事件不应改动玩家资源")
+
+
+func test_ai_trigger_with_options_auto_chooses_first_affordable() -> void:
+	# AI 有选项事件：应自动选择第一个可负担的选项（cost 5 < AI food），并应用其 outcomes
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	GameManager.apply_faction_resource_delta("zhao", "gold", -300)  # 下调 gold 避免上限截断
+	var ai_food_before: int = GameManager.get_faction_resource("zhao", "food")
+	var ai_gold_before: int = GameManager.get_faction_resource("zhao", "gold")
+	var evt: Dictionary = {
+		"id": "test_ai_opt",
+		"category": "economy",
+		"title": "AI 选项事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": null,
+		"options": [
+			{"id": "A", "text": "花费购粮", "cost": {"food": 5}, "outcomes": {"food_delta": -5, "gold_delta": 20}},
+			{"id": "B", "text": "免费", "cost": {}, "outcomes": {"food_delta": 0, "gold_delta": 10}}
+		]
+	}
+	EventManager._trigger_event(evt, "zhao")
+	# 选 A：扣 cost food 5 + outcomes food -5 → food 净 -10；gold +20
+	assert_eq(GameManager.get_faction_resource("zhao", "food"), ai_food_before - 10, "AI 应选可负担的 A（food 净 -10）")
+	assert_eq(GameManager.get_faction_resource("zhao", "gold"), ai_gold_before + 20, "AI 应选 A 的 gold +20 outcomes")
+
+
+func test_ai_auto_choice_falls_back_to_free_option_when_unaffordable() -> void:
+	# AI 负担不起首个选项时，应回退选择 cost 为空的首项
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	GameManager.apply_faction_resource_delta("zhao", "food", -100)  # 下调 food 避免上限截断
+	var ai_food_before: int = GameManager.get_faction_resource("zhao", "food")
+	var evt: Dictionary = {
+		"id": "test_ai_unaffordable",
+		"category": "economy",
+		"title": "AI 负担不起测试",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": null,
+		"options": [
+			{"id": "A", "text": "天价", "cost": {"food": 999999999}, "outcomes": {"gold_delta": 500}},
+			{"id": "B", "text": "免费", "cost": {}, "outcomes": {"food_delta": 10}}
+		]
+	}
+	EventManager._trigger_event(evt, "zhao")
+	assert_eq(GameManager.get_faction_resource("zhao", "food"), ai_food_before + 10, "负担不起 A 时应选 B（food +10）")
+
+
+func test_border_north_for_ai_factions() -> void:
+	# 北方边境条件按势力判定：燕/赵有 hex_r<=15 的北方城，秦/楚没有
+	assert_true(EventManager._check_conditions({"border_north": true}, 1, "yan"), "燕应有北方边境")
+	assert_true(EventManager._check_conditions({"border_north": true}, 1, "zhao"), "赵应有北方边境")
+	assert_false(EventManager._check_conditions({"border_north": true}, 1, "qin"), "秦不应有北方边境")
+	assert_false(EventManager._check_conditions({"border_north": true}, 1, "chu"), "楚不应有北方边境")
+
+
+func test_ai_morale_condition_uses_ai_morale_resource() -> void:
+	# AI 民心条件判定应使用 AI 自己的 morale 资源（初始 50），而非玩家民心
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	assert_true(EventManager._check_conditions({"morale_min": 50}, 1, "zhao"), "AI morale=50 应满足 morale_min=50")
+	assert_false(EventManager._check_conditions({"morale_min": 60}, 1, "zhao"), "AI morale=50 不应满足 morale_min=60")
+
+
+func test_player_path_unchanged_popup_and_effects() -> void:
+	# 玩家路径不变：有选项仍弹窗等待选择；无选项效果归属玩家
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var seen_triggered: Array[String] = []
+	var seen_resolved: Array[String] = []
+	var on_triggered := func(_evt: Dictionary) -> void: seen_triggered.append(str(_evt["id"]))
+	var on_resolved := func(_id: String, _choice: String) -> void: seen_resolved.append(_id)
+	SignalBus.event_triggered.connect(on_triggered)
+	SignalBus.event_resolved.connect(on_resolved)
+
+	var evt: Dictionary = {
+		"id": "test_player_opt",
+		"category": "economy",
+		"title": "玩家选项事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": null,
+		"options": [
+			{"id": "A", "text": "选项A", "cost": {}, "outcomes": {"food_delta": 5}}
+		]
+	}
+	EventManager._trigger_event(evt, "qin")
+	assert_eq(seen_triggered.size(), 1, "玩家有选项事件应弹窗（event_triggered）")
+	assert_eq(seen_resolved.size(), 0, "玩家有选项事件不应自动结算")
+
+	var player_food_before: int = GameManager.get_player_food()
+	var evt2: Dictionary = {
+		"id": "test_player_noopt",
+		"category": "economy",
+		"title": "玩家无选项事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": {"food_delta": 30},
+		"options": null
+	}
+	EventManager._trigger_event(evt2, "qin")
+	assert_eq(GameManager.get_player_food(), player_food_before + 30, "玩家无选项事件效果应归属玩家")
+
+	SignalBus.event_triggered.disconnect(on_triggered)
+	SignalBus.event_resolved.disconnect(on_resolved)
+
+
+func test_ai_event_skips_player_diplomacy_effects() -> void:
+	# AI 事件的玩家专属外交效果（reputation_change 等）应被跳过，保护玩家外交状态机
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	GameManager.apply_faction_resource_delta("zhao", "food", -100)  # 下调 food 避免上限截断
+	var player_rep_before: int = DiplomacySystem.get_reputation("qin")
+	var ai_food_before: int = GameManager.get_faction_resource("zhao", "food")
+	var evt: Dictionary = {
+		"id": "test_ai_diplo",
+		"category": "diplomacy",
+		"title": "AI 外交效果测试",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 70, "one_shot": false, "conditions": {}},
+		"effects": {"food_delta": 40, "reputation_change": -30},
+		"options": null
+	}
+	EventManager._trigger_event(evt, "zhao")
+	assert_eq(GameManager.get_faction_resource("zhao", "food"), ai_food_before + 40, "AI 资源类效果应生效")
+	assert_eq(DiplomacySystem.get_reputation("qin"), player_rep_before, "AI 事件的 reputation_change 不应改动玩家声望")
+
+
+# ============= 效果档位（effects_variants） =============
+
+func test_pick_effects_variant_returns_original_effects_for_normal_event() -> void:
+	# 普通事件（无 effects_variants）应原样返回 effects，行为不变
+	var evt: Dictionary = {
+		"id": "test_normal",
+		"category": "economy",
+		"title": "普通事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 30, "one_shot": false, "conditions": {}},
+		"effects": {"food_delta": 10, "morale_delta": 2},
+		"options": null
+	}
+	var result: Dictionary = EventManager._pick_effects_variant(evt)
+	assert_eq(result, {"food_delta": 10, "morale_delta": 2}, "普通事件应原样返回 effects")
+
+
+func test_pick_effects_variant_without_any_effects_field_returns_empty() -> void:
+	# 无 effects_variants 也无 effects 字段时返回空字典（等价于原 effects 缺省行为）
+	var evt: Dictionary = {"id": "test_empty"}
+	var result: Dictionary = EventManager._pick_effects_variant(evt)
+	assert_true(result.is_empty(), "无任何效果字段时应返回空字典")
+
+
+func test_pick_effects_variant_always_lands_in_valid_tier() -> void:
+	# 概率和=1 时，多次抽取结果应始终落在合法档位内（不越界、不报错）
+	var evt: Dictionary = {
+		"id": "test_variants",
+		"category": "season",
+		"title": "多档事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 80, "one_shot": false, "conditions": {}},
+		"effects_variants": [
+			{"probability": 0.25, "effects": {"food_delta": 300}},
+			{"probability": 0.5, "effects": {"food_delta": 150}},
+			{"probability": 0.25, "effects": {"food_delta": -50}}
+		],
+		"options": null
+	}
+	var valid_tiers: Array = [
+		{"food_delta": 300},
+		{"food_delta": 150},
+		{"food_delta": -50}
+	]
+	for i in range(200):
+		var picked: Dictionary = EventManager._pick_effects_variant(evt)
+		assert_true(valid_tiers.has(picked), "抽取结果应始终是合法档位之一（第 %d 次）" % i)
+
+
+func test_pick_effects_variant_applies_chosen_tier_effects() -> void:
+	# 某档概率=1.0 时，抽中的档位效果应正确应用到玩家资源
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	var player_food_before: int = GameManager.get_player_food()
+	var player_morale_before: int = GameManager.get_player_morale()
+	var evt: Dictionary = {
+		"id": "test_variant_apply",
+		"category": "season",
+		"title": "档位应用测试",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 80, "one_shot": false, "conditions": {}},
+		"effects_variants": [
+			{"probability": 1.0, "effects": {"food_delta": 123, "morale_delta": 7}}
+		],
+		"options": null
+	}
+	EventManager._trigger_event(evt, "qin")
+	assert_eq(GameManager.get_player_food(), player_food_before + 123, "概率=1 档位的 food_delta 应生效")
+	assert_eq(GameManager.get_player_morale(), player_morale_before + 7, "概率=1 档位的 morale_delta 应生效")
+
+
+func test_ai_no_options_event_uses_picked_variant() -> void:
+	# AI 无选项多档事件：抽中的档位效果应加到 AI 自身资源
+	EventManager.set_muted(true)
+	GameManager.start_game(["qin", "zhao"], "qin")
+	GameManager.apply_faction_resource_delta("zhao", "gold", -300)  # 下调 gold 避免上限截断
+	var ai_gold_before: int = GameManager.get_faction_resource("zhao", "gold")
+	var evt: Dictionary = {
+		"id": "test_ai_variant",
+		"category": "season",
+		"title": "AI 多档事件",
+		"trigger": {"type": "turn_start", "probability": 1.0, "priority": 80, "one_shot": false, "conditions": {}},
+		"effects_variants": [
+			{"probability": 1.0, "effects": {"gold_delta": 77}}
+		],
+		"options": null
+	}
+	EventManager._trigger_event(evt, "zhao")
+	assert_eq(GameManager.get_faction_resource("zhao", "gold"), ai_gold_before + 77, "AI 多档事件的档位效果应加到 AI 自身")
+
+
+func test_season_events_variant_probabilities_sum_to_one() -> void:
+	# 数据校验：三个季节事件的 effects_variants 概率和必须 = 1，且至少 3 档（好/中/坏）
+	for evt in DataManager.get_all_events():
+		if evt.get("category", "") != "season":
+			continue
+		var variants: Array = evt.get("effects_variants", [])
+		assert_true(variants.size() >= 3, "季节事件 %s 应至少 3 档效果" % evt["id"])
+		assert_true(evt.get("options") == null, "季节事件 %s 的 options 应为 null" % evt["id"])
+		assert_false(evt.has("effects"), "季节事件 %s 不应再保留原 effects 字段" % evt["id"])
+		var sum_prob: float = 0.0
+		for variant: Variant in variants:
+			sum_prob += float((variant as Dictionary).get("probability", 0.0))
+		assert_almost_eq(sum_prob, 1.0, 0.0001, "季节事件 %s 的档位概率和应=1（实际 %.4f）" % [evt["id"], sum_prob])

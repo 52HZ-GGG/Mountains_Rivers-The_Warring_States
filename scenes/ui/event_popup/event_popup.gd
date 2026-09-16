@@ -52,7 +52,7 @@ func _build_ui() -> void:
 	popup.set_anchors_preset(Control.PRESET_CENTER)
 	popup.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	popup.grow_vertical = Control.GROW_DIRECTION_BOTH
-	popup.custom_minimum_size = Vector2(520, 400)
+	popup.custom_minimum_size = Vector2(520, 360)
 	popup.offset_left = -260
 	popup.offset_right = 260
 	popup.offset_top = -200
