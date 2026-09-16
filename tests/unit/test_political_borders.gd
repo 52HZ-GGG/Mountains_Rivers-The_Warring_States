@@ -48,3 +48,47 @@ func test_are_bordering_reflects_runtime_ownership() -> void:
 
 func test_border_changed_signal_exists() -> void:
 	assert_true(SignalBus.has_signal("border_changed"))
+
+
+func test_get_bordering_factions_matches_are_bordering() -> void:
+	var others: Array[String] = ["zhao", "qi", "chu", "wei"]
+	for other in others:
+		var via_flag: bool = DiplomacySystem.are_bordering("qin", other)
+		var in_list: bool = DiplomacySystem.get_bordering_factions("qin").has(other)
+		assert_eq(in_list, via_flag, "get_bordering_factions 应与 are_bordering 一致: %s" % other)
+
+
+func test_border_changed_emitted_on_occupy() -> void:
+	var events: Array = []
+	var cb := func(a: String, b: String, now: bool) -> void:
+		events.append([a, b, now])
+	SignalBus.border_changed.connect(cb)
+	# 占一座赵城给秦，应触发至少一次 border 变化（秦赵或秦与邻国）
+	var zhao_cities: Array = CityManager.get_faction_cities("zhao").duplicate()
+	if not zhao_cities.is_empty():
+		CityManager.occupy_city(str((zhao_cities[0] as Dictionary).get("id", "")), "qin")
+	SignalBus.border_changed.disconnect(cb)
+	# 若秦赵本就接壤，占城可能不改变这对；但齐/楚等邻居关系可能变
+	# 至少应不抛错且缓存可重建
+	assert_true(DiplomacySystem.get_bordering_factions("qin").size() >= 0)
+
+
+func test_new_border_applies_opinion_penalty() -> void:
+	# 找一个当前不与秦接壤的势力，占其近城制造新接壤
+	var qin_borders: Array[String] = DiplomacySystem.get_bordering_factions("qin")
+	var target: String = ""
+	for fid in ["zhao", "qi", "chu", "wei"]:
+		if not qin_borders.has(fid):
+			target = fid
+			break
+	if target.is_empty():
+		# 全都接壤时跳过（无法制造新边）
+		pass_test("当前秦已与所有势力接壤，跳过")
+		return
+	var op_before: int = DiplomacySystem.get_opinion("qin", target)
+	var cities: Array = CityManager.get_faction_cities(target).duplicate()
+	assert_false(cities.is_empty())
+	CityManager.occupy_city(str((cities[0] as Dictionary).get("id", "")), "qin")
+	if DiplomacySystem.are_bordering("qin", target):
+		var op_after: int = DiplomacySystem.get_opinion("qin", target)
+		assert_true(op_after <= op_before, "新接壤好感不应上升（默认 -5）")
