@@ -93,6 +93,9 @@ signal garrison_changed(city_id: String, old_value: int, new_value: int)
 signal culture_mainstream_changed(city_id: String, old_faction: String, new_faction: String)
 signal culture_coverage_threshold(faction_id: String, ratio: float, threshold: float)
 
+# ============= 政治疆域 / 接壤 =============
+signal border_changed(faction_a: String, faction_b: String, now_bordering: bool)
+
 # ============= 学派系统 =============
 signal school_exp_gained(amount: int)
 signal school_level_changed(school_id: String, old_level: int, new_level: int)

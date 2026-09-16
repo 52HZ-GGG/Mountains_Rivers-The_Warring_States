@@ -17,8 +17,8 @@ const HexAxial := preload("res://scripts/systems/hex_axial.gd")
 ##   is_capital / initial_population
 ## - 运行时字段（本管理器维护）：
 ##   - current_faction_id: String — 当前占领者，初始 = faction_id
-##   - buildings: Array — 已建建筑 [{building_id, level}]，初始 []
-##   - build_queue: Array — 建造队列 [{building_id, turns_remaining}]，初始 []
+##   - buildings: Array — 实体建筑 [{building_id, level, hex_q, hex_r, structure_hp?, disabled}]（决策 #123）
+##   - build_queue: Array — 建造队列 [{building_id, turns_remaining, hex_q?, hex_r?, is_upgrade}]，初始 []
 ##     注：升级与新建共用此队列（决策 - 升级队列共用 build_queue）。
 ##         回合结算时按「该城市 buildings 是否已包含 building_id」判断是新建还是升级。
 ##   - current_population: int — 当前人口，初始 = base_population
@@ -63,6 +63,9 @@ const REASON_GARRISON_EMPTY := "GARRISON_EMPTY"
 const REASON_INSUFFICIENT_TROOPS := "INSUFFICIENT_TROOPS"
 const REASON_SPECIAL_RESOURCE_REQUIRED := "SPECIAL_RESOURCE_REQUIRED"
 const REASON_TERRAIN_REQUIRED := "TERRAIN_REQUIRED"
+const REASON_HEX_OUT_OF_JURISDICTION := "HEX_OUT_OF_JURISDICTION"
+const REASON_HEX_OCCUPIED := "HEX_OCCUPIED"
+const REASON_HEX_RESERVED := "HEX_RESERVED"
 
 const CITY_LEVEL_RECRUIT_UNLOCKS: Dictionary = {
 	1: ["militia"],
@@ -79,6 +82,8 @@ var _states_by_faction: Dictionary = {}        # faction_id (String) → Array o
 var _player_relocation_counts: Dictionary = {} # faction_id (String) → 已迁都次数 (int)
 var _big_map_rows: Array = []                  # big_map_terrain.json rows（rows[r][q] = terrain_id）
 var _big_map_width: int = 0
+## 实体建筑索引：axial "q,r" → {city_id, building_id}（决策 #123）
+var _building_at_hex: Dictionary = {}
 
 # ============= 生命周期 =============
 
@@ -358,6 +363,342 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 	return true
 
 
+# ============= 建筑辖区（决策 #123 实体建筑） =============
+
+func get_city_center_axial(city_id: String) -> Vector2i:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return Vector2i(-9999, -9999)
+	if city.has("_axial_q") and city.has("_axial_r"):
+		return Vector2i(int(city["_axial_q"]), int(city["_axial_r"]))
+	# cities.json hex_q/hex_r 为 odd-R 偏移
+	return HexAxial.offset_odd_r_to_axial(int(city.get("hex_q", 0)), int(city.get("hex_r", 0)))
+
+
+func get_jurisdiction_hexes(city_id: String) -> Array[Vector2i]:
+	## 辖区必须与地图绘制一致：大地图用「奇数列下移」的矩形平顶布局，
+	## 不能对 odd-R 轴向直接取 6 邻格，否则环会偏一格（决策 #123）。
+	var out: Array[Vector2i] = []
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return out
+	var col: int = int(city.get("hex_q", 0))
+	var row: int = int(city.get("hex_r", 0))
+	var radius: int = int(city.get("jurisdiction_radius", 1))
+	# BFS：在视觉 offset 坐标上扩展
+	var start: Vector2i = Vector2i(col, row)
+	var visited: Dictionary = {start: true}
+	var frontier: Array[Vector2i] = [start]
+	var dist: Dictionary = {start: 0}
+	while not frontier.is_empty():
+		var cur: Vector2i = frontier.pop_front()
+		var d0: int = int(dist[cur])
+		if d0 >= radius:
+			continue
+		for nb: Vector2i in HexAxial.offset_visual_neighbors(cur.x, cur.y):
+			if visited.has(nb):
+				continue
+			visited[nb] = true
+			dist[nb] = d0 + 1
+			frontier.append(nb)
+			if d0 + 1 <= radius and nb != start:
+				out.append(HexAxial.offset_odd_r_to_axial(nb.x, nb.y))
+	return out
+
+
+## 调试：辖区 odd-R offset 坐标
+func get_jurisdiction_offset_hexes(city_id: String) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for cell: Vector2i in get_jurisdiction_hexes(city_id):
+		out.append(HexAxial.axial_to_offset_odd_r(cell.x, cell.y))
+	return out
+
+
+func is_jurisdiction_hex(city_id: String, axial: Vector2i) -> bool:
+	for cell: Vector2i in get_jurisdiction_hexes(city_id):
+		if cell == axial:
+			return true
+	return false
+
+
+func _is_repeatable_building(building_id: String) -> bool:
+	return bool(DataManager.get_building(building_id).get("is_repeatable", false))
+
+
+func _building_has_structure_hp(building_id: String) -> bool:
+	return bool(DataManager.get_building(building_id).get("is_defense_building", false))
+
+
+func _building_structure_hp_at_level(building_id: String, level: int) -> int:
+	var building: Dictionary = DataManager.get_building(building_id)
+	var levels: Array = building.get("levels", [])
+	if level < 1 or level > levels.size():
+		return 0
+	var effects: Dictionary = (levels[level - 1] as Dictionary).get("effects", {})
+	return int(effects.get("structure_hp", 0))
+
+
+func _hex_key(axial: Vector2i) -> String:
+	return "%d,%d" % [axial.x, axial.y]
+
+
+func get_building_at_hex(axial: Vector2i) -> Dictionary:
+	var meta: Variant = _building_at_hex.get(_hex_key(axial), null)
+	if meta == null or not (meta is Dictionary):
+		return {}
+	var m: Dictionary = meta as Dictionary
+	var city: Dictionary = _city_states.get(str(m.get("city_id", "")), {})
+	if city.is_empty():
+		return {}
+	var bid: String = str(m.get("building_id", ""))
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if str(e.get("building_id", "")) == bid \
+			and int(e.get("hex_q", -99999)) == axial.x \
+			and int(e.get("hex_r", -99999)) == axial.y:
+			var out: Dictionary = e.duplicate(true)
+			out["city_id"] = str(m.get("city_id", ""))
+			return out
+	return {}
+
+
+## 决策 #124：无血量可通行；有血量须破防（structure_hp<=0）。
+func is_hex_passable_for_units(axial: Vector2i) -> bool:
+	var b: Dictionary = get_building_at_hex(axial)
+	if b.is_empty():
+		return true
+	if not _building_has_structure_hp(str(b.get("building_id", ""))):
+		return true
+	return int(b.get("structure_hp", 0)) <= 0
+
+
+func rebuild_building_hex_index() -> void:
+	_building_at_hex.clear()
+	for city_id: String in _city_states:
+		var city: Dictionary = _city_states[city_id]
+		for entry: Variant in city.get("buildings", []):
+			var e: Dictionary = entry as Dictionary
+			if not e.has("hex_q") or not e.has("hex_r"):
+				continue
+			var key: String = _hex_key(Vector2i(int(e["hex_q"]), int(e["hex_r"])))
+			_building_at_hex[key] = {
+				"city_id": city_id,
+				"building_id": str(e.get("building_id", "")),
+			}
+
+
+func _migrate_physical_buildings() -> void:
+	for city_id: String in _city_states:
+		var city: Dictionary = _city_states[city_id]
+		for entry: Variant in city.get("buildings", []):
+			var e: Dictionary = entry as Dictionary
+			var bid: String = str(e.get("building_id", ""))
+			var level: int = int(e.get("level", 1))
+			if not e.has("hex_q") or not e.has("hex_r"):
+				var free: Vector2i = _find_free_jurisdiction_hex(city, bid)
+				if free != Vector2i(-9999, -9999):
+					e["hex_q"] = free.x
+					e["hex_r"] = free.y
+			if _building_has_structure_hp(bid):
+				var max_hp: int = _building_structure_hp_at_level(bid, level)
+				if not e.has("max_structure_hp"):
+					e["max_structure_hp"] = max_hp
+				if not e.has("structure_hp"):
+					e["structure_hp"] = max_hp
+			if not e.has("disabled"):
+				e["disabled"] = false
+		for qentry: Variant in city.get("build_queue", []):
+			var q: Dictionary = qentry as Dictionary
+			if bool(q.get("is_upgrade", false)):
+				continue
+			if q.has("hex_q") and q.has("hex_r"):
+				continue
+			var free_q: Vector2i = _find_free_jurisdiction_hex(city, str(q.get("building_id", "")), true)
+			if free_q != Vector2i(-9999, -9999):
+				q["hex_q"] = free_q.x
+				q["hex_r"] = free_q.y
+	rebuild_building_hex_index()
+
+
+func _find_free_jurisdiction_hex(city: Dictionary, building_id: String, include_queue: bool = false) -> Vector2i:
+	var city_id: String = str(city.get("id", ""))
+	var used: Dictionary = {}
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if e.has("hex_q") and e.has("hex_r"):
+			used[_hex_key(Vector2i(int(e["hex_q"]), int(e["hex_r"])))] = true
+	if include_queue:
+		for qentry: Variant in city.get("build_queue", []):
+			var q: Dictionary = qentry as Dictionary
+			if bool(q.get("is_upgrade", false)):
+				continue
+			if q.has("hex_q") and q.has("hex_r"):
+				used[_hex_key(Vector2i(int(q["hex_q"]), int(q["hex_r"])))] = true
+	for cell: Vector2i in get_jurisdiction_hexes(city_id):
+		if used.has(_hex_key(cell)):
+			continue
+		if not _hex_terrain_allows_building(cell, building_id):
+			continue
+		return cell
+	return Vector2i(-9999, -9999)
+
+
+func _hex_terrain_allows_building(axial: Vector2i, building_id: String) -> bool:
+	var building: Dictionary = DataManager.get_building(building_id)
+	if building.is_empty():
+		return false
+	var build_req: Variant = building.get("build_requires")
+	if build_req == null or not (build_req is Dictionary):
+		return true
+	var req: Dictionary = build_req as Dictionary
+	if not req.has("terrain"):
+		return true
+	var required: Array = req["terrain"] if req["terrain"] is Array else [req["terrain"]]
+	return _get_terrain_at_hex(axial.x, axial.y) in required
+
+
+func _validate_build_hex(city: Dictionary, building_id: String, axial: Vector2i, include_queue: bool = true) -> String:
+	var city_id: String = str(city.get("id", ""))
+	if not is_jurisdiction_hex(city_id, axial):
+		return REASON_HEX_OUT_OF_JURISDICTION
+	if not _hex_terrain_allows_building(axial, building_id):
+		return REASON_TERRAIN_REQUIRED
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if e.has("hex_q") and e.has("hex_r") and int(e["hex_q"]) == axial.x and int(e["hex_r"]) == axial.y:
+			return REASON_HEX_OCCUPIED
+	if include_queue:
+		for qentry: Variant in city.get("build_queue", []):
+			var q: Dictionary = qentry as Dictionary
+			if bool(q.get("is_upgrade", false)):
+				continue
+			if q.has("hex_q") and q.has("hex_r") and int(q["hex_q"]) == axial.x and int(q["hex_r"]) == axial.y:
+				return REASON_HEX_RESERVED
+	return REASON_OK
+
+
+func _append_physical_building(city: Dictionary, building_id: String, level: int, axial: Vector2i) -> Dictionary:
+	var entry: Dictionary = {
+		"building_id": building_id,
+		"level": level,
+		"hex_q": axial.x,
+		"hex_r": axial.y,
+		"disabled": false,
+	}
+	if _building_has_structure_hp(building_id):
+		var hp: int = _building_structure_hp_at_level(building_id, level)
+		entry["structure_hp"] = hp
+		entry["max_structure_hp"] = hp
+	(city["buildings"] as Array).append(entry)
+	_building_at_hex[_hex_key(axial)] = {
+		"city_id": str(city.get("id", "")),
+		"building_id": building_id,
+	}
+	return entry
+
+
+func _find_building_entry(city: Dictionary, building_id: String, axial: Vector2i = Vector2i(-9999, -9999)) -> Dictionary:
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if str(e.get("building_id", "")) != building_id:
+			continue
+		if axial.x == -9999:
+			return e
+		if e.has("hex_q") and e.has("hex_r") and int(e["hex_q"]) == axial.x and int(e["hex_r"]) == axial.y:
+			return e
+	return {}
+
+
+
+
+# ============= 实体建筑战斗/占领（决策 #123/#124） =============
+
+func is_defense_building_hex(axial: Vector2i) -> bool:
+	var b: Dictionary = get_building_at_hex(axial)
+	if b.is_empty():
+		return false
+	return _building_has_structure_hp(str(b.get("building_id", "")))
+
+
+func damage_building_at_hex(axial: Vector2i, damage: int) -> Dictionary:
+	var meta: Variant = _building_at_hex.get(_hex_key(axial), null)
+	if meta == null or not (meta is Dictionary):
+		return {"destroyed": false, "remaining_hp": -1}
+	var city_id: String = str((meta as Dictionary).get("city_id", ""))
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"destroyed": false, "remaining_hp": -1}
+	var entry: Dictionary = _find_building_entry(city, str((meta as Dictionary).get("building_id", "")), axial)
+	if entry.is_empty() or not entry.has("structure_hp"):
+		return {"destroyed": false, "remaining_hp": -1}
+	var old_hp: int = int(entry["structure_hp"])
+	var new_hp: int = maxi(0, old_hp - maxi(0, damage))
+	entry["structure_hp"] = new_hp
+	return {
+		"destroyed": new_hp <= 0,
+		"remaining_hp": new_hp,
+		"city_id": city_id,
+		"building_id": str(entry.get("building_id", "")),
+	}
+
+
+func get_city_wall_defense_bonus(city_id: String) -> float:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0.0
+	var building: Dictionary = DataManager.get_building("wall")
+	var levels: Array = building.get("levels", [])
+	var total_weighted: float = 0.0
+	var count: int = 0
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if str(e.get("building_id", "")) != "wall":
+			continue
+		if bool(e.get("disabled", false)):
+			continue
+		var level: int = int(e.get("level", 1))
+		var bonus: float = 0.0
+		if level >= 1 and level <= levels.size():
+			bonus = float((levels[level - 1] as Dictionary).get("effects", {}).get("defense_bonus", 0.0))
+		var max_hp: float = float(e.get("max_structure_hp", 0))
+		var hp: float = float(e.get("structure_hp", 0))
+		var ratio: float = 1.0
+		if max_hp > 0.0:
+			ratio = maxf(hp / max_hp, 0.5)
+		total_weighted += bonus * ratio
+		count += 1
+	if count == 0:
+		return 0.0
+	return total_weighted
+
+
+func reenable_city_buildings(city_id: String) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if _building_has_structure_hp(str(e.get("building_id", ""))):
+			if int(e.get("structure_hp", 0)) > 0:
+				e["disabled"] = false
+		else:
+			e["disabled"] = false
+
+
+func disable_building_at_hex(axial: Vector2i) -> bool:
+	var meta: Variant = _building_at_hex.get(_hex_key(axial), null)
+	if meta == null or not (meta is Dictionary):
+		return false
+	var city: Dictionary = _city_states.get(str((meta as Dictionary).get("city_id", "")), {})
+	if city.is_empty():
+		return false
+	var entry: Dictionary = _find_building_entry(city, str((meta as Dictionary).get("building_id", "")), axial)
+	if entry.is_empty():
+		return false
+	entry["disabled"] = true
+	return true
+
+
 # ============= 建造接口 =============
 
 ## 校验是否能在 city_id 建造 building_id。
@@ -370,7 +711,7 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 ##   5. 该城市槽位未满（SLOTS_FULL，仅算「新建」队列项，升级中的不占新槽）
 ##   6. 该 faction 该建筑总数 < max_national_count（NATIONAL_CAP_REACHED）
 ##   7. 玩家资源够（INSUFFICIENT_RESOURCES）
-func can_build(city_id: String, building_id: String) -> Dictionary:
+func can_build(city_id: String, building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> Dictionary:
 	if not _city_states.has(city_id):
 		return {"allowed": false, "reason": REASON_INVALID_CITY}
 	var building: Dictionary = DataManager.get_building(building_id)
@@ -378,10 +719,22 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 		return {"allowed": false, "reason": REASON_INVALID_BUILDING}
 
 	var city: Dictionary = _city_states[city_id]
-	if _city_has_building(city, building_id):
-		return {"allowed": false, "reason": REASON_ALREADY_BUILT}
-	if _city_has_in_queue(city, building_id):
-		return {"allowed": false, "reason": REASON_ALREADY_QUEUED}
+	var repeatable: bool = _is_repeatable_building(building_id)
+	if not repeatable:
+		if _city_has_building(city, building_id):
+			return {"allowed": false, "reason": REASON_ALREADY_BUILT}
+		if _city_has_in_queue(city, building_id):
+			return {"allowed": false, "reason": REASON_ALREADY_QUEUED}
+
+	var place_hex: Vector2i = target_hex
+	if place_hex == Vector2i(-9999, -9999):
+		place_hex = _find_free_jurisdiction_hex(city, building_id, true)
+		if place_hex == Vector2i(-9999, -9999):
+			return {"allowed": false, "reason": REASON_HEX_OCCUPIED}
+	else:
+		var hex_reason: String = _validate_build_hex(city, building_id, place_hex, true)
+		if hex_reason != REASON_OK:
+			return {"allowed": false, "reason": hex_reason}
 
 	# 槽位计算：buildings + 仅「新建」队列项（升级中的项已经在 buildings 里，不重复占槽）
 	var city_level: int = int(city.get("city_level", 1))
@@ -408,10 +761,6 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 			var city_sr: Variant = city.get("special_resource", null)
 			if city_sr == null or str(city_sr) != str(req["special_resource"]):
 				return {"allowed": false, "reason": REASON_SPECIAL_RESOURCE_REQUIRED}
-		if req.has("terrain"):
-			var required_terrains: Array = req["terrain"] if req["terrain"] is Array else [req["terrain"]]
-			if not _city_has_terrain(city_id, required_terrains):
-				return {"allowed": false, "reason": REASON_TERRAIN_REQUIRED}
 
 	var levels: Array = building.get("levels", [])
 	var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
@@ -426,14 +775,18 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_wood() < cost_wood:
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES, "cost_gold": cost_gold, "cost_wood": cost_wood}
 
-	return {"allowed": true, "reason": REASON_OK, "cost_gold": cost_gold, "cost_wood": cost_wood}
+	return {
+		"allowed": true,
+		"reason": REASON_OK,
+		"cost_gold": cost_gold,
+		"cost_wood": cost_wood,
+		"hex_q": place_hex.x,
+		"hex_r": place_hex.y,
+	}
 
 
-## 开始在 city_id 建造 building_id。
-## 校验通过 → 扣资源、加入建造队列、返回 true。
-## 校验失败 → 不动任何状态、返回 false（建议先调 can_build 看 reason）。
-func start_build(city_id: String, building_id: String) -> bool:
-	var check: Dictionary = can_build(city_id, building_id)
+func start_build(city_id: String, building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> bool:
+	var check: Dictionary = can_build(city_id, building_id, target_hex)
 	if not check["allowed"]:
 		return false
 
@@ -450,6 +803,7 @@ func start_build(city_id: String, building_id: String) -> bool:
 	var cost_gold: int = costs[0]
 	var cost_wood: int = costs[1]
 	var build_turns: int = int(lv0.get("build_turns", 1))
+	var place: Vector2i = Vector2i(int(check.get("hex_q", -9999)), int(check.get("hex_r", -9999)))
 
 	GameManager.apply_gold_delta(-cost_gold)
 	GameManager.apply_wood_delta(-cost_wood)
@@ -460,6 +814,8 @@ func start_build(city_id: String, building_id: String) -> bool:
 		"cost_gold": cost_gold,
 		"cost_wood": cost_wood,
 		"is_upgrade": false,
+		"hex_q": place.x,
+		"hex_r": place.y,
 	})
 	return true
 
@@ -476,7 +832,7 @@ func start_build(city_id: String, building_id: String) -> bool:
 ##   5. 当前等级 < max_level（MAX_LEVEL_REACHED）
 ##   6. 玩家资源够升级费用（INSUFFICIENT_RESOURCES）
 ## 注：升级不占新槽位、不增数量，故不校验 SLOTS_FULL 与 NATIONAL_CAP。
-func can_upgrade(city_id: String, building_id: String) -> Dictionary:
+func can_upgrade(city_id: String, building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> Dictionary:
 	if not _city_states.has(city_id):
 		return {"allowed": false, "reason": REASON_INVALID_CITY}
 	var building: Dictionary = DataManager.get_building(building_id)
@@ -484,9 +840,10 @@ func can_upgrade(city_id: String, building_id: String) -> Dictionary:
 		return {"allowed": false, "reason": REASON_INVALID_BUILDING}
 
 	var city: Dictionary = _city_states[city_id]
-	var current_level: int = _city_building_level(city, building_id)
-	if current_level == 0:
+	var entry: Dictionary = _find_building_entry(city, building_id, target_hex)
+	if entry.is_empty():
 		return {"allowed": false, "reason": REASON_BUILDING_NOT_BUILT}
+	var current_level: int = int(entry.get("level", 1))
 	if _city_has_in_queue(city, building_id):
 		return {"allowed": false, "reason": REASON_ALREADY_QUEUED}
 
@@ -499,21 +856,29 @@ func can_upgrade(city_id: String, building_id: String) -> Dictionary:
 	if GameManager.get_player_gold() < int(costs[0]) or GameManager.get_player_wood() < int(costs[1]):
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
-	return {"allowed": true, "reason": REASON_OK}
+	return {
+		"allowed": true,
+		"reason": REASON_OK,
+		"hex_q": int(entry.get("hex_q", -9999)),
+		"hex_r": int(entry.get("hex_r", -9999)),
+	}
 
 
 ## 开始升级 city_id 的 building_id（升 1 级）。
 ## 升级费用 = base_cost × upgrade_cost_multiplier^current_level（决策 25）。
 ## 校验通过 → 扣升级费用、加入 build_queue、返回 true。
 ## 校验失败 → 不动任何状态、返回 false。
-func start_upgrade(city_id: String, building_id: String) -> bool:
-	var check: Dictionary = can_upgrade(city_id, building_id)
+func start_upgrade(city_id: String, building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> bool:
+	var check: Dictionary = can_upgrade(city_id, building_id, target_hex)
 	if not check["allowed"]:
 		return false
 
 	var building: Dictionary = DataManager.get_building(building_id)
 	var city: Dictionary = _city_states[city_id]
-	var current_level: int = _city_building_level(city, building_id)
+	var entry: Dictionary = _find_building_entry(city, building_id, target_hex)
+	if entry.is_empty():
+		return false
+	var current_level: int = int(entry.get("level", 1))
 	var faction_id: String = str(city.get("current_faction_id", ""))
 	var costs: Array[int] = _calculate_upgrade_cost(building, current_level, faction_id)
 	var levels: Array = building.get("levels", [])
@@ -523,13 +888,17 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 	GameManager.apply_gold_delta(-int(costs[0]))
 	GameManager.apply_wood_delta(-int(costs[1]))
 
-	(city["build_queue"] as Array).append({
+	var q: Dictionary = {
 		"building_id": building_id,
 		"turns_remaining": build_turns,
 		"cost_gold": int(costs[0]),
 		"cost_wood": int(costs[1]),
 		"is_upgrade": true,
-	})
+	}
+	if entry.has("hex_q") and entry.has("hex_r"):
+		q["hex_q"] = int(entry["hex_q"])
+		q["hex_r"] = int(entry["hex_r"])
+	(city["build_queue"] as Array).append(q)
 	return true
 
 
@@ -543,14 +912,14 @@ func start_upgrade(city_id: String, building_id: String) -> bool:
 ## 仅拆已建建筑：未建（仅在队列中）的建筑请用 cancel_build（暂未实现）。
 ##
 ## 返回 true 表示拆除成功，false 表示参数非法或建筑未建。
-func demolish(city_id: String, building_id: String) -> bool:
+func demolish(city_id: String, building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> bool:
 	if not _city_states.has(city_id):
 		return false
 	var city: Dictionary = _city_states[city_id]
-	if not _city_has_building(city, building_id):
+	var entry: Dictionary = _find_building_entry(city, building_id, target_hex)
+	if entry.is_empty():
 		return false
 
-	# 计算并返还资源（防御性兜底，避免 difficulty 配置缺失时崩）
 	var building: Dictionary = DataManager.get_building(building_id)
 	if not building.is_empty():
 		var diff: String = GameManager.get_difficulty()
@@ -565,17 +934,30 @@ func demolish(city_id: String, building_id: String) -> bool:
 		if refund_wood > 0:
 			GameManager.apply_wood_delta(refund_wood)
 
-	# 移除 buildings 中匹配项（倒序遍历安全删除）
 	var buildings: Array = city["buildings"]
+	var removed_key: String = ""
 	for i in range(buildings.size() - 1, -1, -1):
-		if buildings[i].get("building_id") == building_id:
-			buildings.remove_at(i)
+		var e: Dictionary = buildings[i]
+		if str(e.get("building_id", "")) != building_id:
+			continue
+		if target_hex.x != -9999 and (int(e.get("hex_q", -99999)) != target_hex.x or int(e.get("hex_r", -99999)) != target_hex.y):
+			continue
+		if e.has("hex_q") and e.has("hex_r"):
+			removed_key = _hex_key(Vector2i(int(e["hex_q"]), int(e["hex_r"])))
+		buildings.remove_at(i)
+		break
+	if removed_key != "" and _building_at_hex.has(removed_key):
+		_building_at_hex.erase(removed_key)
 
-	# 清理 build_queue 中匹配项（含正在升级的）
 	var queue: Array = city["build_queue"]
 	for i in range(queue.size() - 1, -1, -1):
-		if queue[i].get("building_id") == building_id:
-			queue.remove_at(i)
+		var q: Dictionary = queue[i]
+		if str(q.get("building_id", "")) != building_id:
+			continue
+		if target_hex.x != -9999 and q.has("hex_q") and q.has("hex_r"):
+			if int(q["hex_q"]) != target_hex.x or int(q["hex_r"]) != target_hex.y:
+				continue
+		queue.remove_at(i)
 
 	return true
 
@@ -619,6 +1001,7 @@ func reset() -> void:
 	_initialize_states()
 	_build_faction_index()
 	_player_relocation_counts.clear()
+	rebuild_building_hex_index()
 
 
 func get_save_data() -> Dictionary:
@@ -633,9 +1016,11 @@ func load_save_data(data: Dictionary) -> void:
 	if states is Dictionary and not (states as Dictionary).is_empty():
 		_city_states = (states as Dictionary).duplicate(true)
 		_build_faction_index()
+		_migrate_physical_buildings()
 	else:
 		_initialize_states()
 		_build_faction_index()
+		rebuild_building_hex_index()
 	var reloc: Variant = data.get("player_relocation_counts", {})
 	_player_relocation_counts = (reloc as Dictionary).duplicate(true) if reloc is Dictionary else {}
 
@@ -902,6 +1287,10 @@ func _process_build_queue(city_id: String, events: Dictionary) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
 		return
+	if not events.has("buildings_completed"):
+		events["buildings_completed"] = []
+	if not events.has("upgrades_completed"):
+		events["upgrades_completed"] = []
 	var queue: Array = city["build_queue"] as Array
 	var completed_indices: Array = []
 	for i in range(queue.size()):
@@ -915,19 +1304,32 @@ func _process_build_queue(city_id: String, events: Dictionary) -> void:
 		var entry: Dictionary = queue[idx] as Dictionary
 		var bid: String = str(entry["building_id"])
 		var city_state: Dictionary = _city_states[city_id]
-		if _city_has_building(city_state, bid):
-			# 已有该建筑 → 升级完成，提升等级
-			for b in (city_state["buildings"] as Array):
-				if b.get("building_id") == bid:
-					b["level"] = int(b.get("level", 1)) + 1
-					events["upgrades_completed"].append({"city_id": city_id, "building_id": bid, "level": b["level"]})
-					SignalBus.building_completed.emit(city_id, bid, b["level"])
-					break
+		var axial: Vector2i = Vector2i(-9999, -9999)
+		if entry.has("hex_q") and entry.has("hex_r"):
+			axial = Vector2i(int(entry["hex_q"]), int(entry["hex_r"]))
+		if bool(entry.get("is_upgrade", false)):
+			var target: Dictionary = _find_building_entry(city_state, bid, axial)
+			if not target.is_empty():
+				var new_level: int = int(target.get("level", 1)) + 1
+				target["level"] = new_level
+				if _building_has_structure_hp(bid):
+					var new_max: int = _building_structure_hp_at_level(bid, new_level)
+					target["max_structure_hp"] = new_max
+					target["structure_hp"] = new_max
+				events["upgrades_completed"].append({"city_id": city_id, "building_id": bid, "level": new_level})
+				SignalBus.building_completed.emit(city_id, bid, new_level)
 		else:
-			# 新建完成
-			(city_state["buildings"] as Array).append({"building_id": bid, "level": 1})
-			events["buildings_completed"].append({"city_id": city_id, "building_id": bid})
-			SignalBus.building_completed.emit(city_id, bid, 1)
+			if axial.x == -9999:
+				axial = _find_free_jurisdiction_hex(city_state, bid, false)
+			if axial.x != -9999:
+				_append_physical_building(city_state, bid, 1, axial)
+				events["buildings_completed"].append({
+					"city_id": city_id,
+					"building_id": bid,
+					"hex_q": axial.x,
+					"hex_r": axial.y,
+				})
+				SignalBus.building_completed.emit(city_id, bid, 1)
 		queue.remove_at(idx)
 
 
@@ -1234,6 +1636,7 @@ func _apply_culture_flip(city: Dictionary, new_owner: String, culture_map: Dicti
 	var old_owner: String = str(city.get("current_faction_id", ""))
 	if city_id == "" or old_owner == "" or new_owner == "" or old_owner == new_owner:
 		return
+	var old_mainstream: String = str(city.get("mainstream_culture", old_owner))
 	change_ownership(city_id, new_owner)
 	var retained: Dictionary = {}
 	for faction_id in _get_all_culture_factions():
@@ -1241,6 +1644,7 @@ func _apply_culture_flip(city: Dictionary, new_owner: String, culture_map: Dicti
 	retained[new_owner] = float(culture_map.get(new_owner, 0.0))
 	city["culture"] = retained
 	city["mainstream_culture"] = new_owner
+	SignalBus.culture_mainstream_changed.emit(city_id, old_mainstream, new_owner)
 
 
 func _apply_military_occupation_culture(city: Dictionary, old_faction: String, new_faction: String) -> void:
@@ -1662,6 +2066,7 @@ func _unit_requires_tech(unit_id: String) -> bool:
 
 func _initialize_states() -> void:
 	_city_states.clear()
+	_building_at_hex.clear()
 	for city_data in DataManager.get_all_cities():
 		var state: Dictionary = city_data.duplicate(true)
 		state["current_faction_id"] = city_data["faction_id"]
@@ -1681,6 +2086,9 @@ func _initialize_states() -> void:
 		# 安定度：初始值从 balance_params 读取
 		state["stability"] = int(DataManager.get_balance_param("stability.initial"))
 		state["turns_since_capture"] = 0
+		var ax0: Vector2i = HexAxial.offset_odd_r_to_axial(int(city_data.get("hex_q", 0)), int(city_data.get("hex_r", 0)))
+		state["_axial_q"] = ax0.x
+		state["_axial_r"] = ax0.y
 		_city_states[city_data["id"]] = state
 
 

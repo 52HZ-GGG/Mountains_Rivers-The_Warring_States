@@ -36,9 +36,9 @@ func test_atk_buff_fire_bonus() -> void:
 	assert_almost_eq(buff, 1.4, 0.01, "火攻 +0.4 → buff=1.4")
 
 func test_atk_buff_ambush_fire_exclusive() -> void:
-	var ambush_only: float = CombatLib._calc_atk_buff({"is_ambush": true, "ambush_bonus": 0.3})
+	var fire_only: float = CombatLib._calc_atk_buff({"is_fire_attack": true, "fire_bonus": 0.4})
 	var both: float = CombatLib._calc_atk_buff({"is_ambush": true, "is_fire_attack": true, "ambush_bonus": 0.3, "fire_bonus": 0.4})
-	assert_almost_eq(both, ambush_only, 0.01, "伏击与火攻互斥时伏击优先")
+	assert_almost_eq(both, fire_only, 0.01, "火攻与伏击互斥时火攻优先（主动火攻跳过伏击）")
 
 func test_atk_buff_multiple_modifiers() -> void:
 	var buff: float = CombatLib._calc_atk_buff({
@@ -237,11 +237,11 @@ func test_compute_damage_terrain_defense() -> void:
 	var rng2: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng2.seed = 42
 	var plains: Dictionary = _combat.compute_damage(
-		"infantry", "infantry", "plains", 100, 100, rng2,
+		"infantry", "infantry", "plains", 100, 100, rng2, {"disable_ambush": true}, {},
 	)
 	rng2.seed = 42
 	var mountain: Dictionary = _combat.compute_damage(
-		"infantry", "infantry", "mountain", 100, 100, rng2,
+		"infantry", "infantry", "mountain", 100, 100, rng2, {"disable_ambush": true}, {},
 	)
 	assert_true(int(mountain.get("damage", 0)) <= int(plains.get("damage", 0)),
 		"山地防御应使伤害不高于平原")

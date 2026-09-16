@@ -140,7 +140,9 @@ func cancel_building_placement() -> void:
 
 func _try_place_building_at(axial: Vector2i) -> void:
 	if _placement_city_id == "" or _placement_building_id == "":
+		print("[BigMap] place inactive")
 		return
+	print("[BigMap] place try city=", _placement_city_id, " bid=", _placement_building_id, " hex=", axial)
 	if CityManager.start_build(_placement_city_id, _placement_building_id, axial):
 		var cid: String = _placement_city_id
 		var bid: String = _placement_building_id
@@ -212,6 +214,8 @@ func _building_mark_map() -> Dictionary:
 			out[axial] = {
 				"letter": letter,
 				"color": _building_category_color(str(bdata.get("category", "")), bool(e.get("disabled", false))),
+				"building_id": bid,
+				"category": str(bdata.get("category", "")),
 			}
 	return out
 
@@ -675,6 +679,14 @@ func _apply_overlay_to_terrain_payload() -> void:
 		payload["capital_rect"] = _capital_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
 		payload["unit_texture"] = _unit_texture(unit)
 		payload["unit_rect"] = _unit_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+		if building_marks.has(cell_axial):
+			var bmark: Dictionary = building_marks[cell_axial] as Dictionary
+			payload["building_texture"] = SkirmishTileTextures.building_texture(
+				str(bmark.get("building_id", "")), str(bmark.get("category", "")))
+			payload["building_rect"] = _building_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+		else:
+			payload["building_texture"] = null
+			payload["building_rect"] = Rect2()
 		_terrain_payload_cells[i] = payload
 
 
@@ -857,6 +869,12 @@ func _unit_texture(unit: Dictionary) -> Texture2D:
 	return SkirmishTileTextures.unit_texture(str(unit.get("unit_type_id", "")))
 
 
+func _building_rect(cell_pos: Vector2) -> Rect2:
+	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.55
+	var center: Vector2 = cell_pos + _cell_size * 0.5
+	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.35, size_px, size_px)
+
+
 func _unit_rect(cell_pos: Vector2) -> Rect2:
 	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.42
 	var center: Vector2 = cell_pos + _cell_size * 0.5
@@ -972,7 +990,7 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 				_set_map_cursor(Control.CURSOR_MOVE)
 			if _drag_active:
 				_pan_by(-motion.relative)
-				motion.accept_event()
+				get_viewport().set_input_as_handled()
 				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
@@ -984,25 +1002,30 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _placement_city_id != "":
 			cancel_building_placement()
-			mb.accept_event()
+			get_viewport().set_input_as_handled()
 			return
 		if mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		# 放置模式：按下左键立即落点
+		if mb.pressed and _placement_city_id != "":
+			var hit_place: Variant = _axial_at_local_point(mb.position)
+			if hit_place == null:
+				hit_place = _nearest_axial_at_local_point(mb.position)
+			print("[BigMap] click place pos=", mb.position, " hit=", hit_place)
+			if hit_place is Vector2i:
+				_try_place_building_at(hit_place as Vector2i)
+			get_viewport().set_input_as_handled()
 			return
 		if mb.pressed:
 			_drag_armed = true
 			_drag_active = false
 			_drag_press_pos = mb.position
-			mb.accept_event()
+			get_viewport().set_input_as_handled()
 			return
 		var was_dragging: bool = _drag_active
 		_end_drag()
-		mb.accept_event()
+		get_viewport().set_input_as_handled()
 		if was_dragging:
-			return
-		if _placement_city_id != "":
-			var hit_place: Variant = _axial_at_local_point(mb.position)
-			if hit_place is Vector2i:
-				_try_place_building_at(hit_place as Vector2i)
 			return
 		# 固定城池触发区：优先直接进内政，不依赖六角多边形命中
 		var city_id: String = _city_id_at_local_point(mb.position)
@@ -1142,6 +1165,28 @@ func _focus_city_deferred(city_id: String) -> void:
 	_scroll.scroll_horizontal = int(round(clampf(board_center.x - view_size.x * 0.5, 0.0, max_scroll.x)))
 	_scroll.scroll_vertical = int(round(clampf(board_center.y - view_size.y * 0.5, 0.0, max_scroll.y)))
 	_refresh_minimap_viewport()
+
+
+func _nearest_axial_at_local_point(point: Vector2) -> Variant:
+	var logical_point: Vector2 = point / maxf(_zoom_level, 0.001)
+	var best: Variant = null
+	var best_d: float = INF
+	for axial: Variant in _cell_payload_by_axial.keys():
+		var payload: Dictionary = _cell_payload_by_axial.get(axial, {}) as Dictionary
+		var poly: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
+		if poly.size() < 3:
+			continue
+		var c: Vector2 = Vector2.ZERO
+		for pt: Vector2 in poly:
+			c += pt
+		c /= float(poly.size())
+		var d: float = c.distance_squared_to(logical_point)
+		if d < best_d:
+			best_d = d
+			best = axial
+	if best_d > pow(_cell_radius_px * 2.0 / maxf(_zoom_level, 0.001), 2.0):
+		return null
+	return best
 
 
 func _axial_at_local_point(point: Vector2) -> Variant:

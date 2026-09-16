@@ -105,7 +105,7 @@ func run_turn() -> void:
 			var ai_def_ctx: Dictionary = {}
 			var ai_is_fire: bool = m._can_fire_attack(def_ter)
 			if ai_is_fire:
-				ai_atk_ctx = m._get_fire_attack_ctx()
+				ai_atk_ctx = m._get_fire_attack_ctx(str(u["faction_id"]))
 			# 被动技能加成
 			var ai_passive_bonus: float = m._get_passive_skill_bonus(u.get("skills", []))
 			if ai_passive_bonus > 0.0:
@@ -123,6 +123,9 @@ func run_turn() -> void:
 			var ai_atk_school: Dictionary = m._get_school_combat_bonus(str(u["faction_id"]))
 			if ai_atk_school.get("school_atk", 0.0) != 0.0:
 				ai_atk_ctx["school_atk"] = ai_atk_school["school_atk"]
+			var ai_school_ambush: float = SchoolManager.get_effect_float(str(u["faction_id"]), "ambush_damage_bonus")
+			if ai_school_ambush > 0.001:
+				ai_atk_ctx["school_ambush_bonus"] = ai_school_ambush
 			var ai_def_school: Dictionary = m._get_school_combat_bonus(str(defender["faction_id"]))
 			if ai_def_school.get("school_def", 0.0) != 0.0:
 				ai_def_ctx["school_def"] = ai_def_school["school_def"]

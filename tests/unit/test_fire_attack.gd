@@ -108,12 +108,36 @@ func test_fire_attack_no_trigger_non_forest() -> void:
 # ============= 火攻与伏击互斥 =============
 
 func test_fire_attack_ambush_exclusive() -> void:
-	# 火攻和伏击不应同时触发（火攻优先时跳过伏击判定）
+	# 火攻和伏击不应同时触发（主动火攻优先，跳过伏击，§5.3）
 	var buff_fire: float = CombatLib._calc_atk_buff({"is_fire_attack": true, "fire_bonus": 0.4})
 	var buff_ambush: float = CombatLib._calc_atk_buff({"is_ambush": true, "ambush_bonus": 0.3})
 	var buff_both: float = CombatLib._calc_atk_buff({"is_ambush": true, "is_fire_attack": true, "ambush_bonus": 0.3, "fire_bonus": 0.4})
-	# 互斥时伏击优先（代码中 is_ambush 先判断）
-	assert_almost_eq(buff_both, buff_ambush, 0.01, "伏击与火攻互斥时伏击优先")
+	# 互斥时火攻优先（主动选择火攻则跳过伏击）
+	assert_almost_eq(buff_both, buff_fire, 0.01, "火攻与伏击互斥时火攻优先")
+	assert_almost_eq(buff_fire, 1.4, 0.01, "火攻加法层 +0.4")
+	assert_almost_eq(buff_ambush, 1.3, 0.01, "伏击加法层 +0.3")
+
+
+func test_ambush_applies_additive_bonus() -> void:
+	# 伏击触发时 atk_buff += 0.3（进加法层，而非事后乘伤）
+	var buff: float = CombatLib._calc_atk_buff({"is_ambush": true, "ambush_bonus": 0.3})
+	assert_almost_eq(buff, 1.3, 0.01, "伏击应使 atk_buff = 1.3")
+
+
+func test_ambush_school_bonus_additive() -> void:
+	# 兵家 ambush_damage_bonus 与基础伏击加成相加
+	var buff: float = CombatLib._calc_atk_buff({
+		"is_ambush": true,
+		"ambush_bonus": 0.3,
+		"school_ambush_bonus": 0.3,
+	})
+	assert_almost_eq(buff, 1.6, 0.01, "伏击 + 兵家加成 = 1.6")
+
+
+func test_fire_school_bonus_in_fire_bonus() -> void:
+	# 兵家 fire_attack_bonus 应并入 fire_bonus（0.4 + 0.2 = 0.6）
+	var buff: float = CombatLib._calc_atk_buff({"is_fire_attack": true, "fire_bonus": 0.6})
+	assert_almost_eq(buff, 1.6, 0.01, "火攻 + 兵家加成 = 1.6")
 
 
 # ============= DOT 伤害测试 =============
