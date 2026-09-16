@@ -47,7 +47,7 @@ func test_project_starts_from_splash_flow() -> void:
 
 func test_framework_hub_exposes_formal_game_modules() -> void:
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
-	var framework_hub: Control = main_scene.get("_framework_hub") as Control
+	var framework_hub: Control = _hub_of(main_scene) as Control
 
 	assert_not_null(framework_hub, "主场景应创建正式版框架 Hub")
 	assert_true(framework_hub.visible, "框架 Hub 应作为主界面默认可见")
@@ -81,10 +81,10 @@ func test_framework_hub_exposes_formal_game_modules() -> void:
 func test_framework_placeholder_opens_for_unfinished_modules() -> void:
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "unknown_module")
-	var placeholder_layer: CanvasLayer = main_scene.get("_framework_placeholder_layer") as CanvasLayer
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
+	_hub_of(main_scene).call("_on_framework_module_pressed", "unknown_module")
+	var placeholder_layer: CanvasLayer = _hub_of(main_scene).get("_framework_placeholder_layer") as CanvasLayer
+	var placeholder_title: Label = _hub_of(main_scene).get("_framework_placeholder_title") as Label
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
 
 	assert_true(placeholder_layer.visible, "未完成模块应打开统一占位面板，而不是静默无响应")
 	assert_eq(placeholder_title.text, "unknown_module", "未知模块占位面板标题应对应被点击模块")
@@ -97,9 +97,9 @@ func test_framework_events_module_uses_real_event_data() -> void:
 	EventManager._chain_states["chain_zhangyi_lianheng"] = {"current_index": 1}
 	EventManager._record_recent_event(DataManager.get_event("evt_harvest_bumper"), "triggered")
 
-	main_scene.call("_on_framework_module_pressed", "events")
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
+	_hub_of(main_scene).call("_on_framework_module_pressed", "events")
+	var placeholder_title: Label = _hub_of(main_scene).get("_framework_placeholder_title") as Label
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
 
 	assert_eq(placeholder_title.text, "事件总览", "事件入口应升级为真实数据总览")
 	assert_true(placeholder_body.text.contains("试玩说明"), "事件总览应统一提供试玩说明")
@@ -117,10 +117,10 @@ func test_framework_schools_module_uses_real_school_data() -> void:
 	SchoolManager.activate_policy("qin", "leg_surveillance")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "schools")
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
+	_hub_of(main_scene).call("_on_framework_module_pressed", "schools")
+	var placeholder_title: Label = _hub_of(main_scene).get("_framework_placeholder_title") as Label
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
 
 	assert_eq(placeholder_title.text, "学派 / 文化总览", "学派入口应升级为真实数据总览")
 	assert_true(placeholder_body.text.contains("试玩说明"), "学派总览应统一提供试玩说明")
@@ -138,9 +138,9 @@ func test_framework_school_switch_panel_can_change_runtime_school() -> void:
 	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_open_school_switch_panel")
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
-	var scroll: ScrollContainer = main_scene.get("_framework_placeholder_scroll") as ScrollContainer
+	_hub_of(main_scene).call("_open_school_switch_panel")
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
+	var scroll: ScrollContainer = _hub_of(main_scene).get("_framework_placeholder_scroll") as ScrollContainer
 	var switch_button: Button = _find_descendant_by_name(actions, "SchoolSwitch_confucianism") as Button
 
 	assert_not_null(switch_button, "学派切换面板应提供儒家切换按钮")
@@ -154,7 +154,7 @@ func test_framework_ministers_module_uses_real_minister_data() -> void:
 	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "ministers")
+	_hub_of(main_scene).call("_on_framework_module_pressed", "ministers")
 	var minister_panel: Control = main_scene.get("_minister_panel") as Control
 	assert_not_null(minister_panel, "官员入口应打开正式大夫面板")
 	assert_true(minister_panel.visible, "大夫面板应可见")
@@ -169,8 +169,8 @@ func test_framework_ministers_module_uses_real_minister_data() -> void:
 	var status: Label = minister_panel.get("_status_label") as Label
 	assert_true(status.text.contains("武大夫攻防加成"), "应展示武大夫加成")
 	# 总览仍可通过内部接口打开
-	main_scene.call("_show_ministers_panel")
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
+	_hub_of(main_scene).call("_show_ministers_panel")
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
 	assert_true(placeholder_body.text.contains("试玩说明"), "官员总览应统一提供试玩说明")
 	assert_true(placeholder_body.text.contains("商鞅"), "官员总览应展示已有历史人物")
 
@@ -181,8 +181,8 @@ func test_framework_minister_assign_panel_can_reassign_capital_minister() -> voi
 	var before: Dictionary = MinisterManager.get_city_civil_minister(capital_id)
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_open_minister_assign_panel")
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
+	_hub_of(main_scene).call("_open_minister_assign_panel")
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
 	var assign_button: Button = _find_descendant_by_name(actions, "MinisterAssignCapitalButton") as Button
 
 	assert_not_null(assign_button, "大夫派驻面板应提供首都派驻按钮")
@@ -198,10 +198,10 @@ func test_framework_intelligence_module_uses_existing_strategy_data() -> void:
 	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "intelligence")
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
+	_hub_of(main_scene).call("_on_framework_module_pressed", "intelligence")
+	var placeholder_title: Label = _hub_of(main_scene).get("_framework_placeholder_title") as Label
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
 
 	assert_eq(placeholder_title.text, "情报总览", "情报入口应升级为基于现有战略数据的总览")
 	assert_true(placeholder_body.text.contains("试玩说明"), "情报总览应统一提供试玩说明")
@@ -215,10 +215,10 @@ func test_framework_intelligence_module_uses_existing_strategy_data() -> void:
 func test_framework_save_module_exposes_quick_save_actions() -> void:
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "save")
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
+	_hub_of(main_scene).call("_on_framework_module_pressed", "save")
+	var placeholder_title: Label = _hub_of(main_scene).get("_framework_placeholder_title") as Label
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
 
 	assert_eq(placeholder_title.text, "存档 / 读档", "存档入口应打开专用快照面板")
 	assert_true(placeholder_body.text.contains("快速存档槽"), "存档面板应说明单槽快照状态")
@@ -233,9 +233,9 @@ func test_framework_quick_save_and_load_snapshot() -> void:
 	WonderManager.set_wonder_owner("honggou", "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "save")
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
+	_hub_of(main_scene).call("_on_framework_module_pressed", "save")
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
 	var quick_save_button: Button = _find_descendant_by_name(actions, "QuickSaveButton") as Button
 	var quick_load_button: Button = _find_descendant_by_name(actions, "QuickLoadButton") as Button
 
@@ -259,10 +259,10 @@ func test_framework_quick_save_and_load_snapshot() -> void:
 func test_framework_settings_module_exposes_basic_actions() -> void:
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "settings")
-	var placeholder_title: Label = main_scene.get("_framework_placeholder_title") as Label
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
+	_hub_of(main_scene).call("_on_framework_module_pressed", "settings")
+	var placeholder_title: Label = _hub_of(main_scene).get("_framework_placeholder_title") as Label
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
 
 	assert_eq(placeholder_title.text, "设置", "设置入口应打开专用设置面板")
 	assert_true(placeholder_body.text.contains("音频"), "设置面板应显示音频状态")
@@ -276,9 +276,9 @@ func test_framework_settings_module_exposes_basic_actions() -> void:
 func test_framework_settings_can_toggle_demo_cheat() -> void:
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 
-	main_scene.call("_on_framework_module_pressed", "settings")
-	var actions: HBoxContainer = main_scene.get("_framework_placeholder_actions") as HBoxContainer
-	var placeholder_body: RichTextLabel = main_scene.get("_framework_placeholder_body") as RichTextLabel
+	_hub_of(main_scene).call("_on_framework_module_pressed", "settings")
+	var actions: HBoxContainer = _hub_of(main_scene).get("_framework_placeholder_actions") as HBoxContainer
+	var placeholder_body: RichTextLabel = _hub_of(main_scene).get("_framework_placeholder_body") as RichTextLabel
 	var toggle_cheat_button: Button = _find_descendant_by_name(actions, "ToggleDemoCheatButton") as Button
 
 	assert_eq(TacticalSkirmishManager.get_demo_attack_multiplier(), 1.0, "默认不应启用 Demo 作弊")
@@ -383,7 +383,7 @@ func test_demo_strategy_preparation_tracks_map_and_capital() -> void:
 	assert_false(DemoFlow.is_step_completed(DemoFlow.STEP_PREPARE_QIN), "尚未打开首都经营时不应完成经营准备")
 	assert_true(sortie_button.disabled, "只看版图后仍不能直接出征")
 
-	main_scene.call("_open_player_capital_panel")
+	_hub_of(main_scene).call("_open_player_capital_panel")
 	assert_true(DemoFlow.is_step_completed(DemoFlow.STEP_MANAGE_CAPITAL), "打开玩家首都应推进经营准备步骤")
 	assert_true(DemoFlow.is_step_completed(DemoFlow.STEP_PREPARE_QIN), "版图和首都都查看后应完成经营准备")
 	assert_false(sortie_button.disabled, "经营准备完成后应允许从任务面板出征")
@@ -398,7 +398,7 @@ func test_framework_demo_briefing_shows_full_strategy_scope() -> void:
 	GameManager.start_game(GameManager.FACTION_IDS, "qin")
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
 	await wait_frames(1)
-	var framework_hub: Control = main_scene.get("_framework_hub") as Control
+	var framework_hub: Control = _hub_of(main_scene) as Control
 	var briefing_text: RichTextLabel = _find_descendant_by_name(framework_hub, "BriefingText") as RichTextLabel
 
 	assert_not_null(briefing_text, "战略中枢应包含 Demo 简报")
@@ -628,7 +628,7 @@ func test_public_playtest_demo_smoke_path_to_luoyi_result() -> void:
 	var sortie_button: Button = demo_objective_panel.get_node("Margin/VBox/SortieButton") as Button
 
 	main_scene.call("_on_big_map_button_pressed")
-	main_scene.call("_open_player_capital_panel")
+	_hub_of(main_scene).call("_open_player_capital_panel")
 	await wait_frames(1)
 
 	sortie_button.pressed.emit()
@@ -915,6 +915,10 @@ func _find_descendant_by_text(root: Node, target_text: String) -> Node:
 		if found != null:
 			return found
 	return null
+
+
+func _hub_of(main_scene: Node) -> Control:
+	return main_scene.get("_hub_panel") as Control
 
 
 func _remove_framework_quick_save() -> void:
