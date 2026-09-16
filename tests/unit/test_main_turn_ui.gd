@@ -710,7 +710,10 @@ func test_demo_victory_popup_can_replay_demo() -> void:
 
 func test_demo_victory_popup_can_return_to_hub() -> void:
 	DemoFlow.set_enabled(true)
+	DemoFlow.set_tutorial_enabled(true)
 	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
+	# 教程模式会 call_deferred 自动进演武，先等它完成再手动走胜利流
+	await wait_frames(5)
 
 	main_scene.call("_on_demo_sortie_requested")
 	main_scene.call("_on_skirmish_ended", DemoFlow.get_player_faction_id())
