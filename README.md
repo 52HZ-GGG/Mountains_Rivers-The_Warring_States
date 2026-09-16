@@ -155,6 +155,29 @@
 
 > **首次配置**：克隆仓库后需要复制 `.claude/mcp.json.template` 为 `.claude/mcp.json` 才能启用 MCP 工具（仅影响 Claude Code 协作，不影响 Godot 运行）。
 
+## 美术资源结构
+
+所有美术资源统一存放在 `assets/` 目录（此前分散的 `photos/` 已并入并清理），运行时引用一律通过 `res://assets/...` 路径。
+
+```
+assets/
+├── terrain/            # 地形瓦片（平原/森林/山/河/渡口/沼泽/关隘/荒漠/深水/浅水）
+├── tiles/              # 都城据点瓦片（七国首都）
+├── events/             # 事件插画（旱灾/丰收/洪水/伏击/攻城/同盟/合纵/变法等）
+├── units/
+│   ├── portraits/      # 兵种立绘（19 基础 + 7 势力特色）
+│   ├── portraits_hires/ # 君主立绘（七国）
+│   ├── animations/     # 兵种动画帧（base/ + 势力/，每兵种 5 动作 × 4 帧）
+│   └── effects/        # 战斗特效（15 种 × 8 帧）
+├── ui/                 # UI 素材（icons/panels/buttons/highlights/overlays/logo/battle）
+├── fonts/              # 字体（STLITI.TTF、pixel_lishu 动态字体）
+└── shaders/            # Shader（文化覆盖/UI/笔刷等 7 个）
+```
+
+- **引用维护**：`scripts/ui/skirmish_tile_textures.gd` 是主要路径注册表；兵种动画帧由 `scripts/units/unit.gd` 动态拼接。
+- **资源审计**：修改资源后运行 `tools/asset_audit_baseline.ps1` 重新生成引用/文件交叉清单（输出到 `docs/程序进度/`）。
+- **资产生成**：`tools/` 下的 `generate_*.gd` 脚本可在 Godot 编辑器内运行以重建占位素材（按钮四态、图标、加载动画等）。
+
 ---
 
 > 地理即命运，合纵连横皆在棋盘之上。
