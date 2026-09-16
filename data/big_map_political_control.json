@@ -1,8 +1,48 @@
 {
-	"schema_version": "1.0",
-	"description": "大地图政治统治范围覆盖层；未覆盖格按城市控制者、等级、首都、发展度推导临时影响圈",
+	"schema_version": "2.0",
+	"description": "大地图政治疆域；mode=influence 为影响力+填洞，mode=voronoi 为旧最近城推导",
 	"map_width": 100,
 	"map_height": 70,
+	"mode": "influence",
+	"city_power": {
+		"base": 10,
+		"per_level": 4,
+		"capital_bonus": 15,
+		"development_divisor": 10,
+		"neutral_multiplier": 0.5
+	},
+	"radius": {
+		"base": 3,
+		"per_level": 1,
+		"capital_bonus": 1,
+		"neutral": 2
+	},
+	"ownership_threshold": 8,
+	"dominance_ratio": 1.25,
+	"frontier_min_score": 4,
+	"hole_fill_neighbor_count": 5,
+	"hole_fill_rounds": 3,
+	"terrain_influence": {
+		"plains": 1.0,
+		"forest": 0.85,
+		"hill": 0.7,
+		"marsh": 0.6,
+		"river": 0.55,
+		"mountain": 0.35,
+		"desert": 0.5,
+		"tundra": 0.5,
+		"shallow_ocean": 0.3,
+		"deep_ocean": 0.0,
+		"pass": 1.0,
+		"ford": 0.9
+	},
+	"pass": {
+		"owner_multiplier": 1.6,
+		"enemy_multiplier": 0.5
+	},
+	"bordering": {
+		"max_hex_distance": 1
+	},
 	"derived_radius_rules": {
 		"level_radii": {
 			"1": 4,

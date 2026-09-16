@@ -656,7 +656,8 @@ func _ensure_big_map_control_cache() -> void:
 		CityManager.get_all_city_states(),
 		get_big_map_control_overrides(),
 		get_big_map_size(),
-		get_big_map_political_radius_rules()
+		get_big_map_political_control(),
+		get_big_map_rows()
 	)
 	_big_map_control_cache_ready = true
 
