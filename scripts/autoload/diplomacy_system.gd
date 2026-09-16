@@ -198,12 +198,19 @@ func get_vassals(master_id: String) -> Array[String]:
 
 
 func are_bordering(faction_a: String, faction_b: String) -> bool:
-	var cities_a: Array = DataManager.get_faction_cities(faction_a)
-	var cities_b: Array = DataManager.get_faction_cities(faction_b)
+	if faction_a == "" or faction_b == "" or faction_a == faction_b:
+		return false
+	# 运行时城池归属（占城/丢城后接壤会变）；D1 仍用城距，D3 改实控相邻
+	var cities_a: Array = CityManager.get_faction_city_states(faction_a)
+	var cities_b: Array = CityManager.get_faction_city_states(faction_b)
+	if cities_a.is_empty() or cities_b.is_empty():
+		return false
 	var threshold: int = DataManager.get_balance_param("diplomacy.border_distance_threshold")
 	for ca in cities_a:
+		var qa: int = int((ca as Dictionary).get("hex_q", 0))
+		var ra: int = int((ca as Dictionary).get("hex_r", 0))
 		for cb in cities_b:
-			var dist := _hex_distance(ca["hex_q"], ca["hex_r"], cb["hex_q"], cb["hex_r"])
+			var dist := _hex_distance(qa, ra, int((cb as Dictionary).get("hex_q", 0)), int((cb as Dictionary).get("hex_r", 0)))
 			if dist <= threshold:
 				return true
 	return false
