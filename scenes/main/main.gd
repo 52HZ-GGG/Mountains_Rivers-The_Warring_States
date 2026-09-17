@@ -109,7 +109,6 @@ func _connect_hub_signals() -> void:
 	_hub_panel.open_tech_requested.connect(_big_map_scene_instance.toggle_tech)
 	_hub_panel.open_military_requested.connect(_on_hub_military_requested)
 	_hub_panel.open_minister_requested.connect(_big_map_scene_instance.open_minister_overlay)
-	_hub_panel.return_to_mode_requested.connect(_big_map_scene_instance.return_to_mode)
 	_hub_panel.hub_visibility_changed.connect(_on_hub_visibility_changed)
 	_hub_panel.demo_objective_update_requested.connect(_on_hub_demo_objective_update_requested)
 

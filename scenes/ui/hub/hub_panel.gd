@@ -3,8 +3,8 @@ extends Control
 ## 战略中枢独立场景（自 scenes/main/main.gd 迁出）
 ## 职责：构建中枢 UI（标题/状态栏/模块网格/简报）与只读总览页。
 ## 跨界动作分流：
-##   - 大地图/城市/军事/外交/科技 模块 → 经 StartupFlow 切换独立场景（hub 不再依赖 main 容器监听）；
-##   - 其余跨界动作（大夫/返回模式等）仍发信号，由 main 容器（旧测试路径）或宿主转发执行。
+##   - 大地图/城市/军事/外交/科技 模块与返回模式 → 经 StartupFlow 切换独立场景（hub 不再依赖 main 容器监听）；
+##   - 其余跨界动作（大夫等）仍发信号，由 main 容器（旧测试路径）或宿主转发执行。
 
 signal open_big_map_requested
 signal open_city_requested(city_id: String)
@@ -59,9 +59,10 @@ func _framework_demo_mode_name() -> String:
 	return "战斗演武"
 
 
-## 返回模式按钮：发信号由 main 执行场景切换
+## 返回模式按钮：独立中枢模式下直接经 StartupFlow 切回模式选择（与 big_map/skirmish 一致）
 func _on_return_mode_pressed() -> void:
-	emit_signal("return_to_mode_requested")
+	StartupFlow.trace("HubPanel.return_to_mode")
+	StartupFlow.return_to_mode_select()
 
 
 func _build_ui() -> void:
