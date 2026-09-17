@@ -684,7 +684,8 @@ func _effect_preview_lines(event: Dictionary) -> Array[String]:
 func _format_effects(effects: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
 	if effects.is_empty():
-		return ["（无直接数值效果）"]
+		lines.append("（无直接数值效果）")
+		return lines
 	for key: Variant in EFFECT_NAMES.keys():
 		if not effects.has(key):
 			continue
