@@ -404,8 +404,12 @@ func _ensure_big_map() -> void:
 
 
 ## 用户主动关大地图：回到控制中枢（结束回合隐藏 + 恢复 hub）。
+## 独立场景模式（无中枢可恢复）：直接返回主菜单，避免黑屏。
 func _on_big_map_closed() -> void:
 	_set_end_turn_visible(false)
+	if get_tree() != null and get_tree().current_scene == self:
+		return_to_mode()
+		return
 	hub_visibility_requested.emit(true)
 	_close_big_map()
 

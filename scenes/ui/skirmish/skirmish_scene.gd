@@ -154,6 +154,14 @@ func _on_skirmish_scenario_closed() -> void:
 	if TacticalSkirmishManager.is_active():
 		# 演武进行中：保持演武 UI，不恢复战略工具栏
 		return
+	_show_hub_or_exit()
+
+
+## 独立场景模式（无中枢可恢复）下请求显示中枢 → 返回主菜单，避免黑屏。
+func _show_hub_or_exit() -> void:
+	if get_tree() != null and get_tree().current_scene == self:
+		return_to_mode()
+		return
 	hub_visibility_requested.emit(true)
 
 
@@ -277,7 +285,7 @@ func _on_demo_victory_return_to_hub_requested() -> void:
 		big_map_scene.close_diplomacy()
 		big_map_scene.close_city_panel()
 		big_map_scene.set_end_turn_visible(false)
-	hub_visibility_requested.emit(true)
+	_show_hub_or_exit()
 	if _should_show_tutorial_guidance_ui() and is_instance_valid(_demo_objective_panel):
 		_demo_objective_panel.visible = true
 		if _demo_objective_panel.has_method("update_panel"):
@@ -312,7 +320,7 @@ func _on_skirmish_panel_closed() -> void:
 		_active_skirmish_panel = null
 	if big_map_scene != null:
 		big_map_scene.set_end_turn_visible(false)
-	hub_visibility_requested.emit(true)
+	_show_hub_or_exit()
 	if _should_show_tutorial_guidance_ui() and is_instance_valid(_demo_objective_panel):
 		_demo_objective_panel.visible = true
 
