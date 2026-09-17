@@ -120,6 +120,16 @@ func return_to_mode_select() -> void:
 # 场景跳转
 # ────────────────────────────────────────────
 
+# ── 场景切换进度条（线程加载）────────────────────
+## 过渡界面实例（root 顶层子节点）；null 表示当前无过渡界面
+var _transition: Control = null
+## 过渡界面场景（预加载，避免首次切换时再解析）
+const _TRANSITION_SCENE: PackedScene = preload("res://scenes/ui/loading/scene_transition.tscn")
+## 待切换目标场景路径（加载失败回退用）
+var _pending_scene_path: String = ""
+## 标志：加载完成后是否继续 change_scene
+var _pending_change_after_load: bool = false
+
 func goto_splash() -> void:
 	trace("goto_splash")
 	_game_start_pending = false
@@ -241,10 +251,65 @@ func _ensure_initial_scene() -> void:
 			return
 	_request_scene_change(splash_scene)
 
+## 请求切换场景：统一走「线程加载 + 进度条过渡界面」，
+## 目标场景由后台线程加载，界面显示真实进度，完成后 change_scene_to_packed 切换，
+## 避免同步加载导致的瞬间卡顿。
 func _request_scene_change(scene_path: String) -> void:
-	trace("request_scene_change path=%s" % scene_path)
-	call_deferred("_change_scene_deferred", scene_path)
+	trace("request_scene_change path=%s (threaded)" % scene_path)
+	_pending_scene_path = scene_path
+	_pending_change_after_load = true
+	_show_transition_and_start_load(scene_path)
 
+
+## 显示过渡界面并开始后台加载；过渡界面只实例化一次，可复用多次加载。
+func _show_transition_and_start_load(scene_path: String) -> void:
+	if _transition == null:
+		_transition = _TRANSITION_SCENE.instantiate()
+		get_tree().root.add_child(_transition)
+		_transition.loaded.connect(_on_transition_loaded)
+		_transition.load_failed.connect(_on_transition_load_failed)
+	_transition.start_load(scene_path)
+
+
+## 过渡界面加载完成：用已加载的 PackedScene 切换（避免二次解析），随后清理过渡界面。
+func _on_transition_loaded() -> void:
+	if _transition == null:
+		return
+	var packed: PackedScene = _transition.get_loaded_packed()
+	_pending_change_after_load = false
+	_pending_scene_path = ""
+	if packed == null:
+		trace("transition_loaded but packed=null")
+		_cleanup_transition()
+		return
+	var err: Error = get_tree().change_scene_to_packed(packed)
+	trace("transition_loaded change_scene_to_packed path=%s err=%s" % [packed.resource_path, str(err)])
+	_cleanup_transition()
+
+
+## 过渡界面加载失败：记录错误并回退到同步加载，保证流程不卡死。
+func _on_transition_load_failed(error_text: String) -> void:
+	trace("transition load_failed: %s" % error_text)
+	_pending_change_after_load = false
+	_cleanup_transition()
+	var path: String = _pending_scene_path
+	_pending_scene_path = ""
+	if path == "":
+		return
+	var err: Error = get_tree().change_scene_to_file(path)
+	trace("transition fallback change_scene_to_file path=%s err=%s" % [path, str(err)])
+
+
+## 清理过渡界面节点（加载完成或失败后调用）
+func _cleanup_transition() -> void:
+	if _transition == null:
+		return
+	_transition.queue_free()
+	_transition = null
+
+
+## 【已废弃】场景切换统一走 _request_scene_change 的线程加载 + 进度条；
+## 保留本函数仅为兼容潜在外部引用，不再被调用。
 func _change_scene_deferred(scene_path: String) -> void:
 	trace("change_scene_deferred begin path=%s" % scene_path)
 	var err: Error = get_tree().change_scene_to_file(scene_path)
