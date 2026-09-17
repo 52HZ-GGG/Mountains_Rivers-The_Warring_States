@@ -14,6 +14,7 @@ const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 const CtxBuilder := preload("res://scripts/systems/combat_ctx_builder.gd")
 const MovementReach := preload("res://scripts/systems/movement_reach.gd")
+const SiegeResolver := preload("res://scripts/systems/siege_resolver.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -307,24 +308,35 @@ func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
 	var range: int = int(a_type.get("range", 1))
 	if HexLib.hex_distance_hex(u_pos, c_pos) > range:
 		return {"ok": false, "reason": "OUT_OF_RANGE"}
-	var atk: int = int(a_type.get("attack", 10))
-	var siege_mult: float = 1.0
-	if str(a_type.get("category", "")) == "siege":
-		siege_mult = float(DataManager.get_balance_param("city_combat.siege_damage_multiplier"))
-	var city_def: float = float(CityManager.get_city_defense(city_id))
-	var coeff: float = 20.0
-	var dmg: int = maxi(1, int(float(atk) * siege_mult * coeff / (coeff + maxf(city_def, 0.0))))
-	var result: Dictionary = CityManager.damage_city(city_id, dmg)
+	# 统一规范 §7：经 SiegeResolver（墙分流 + 器械倍率 + ctx）
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var siege_result: Dictionary = SiegeResolver.compute_city_attack(unit, city_id, rng)
+	var dmg: int = int(siege_result.get("damage", 0))
+	var counter_dmg: int = 0
+	if not bool(siege_result.get("city_destroyed", false)):
+		counter_dmg = SiegeResolver.city_counter_damage(city_id, unit, rng)
+		if counter_dmg > 0:
+			unit["hp"] = int(unit.get("hp", 0)) - counter_dmg
 	unit["acted"] = true
 	unit["mp"] = 0
-	if bool(result.get("destroyed", false)):
+	var destroyed: bool = bool(siege_result.get("city_destroyed", false))
+	if destroyed:
 		var captor: String = str(unit["faction_id"])
 		CityManager.change_ownership(city_id, captor)
-		# 占城胜利有机会招募武大夫
 		MinisterManager.try_acquire_military_minister(captor)
+	if int(unit.get("hp", 0)) <= 0:
+		_remove_unit(str(unit["id"]))
 	city_sieged.emit(city_id, unit_id, dmg)
 	units_changed.emit()
-	return {"ok": true, "damage": dmg, "destroyed": bool(result.get("destroyed", false))}
+	return {
+		"ok": true,
+		"damage": dmg,
+		"wall_damage": int(siege_result.get("wall_damage", 0)),
+		"city_damage": int(siege_result.get("city_damage", dmg)),
+		"counter_damage": counter_dmg,
+		"destroyed": destroyed,
+	}
 
 
 func _city_id_at_offset(col: int, row: int) -> String:
