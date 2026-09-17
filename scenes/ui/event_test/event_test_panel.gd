@@ -11,15 +11,23 @@ const CREAM: Color = Color(0.86, 0.82, 0.72, 1.0)
 const DIM_GRAY: Color = Color(0.62, 0.55, 0.42, 1.0)
 const DARK_BG: Color = Color(0.09, 0.075, 0.055, 0.97)
 
-const CATEGORY_ORDER: Array[String] = [
-	"economy", "military", "morale", "season",
-	"politics", "diplomacy", "school", "special",
+const LEVEL1_ORDER: Array[String] = [
+	"regular", "hist", "school", "season",
 ]
-const CATEGORY_NAMES: Dictionary = {
-	"economy": "经济",
+const LEVEL1_NAMES: Dictionary = {
+	"regular": "常规",
+	"hist": "史实",
+	"school": "学派",
+	"season": "季节",
+}
+const LEVEL2_ORDER: Array[String] = [
+	"economy", "military", "morale", "politics",
+	"diplomacy", "school", "special",
+]
+const LEVEL2_NAMES: Dictionary = {
+	"economy": "民生",
 	"military": "军事",
 	"morale": "民心",
-	"season": "季节",
 	"politics": "政治",
 	"diplomacy": "外交",
 	"school": "学派",
@@ -80,10 +88,14 @@ const EFFECT_NAMES: Dictionary = {
 var _layer: CanvasLayer = null
 var _tabs_box: HBoxContainer = null
 var _tab_buttons: Array[Button] = []
+var _sub_tabs_box: HBoxContainer = null
+var _sub_tab_buttons: Array[Button] = []
 var _list_box: VBoxContainer = null
-var _current_category: String = "economy"
+var _current_level1: String = "regular"
+var _current_level2: String = "economy"
 var _current_event: Dictionary = {}
-var _events_by_category: Dictionary = {}
+var _events_by_level1: Dictionary = {}
+var _events_by_level2: Dictionary = {}
 var _detail_title: Label = null
 var _detail_desc: Label = null
 var _detail_stats: Label = null
@@ -154,17 +166,35 @@ func _ensure_layer() -> void:
 
 # ============= 数据 =============
 
+## 一级归类：史实（one_shot 历史典故）→ hist；学派（one_time）→ school；
+## 季节（category=season）→ season；其余 → regular 常规
+func _level1_of(evt: Dictionary) -> String:
+	if str(evt.get("category", "")) == "season":
+		return "season"
+	var trigger: Dictionary = evt.get("trigger", {}) as Dictionary
+	if bool(trigger.get("one_shot", false)):
+		return "hist"
+	if bool(evt.get("one_time", false)):
+		return "school"
+	return "regular"
+
+
 func _rebuild_data() -> void:
-	_events_by_category.clear()
-	for cat: String in CATEGORY_ORDER:
-		_events_by_category[cat] = []
+	_events_by_level1.clear()
+	_events_by_level2.clear()
+	for l1: String in LEVEL1_ORDER:
+		_events_by_level1[l1] = []
+		_events_by_level2[l1] = {}
 	var events: Array = DataManager.get_all_events()
 	for raw: Variant in events:
 		var evt: Dictionary = raw as Dictionary
+		var l1: String = _level1_of(evt)
+		(_events_by_level1[l1] as Array).append(evt)
 		var cat: String = str(evt.get("category", "uncategorized"))
-		if not _events_by_category.has(cat):
-			_events_by_category[cat] = []
-		(_events_by_category[cat] as Array).append(evt)
+		var l2_map: Dictionary = _events_by_level2[l1] as Dictionary
+		if not l2_map.has(cat):
+			l2_map[cat] = []
+		(l2_map[cat] as Array).append(evt)
 
 
 # ============= UI 构建 =============
@@ -211,6 +241,19 @@ func _build_ui() -> void:
 	_tabs_box.name = "CategoryTabs"
 	_tabs_box.add_theme_constant_override("separation", 8)
 	tab_scroll.add_child(_tabs_box)
+
+	# 二级主题 Tab 行（横向可滚动；按当前一级动态显示）
+	var sub_tab_scroll := ScrollContainer.new()
+	sub_tab_scroll.name = "SubCategoryTabScroll"
+	sub_tab_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	sub_tab_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sub_tab_scroll.custom_minimum_size = Vector2(0, 40)
+	root_vbox.add_child(sub_tab_scroll)
+
+	_sub_tabs_box = HBoxContainer.new()
+	_sub_tabs_box.name = "SubCategoryTabs"
+	_sub_tabs_box.add_theme_constant_override("separation", 8)
+	sub_tab_scroll.add_child(_sub_tabs_box)
 
 	# 主体：左列表 + 右详情
 	var body := HBoxContainer.new()
@@ -425,36 +468,97 @@ func _showcase_style() -> StyleBoxFlat:
 	return style
 
 
-# ============= 类别 Tab =============
+# ============= 类别 Tab（一级：常规/史实/学派/季节） =============
 
 func _build_tabs() -> void:
 	for child: Node in _tabs_box.get_children():
 		child.queue_free()
 	_tab_buttons.clear()
-	for cat: String in CATEGORY_ORDER:
-		var count: int = (_events_by_category.get(cat, []) as Array).size()
-		var btn: Button = SkirmishTileTextures.styled_button("%s(%d)" % [str(CATEGORY_NAMES.get(cat, cat)), count])
-		btn.name = "Tab_%s" % cat
+	for l1: String in LEVEL1_ORDER:
+		var count: int = (_events_by_level1.get(l1, []) as Array).size()
+		var btn: Button = SkirmishTileTextures.styled_button("%s(%d)" % [str(LEVEL1_NAMES.get(l1, l1)), count])
+		btn.name = "L1_%s" % l1
 		btn.toggle_mode = true
 		btn.custom_minimum_size = Vector2(0, 40)
-		btn.pressed.connect(_on_tab_pressed.bind(cat))
+		btn.pressed.connect(_on_level1_pressed.bind(l1))
 		_tabs_box.add_child(btn)
 		_tab_buttons.append(btn)
+	# 一级重建后：若当前一级已不存在，回落到第一个非空一级
+	if not (_events_by_level1.get(_current_level1, []) as Array).size() > 0:
+		for l1: String in LEVEL1_ORDER:
+			if (_events_by_level1.get(l1, []) as Array).size() > 0:
+				_current_level1 = l1
+				break
+	# 二级回落：当前二级无事件时，取该级第一个非空主题
+	var cur_l2_map: Dictionary = _events_by_level2.get(_current_level1, {}) as Dictionary
+	if _current_level2 == "" or not (cur_l2_map.get(_current_level2, []) as Array).size() > 0:
+		_current_level2 = _first_level2_with_events(_current_level1)
+	_build_sub_tabs()
 	_refresh_tab_highlight()
 
 
 func _refresh_tab_highlight() -> void:
 	for btn: Button in _tab_buttons:
-		var cat: String = str(btn.name).trim_prefix("Tab_")
-		btn.button_pressed = cat == _current_category
-		btn.add_theme_color_override("font_color", GOLD if cat == _current_category else Color(0.91, 0.835, 0.69, 1.0))
+		var l1: String = str(btn.name).trim_prefix("L1_")
+		btn.button_pressed = l1 == _current_level1
+		btn.add_theme_color_override("font_color", GOLD if l1 == _current_level1 else Color(0.91, 0.835, 0.69, 1.0))
 
 
-func _on_tab_pressed(category: String) -> void:
-	if _current_category == category:
+func _on_level1_pressed(level1: String) -> void:
+	if _current_level1 == level1:
 		return
-	_current_category = category
+	_current_level1 = level1
+	# 切一级时二级回落该级第一个非空主题
+	_current_level2 = _first_level2_with_events(level1)
+	_build_sub_tabs()
 	_refresh_tab_highlight()
+	_rebuild_list()
+
+
+# ============= 二级主题 Tab =============
+
+## 当前一级下第一个含事件的二级主题；无则返回空串
+func _first_level2_with_events(level1: String) -> String:
+	var l2_map: Dictionary = _events_by_level2.get(level1, {}) as Dictionary
+	for l2: String in LEVEL2_ORDER:
+		if l2_map.has(l2) and (l2_map[l2] as Array).size() > 0:
+			return l2
+	return ""
+
+
+func _build_sub_tabs() -> void:
+	for child: Node in _sub_tabs_box.get_children():
+		child.queue_free()
+	_sub_tab_buttons.clear()
+	var l2_map: Dictionary = _events_by_level2.get(_current_level1, {}) as Dictionary
+	for l2: String in LEVEL2_ORDER:
+		if not l2_map.has(l2):
+			continue
+		var events: Array = l2_map[l2] as Array
+		if events.is_empty():
+			continue
+		var btn: Button = SkirmishTileTextures.styled_button("%s(%d)" % [str(LEVEL2_NAMES.get(l2, l2)), events.size()])
+		btn.name = "L2_%s" % l2
+		btn.toggle_mode = true
+		btn.custom_minimum_size = Vector2(0, 34)
+		btn.pressed.connect(_on_level2_pressed.bind(l2))
+		_sub_tabs_box.add_child(btn)
+		_sub_tab_buttons.append(btn)
+	_refresh_sub_tab_highlight()
+
+
+func _refresh_sub_tab_highlight() -> void:
+	for btn: Button in _sub_tab_buttons:
+		var l2: String = str(btn.name).trim_prefix("L2_")
+		btn.button_pressed = l2 == _current_level2
+		btn.add_theme_color_override("font_color", GOLD if l2 == _current_level2 else Color(0.91, 0.835, 0.69, 1.0))
+
+
+func _on_level2_pressed(level2: String) -> void:
+	if _current_level2 == level2:
+		return
+	_current_level2 = level2
+	_refresh_sub_tab_highlight()
 	_rebuild_list()
 
 
@@ -463,7 +567,13 @@ func _on_tab_pressed(category: String) -> void:
 func _rebuild_list() -> void:
 	for child: Node in _list_box.get_children():
 		child.queue_free()
-	var events: Array = _events_by_category.get(_current_category, []) as Array
+	var events: Array = []
+	var l2_map: Dictionary = _events_by_level2.get(_current_level1, {}) as Dictionary
+	if _current_level2 != "" and l2_map.has(_current_level2):
+		events = l2_map[_current_level2] as Array
+	else:
+		# 该一级无二级主题时（如季节）直接列出全部
+		events = _events_by_level1.get(_current_level1, []) as Array
 	if events.is_empty():
 		var empty := Label.new()
 		empty.text = "（该类别暂无事件）"
