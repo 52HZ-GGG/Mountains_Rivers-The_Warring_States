@@ -89,6 +89,7 @@ var _detail_desc: Label = null
 var _detail_stats: Label = null
 var _detail_conditions: Label = null
 var _showcase_dim: ColorRect = null
+var _showcase_center: CenterContainer = null
 var _showcase_card: PanelContainer = null
 var _showcase_title: Label = null
 var _showcase_desc: Label = null
@@ -334,12 +335,15 @@ func _build_showcase() -> void:
 	_showcase_card.add_theme_stylebox_override("panel", _showcase_style())
 	_showcase_card.visible = false
 	# 包进 CenterContainer 由容器自动居中，避免锚点偏移导致卡片出现在屏幕外
-	var showcase_center := CenterContainer.new()
-	showcase_center.name = "ShowcaseCenter"
-	showcase_center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	showcase_center.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(showcase_center)
-	showcase_center.add_child(_showcase_card)
+	_showcase_center = CenterContainer.new()
+	_showcase_center.name = "ShowcaseCenter"
+	_showcase_center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# 纯布局容器：IGNORE 不参与鼠标检测，绝不影响下层按钮点击
+	_showcase_center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# 初始隐藏：全屏容器若一直可见会悬浮在面板按钮之上拦截鼠标事件
+	_showcase_center.visible = false
+	add_child(_showcase_center)
+	_showcase_center.add_child(_showcase_card)
 
 	var card_box := VBoxContainer.new()
 	card_box.add_theme_constant_override("separation", 10)
@@ -718,6 +722,8 @@ func _show_event_preview(event: Dictionary) -> void:
 	_showcase_title.text = str(event.get("title", "未命名事件"))
 	_showcase_desc.text = str(event.get("description", ""))
 	_showcase_effects.text = "\n".join(_effect_preview_lines(event))
+	if is_instance_valid(_showcase_center):
+		_showcase_center.visible = true
 	_showcase_dim.visible = true
 	_showcase_card.visible = true
 
@@ -733,6 +739,8 @@ func _on_showcase_dim_input(event: InputEvent) -> void:
 
 
 func _hide_showcase() -> void:
+	if is_instance_valid(_showcase_center):
+		_showcase_center.visible = false
 	if is_instance_valid(_showcase_dim):
 		_showcase_dim.visible = false
 	if is_instance_valid(_showcase_card):
