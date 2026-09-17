@@ -159,8 +159,11 @@ func _show_event() -> void:
 			btn.mouse_exited.connect(func() -> void: _effect_label.text = "效果预览\n将鼠标悬停在右侧选项上。")
 			_options_container.add_child(btn)
 	else:
-		# 无选项事件 — 显示效果 + 确定按钮
-		_effect_label.text = "效果预览\n%s" % _format_outcomes(_event_data.get("effects", {}))
+		# 无选项事件 — 显示效果 + 确定按钮（多档效果事件：描述已为该档描述，确认后结算该档效果）
+		var variant_effects: Dictionary = _event_data.get("effects", {}) as Dictionary
+		if variant_effects.is_empty():
+			variant_effects = _event_data.get("effects", {}) as Dictionary
+		_effect_label.text = "效果预览\n%s" % _format_outcomes(variant_effects)
 		var btn := SkirmishTileTextures.styled_button(I18n.t("event.confirm"))
 		btn.add_theme_font_size_override("font_size", 15)
 		btn.pressed.connect(_on_confirm_pressed)
@@ -176,6 +179,9 @@ func _on_option_selected(choice_id: String) -> void:
 
 
 func _on_confirm_pressed() -> void:
+	var event_id: String = str(_event_data.get("id", ""))
+	# 多档效果事件（季节事件等）确认后结算该档；无档位普通事件仅关闭
+	EventManager.resolve_variant_event(event_id)
 	_close_popup()
 
 

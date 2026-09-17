@@ -809,8 +809,12 @@ func _effect_preview_lines(event: Dictionary) -> Array[String]:
 		for variant_v: Variant in variants:
 			var variant: Dictionary = variant_v as Dictionary
 			var prob: float = float(variant.get("probability", 0.0))
+			var vdesc: String = str(variant.get("description", ""))
 			var effects: Dictionary = variant.get("effects", {}) as Dictionary
-			lines.append("◆ 档位（%d%%）：%s" % [int(round(prob * 100.0)), "、".join(_format_effects(effects))])
+			var line: String = "◆ 档位（%d%%）：%s" % [int(round(prob * 100.0)), "、".join(_format_effects(effects))]
+			if vdesc != "":
+				line += "\n    ［%s］" % vdesc
+			lines.append(line)
 		return lines
 	var effects: Dictionary = event.get("effects", {}) as Dictionary
 	lines.append("◆ 效果：%s" % "、".join(_format_effects(effects)))

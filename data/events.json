@@ -523,6 +523,7 @@
       "effects_variants": [
         {
           "probability": 0.25,
+          "description": "风调雨顺，春雨及时，禾苗茁壮，田垄间一片青翠，今岁丰收可期。",
           "effects": {
             "food_delta": 300,
             "morale_delta": 10
@@ -530,6 +531,7 @@
         },
         {
           "probability": 0.5,
+          "description": "春耕如期，雨水合宜，农人勤作，田禾渐长，年景当属平稳。",
           "effects": {
             "food_delta": 150,
             "morale_delta": 5
@@ -537,6 +539,7 @@
         },
         {
           "probability": 0.25,
+          "description": "倒春之寒骤至，冻伤新苗，农人愁眉不展，恐误一岁之收。",
           "effects": {
             "food_delta": -50,
             "morale_delta": -3
@@ -564,18 +567,21 @@
       "effects_variants": [
         {
           "probability": 0.25,
+          "description": "瑞雪初降，恰似被裘覆田，来岁墒足，民皆言雪兆丰年，人心为之一振。",
           "effects": {
             "morale_delta": 15
           }
         },
         {
           "probability": 0.5,
+          "description": "寒冬虽凛，柴薪尚足，仓廪有储，百姓得以安度岁末。",
           "effects": {
             "morale_delta": 8
           }
         },
         {
           "probability": 0.25,
+          "description": "寒潮猝至，冻馁交加，流民塞道，饥殍相望，民情汹汹。",
           "effects": {
             "morale_delta": -5,
             "population_delta": -200
@@ -603,6 +609,7 @@
       "effects_variants": [
         {
           "probability": 0.25,
+          "description": "禾黍盈野，五谷丰登，市集繁盛，赋税充盈，黎庶欢腾。",
           "effects": {
             "gold_delta": 250,
             "morale_delta": 10
@@ -610,12 +617,14 @@
         },
         {
           "probability": 0.5,
+          "description": "年成尚可，稼穑有成，仓廪渐实，度支从容。",
           "effects": {
             "gold_delta": 150
           }
         },
         {
           "probability": 0.25,
+          "description": "秋收差强人意，谷价腾涌，小民生计维艰，怨言渐起。",
           "effects": {
             "gold_delta": 50,
             "morale_delta": -5

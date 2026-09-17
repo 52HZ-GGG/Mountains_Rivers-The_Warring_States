@@ -27,6 +27,7 @@ var _chain_states: Dictionary = {}  # chain_id -> { "current_index": int }
 var _triggered_categories: Dictionary = {}  # category -> true（本回合已触发的类型）
 var _muted: bool = false
 var _recent_events: Array[Dictionary] = []
+var _pending_variant_settle: Dictionary = {}  # event_id -> 已抽档字典（待玩家确认后结算）
 
 
 func _ready() -> void:
@@ -304,7 +305,8 @@ func _trigger_event(evt: Dictionary, faction_id: String) -> void:
 
 ## 按势力分派事件结算：
 ##   - 玩家 + 有选项 → 弹窗等待选择（resolve_event_choice）
-##   - 玩家 + 无选项 → 应用玩家效果并结算（季节事件等多档效果在此抽档）
+##   - 玩家 + 无选项 + 有 effects_variants → 抽档后弹窗展示该档描述与效果，确认后结算
+##   - 玩家 + 无选项 + 无档位 → 应用玩家效果并结算
 ##   - AI + 有选项 → 自动选择并应用（外交/特殊胜利效果对 AI 跳过）
 ##   - AI + 无选项 → 按势力应用效果并结算（同样按档位抽取）
 ## 尚未开局（玩家未设定）时一律走玩家路径，兼容旧调用方与旧测试。
@@ -313,40 +315,50 @@ func _dispatch_event(evt: Dictionary, faction_id: String) -> void:
 		if evt.get("options") != null:
 			SignalBus.event_triggered.emit(evt)
 		else:
-			_apply_effects(_pick_effects_variant(evt))
-			SignalBus.event_resolved.emit(evt["id"], "")
+			var variants: Array = evt.get("effects_variants", [])
+			if not variants.is_empty():
+				# 多档效果：先抽档，把该档描述与效果随弹窗展示，确认后再结算
+				var picked: Dictionary = _pick_effects_variant(evt)
+				_pending_variant_settle[evt["id"]] = picked
+				var display_evt: Dictionary = evt.duplicate()
+				display_evt["description"] = picked.get("description", str(evt.get("description", "")))
+				display_evt["effects"] = picked.get("effects", {})
+				SignalBus.event_triggered.emit(display_evt)
+			else:
+				_apply_effects(_pick_effects_variant(evt).get("effects", {}))
+				SignalBus.event_resolved.emit(evt["id"], "")
 		return
 	if evt.get("options") != null:
 		_choose_ai_option(evt, faction_id)
 	else:
-		_apply_effects_for(faction_id, _pick_effects_variant(evt))
+		_apply_effects_for(faction_id, _pick_effects_variant(evt).get("effects", {}))
 		SignalBus.event_resolved.emit(evt["id"], "")
 
 
 ## 效果档位解析：
-##   - 事件含 effects_variants（多档效果）时，按各档 probability 加权随机抽一档，返回其 effects。
-##   - 普通事件（无 effects_variants）原样返回 evt["effects"]。
+##   - 事件含 effects_variants（多档效果）时，按各档 probability 加权随机抽一档，返回该档字典（含 description/effects）。
+##   - 普通事件（无 effects_variants）原样返回 evt["effects"] 包装档（description 回退事件描述）。
 ## 数据约定各档概率和 = 1；此处按加权随机实现，并对总和不为 1 的情况做防御性归一化，
 ## 概率全为 0 或数组为空时回退到原 effects（保持普通事件行为不变）。
 func _pick_effects_variant(evt: Dictionary) -> Dictionary:
 	var variants: Array = evt.get("effects_variants", [])
 	if variants.is_empty():
-		return evt.get("effects", {})
+		return {"description": str(evt.get("description", "")), "effects": evt.get("effects", {})}
 	var total_weight: float = 0.0
 	for variant: Variant in variants:
 		var vd: Dictionary = variant as Dictionary
 		total_weight += float(vd.get("probability", 0.0))
 	if total_weight <= 0.0:
-		return evt.get("effects", {})
+		return {"description": str(evt.get("description", "")), "effects": evt.get("effects", {})}
 	var roll: float = randf() * total_weight
 	var acc: float = 0.0
 	for variant: Variant in variants:
 		var vd: Dictionary = variant as Dictionary
 		acc += float(vd.get("probability", 0.0))
 		if roll < acc:
-			return vd.get("effects", {})
+			return vd
 	# 防御性兜底：浮点边界（roll 恰等于 total_weight）时取最后一档
-	return variants[variants.size() - 1].get("effects", {})
+	return variants[variants.size() - 1] as Dictionary
 
 
 func _get_cooldown_for_event(evt: Dictionary) -> int:
@@ -380,6 +392,21 @@ func _is_on_cooldown(event_id: String) -> bool:
 
 
 # ============= 选项处理 =============
+
+## 玩家确认多档效果事件（季节事件等）：应用已抽档效果并结算。
+## 弹窗展示档位描述与效果后由玩家点击确认调用。
+func resolve_variant_event(event_id: String) -> bool:
+	if not _pending_variant_settle.has(event_id):
+		push_warning("EventManager: 事件 %s 无待结算档位" % event_id)
+		return false
+	var picked: Dictionary = _pending_variant_settle[event_id] as Dictionary
+	_pending_variant_settle.erase(event_id)
+	_apply_effects(picked.get("effects", {}))
+	var evt: Dictionary = DataManager.get_event(event_id)
+	_record_recent_event(evt, "resolved", "")
+	SignalBus.event_resolved.emit(event_id, "")
+	return true
+
 
 func resolve_event_choice(event_id: String, choice_id: String) -> bool:
 	var evt: Dictionary = DataManager.get_event(event_id)
