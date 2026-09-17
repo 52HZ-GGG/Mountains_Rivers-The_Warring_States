@@ -12,6 +12,7 @@ signal city_sieged(city_id: String, attacker_id: String, damage: int)
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
+const CtxBuilder := preload("res://scripts/systems/combat_ctx_builder.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -309,6 +310,15 @@ func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
 	var d_type_id: String = str(defender["unit_type_id"])
 	var d_offset: Vector2i = HexLib.axial_to_offset_odd_r(int(defender["q"]), int(defender["r"]))
 	var d_terrain_id: String = CityManager.get_big_map_terrain_id(d_offset.x, d_offset.y)
+	var season: String = CityManager.get_current_season(GameManager.get_current_turn())
+	var a_skills: Array = attacker.get("skills", []) if attacker.get("skills") is Array else []
+	# 统一规范 §4：经 CtxBuilder 组装修正
+	var atk_ctx: Dictionary = CtxBuilder.build_attack_ctx(
+		str(attacker["faction_id"]), a_type_id, a_skills, season
+	)
+	var def_ctx: Dictionary = CtxBuilder.build_defense_ctx(
+		str(defender["faction_id"]), d_type_id
+	)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.randomize()
 	var result: Dictionary = _combat.compute_damage(
@@ -317,7 +327,9 @@ func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
 		d_terrain_id,
 		int(attacker.get("morale", 100)),
 		int(defender.get("morale", 100)),
-		rng
+		rng,
+		atk_ctx,
+		def_ctx
 	)
 	return maxi(1, int(result.get("damage", 1)))
 
