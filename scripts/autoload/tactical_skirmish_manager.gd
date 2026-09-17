@@ -46,7 +46,7 @@ var _demo_attack_multiplier: float = 1.0
 
 func _ready() -> void:
 	_rng.randomize()
-	_ai.initialize(self)
+	_ai.initialize(self, str(_cfg.get("ai_mode", "random")))
 	_attack.initialize(self)
 
 

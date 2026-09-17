@@ -2,6 +2,9 @@ class_name StrategicAI
 
 ## 大地图战略 AI：操作本势力战略单位移动/攻城/交战。
 ## 由 MilitaryAI.evaluate_military() 在征兵后调用。
+## 目标评分走 AiCombatScoring（统一规范 §8）。
+
+const AiScore := preload("res://scripts/systems/ai_combat_scoring.gd")
 
 
 static func evaluate_strategic_units(faction_id: String) -> void:
@@ -79,19 +82,23 @@ static func _try_attack_adjacent_enemy(unit_id: String, faction_id: String) -> b
 	var my_pos: Vector2i = Vector2i(int(me.get("q", 0)), int(me.get("r", 0)))
 	var my_type: Dictionary = DataManager.get_unit_type(str(me.get("unit_type_id", "")))
 	var atk_range: int = int(my_type.get("range", 1))
-	var best_id: String = ""
-	var best_hp: int = 999999
+	var is_siege: bool = str(my_type.get("category", "")) == "siege" or str(my_type.get("special", "")) == "siege"
+	var candidates: Array = []
 	for enemy: Dictionary in StrategicMapManager.get_units():
 		var enemy_fid: String = str(enemy.get("faction_id", ""))
 		if not _can_engage(faction_id, enemy_fid):
 			continue
 		var e_pos: Vector2i = Vector2i(int(enemy.get("q", 0)), int(enemy.get("r", 0)))
-		if HexAxial.hex_distance_hex(my_pos, e_pos) > atk_range:
+		var dist: int = HexAxial.hex_distance_hex(my_pos, e_pos)
+		if dist > atk_range:
 			continue
-		var hp: int = int(enemy.get("hp", 0))
-		if hp < best_hp:
-			best_hp = hp
-			best_id = str(enemy.get("id", ""))
+		candidates.append({
+			"id": str(enemy.get("id", "")),
+			"hp": int(enemy.get("hp", 0)),
+			"max_hp": int(enemy.get("max_hp", 1)),
+			"dist": dist,
+		})
+	var best_id: String = AiScore.pick_best_unit_target(candidates, is_siege)
 	if best_id == "":
 		return false
 	return bool(StrategicMapManager.try_attack_unit(unit_id, best_id).get("ok", false))
