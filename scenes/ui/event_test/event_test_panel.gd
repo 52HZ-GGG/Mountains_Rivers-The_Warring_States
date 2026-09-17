@@ -324,6 +324,8 @@ func _build_showcase() -> void:
 	_showcase_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_showcase_dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	_showcase_dim.visible = false
+	# 点击遮罩任意处也可关闭展示层，避免误以为界面卡死
+	_showcase_dim.gui_input.connect(_on_showcase_dim_input)
 	add_child(_showcase_dim)
 
 	_showcase_card = PanelContainer.new()
@@ -722,6 +724,12 @@ func _show_event_preview(event: Dictionary) -> void:
 
 func _on_showcase_close() -> void:
 	_hide_showcase()
+
+
+## 点击展示层遮罩（黑罩）任意处关闭展示层
+func _on_showcase_dim_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and (event as InputEventMouseButton).pressed:
+		_hide_showcase()
 
 
 func _hide_showcase() -> void:
