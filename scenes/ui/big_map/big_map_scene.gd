@@ -3,7 +3,7 @@ class_name BigMapScene
 
 ## 大地图独立场景 — 自 scenes/main/main.gd 迁出的「大地图及其相关调度」。
 ## 职责：大地图面板、叠层（城池/外交/科技/大夫）、资源栏搬移、回合控制、
-##       事件弹窗、Debug 事件测试按钮、返回模式按钮、建筑放置流程。
+##       事件弹窗、返回模式按钮、建筑放置流程。
 ##
 ## 入口：启动流程按模式分流直进本场景（full_demo / 默认模式），或从中枢场景切换进入；
 ##       独立场景模式下 resource_bar / tech_tree_panel 为空，由本场景自建/缺省。
@@ -28,7 +28,6 @@ const _MINISTER_PANEL_SCENE: PackedScene = preload("res://scenes/ui/minister_pan
 const _BIG_MAP_PANEL_SCENE: PackedScene = preload("res://scenes/ui/big_map/big_map_panel.tscn")
 const _CITY_PANEL_SCENE: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
 const _EVENT_POPUP_SCENE: PackedScene = preload("res://scenes/ui/event_popup/event_popup.tscn")
-const _EVENT_TEST_SCENE: PackedScene = preload("res://scenes/ui/event_test/event_test_panel.tscn")
 
 var _diplomacy_panel: Panel = null
 var _minister_panel: Panel = null
@@ -37,10 +36,7 @@ var _city_panel: Panel = null
 var _last_big_map_city_focus_id: String = ""
 var _formal_demo_big_map_opened: bool = false
 var _event_popup: Panel = null
-var _event_test_panel: Panel = null
-var _event_test_btn: Button = null
 var _return_mode_btn: Button = null
-var _debug_tools_enabled: bool = false
 
 var _turn_info_layer: CanvasLayer = null
 var _turn_info_panel: PanelContainer = null
@@ -86,14 +82,8 @@ const FACTION_NAMES: Dictionary = {
 
 
 func _ready() -> void:
-	_debug_tools_enabled = OS.has_feature("debug")
 	_event_popup = _EVENT_POPUP_SCENE.instantiate() as Panel
 	add_child(_event_popup)
-
-	if _debug_tools_enabled:
-		_event_test_btn = SkirmishTileTextures.styled_button("事件测试(Debug)")
-		_event_test_btn.pressed.connect(_on_event_test_button_pressed)
-		add_child(_event_test_btn)
 
 	_return_mode_btn = SkirmishTileTextures.styled_button("返回模式")
 	_return_mode_btn.pressed.connect(return_to_mode)
@@ -680,26 +670,7 @@ func _ensure_tech_layer() -> void:
 		panel.visible = false
 
 
-# ── 事件测试 / 返回模式 ────────────────────────────────────
-
-func _on_event_test_button_pressed() -> void:
-	if not _debug_tools_enabled:
-		return
-	hub_visibility_requested.emit(false)
-	_set_end_turn_visible(false)
-
-	if not is_instance_valid(_event_test_panel):
-		_event_test_panel = _EVENT_TEST_SCENE.instantiate() as Panel
-		add_child(_event_test_panel)
-		_event_test_panel.test_panel_closed.connect(_on_event_test_closed)
-
-	_event_test_panel.open()
-
-
-func _on_event_test_closed() -> void:
-	_set_end_turn_visible(false)
-	hub_visibility_requested.emit(true)
-
+# ── 返回模式 ──────────────────────────────────────────────
 
 ## 返回模式选择：清理本场景叠层后交给 StartupFlow 切换。
 func return_to_mode() -> void:
@@ -707,9 +678,6 @@ func return_to_mode() -> void:
 	_close_big_map()
 	_close_diplomacy()
 	_close_city_panel()
-	if is_instance_valid(_event_test_panel):
-		_event_test_panel.queue_free()
-		_event_test_panel = null
 	return_to_mode_requested.emit()
 	StartupFlow.return_to_mode_select()
 

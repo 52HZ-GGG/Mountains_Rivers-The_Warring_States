@@ -552,26 +552,6 @@ func test_main_menu_can_open_and_close_skirmish_scenario_panel() -> void:
 	_assert_toolbar_visible(main_scene, true, "场景选择关闭后")
 
 
-func test_main_menu_can_open_and_close_event_test_panel() -> void:
-	var main_scene: Node = add_child_autofree(MAIN_SCENE.instantiate())
-
-	main_scene.call("_on_event_test_button_pressed")
-	var event_test_panel: Panel = main_scene.get("_event_test_panel") as Panel
-	var end_turn_btn: Button = main_scene.get("_persistent_end_btn") as Button
-
-	assert_not_null(event_test_panel, "点击事件测试后应创建事件测试面板")
-	assert_true(event_test_panel.visible, "事件测试面板应可见")
-	assert_false(end_turn_btn.visible, "事件测试面板打开时不应显示结束回合按钮")
-	_assert_toolbar_visible(main_scene, false, "事件测试面板打开时")
-
-	event_test_panel.call("_on_close_pressed")
-	await wait_frames(1)
-
-	assert_false(event_test_panel.visible, "关闭事件测试后面板应隐藏")
-	assert_false(end_turn_btn.visible, "关闭事件测试后结束回合按钮仍应隐藏")
-	_assert_toolbar_visible(main_scene, true, "事件测试关闭后")
-
-
 func test_demo_objective_panel_can_collapse() -> void:
 	DemoFlow.set_enabled(true)
 	DemoFlow.set_tutorial_enabled(true)

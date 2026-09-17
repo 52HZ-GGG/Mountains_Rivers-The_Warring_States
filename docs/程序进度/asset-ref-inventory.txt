@@ -1,4 +1,4 @@
-﻿addons/big_map_editor/big_map_document.gd	addons/big_map_editor/big_map_editor_canvas.gd	5	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
+addons/big_map_editor/big_map_document.gd	addons/big_map_editor/big_map_editor_canvas.gd	5	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
 addons/big_map_editor/big_map_document.gd	addons/big_map_editor/big_map_editor_panel.gd	4	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
 addons/big_map_editor/big_map_document.gd	tests/unit/test_big_map_document.gd	3	const DocumentScript := preload("res://addons/big_map_editor/big_map_document.gd")
 addons/big_map_editor/big_map_editor_canvas.gd	addons/big_map_editor/big_map_editor_panel.gd	5	const CanvasScript := preload("res://addons/big_map_editor/big_map_editor_canvas.gd")
@@ -202,8 +202,6 @@ scenes/ui/diplomacy/diplomacy_panel.tscn	scenes/main/main.gd	5	var _diplomacy_sc
 scenes/ui/diplomacy/negotiation_dialog.gd	scenes/ui/diplomacy/negotiation_dialog.tscn	3	[ext_resource type="Script" path="res://scenes/ui/diplomacy/negotiation_dialog.gd" id="1"]
 scenes/ui/event_popup/event_popup.gd	scenes/ui/event_popup/event_popup.tscn	3	[ext_resource type="Script" path="res://scenes/ui/event_popup/event_popup.gd" id="1"]
 scenes/ui/event_popup/event_popup.tscn	scenes/main/main.gd	15	var _event_popup_scene: PackedScene = preload("res://scenes/ui/event_popup/event_popup.tscn")
-scenes/ui/event_test/event_test_panel.gd	scenes/ui/event_test/event_test_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/event_test/event_test_panel.gd" id="1"]
-scenes/ui/event_test/event_test_panel.tscn	scenes/main/main.gd	17	var _event_test_scene: PackedScene = preload("res://scenes/ui/event_test/event_test_panel.tscn")
 scenes/ui/minister_panel/minister_panel.gd	scenes/ui/minister_panel/minister_panel.tscn	3	[ext_resource type="Script" path="res://scenes/ui/minister_panel/minister_panel.gd" id="1"]
 scenes/ui/minister_panel/minister_panel.tscn	scenes/main/main.gd	7	var _minister_panel_scene: PackedScene = preload("res://scenes/ui/minister_panel/minister_panel.tscn")
 scenes/ui/minister_panel/minister_panel.tscn	tests/unit/test_minister_panel.gd	6	const MINISTER_SCENE: PackedScene = preload("res://scenes/ui/minister_panel/minister_panel.tscn")

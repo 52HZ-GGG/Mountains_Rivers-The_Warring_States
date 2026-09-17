@@ -163,10 +163,6 @@ func _on_tech_button_pressed() -> void:
 	_big_map_scene_instance.toggle_tech()
 
 
-func _on_event_test_button_pressed() -> void:
-	_big_map_scene_instance._on_event_test_button_pressed()
-
-
 func _on_next_turn_pressed() -> void:
 	_big_map_scene_instance._on_next_turn_pressed()
 

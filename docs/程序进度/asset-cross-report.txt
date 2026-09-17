@@ -1,4 +1,4 @@
-﻿=== 美术资源整理 基线交叉分析 ===
+=== 美术资源整理 基线交叉分析 ===
 生成时间: 2026-09-16 16:20:02
 
 --- A. 具体路径引用且文件存在 (OK, 195) ---
@@ -145,8 +145,6 @@ scenes/ui/diplomacy/diplomacy_panel.tscn
 scenes/ui/diplomacy/negotiation_dialog.gd
 scenes/ui/event_popup/event_popup.gd
 scenes/ui/event_popup/event_popup.tscn
-scenes/ui/event_test/event_test_panel.gd
-scenes/ui/event_test/event_test_panel.tscn
 scenes/ui/minister_panel/minister_panel.gd
 scenes/ui/minister_panel/minister_panel.tscn
 scenes/ui/resource_bar/resource_bar.gd
