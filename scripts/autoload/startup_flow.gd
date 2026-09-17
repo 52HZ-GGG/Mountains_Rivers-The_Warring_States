@@ -13,6 +13,11 @@ const MODE_STRATEGY_HUB: String = "strategy_hub"
 const MODE_TEST_MENU: String = "test_menu"
 const TRACE_PATH: String = "user://startup_trace.log"
 
+# 模式分流目标场景（main.tscn 已退役，不再作为任何模式的游戏入口）
+const HUB_SCENE: String = "res://scenes/ui/hub/hub_scene.tscn"
+const BIG_MAP_SCENE: String = "res://scenes/ui/big_map/big_map_scene.tscn"
+const SKIRMISH_SCENE: String = "res://scenes/ui/skirmish/skirmish_scene.tscn"
+
 # 当前流程步骤
 var _current_step: String = ""
 
@@ -22,6 +27,8 @@ var is_startup_flow_active: bool = false
 # 玩家选择
 var selected_mode: String = ""
 var selected_faction: String = ""
+# 从中枢「军事」模块切入演武时置位；由 skirmish_scene._ready 消费后清除
+var pending_skirmish: bool = false
 var _game_start_pending: bool = false
 
 # 启动配置
@@ -29,6 +36,7 @@ var _game_start_pending: bool = false
 @export var mode_select_scene: String = "res://scenes/ui/splash/mode_select.tscn"
 @export var faction_select_scene: String = "res://scenes/ui/splash/faction_select.tscn"
 @export var loading_scene: String = "res://scenes/ui/splash/loading_screen.tscn"
+# 【已废弃】main.tscn 退役后不再作为游戏入口；保留 @export 仅避免改动旧配置。模式分流见 _scene_for_mode()。
 @export var game_scene: String = "res://scenes/main/main.tscn"
 
 # 是否跳过 Splash（调试用）
@@ -154,9 +162,27 @@ func goto_game() -> void:
 	is_startup_flow_active = false
 	_game_start_pending = true
 	flow_changed.emit(_current_step)
-	_request_scene_change(game_scene)
+	_request_scene_change(_scene_for_mode(selected_mode))
 	call_deferred("_nudge_window_to_front")
 	call_deferred("_start_pending_game")
+
+
+## 从中枢场景切入大地图（中枢已加载，切场景重进独立大地图场景）。
+## 不改 selected_mode：big_map_scene._ready 在独立场景模式下总是自动开图，
+## 仅 full_demo 额外定位首都，其余模式由玩家自行点选城池/顶栏功能。
+func goto_big_map_from_hub() -> void:
+	trace("goto_big_map_from_hub mode=%s" % selected_mode)
+	_request_scene_change(BIG_MAP_SCENE)
+	call_deferred("_nudge_window_to_front")
+
+
+## 从中枢场景切入演武：置位 pending_skirmish，由 skirmish_scene._ready 消费并打开军事入口
+## （DemoFlow 启用时直进洛邑演武，否则打开演武场景选择器）。
+func goto_skirmish_from_hub() -> void:
+	trace("goto_skirmish_from_hub mode=%s" % selected_mode)
+	pending_skirmish = true
+	_request_scene_change(SKIRMISH_SCENE)
+	call_deferred("_nudge_window_to_front")
 
 # ────────────────────────────────────────────
 # 流程回调（由各场景调用）
@@ -283,7 +309,7 @@ func start_demo_game_direct(mode_id: String = MODE_FULL_DEMO) -> void:
 	DemoFlow.set_full_demo_enabled(mode_id == MODE_FULL_DEMO)
 	DemoFlow.set_tutorial_enabled(mode_id == MODE_DEMO)
 	GameManager.start_game(GameManager.FACTION_IDS, selected_faction)
-	_request_scene_change(game_scene)
+	_request_scene_change(_scene_for_mode(mode_id))
 	call_deferred("_nudge_window_to_front")
 	trace("start_demo_game_direct end phase=%s" % _phase_name())
 
@@ -306,6 +332,21 @@ func _handle_direct_launch_args() -> bool:
 	else:
 		call_deferred("start_demo_game_direct", MODE_FULL_DEMO)
 	return true
+
+## 按模式返回游戏入口场景（main.tscn 已退役；各模式直达独立场景）。
+## strategy_hub / test_menu → 战略中枢；full_demo → 大地图；demo → 演武；
+## 其余模式（classic/quick/story/sandbox 等未来模式）默认落地大地图。
+func _scene_for_mode(mode_id: String) -> String:
+	match mode_id:
+		MODE_STRATEGY_HUB, MODE_TEST_MENU:
+			return HUB_SCENE
+		MODE_FULL_DEMO:
+			return BIG_MAP_SCENE
+		MODE_DEMO:
+			return SKIRMISH_SCENE
+		_:
+			return BIG_MAP_SCENE
+
 
 func _get_active_factions() -> Array[String]:
 	match selected_mode:

@@ -2,7 +2,9 @@ extends Control
 
 ## 战略中枢独立场景（自 scenes/main/main.gd 迁出）
 ## 职责：构建中枢 UI（标题/状态栏/模块网格/简报）与只读总览页。
-## 跨界动作（大地图/城池/外交/科技/演武/大夫/返回模式）一律发信号，由 main 调度执行。
+## 跨界动作分流：
+##   - 大地图/城市/军事/外交/科技 模块 → 经 StartupFlow 切换独立场景（hub 不再依赖 main 容器监听）；
+##   - 其余跨界动作（大夫/返回模式等）仍发信号，由 main 容器（旧测试路径）或宿主转发执行。
 
 signal open_big_map_requested
 signal open_city_requested(city_id: String)
@@ -364,15 +366,20 @@ func _framework_panel_style(color: Color) -> StyleBoxFlat:
 func _on_framework_module_pressed(module_id: String) -> void:
 	match module_id:
 		"big_map":
-			emit_signal("open_big_map_requested")
+			# 独立中枢模式：切到大地图场景（full_demo 定位首都；其余模式自动开图）
+			StartupFlow.goto_big_map_from_hub()
 		"city":
-			_open_player_capital_panel()
+			# 城市面板在大地图场景内：切入大地图后由玩家自行点选城池
+			StartupFlow.goto_big_map_from_hub()
 		"military":
-			emit_signal("open_military_requested")
+			# 切到演武场景：DemoFlow 启用时直进洛邑演武，否则打开演武场景选择器
+			StartupFlow.goto_skirmish_from_hub()
 		"diplomacy":
-			emit_signal("open_diplomacy_requested")
+			# 外交面板在大地图场景内：切入大地图后由玩家从顶栏打开
+			StartupFlow.goto_big_map_from_hub()
 		"tech":
-			emit_signal("open_tech_requested")
+			# 科技树在大地图场景内：切入大地图后由玩家从顶栏打开
+			StartupFlow.goto_big_map_from_hub()
 		"events":
 			_show_framework_placeholder("事件总览", _framework_events_summary())
 		"schools":
