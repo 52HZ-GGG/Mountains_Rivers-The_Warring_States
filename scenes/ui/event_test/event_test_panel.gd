@@ -329,10 +329,15 @@ func _build_showcase() -> void:
 	_showcase_card = PanelContainer.new()
 	_showcase_card.name = "ShowcaseCard"
 	_showcase_card.custom_minimum_size = Vector2(840, 0)
-	_showcase_card.set_anchors_preset(Control.PRESET_CENTER)
 	_showcase_card.add_theme_stylebox_override("panel", _showcase_style())
 	_showcase_card.visible = false
-	add_child(_showcase_card)
+	# 包进 CenterContainer 由容器自动居中，避免锚点偏移导致卡片出现在屏幕外
+	var showcase_center := CenterContainer.new()
+	showcase_center.name = "ShowcaseCenter"
+	showcase_center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	showcase_center.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(showcase_center)
+	showcase_center.add_child(_showcase_card)
 
 	var card_box := VBoxContainer.new()
 	card_box.add_theme_constant_override("separation", 10)
