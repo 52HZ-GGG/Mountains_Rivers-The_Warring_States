@@ -453,6 +453,18 @@ func process_ai_turn() -> void:
 	end_current_turn()
 
 
+## 结束当前玩家回合并连续结算后续 AI 回合，直到重新轮到玩家或游戏结束。
+## 场景层（大地图 / 教程演武）统一走此端口，避免各自复制 AI 延续 while 循环。
+## 调用方应在返回后自行刷新资源栏 / 季节 / 面板状态。
+func run_ai_continuation() -> void:
+	if _phase != Phase.ACTION:
+		push_warning("GameManager: run_ai_continuation 必须在 ACTION 阶段调用")
+		return
+	end_current_turn()
+	while _phase == Phase.ACTION and not is_player_faction(get_current_faction()):
+		process_ai_turn()
+
+
 func _ai_research_tick(faction_id: String) -> void:
 	var ai_techs: Dictionary = TechSystem.get_ai_researched_techs(faction_id)
 	# 按时代优先，其次按成本从高到低

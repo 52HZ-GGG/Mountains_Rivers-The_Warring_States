@@ -373,23 +373,14 @@ func _sync_map_mode_buttons() -> void:
 
 func _build_terrain_lookup() -> void:
 	_terrain_at_axial.clear()
-	var fa: FileAccess = FileAccess.open("res://data/big_map_terrain.json", FileAccess.READ)
-	if fa == null:
-		push_error("BigMapPanel: 无法加载 big_map_terrain.json")
-		return
-	var parsed: Variant = JSON.parse_string(fa.get_as_text())
-	if parsed is not Dictionary:
-		push_error("BigMapPanel: big_map_terrain.json 解析失败")
-		return
-	_terrain_cfg = parsed as Dictionary
-	var rows: Array = _terrain_cfg.get("rows", []) as Array
-	var map_w: int = int(_terrain_cfg.get("map_width", 30))
-	var map_h: int = int(_terrain_cfg.get("map_height", 20))
+	_terrain_cfg = DataManager.get_big_map_terrain_config()
+	var rows: Array = DataManager.get_big_map_rows()
+	var map_size: Vector2i = DataManager.get_big_map_size()
 	var row_i: int = 0
-	while row_i < rows.size() and row_i < map_h:
+	while row_i < rows.size() and row_i < map_size.y:
 		var row: Array = rows[row_i] as Array
 		var col_i: int = 0
-		while col_i < row.size() and col_i < map_w:
+		while col_i < row.size() and col_i < map_size.x:
 			var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(col_i, row_i)
 			_terrain_at_axial[axial] = str(row[col_i])
 			col_i += 1
@@ -412,7 +403,8 @@ func _build_political_control_grid() -> void:
 		CityManager.get_all_city_states(),
 		DataManager.get_big_map_control_overrides(),
 		DataManager.get_big_map_size(),
-		DataManager.get_big_map_political_radius_rules()
+		DataManager.get_big_map_political_control(),
+		DataManager.get_big_map_rows()
 	)
 
 

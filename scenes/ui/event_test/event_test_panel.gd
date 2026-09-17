@@ -33,17 +33,6 @@ const LEVEL2_NAMES: Dictionary = {
 	"school": "学派",
 	"special": "特殊",
 }
-const FACTION_NAMES: Dictionary = {
-	"qin": "秦国",
-	"zhao": "赵国",
-	"qi": "齐国",
-	"chu": "楚国",
-	"wei": "魏国",
-	"yan": "燕国",
-	"han": "韩国",
-	"zhou": "周室",
-	"neutral": "中立",
-}
 const SEASON_NAMES: Dictionary = {
 	"spring": "春",
 	"summer": "夏",
@@ -742,7 +731,7 @@ func _faction_display_name(fid: String) -> String:
 	var faction: Dictionary = DataManager.get_faction(fid)
 	if not faction.is_empty() and str(faction.get("name", "")) != "":
 		return str(faction.get("name", fid))
-	return str(FACTION_NAMES.get(fid, fid))
+	return DataManager.get_faction_display_name(fid)
 
 
 func _faction_list_text(v: Variant) -> String:

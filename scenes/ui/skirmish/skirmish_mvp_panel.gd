@@ -548,12 +548,10 @@ func _on_end_turn_pressed() -> void:
 func _advance_formal_turn_for_tutorial() -> void:
 	if GameManager.get_current_phase() != GameManager.Phase.ACTION:
 		return
-	var old_season: String = TacticalSkirmishManager.get_current_season()
-	GameManager.end_current_turn()
-	while GameManager.get_current_phase() == GameManager.Phase.ACTION and not GameManager.is_player_faction(GameManager.get_current_faction()):
-		GameManager.process_ai_turn()
+	var old_season: String = MapGateway.get_current_season()
+	GameManager.run_ai_continuation()
 	var new_season: String = CityManager.get_current_season(GameManager.get_current_turn())
-	TacticalSkirmishManager.set_season(new_season)
+	MapGateway.set_season(new_season)
 	_update_season_label()
 	_refresh_formal_resource_bar()
 	if is_instance_valid(_formal_city_panel):

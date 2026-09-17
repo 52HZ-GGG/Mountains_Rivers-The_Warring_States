@@ -263,5 +263,11 @@
     "easy":   {"demolish_refund_ratio": 0.75, "resource_mod": 0.0, "initial_gold_bonus": 0},
     "normal": {"demolish_refund_ratio": 0.5,  "resource_mod": 0.0, "initial_gold_bonus": 0},
     "hard":   {"demolish_refund_ratio": 0.25, "resource_mod": 0.0, "initial_gold_bonus": 0}
+  },
+  "ui_defaults": {
+    "default_gift_tier": 1,
+    "default_ceasefire_gold_offer": 100,
+    "default_non_aggression_duration": 20,
+    "default_military_access_units": 3
   }
 }

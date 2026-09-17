@@ -68,18 +68,6 @@ const SEASON_NAMES: Dictionary = {
 	"winter": "冬",
 }
 
-const FACTION_NAMES: Dictionary = {
-	"qin": "秦国",
-	"zhao": "赵国",
-	"qi": "齐国",
-	"chu": "楚国",
-	"wei": "魏国",
-	"yan": "燕国",
-	"han": "韩国",
-	"zhou": "周室",
-	"neutral": "中立",
-}
-
 
 func _ready() -> void:
 	_event_popup = _EVENT_POPUP_SCENE.instantiate() as Panel
@@ -305,7 +293,7 @@ func _show_turn_info(status_text: String = "回合切换成功") -> void:
 
 	_turn_info_title.text = "第 %d 回合" % turn
 	_turn_info_season.text = "时节：%s" % SEASON_NAMES.get(season, season)
-	_turn_info_faction.text = "%s 的回合" % FACTION_NAMES.get(faction, faction)
+	_turn_info_faction.text = "%s 的回合" % DataManager.get_faction_display_name(faction)
 	_turn_info_status.text = status_text
 	_turn_info_panel.visible = true
 	_turn_info_panel.modulate.a = 1.0
@@ -328,9 +316,7 @@ func _on_next_turn_pressed() -> void:
 		_reenable_end_btn()
 		return
 
-	GameManager.end_current_turn()
-	while GameManager.get_current_phase() == GameManager.Phase.ACTION and not GameManager.is_player_faction(GameManager.get_current_faction()):
-		GameManager.process_ai_turn()
+	GameManager.run_ai_continuation()
 
 	_refresh_resource_bar()
 
@@ -694,4 +680,4 @@ func _resolve_player_faction_id() -> String:
 func _faction_display_name(faction_id: String) -> String:
 	if faction_id == "":
 		return "未初始化"
-	return str(FACTION_NAMES.get(faction_id, faction_id))
+	return DataManager.get_faction_display_name(faction_id)

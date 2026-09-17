@@ -16,20 +16,6 @@ signal return_to_mode_requested
 signal hub_visibility_changed(visible: bool)
 signal demo_objective_update_requested
 
-const FACTION_NAMES: Dictionary = {
-	"qin": "秦国",
-	"zhao": "赵国",
-	"qi": "齐国",
-	"chu": "楚国",
-	"wei": "魏国",
-	"yan": "燕国",
-	"han": "韩国",
-	"zhou": "周室",
-	"neutral": "中立",
-}
-
-const FRAMEWORK_QUICK_SAVE_PATH: String = "user://framework_quick_save.json"
-const DEMO_CHEAT_ATTACK_MULTIPLIER: float = 20.0
 const EVENT_TEST_SCENE := preload("res://scenes/ui/event_test/event_test_panel.tscn")
 
 var _framework_hub_root: Control = null
@@ -169,9 +155,9 @@ func _build_ui() -> void:
 	status_grid.add_theme_constant_override("h_separation", 24)
 	status_grid.add_theme_constant_override("v_separation", 8)
 	status.add_child(status_grid)
-	_add_framework_status_label(status_grid, "玩家势力", FACTION_NAMES.get(GameManager.get_player_faction(), GameManager.get_player_faction()))
+	_add_framework_status_label(status_grid, "玩家势力", DataManager.get_faction_display_name(GameManager.get_player_faction()))
 	_add_framework_status_label(status_grid, "当前回合", "第 %d 回合" % GameManager.get_current_turn())
-	_add_framework_status_label(status_grid, "当前行动", FACTION_NAMES.get(GameManager.get_current_faction(), GameManager.get_current_faction()))
+	_add_framework_status_label(status_grid, "当前行动", DataManager.get_faction_display_name(GameManager.get_current_faction()))
 	_add_framework_status_label(status_grid, "Demo 主线", _framework_demo_mode_name())
 
 	var content := HBoxContainer.new()
@@ -309,6 +295,7 @@ func _create_framework_placeholder() -> void:
 
 func _framework_modules() -> Array[Dictionary]:
 	return [
+		{"id": "terrain_25d", "title": "2.5D 地形测试", "status": "测试场景", "summary": "查看新六边形地形素材的接入与排列效果。"},
 		{"id": "big_map", "title": "大地图", "status": "已接入", "summary": "查看战国版图、城池与势力控制。"},
 		{"id": "city", "title": "城市内政", "status": "已接入", "summary": "打开玩家首都，测试建筑、人口、征兵与产出。"},
 		{"id": "military", "title": "军事 / 战役", "status": "已接入", "summary": "Demo 模式进入洛邑攻城；普通模式进入演武场景选择。"},
@@ -397,6 +384,8 @@ func _on_framework_module_pressed(module_id: String) -> void:
 			_show_save_load_panel()
 		"settings":
 			_show_settings_panel()
+		"terrain_25d":
+			StartupFlow.goto_terrain_25d_test_from_hub()
 		_:
 			_show_framework_placeholder(_framework_module_title(module_id), _framework_placeholder_text(module_id))
 
@@ -863,7 +852,11 @@ func _toggle_framework_demo_cheat() -> void:
 	if TacticalSkirmishManager.get_demo_attack_multiplier() > 1.0:
 		TacticalSkirmishManager.set_demo_attack_multiplier(1.0)
 	else:
-		TacticalSkirmishManager.set_demo_attack_multiplier(DEMO_CHEAT_ATTACK_MULTIPLIER)
+		var cheat_mult: float = 20.0
+		var cheat_v: Variant = DataManager.get_balance_param("game_settings.demo_cheat_attack_multiplier")
+		if cheat_v != null:
+			cheat_mult = float(cheat_v)
+		TacticalSkirmishManager.set_demo_attack_multiplier(cheat_mult)
 	# Demo 目标面板刷新交由 main 处理
 	emit_signal("demo_objective_update_requested")
 	_refresh_settings_panel()
@@ -878,13 +871,9 @@ func _save_framework_quick_save(slot: int = 0) -> void:
 	if not bool(result.get("success", false)):
 		_framework_placeholder_body.text = "[b]保存失败[/b]\n槽位 %s：%s" % [str(slot + 1), str(result.get("reason", "WRITE_FAILED"))]
 		return
-	# 兼容旧单槽路径（测试/旧存档）
+	# 兼容旧单槽镜像路径（测试/旧存档）
 	if slot == 0:
-		var mirror: Dictionary = SaveManager.build_save_data()
-		var file: FileAccess = FileAccess.open(FRAMEWORK_QUICK_SAVE_PATH, FileAccess.WRITE)
-		if file != null:
-			file.store_string(JSON.stringify(mirror, "\t"))
-			file.close()
+		SaveManager.write_snapshot_file("framework_quick_save.json", SaveManager.build_save_data())
 	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入 %s。\n\n%s" % [SaveManager.get_save_path(slot), _framework_save_load_summary()]
 	_show_save_load_panel()
 	_framework_placeholder_body.text = "[b]保存成功[/b]\n已写入 %s。\n\n%s" % [SaveManager.get_save_path(slot), _framework_save_load_summary()]
@@ -905,43 +894,6 @@ func _load_framework_quick_save(slot: int = 0) -> void:
 	emit_signal("demo_objective_update_requested")
 
 
-func _build_framework_quick_save_data() -> Dictionary:
-	var player_faction: String = GameManager.get_player_faction()
-	if player_faction == "":
-		player_faction = DemoFlow.get_player_faction_id()
-	var target_city: Dictionary = CityManager.get_city_state(DemoFlow.get_target_city_id())
-	return {
-		"schema_version": 1,
-		"saved_at_unix": int(Time.get_unix_time_from_system()),
-		"turn": GameManager.get_current_turn(),
-		"player_faction": player_faction,
-		"current_faction": GameManager.get_current_faction(),
-		"resources": GameManager.get_faction_resources(player_faction).duplicate(true),
-		"demo_enabled": DemoFlow.is_enabled(),
-		"demo_complete": DemoFlow.is_demo_complete(),
-		"demo_completed_steps": DemoFlow.get_completed_steps(),
-		"target_city_id": DemoFlow.get_target_city_id(),
-		"target_city_owner": str(target_city.get("current_faction_id", "")),
-		"city_count": CityManager.get_all_city_states().size(),
-		"school_state": SchoolManager.get_save_data(),
-		"diplomacy_state": DiplomacySystem.get_save_data(),
-		"wonder_state": WonderManager.get_save_data(),
-		"event_state": EventManager.get_save_data(),
-	}
-
-
-func _read_framework_quick_save() -> Dictionary:
-	if not FileAccess.file_exists(FRAMEWORK_QUICK_SAVE_PATH):
-		return {}
-	var file: FileAccess = FileAccess.open(FRAMEWORK_QUICK_SAVE_PATH, FileAccess.READ)
-	if file == null:
-		return {}
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
-		return parsed as Dictionary
-	return {}
-
-
 func _framework_module_title(module_id: String) -> String:
 	for module: Dictionary in _framework_modules():
 		if str(module.get("id", "")) == module_id:
@@ -952,7 +904,7 @@ func _framework_module_title(module_id: String) -> String:
 func _faction_display_name(faction_id: String) -> String:
 	if faction_id == "":
 		return "未初始化"
-	return str(FACTION_NAMES.get(faction_id, faction_id))
+	return DataManager.get_faction_display_name(faction_id)
 
 
 func _framework_resource_line(resources: Dictionary) -> String:

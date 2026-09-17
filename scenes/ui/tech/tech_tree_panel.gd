@@ -192,8 +192,8 @@ func _show_tech_detail(tech_id: String) -> void:
 	cost_label.add_theme_font_size_override("font_size", 14)
 	_detail_panel.add_child(cost_label)
 
-	# 回合数
-	var turns := maxi(1, ceili(float(tech.get("cost_gold", 100)) / 100.0))
+	# 回合数（统一走 TechSystem 的估算端口，避免公式漂移）
+	var turns := TechSystem.estimate_research_turns(str(tech.get("id", "")))
 	var turns_label := Label.new()
 	turns_label.text = I18n.t("tech.turns") % turns
 	turns_label.add_theme_font_size_override("font_size", 14)

@@ -22,8 +22,8 @@ static func evaluate_strategic_units(faction_id: String) -> void:
 	var targets: Array = _enemy_target_axials(faction_id)
 	if targets.is_empty():
 		return
-	# 每回合最多操作 5 支，避免大地图单位多了拖慢 AI 回合
-	var action_budget: int = 5
+	# 每回合最多操作 N 支（ai_strategic.action_budget_per_turn），避免大地图单位多了拖慢 AI 回合
+	var action_budget: int = int(DataManager.get_balance_param("ai_strategic").get("action_budget_per_turn", 5))
 	for unit_v in units:
 		if action_budget <= 0:
 			break
@@ -108,7 +108,7 @@ static func _try_attack_adjacent_enemy_city(unit_id: String, faction_id: String)
 		var owner: String = str(city.get("current_faction_id", ""))
 		if not _can_engage(faction_id, owner):
 			continue
-		if owner == "neutral" and int(city.get("city_level", 1)) < 3:
+		if owner == "neutral" and int(city.get("city_level", 1)) < int(DataManager.get_balance_param("ai_strategic").get("neutral_city_min_level_to_attack", 3)):
 			continue
 		var c_pos: Vector2i = HexAxial.offset_odd_r_to_axial(int(city.get("hex_q", 0)), int(city.get("hex_r", 0)))
 		if HexAxial.hex_distance_hex(my_pos, c_pos) > atk_range:

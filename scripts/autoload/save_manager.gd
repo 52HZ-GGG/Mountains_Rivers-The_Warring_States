@@ -45,6 +45,16 @@ func save_to_slot(slot: int) -> Dictionary:
 	return {"success": true, "path": path, "slot": slot, "turn": int(data.get("turn", 0))}
 
 
+## 把快照写入 user:// 指定文件名（兼容旧单槽镜像测试路径）
+func write_snapshot_file(file_name: String, data: Dictionary) -> bool:
+	var file: FileAccess = FileAccess.open("user://" + file_name, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(JSON.stringify(data, "\t"))
+	file.close()
+	return true
+
+
 func load_from_slot(slot: int) -> Dictionary:
 	var data: Dictionary = read_save_file(slot)
 	if data.is_empty():

@@ -820,13 +820,14 @@ func _faction_display_name(faction_id: String) -> String:
 
 
 func _special_resource_name(sr: String) -> String:
-	match sr:
-		"wood": return "林木（木材产量+30%）"
-		"horse": return "马匹（骑兵训练+30%）"
-		"salt": return "盐池（金钱收入+20%）"
-		"craftsmen": return "工匠（工匠产量+30%）"
-		"building_materials": return "建材（建材产量+30%）"
-		_: return sr
+	var special_res: Variant = DataManager.get_balance_param("resources.special_resources")
+	if special_res is Dictionary and (special_res as Dictionary).has(sr):
+		var entry: Dictionary = (special_res as Dictionary)[sr] as Dictionary
+		var bonus_text: String = str(entry.get("bonus_description", ""))
+		if bonus_text != "":
+			return bonus_text
+		return str(entry.get("description", sr))
+	return sr
 
 
 func _category_name(cat: String) -> String:

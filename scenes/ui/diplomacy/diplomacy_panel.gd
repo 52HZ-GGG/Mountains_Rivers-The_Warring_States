@@ -224,8 +224,9 @@ func _on_gift_pressed() -> void:
 	if _selected_faction.is_empty():
 		return
 	var player_faction: String = GameManager.get_player_faction()
-	# 默认中礼
-	var result: Dictionary = DiplomacySystem.send_gift(player_faction, _selected_faction, 1)
+	# 默认礼档（数据驱动，diplomacy.json ui_defaults.default_gift_tier）
+	var tier: int = int(DataManager.get_diplomacy_param("ui_defaults.default_gift_tier"))
+	var result: Dictionary = DiplomacySystem.send_gift(player_faction, _selected_faction, tier)
 	if result["success"]:
 		_populate_faction_list()
 		_update_detail_panel()
@@ -247,8 +248,9 @@ func _on_ceasefire_pressed() -> void:
 	var player_faction: String = GameManager.get_player_faction()
 	if not DiplomacySystem.are_at_war(player_faction, _selected_faction):
 		return
-	# 打开谈判弹窗
-	var terms: Dictionary = {"gold": 100, "city_id": "", "vassal": false}
+	# 打开谈判弹窗（默认赔款金额数据驱动，diplomacy.json ui_defaults.default_ceasefire_gold_offer）
+	var default_gold: int = int(DataManager.get_diplomacy_param("ui_defaults.default_ceasefire_gold_offer"))
+	var terms: Dictionary = {"gold": default_gold, "city_id": "", "vassal": false}
 	var result: Dictionary = DiplomacySystem.propose_ceasefire(player_faction, _selected_faction, terms)
 	if result["success"]:
 		# 自动接受（简化，完整版用谈判弹窗）
@@ -261,7 +263,9 @@ func _on_non_aggression_pressed() -> void:
 	if _selected_faction.is_empty():
 		return
 	var player_faction: String = GameManager.get_player_faction()
-	var result: Dictionary = DiplomacySystem.sign_non_aggression(player_faction, _selected_faction, 5)
+	# 默认时长数据驱动（diplomacy.json ui_defaults.default_non_aggression_duration）
+	var duration: int = int(DataManager.get_diplomacy_param("ui_defaults.default_non_aggression_duration"))
+	var result: Dictionary = DiplomacySystem.sign_non_aggression(player_faction, _selected_faction, duration)
 	if result["success"]:
 		_populate_faction_list()
 		_update_detail_panel()
@@ -281,7 +285,9 @@ func _on_military_access_pressed() -> void:
 	if _selected_faction.is_empty():
 		return
 	var player_faction: String = GameManager.get_player_faction()
-	var result: Dictionary = DiplomacySystem.grant_military_access(_selected_faction, player_faction, 3)
+	# 默认通行单位数数据驱动（diplomacy.json ui_defaults.default_military_access_units）
+	var units: int = int(DataManager.get_diplomacy_param("ui_defaults.default_military_access_units"))
+	var result: Dictionary = DiplomacySystem.grant_military_access(_selected_faction, player_faction, units)
 	if result["success"]:
 		_populate_faction_list()
 		_update_detail_panel()

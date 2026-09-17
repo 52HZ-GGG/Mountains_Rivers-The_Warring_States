@@ -187,33 +187,40 @@
     "special_resources": {
       "horse": {
         "city_base_production": 2,
-        "description": "马匹"
+        "description": "马匹",
+        "bonus_description": "马匹（马匹产量+30%）"
       },
       "refined_iron": {
         "city_base_production": 2,
-        "description": "精铁"
+        "description": "精铁",
+        "bonus_description": "精铁（精铁产量+30%）"
       },
       "craftsmen": {
         "city_base_production": 2,
-        "description": "工匠"
+        "description": "工匠",
+        "bonus_description": "工匠（工匠产量+30%）"
       },
       "building_materials": {
         "city_base_production": 2,
-        "description": "建材"
+        "description": "建材",
+        "bonus_description": "建材（建材产量+30%）"
       },
       "wood": {
         "city_base_production": 0,
-        "description": "木材（特产城通过 special_resource_mod 加成，无特产基础产出）"
+        "description": "木材（特产城通过 special_resource_mod 加成，无特产基础产出）",
+        "bonus_description": "林木（木材产量+30%）"
       },
       "salt": {
         "city_base_production": 0,
-        "description": "盐（特产城通过 special_resource_mod 加成，无特产基础产出）"
+        "description": "盐（特产城通过 special_resource_mod 加成，无特产基础产出）",
+        "bonus_description": "盐（金钱收入+20%）"
       },
       "silk_books": {
         "city_base_production": 0,
         "cap_base": 100,
         "cap_per_building_level": 30,
-        "description": "帛书（通过藏书阁产出，用于科技研究和精通升级）"
+        "description": "帛书（通过藏书阁产出，用于科技研究和精通升级）",
+        "bonus_description": "帛书（通过藏书阁产出）"
       }
     },
     "army_upkeep_food_per_unit": 3,
@@ -503,7 +510,8 @@
     "turns_per_year": 4,
     "max_turns": 200,
     "starting_morale": 50,
-    "starting_stability": 50
+    "starting_stability": 50,
+    "demo_cheat_attack_multiplier": 20.0
   },
   "defeat": {
     "lose_all_cities": true,
@@ -1254,6 +1262,16 @@
       "frontline_garrison_bonus": 0.2,
       "conquered_city_garrison_ratio": 0.4
     }
+  },
+  "ai_economy": {
+    "budget_cities_per_turn": 2,
+    "build_preference": ["farm", "market", "lumbermill", "barracks"],
+    "low_population_threshold": 5,
+    "max_upgrade_level": 3
+  },
+  "ai_strategic": {
+    "action_budget_per_turn": 5,
+    "neutral_city_min_level_to_attack": 3
   },
   "event_geography": {
     "horse_trade": {

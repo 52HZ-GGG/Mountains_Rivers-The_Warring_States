@@ -141,18 +141,23 @@ func start_research(tech_id: String) -> Dictionary:
 	var tech: Dictionary = DataManager.get_tech(tech_id)
 	if bool(DataManager.get_balance_param("tech.cost_resources_enabled")):
 		_consume_cost_resources(tech)
-	var cost_turns: int = DataManager.get_balance_param("tech.research_speed_per_turn")
-	if cost_turns == null:
-		cost_turns = 1
-	# 研究回合数 = 金币成本 / 100（向上取整，最少1回合）
-	var base_turns: int = maxi(1, ceili(float(tech.get("cost_gold", 100)) / 100.0))
-	# 应用研究速度修正
-	var speed_mod: float = 1.0 + _research_speed_modifier
-	_research_cost_turns = maxi(1, ceili(float(base_turns) / speed_mod))
+	_research_cost_turns = estimate_research_turns(tech_id)
 	_researching_tech = tech_id
 	_research_progress = 0
 	SignalBus.tech_research_started.emit(tech_id)
 	return {"success": true}
+
+
+## 估算研究某科技所需的回合数（向上取整，最少 1 回合）。
+## 公式：金币成本 / 100 ÷ 研究速度修正。与 start_research 保持一致，
+## 供 UI 预览调用，避免场景层复制公式造成规则漂移。
+func estimate_research_turns(tech_id: String) -> int:
+	var tech: Dictionary = DataManager.get_tech(tech_id)
+	if tech.is_empty():
+		return 0
+	var base_turns: int = maxi(1, ceili(float(tech.get("cost_gold", 100)) / 100.0))
+	var speed_mod: float = 1.0 + _research_speed_modifier
+	return maxi(1, ceili(float(base_turns) / speed_mod))
 
 
 func cancel_research() -> void:

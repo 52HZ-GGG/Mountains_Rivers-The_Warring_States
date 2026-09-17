@@ -1,8 +1,8 @@
 extends Node
 
-## 轻量 i18n：CSV 词条表 + TranslationServer locale。
-## 数据：data/i18n/translations.csv
-## 列：key,zh_CN,en_US
+## 轻量 i18n：JSON 词条表 + TranslationServer locale。
+## 数据：data/i18n/translations.json
+## 结构：{key: {"zh-CN": ..., "en-US": ...}}
 
 var _table: Dictionary = {}
 var _locale: String = "zh-CN"
@@ -15,22 +15,21 @@ func _ready() -> void:
 
 func _load_table() -> void:
 	_table.clear()
-	var file := FileAccess.open("res://data/i18n/translations.csv", FileAccess.READ)
+	var file := FileAccess.open("res://data/i18n/translations.json", FileAccess.READ)
 	if file == null:
-		push_warning("I18n: translations.csv 不存在")
+		push_warning("I18n: translations.json 不存在")
 		return
-	# 跳过表头
-	file.get_line()
-	while not file.eof_reached():
-		var line: String = file.get_line().strip_edges()
-		if line.is_empty() or line.begins_with("#"):
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if not (parsed is Dictionary):
+		push_warning("I18n: translations.json 解析失败")
+		return
+	var data: Dictionary = parsed as Dictionary
+	for key: String in data:
+		var row: Variant = data[key]
+		if not (row is Dictionary):
 			continue
-		var parts: PackedStringArray = line.split(",", true)
-		if parts.size() < 2:
-			continue
-		var key: String = parts[0].strip_edges()
-		var zh: String = parts[1].strip_edges()
-		var en: String = parts[2].strip_edges() if parts.size() > 2 else zh
+		var zh: String = str((row as Dictionary).get("zh-CN", key))
+		var en: String = str((row as Dictionary).get("en-US", zh))
 		_table[key] = {"zh-CN": zh, "en-US": en}
 
 
