@@ -79,3 +79,5 @@ func test_strategic_combat_damages_enemy() -> void:
 	var attack: Dictionary = StrategicMapManager.try_attack_unit(my_id, enemy_id)
 	assert_true(bool(attack.get("ok", false)), "攻击应成功，reason=%s" % str(attack.get("reason", "")))
 	assert_gt(int(attack.get("damage", 0)), 0, "应造成伤害")
+	# 统一规范：结果应含 counter_damage 字段
+	assert_true(attack.has("counter_damage"), "结果应含 counter_damage")

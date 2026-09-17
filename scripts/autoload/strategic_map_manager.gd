@@ -247,13 +247,55 @@ func try_attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 		return {"ok": false, "reason": "OUT_OF_RANGE"}
 	var dmg: int = _compute_unit_damage(attacker, defender)
 	defender["hp"] = int(defender["hp"]) - dmg
+	var counter_dmg: int = 0
+	# 反击（统一规范 §5）：防御方存活且为近战攻击时触发
+	if int(defender["hp"]) > 0:
+		counter_dmg = _compute_counter_damage(defender, attacker, a_pos, d_pos)
+		if counter_dmg > 0:
+			attacker["hp"] = int(attacker["hp"]) - counter_dmg
 	attacker["acted"] = true
 	attacker["mp"] = 0
 	if int(defender["hp"]) <= 0:
 		_remove_unit(str(defender["id"]))
+	if int(attacker["hp"]) <= 0:
+		_remove_unit(str(attacker["id"]))
 	unit_attacked.emit(attacker_id, defender_id, dmg)
 	units_changed.emit()
-	return {"ok": true, "damage": dmg}
+	return {"ok": true, "damage": dmg, "counter_damage": counter_dmg}
+
+
+## 反击伤害：防御方近战回击攻击方（统一规范 §5.1）
+func _compute_counter_damage(counter_attacker: Dictionary, counter_defender: Dictionary, atk_pos: Vector2i, def_pos: Vector2i) -> int:
+	var ca_type: String = str(counter_attacker["unit_type_id"])
+	var cd_type: String = str(counter_defender["unit_type_id"])
+	# 主动远程攻击不触发反击
+	if _combat.is_ranged_unit(str(counter_defender["unit_type_id"])):
+		return 0
+	if not _combat.should_trigger_counter(cd_type, true):
+		return 0
+	var atk_offset: Vector2i = HexLib.axial_to_offset_odd_r(atk_pos.x, atk_pos.y)
+	var atk_terrain: String = CityManager.get_big_map_terrain_id(atk_offset.x, atk_offset.y)
+	var season: String = CityManager.get_current_season(GameManager.get_current_turn())
+	var ca_skills: Array = counter_attacker.get("skills", []) if counter_attacker.get("skills") is Array else []
+	var c_atk_ctx: Dictionary = CtxBuilder.build_attack_ctx(
+		str(counter_attacker["faction_id"]), ca_type, ca_skills, season
+	)
+	# 远程单位被近战反击时用 melee_attack
+	var ca_udata: Dictionary = DataManager.get_unit_type(ca_type)
+	if _combat.is_ranged_unit(ca_type) and ca_udata.has("melee_attack"):
+		c_atk_ctx["override_attack"] = int(ca_udata["melee_attack"])
+	var c_def_ctx: Dictionary = CtxBuilder.build_defense_ctx(
+		str(counter_defender["faction_id"]), cd_type
+	)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var result: Dictionary = _combat.compute_counter_attack(
+		ca_type, cd_type, atk_terrain,
+		int(counter_attacker.get("morale", 100)),
+		int(counter_defender.get("morale", 100)),
+		rng, c_atk_ctx, c_def_ctx
+	)
+	return maxi(0, int(result.get("damage", 0)))
 
 
 func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
