@@ -54,6 +54,9 @@ func test_strategic_unit_can_move_within_mp() -> void:
 
 func test_strategic_combat_damages_enemy() -> void:
 	_fund_player()
+	# 决策 #89：未宣战禁止攻击
+	if not DiplomacySystem.are_at_war("qin", "zhao"):
+		DiplomacySystem.declare_war("qin", "zhao")
 	var mine: Dictionary = GameManager.recruit_unit_from_city("xianyang", "militia", 1)
 	var my_id: String = str(mine.get("strategic_unit_id", ""))
 	var spawn_enemy: Dictionary = StrategicMapManager.spawn_unit_at_city("zhao", "militia", 0, 0, 1)

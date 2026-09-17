@@ -3,7 +3,7 @@ extends Node
 ## 完整存档管理器：多槽位 + 自动存档。
 ## 汇总 GameManager / CityManager / Diplomacy / Tech / School / Minister / Wonder / Event / Demo。
 
-const SCHEMA_VERSION: int = 2
+const SCHEMA_VERSION: int = 3
 const SLOT_COUNT: int = 3
 const AUTO_SLOT: int = -1
 

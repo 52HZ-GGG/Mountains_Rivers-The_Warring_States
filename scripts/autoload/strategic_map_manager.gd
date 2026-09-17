@@ -11,6 +11,7 @@ signal city_sieged(city_id: String, attacker_id: String, damage: int)
 
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -104,22 +105,10 @@ func spawn_unit_at_city(faction_id: String, unit_type_id: String, col: int, row:
 	var unit_id: String = "su_%d_%s_%s" % [_next_unit_seq, faction_id, unit_type_id]
 	_next_unit_seq += 1
 	var axial: Vector2i = HexLib.offset_odd_r_to_axial(col, row)
-	var unit: Dictionary = {
-		"id": unit_id,
-		"faction_id": faction_id,
-		"unit_type_id": unit_type_id,
-		"col": col,
-		"row": row,
-		"q": axial.x,
-		"r": axial.y,
-		"hp": hp,
-		"max_hp": hp,
-		"count": count,
-		"max_mp": speed,
-		"mp": speed,
-		"morale": 100,
-		"acted": false,
-	}
+	var skills: Array = DataManager.get_unit_skills(faction_id, unit_type_id)
+	var unit: Dictionary = UnitStateLib.make(
+		faction_id, unit_type_id, axial.x, axial.y, hp, speed, count, unit_id, col, row, skills
+	)
 	_units.append(unit)
 	units_changed.emit()
 	return {"success": true, "unit_id": unit_id}
@@ -380,7 +369,7 @@ func load_save_data(data: Dictionary) -> void:
 	if raw is Array:
 		for item: Variant in raw:
 			if item is Dictionary:
-				_units.append((item as Dictionary).duplicate(true))
+				_units.append(UnitStateLib.normalize((item as Dictionary).duplicate(true)))
 	_next_unit_seq = int(data.get("next_unit_seq", _units.size() + 1))
 	_selected_unit_id = ""
 	units_changed.emit()

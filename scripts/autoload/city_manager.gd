@@ -63,6 +63,8 @@ const REASON_GARRISON_EMPTY := "GARRISON_EMPTY"
 const REASON_INSUFFICIENT_TROOPS := "INSUFFICIENT_TROOPS"
 const REASON_SPECIAL_RESOURCE_REQUIRED := "SPECIAL_RESOURCE_REQUIRED"
 const REASON_TERRAIN_REQUIRED := "TERRAIN_REQUIRED"
+const REASON_HEX_OUT_OF_JURISDICTION := "HEX_OUT_OF_JURISDICTION"
+const REASON_HEX_OCCUPIED := "HEX_OCCUPIED"
 
 const CITY_LEVEL_RECRUIT_UNLOCKS: Dictionary = {
 	1: ["militia"],
@@ -316,6 +318,76 @@ func damage_city(city_id: String, damage: int) -> Dictionary:
 	return {"destroyed": city["current_hp"] <= 0, "damage": actual}
 
 
+# ============= 城墙结构 HP（统一规范 §7） =============
+
+## 获取城墙当前 HP；无城墙建筑返回 -1。
+func get_wall_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return -1
+	if not city.has("wall_hp"):
+		_ensure_wall_hp(city)
+	return int(city.get("wall_hp", -1))
+
+
+## 获取城墙最大 HP；无城墙返回 -1。
+func get_wall_max_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return -1
+	var level: int = _city_building_level(city, "wall")
+	if level <= 0:
+		return -1
+	return _building_structure_hp("wall", level)
+
+
+## 对城墙造成伤害。返回 {"destroyed": bool, "damage": int, "has_wall": bool}。
+func damage_wall(city_id: String, damage: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"destroyed": false, "damage": 0, "has_wall": false}
+	_ensure_wall_hp(city)
+	if int(city.get("wall_hp", -1)) < 0:
+		return {"destroyed": false, "damage": 0, "has_wall": false}
+	var hp: int = int(city["wall_hp"])
+	var actual: int = mini(maxi(0, damage), hp)
+	city["wall_hp"] = hp - actual
+	return {"destroyed": int(city["wall_hp"]) <= 0, "damage": actual, "has_wall": true}
+
+
+## 修复城墙；无城墙则无操作。
+func repair_wall(city_id: String, amount: int) -> void:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return
+	_ensure_wall_hp(city)
+	if int(city.get("wall_hp", -1)) < 0:
+		return
+	var max_hp: int = get_wall_max_hp(city_id)
+	city["wall_hp"] = mini(int(city["wall_hp"]) + amount, max_hp)
+
+
+func _ensure_wall_hp(city: Dictionary) -> void:
+	if city.has("wall_hp"):
+		return
+	var level: int = _city_building_level(city, "wall")
+	if level <= 0:
+		city["wall_hp"] = -1
+		return
+	city["wall_hp"] = _building_structure_hp("wall", level)
+
+
+func _building_structure_hp(building_id: String, level: int) -> int:
+	var bdata: Dictionary = DataManager.get_building(building_id)
+	if bdata.is_empty():
+		return 0
+	var levels: Array = bdata.get("levels", [])
+	if level < 1 or level > levels.size():
+		return 0
+	var effects: Dictionary = (levels[level - 1] as Dictionary).get("effects", {})
+	return int(effects.get("structure_hp", 0))
+
+
 ## 修复城池 HP（每回合自然恢复或建筑效果）。
 func repair_city(city_id: String, amount: int) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})
@@ -341,6 +413,11 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 	# HP 恢复 50%
 	var max_hp: int = get_city_max_hp(city_id)
 	city["current_hp"] = max_hp / 2
+	# 城墙占领恢复 30%（与《战斗系统》一致）
+	if city.has("wall_hp") and int(city["wall_hp"]) >= 0:
+		var wall_max: int = get_wall_max_hp(city_id)
+		if wall_max > 0:
+			city["wall_hp"] = int(float(wall_max) * 0.3)
 	# 清空建造队列
 	city["build_queue"] = []
 	# 安定度重置（占领惩罚）
@@ -370,7 +447,7 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 ##   5. 该城市槽位未满（SLOTS_FULL，仅算「新建」队列项，升级中的不占新槽）
 ##   6. 该 faction 该建筑总数 < max_national_count（NATIONAL_CAP_REACHED）
 ##   7. 玩家资源够（INSUFFICIENT_RESOURCES）
-func can_build(city_id: String, building_id: String) -> Dictionary:
+func can_build(city_id: String, building_id: String, axial: Vector2i = Vector2i(-9999, -9999)) -> Dictionary:
 	if not _city_states.has(city_id):
 		return {"allowed": false, "reason": REASON_INVALID_CITY}
 	var building: Dictionary = DataManager.get_building(building_id)
@@ -382,6 +459,13 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 		return {"allowed": false, "reason": REASON_ALREADY_BUILT}
 	if _city_has_in_queue(city, building_id):
 		return {"allowed": false, "reason": REASON_ALREADY_QUEUED}
+
+	# 指定放置格：必须在辖区内且未被占用
+	if axial != Vector2i(-9999, -9999):
+		if not is_jurisdiction_hex(city_id, axial):
+			return {"allowed": false, "reason": REASON_HEX_OUT_OF_JURISDICTION}
+		if _is_hex_occupied(city_id, axial):
+			return {"allowed": false, "reason": REASON_HEX_OCCUPIED}
 
 	# 槽位计算：buildings + 仅「新建」队列项（升级中的项已经在 buildings 里，不重复占槽）
 	var city_level: int = int(city.get("city_level", 1))
@@ -430,10 +514,11 @@ func can_build(city_id: String, building_id: String) -> Dictionary:
 
 
 ## 开始在 city_id 建造 building_id。
+## axial 为 odd-R 偏移坐标；未指定时完工自动分配。
 ## 校验通过 → 扣资源、加入建造队列、返回 true。
 ## 校验失败 → 不动任何状态、返回 false（建议先调 can_build 看 reason）。
-func start_build(city_id: String, building_id: String) -> bool:
-	var check: Dictionary = can_build(city_id, building_id)
+func start_build(city_id: String, building_id: String, axial: Vector2i = Vector2i(-9999, -9999)) -> bool:
+	var check: Dictionary = can_build(city_id, building_id, axial)
 	if not check["allowed"]:
 		return false
 
@@ -454,14 +539,58 @@ func start_build(city_id: String, building_id: String) -> bool:
 	GameManager.apply_gold_delta(-cost_gold)
 	GameManager.apply_wood_delta(-cost_wood)
 
-	(city["build_queue"] as Array).append({
+	var entry: Dictionary = {
 		"building_id": building_id,
 		"turns_remaining": build_turns,
 		"cost_gold": cost_gold,
 		"cost_wood": cost_wood,
 		"is_upgrade": false,
-	})
+	}
+	if axial != Vector2i(-9999, -9999):
+		entry["hex_q"] = axial.x
+		entry["hex_r"] = axial.y
+	(city["build_queue"] as Array).append(entry)
 	return true
+
+
+## 城市辖区六角格列表（odd-R 偏移坐标）。
+func get_jurisdiction_hexes(city_id: String) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return out
+	var cq: int = int(city.get("hex_q", 0))
+	var cr: int = int(city.get("hex_r", 0))
+	var radius: int = maxi(1, int(city.get("jurisdiction_radius", 1)))
+	var center: Vector2i = Vector2i(cq, cr)
+	for dq in range(-radius, radius + 1):
+		for dr in range(maxi(-radius, -dq - radius), mini(radius, -dq + radius) + 1):
+			var cell: Vector2i = Vector2i(cq + dq, cr + dr)
+			if HexAxial.hex_distance_hex(center, cell) <= radius:
+				out.append(cell)
+	return out
+
+
+func is_jurisdiction_hex(city_id: String, axial: Vector2i) -> bool:
+	for cell: Vector2i in get_jurisdiction_hexes(city_id):
+		if cell == axial:
+			return true
+	return false
+
+
+func _is_hex_occupied(city_id: String, axial: Vector2i) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	for b: Variant in city.get("buildings", []):
+		var e: Dictionary = b as Dictionary
+		if int(e.get("hex_q", -99999)) == axial.x and int(e.get("hex_r", -99999)) == axial.y:
+			return true
+	for q: Variant in city.get("build_queue", []):
+		var e: Dictionary = q as Dictionary
+		if int(e.get("hex_q", -99999)) == axial.x and int(e.get("hex_r", -99999)) == axial.y:
+			return true
+	return false
 
 
 # ============= 升级接口 =============
@@ -632,6 +761,9 @@ func load_save_data(data: Dictionary) -> void:
 	var states: Variant = data.get("city_states", {})
 	if states is Dictionary and not (states as Dictionary).is_empty():
 		_city_states = (states as Dictionary).duplicate(true)
+		# v3 迁移：为有墙城补 wall_hp（缺省则按建筑等级初始化）
+		for city_id in _city_states:
+			_ensure_wall_hp(_city_states[city_id] as Dictionary)
 		_build_faction_index()
 	else:
 		_initialize_states()
