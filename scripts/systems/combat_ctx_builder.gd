@@ -83,7 +83,8 @@ static func build_attack_ctx(
 ## 组装防御方修正
 static func build_defense_ctx(
 	defender_faction: String,
-	defender_unit_type_id: String
+	defender_unit_type_id: String,
+	defender_city_id: String = ""
 ) -> Dictionary:
 	var def_ctx: Dictionary = {}
 	add_offset(def_ctx, "faction_def", grain_shortage_def_offset(defender_faction))
@@ -93,6 +94,11 @@ static func build_defense_ctx(
 	var school: Dictionary = school_combat_bonus(defender_faction)
 	if float(school.get("school_def", 0.0)) != 0.0:
 		add_offset(def_ctx, "school_def", float(school["school_def"]))
+	# 文化 mismatch：只读 CityManager，不落演武状态（统一规范 §9）
+	if defender_city_id != "" and CityManager.has_culture_mismatch(defender_city_id):
+		var pen_v: Variant = DataManager.get_balance_param("culture.culture_mismatch_garrison_def_penalty")
+		if pen_v != null:
+			add_offset(def_ctx, "faction_def", float(pen_v))
 	return def_ctx
 
 
