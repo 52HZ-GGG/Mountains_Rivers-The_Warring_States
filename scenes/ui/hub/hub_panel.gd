@@ -30,6 +30,7 @@ const FACTION_NAMES: Dictionary = {
 
 const FRAMEWORK_QUICK_SAVE_PATH: String = "user://framework_quick_save.json"
 const DEMO_CHEAT_ATTACK_MULTIPLIER: float = 20.0
+const EVENT_TEST_SCENE := preload("res://scenes/ui/event_test/event_test_panel.tscn")
 
 var _framework_hub_root: Control = null
 var _framework_hub_scroll: ScrollContainer = null
@@ -41,6 +42,7 @@ var _framework_placeholder_title: Label = null
 var _framework_placeholder_body: RichTextLabel = null
 var _framework_placeholder_actions: HBoxContainer = null
 var _framework_placeholder_scroll: ScrollContainer = null
+var _event_test_panel: Control = null
 
 
 func _ready() -> void:
@@ -312,7 +314,7 @@ func _framework_modules() -> Array[Dictionary]:
 		{"id": "military", "title": "军事 / 战役", "status": "已接入", "summary": "Demo 模式进入洛邑攻城；普通模式进入演武场景选择。"},
 		{"id": "diplomacy", "title": "外交", "status": "已接入", "summary": "查看势力关系、谈判与外交操作。"},
 		{"id": "tech", "title": "科技", "status": "已接入", "summary": "研究科技树，查看前置与效果。"},
-		{"id": "events", "title": "事件", "status": "只读总览", "summary": "查看最近事件、冷却状态与事件链推进。"},
+		{"id": "events", "title": "事件", "status": "测试面板", "summary": "按 8 类分组浏览全部事件，无视概率/条件直接触发预览，纯展示零结算。"},
 		{"id": "schools", "title": "学派 / 文化", "status": "只读总览", "summary": "查看当前学派、代表政策与相关事件入口。"},
 		{"id": "ministers", "title": "官员 / 大夫", "status": "只读总览", "summary": "查看官员池、势力关注方向与关联模块入口。"},
 		{"id": "intelligence", "title": "情报", "status": "只读总览", "summary": "查看势力态势、外交关系与风险目标。"},
@@ -382,7 +384,7 @@ func _on_framework_module_pressed(module_id: String) -> void:
 			# 科技树在大地图场景内：切入大地图后由玩家从顶栏打开
 			StartupFlow.goto_big_map_from_hub()
 		"events":
-			_show_framework_placeholder("事件总览", _framework_events_summary())
+			_open_event_test_panel()
 		"schools":
 			_show_schools_panel()
 		"ministers":
@@ -397,6 +399,24 @@ func _on_framework_module_pressed(module_id: String) -> void:
 			_show_settings_panel()
 		_:
 			_show_framework_placeholder(_framework_module_title(module_id), _framework_placeholder_text(module_id))
+
+
+## 事件测试面板：实例化面板挂到 hub 顶层，打开即显示；关闭时释放实例
+func _open_event_test_panel() -> void:
+	_hide_framework_placeholder(false)
+	if is_instance_valid(_event_test_panel):
+		_event_test_panel.open()
+		return
+	_event_test_panel = EVENT_TEST_SCENE.instantiate() as Control
+	add_child(_event_test_panel)
+	_event_test_panel.connect("closed", _on_event_test_panel_closed)
+	_event_test_panel.open()
+
+
+func _on_event_test_panel_closed() -> void:
+	if is_instance_valid(_event_test_panel):
+		_event_test_panel.queue_free()
+		_event_test_panel = null
 
 
 func _open_player_capital_panel() -> void:
