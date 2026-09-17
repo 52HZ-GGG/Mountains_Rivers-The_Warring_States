@@ -13,6 +13,7 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 const CtxBuilder := preload("res://scripts/systems/combat_ctx_builder.gd")
+const MovementReach := preload("res://scripts/systems/movement_reach.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -118,53 +119,34 @@ func spawn_unit_at_city(faction_id: String, unit_type_id: String, col: int, row:
 # ============= 移动 =============
 
 func get_reachable_cells(unit_id: String) -> Dictionary:
-	var result: Dictionary = {}
 	var unit: Dictionary = _get_unit_ref(unit_id)
 	if unit.is_empty():
-		return result
+		return {}
 	var start: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
 	var mp: int = int(unit.get("mp", 0))
 	if mp <= 0:
-		return result
-	var frontier: Array = [{"cell": start, "cost": 0}]
-	var best: Dictionary = {start: 0}
-	while not frontier.is_empty():
-		frontier.sort_custom(func(a, b) -> bool:
-			return int((a as Dictionary).get("cost", 0)) < int((b as Dictionary).get("cost", 0)))
-		var node: Variant = frontier.pop_front()
-		if not (node is Dictionary):
-			continue
-		var node_dict: Dictionary = node as Dictionary
-		var cell: Vector2i = node_dict["cell"] as Vector2i
-		var cost: int = int(node_dict.get("cost", 0))
-		if cost > mp:
-			continue
-		for neighbor: Vector2i in HexLib.neighbors_hex(cell):
-			var occ: Dictionary = get_unit_at_axial(neighbor)
-			if not occ.is_empty():
-				continue
-			var offset: Vector2i = HexLib.axial_to_offset_odd_r(neighbor.x, neighbor.y)
-			var terrain_id: String = CityManager.get_big_map_terrain_id(offset.x, offset.y)
-			var terrain: Dictionary = DataManager.get_terrain(terrain_id)
-			var move_cost: int = int(terrain.get("move_cost", 1))
-			if move_cost < 0:
-				continue
-			# 骑兵禁入山地等：cavalry_allowed=false
-			var category: String = str(DataManager.get_unit_type(str(unit["unit_type_id"])).get("category", ""))
-			if category == "cavalry" and not bool(terrain.get("cavalry_allowed", true)):
-				continue
-			var new_cost: int = cost + maxi(1, move_cost)
-			if new_cost > mp:
-				continue
-			if best.has(neighbor) and int(best[neighbor]) <= new_cost:
-				continue
-			best[neighbor] = new_cost
-			frontier.append({"cell": neighbor, "cost": new_cost})
-	for cell: Vector2i in best:
-		if cell == start:
-			continue
-		result[cell] = int(best[cell])
-	return result
+		return {}
+	var unit_type_id: String = str(unit["unit_type_id"])
+	var faction_id: String = str(unit["faction_id"])
+	var moving_id: String = str(unit["id"])
+	# 统一规范 §6：经 MovementReach（含 ZOC）
+	return MovementReach.dijkstra_reachable(
+		start,
+		mp,
+		unit_type_id,
+		faction_id,
+		_units.duplicate(),
+		Vector2i(0, 0),
+		Vector2i(99, 99),
+		func(cell: Vector2i) -> bool:
+			if cell == start:
+				return false
+			var occ: Dictionary = get_unit_at_axial(cell)
+			return not occ.is_empty() and str(occ.get("id", "")) != moving_id,
+		Callable(),
+		func(col: int, row: int) -> String:
+			return CityManager.get_big_map_terrain_id(col, row)
+	)
 
 
 func try_move_unit(unit_id: String, dest_axial: Vector2i, allow_ai: bool = false) -> Dictionary:
@@ -243,6 +225,11 @@ func try_attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	var d_pos: Vector2i = Vector2i(int(defender["q"]), int(defender["r"]))
 	var a_type: Dictionary = DataManager.get_unit_type(str(attacker["unit_type_id"]))
 	var range: int = int(a_type.get("range", 1))
+	# 统一规范 §6：远程遮挡（高程差减射程）
+	if range > 1:
+		var a_off: Vector2i = HexLib.axial_to_offset_odd_r(a_pos.x, a_pos.y)
+		var d_off: Vector2i = HexLib.axial_to_offset_odd_r(d_pos.x, d_pos.y)
+		range = MovementReach.effective_range(a_off, d_off, range)
 	if HexLib.hex_distance_hex(a_pos, d_pos) > range:
 		return {"ok": false, "reason": "OUT_OF_RANGE"}
 	var dmg: int = _compute_unit_damage(attacker, defender)
