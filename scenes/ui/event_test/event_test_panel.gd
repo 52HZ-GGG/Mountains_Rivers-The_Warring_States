@@ -100,6 +100,7 @@ var _detail_title: Label = null
 var _detail_desc: Label = null
 var _detail_stats: Label = null
 var _detail_conditions: Label = null
+var _detail_effects: Label = null
 var _showcase_dim: ColorRect = null
 var _showcase_center: CenterContainer = null
 var _showcase_card: PanelContainer = null
@@ -336,6 +337,21 @@ func _build_ui() -> void:
 	_detail_conditions.add_theme_font_size_override("font_size", 14)
 	_detail_conditions.add_theme_color_override("font_color", CREAM)
 	right.add_child(_detail_conditions)
+
+	right.add_child(HSeparator.new())
+
+	var eff_title := Label.new()
+	eff_title.text = "效果预览（纯展示，不结算）"
+	eff_title.add_theme_font_size_override("font_size", 14)
+	eff_title.add_theme_color_override("font_color", DIM_GRAY)
+	right.add_child(eff_title)
+
+	_detail_effects = Label.new()
+	_detail_effects.name = "DetailEffects"
+	_detail_effects.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_detail_effects.add_theme_font_size_override("font_size", 14)
+	_detail_effects.add_theme_color_override("font_color", Color(0.88, 0.82, 0.66, 1.0))
+	right.add_child(_detail_effects)
 
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -611,6 +627,7 @@ func _refresh_detail() -> void:
 		_detail_desc.text = ""
 		_detail_stats.text = ""
 		_detail_conditions.text = ""
+		_detail_effects.text = ""
 		return
 	var trigger: Dictionary = _current_event.get("trigger", {}) as Dictionary
 	var stats: String = "概率:%s  |  冷却:%s  |  %s  |  %s" % [
@@ -624,6 +641,9 @@ func _refresh_detail() -> void:
 	_detail_stats.text = stats
 	var conditions: Array[String] = _describe_conditions(trigger.get("conditions", {}) as Dictionary)
 	_detail_conditions.text = "\n".join(conditions) if not conditions.is_empty() else "（无触发条件）"
+	# 效果预览：有选项展示各选项效果；季节事件展示 effects_variants 各档（好→坏，概率合计 1）
+	var effect_lines: Array[String] = _effect_preview_lines(_current_event)
+	_detail_effects.text = "\n".join(effect_lines) if not effect_lines.is_empty() else "（无直接数值效果）"
 
 
 func _format_probability(trigger: Dictionary) -> String:
