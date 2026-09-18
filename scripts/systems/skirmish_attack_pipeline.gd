@@ -10,6 +10,7 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
 const MoveLib := preload("res://scripts/systems/movement_reach.gd")
+const BuildingFxLib := preload("res://scripts/systems/building_combat_effects.gd")
 
 var m: Node
 
@@ -123,14 +124,17 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	if pass_has_structure:
 		var pass_def_v: Variant = DataManager.get_balance_param("fortification.pass_defense")
 		def_ctx["building_def"] = def_ctx.get("building_def", 0.0) + float(pass_def_v) / 100.0
-	# 城防防御加成：城墙 HP > 0 时按 HP 比例缩放（WallCombatRules，与大地图一致）
+	# 城防防御加成：墙 HP 比例 × 城防（含建筑 defense_bonus，经营效果进演武）
 	var city_has_wall: bool = m._city_wall_hp.has(def_cell) and int(m._city_wall_hp[def_cell]) > 0
 	if city_has_wall:
-		var city_def_base: float = WallLib.city_defense_base(int(m._city_level.get(def_cell, 3)))
-		var wall_buff: float = WallLib.wall_defense_buff(
+		var blds: Array = []
+		if "_city_buildings" in m:
+			blds = m._city_buildings.get(def_cell, []) as Array
+		var wall_buff: float = BuildingFxLib.city_building_def_buff(
+			blds,
 			int(m._city_wall_hp[def_cell]),
 			int(m._city_wall_max_hp.get(def_cell, 0)),
-			city_def_base
+			int(m._city_level.get(def_cell, 3))
 		)
 		def_ctx["building_def"] = def_ctx.get("building_def", 0.0) + wall_buff
 	var dmg_info: Dictionary = m._combat_resolver.compute_damage(
@@ -443,14 +447,17 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			var bdef: float = float(pass_def_v) / 100.0 if pass_def_v != null else 0.0
 			def_buff += bdef
 			def_details.append("关隘 +%d%%" % int(bdef * 100.0))
-		# 城墙（WallCombatRules 与大地图一致）
+		# 城墙（建筑 defense_bonus 进城防，WallCombatRules 分流）
 		var city_has: bool = m._city_wall_hp.has(def_cell) and int(m._city_wall_hp[def_cell]) > 0
 		if city_has:
-			var cdef_base: float = WallLib.city_defense_base(int(m._city_level.get(def_cell, 3)))
-			var bdef2: float = WallLib.wall_defense_buff(
+			var blds2: Array = []
+			if "_city_buildings" in m:
+				blds2 = m._city_buildings.get(def_cell, []) as Array
+			var bdef2: float = BuildingFxLib.city_building_def_buff(
+				blds2,
 				int(m._city_wall_hp[def_cell]),
 				int(m._city_wall_max_hp.get(def_cell, 0)),
-				cdef_base
+				int(m._city_level.get(def_cell, 3))
 			)
 			def_buff += bdef2
 			def_details.append("城防 +%d%%" % int(bdef2 * 100.0))

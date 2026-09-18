@@ -8,6 +8,7 @@ const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const AILib := preload("res://scripts/systems/skirmish_ai.gd")
 const AttackPipelineLib := preload("res://scripts/systems/skirmish_attack_pipeline.gd")
 const MoveLib := preload("res://scripts/systems/movement_reach.gd")
+const BuildingFxLib := preload("res://scripts/systems/building_combat_effects.gd")
 var _combat_resolver: RefCounted = CombatLib.new()
 var _ai: AILib = AILib.new()
 var _attack: AttackPipelineLib = AttackPipelineLib.new()
@@ -37,6 +38,7 @@ var _pass_attacked: Dictionary = {} # Vector2i → bool
 # 城防状态：cell → 城墙 HP / 最大 HP / 等级 / 被攻击标记 / 箭塔 HP
 var _city_wall_hp: Dictionary = {}     # Vector2i → int
 var _city_wall_max_hp: Dictionary = {} # Vector2i → int
+var _city_buildings: Dictionary = {}   # Vector2i → Array（建筑效果，经营/场景）
 var _city_body_hp: Dictionary = {}     # Vector2i → int（城市本体，独立于城墙）
 var _city_body_max_hp: Dictionary = {} # Vector2i → int
 var _city_level: Dictionary = {}       # Vector2i → int (1-5)
@@ -182,6 +184,7 @@ func reset_skirmish() -> void:
 	_pass_attacked.clear()
 	_city_wall_hp.clear()
 	_city_wall_max_hp.clear()
+	_city_buildings.clear()
 	_city_body_hp.clear()
 	_city_body_max_hp.clear()
 	_city_level.clear()
@@ -553,6 +556,7 @@ func _build_tiles() -> void:
 	_pass_attacked.clear()
 	_city_wall_hp.clear()
 	_city_wall_max_hp.clear()
+	_city_buildings.clear()
 	_city_body_hp.clear()
 	_city_body_max_hp.clear()
 	_city_level.clear()
@@ -1625,11 +1629,15 @@ func _process_arrow_towers() -> void:
 		var tower_range: int = 1
 		if level >= 4:
 			tower_range = 2
-		var tower_levels_all: Variant = DataManager.get_balance_param("city_levels")
-		var tower_level_data: Dictionary = {}
-		if tower_levels_all is Dictionary:
-			tower_level_data = (tower_levels_all as Dictionary).get(str(level), {})
-		var tower_atk: int = int(tower_level_data.get("attack", 15))
+		# 箭塔攻击：优先建筑 arrow_tower.tower_attack，否则城级表
+		var blds: Array = _city_buildings.get(cell, []) as Array
+		var tower_atk: int = int(BuildingFxLib.tower_attack_from_buildings(blds))
+		if tower_atk <= 0:
+			var tower_levels_all: Variant = DataManager.get_balance_param("city_levels")
+			var tower_level_data: Dictionary = {}
+			if tower_levels_all is Dictionary:
+				tower_level_data = (tower_levels_all as Dictionary).get(str(level), {})
+			tower_atk = int(tower_level_data.get("attack", 15))
 		# 攻击范围内的敌军
 		for target: Dictionary in _units:
 			if str(target["faction_id"]) == city_owner:
@@ -1657,8 +1665,9 @@ func _process_arrow_towers() -> void:
 
 
 ## 初始化单个城市的城防数据
-## 城墙 HP 来自 buildings.json → wall.effects.structure_hp（机制：战斗系统.md §7.4）
-## 城市本体 HP 来自 balance_params.json → city_levels.hp，与城墙独立。
+## 城墙 HP：优先建筑列表 wall.structure_hp，否则 buildings.json wall 等级
+## 城市本体 HP：balance_params city_levels.hp，与城墙独立
+## 建筑效果：场景 buildings / city_id（读 CityManager）/ 按城级默认（统一规范：经营建筑效果进演武）
 func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 	var level: int = int(city_cfg.get("level", 3))
 	level = clampi(level, 1, 5)
@@ -1671,17 +1680,26 @@ func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 	if is_capital:
 		var bonus_v: Variant = DataManager.get_balance_param("city_levels.capital_bonus.hp")
 		body_max_hp += int(bonus_v) if bonus_v != null else 500
-	# 城墙：优先 wall 建筑 structure_hp；场景可指定 wall_level
-	var wall_level: int = int(city_cfg.get("wall_level", 1))
-	var wall_max_hp: int = _resolve_wall_structure_hp(wall_level)
+	# 建筑列表（经营效果进演武）
+	var buildings: Array = BuildingFxLib.resolve_city_buildings(city_cfg)
+	_city_buildings[cell] = buildings
+	# 墙城：建筑 wall.structure_hp 之和；无墙条目时回退 wall_level 配置
+	var wall_from_b: int = BuildingFxLib.wall_structure_hp_from_buildings(buildings)
+	var wall_max_hp: int = wall_from_b
+	if wall_max_hp <= 0:
+		var wall_level: int = int(city_cfg.get("wall_level", 1))
+		wall_max_hp = _resolve_wall_structure_hp(wall_level)
 	_city_wall_hp[cell] = wall_max_hp
 	_city_wall_max_hp[cell] = wall_max_hp
 	_city_body_hp[cell] = body_max_hp
 	_city_body_max_hp[cell] = body_max_hp
 	_city_level[cell] = level
 	_city_attacked[cell] = false
-	# 箭塔：4 级以上城市有箭塔
-	if level >= 4:
+	# 箭塔：建筑 arrow_tower，或城级≥4 兜底
+	var tower_from_b: float = BuildingFxLib.tower_attack_from_buildings(buildings)
+	if tower_from_b > 0.0:
+		_city_tower_hp[cell] = int(tower_from_b) * 10
+	elif level >= 4:
 		var tower_base: int = 150 + 100 * (level - 3)
 		_city_tower_hp[cell] = tower_base
 	else:

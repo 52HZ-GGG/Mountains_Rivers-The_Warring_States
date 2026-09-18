@@ -10,6 +10,7 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const ScoringLib := preload("res://scripts/systems/ai_combat_scoring.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
+const BuildingFxLib := preload("res://scripts/systems/building_combat_effects.gd")
 
 var m: Node
 
@@ -169,15 +170,17 @@ func run_turn() -> void:
 			if ai_pass_has_structure:
 				var ai_pass_def_v: Variant = DataManager.get_balance_param("fortification.pass_defense")
 				ai_def_ctx["building_def"] = ai_def_ctx.get("building_def", 0.0) + float(ai_pass_def_v) / 100.0
-			# 城防防御加成（WallCombatRules，与大地图一致）
+			# 城防防御加成（含建筑 defense_bonus，与大地图/管线一致）
 			var ai_city_has_wall: bool = m._city_wall_hp.has(ai_def_cell) and int(m._city_wall_hp[ai_def_cell]) > 0
 			if ai_city_has_wall:
-				var ai_city_lvl: int = int(m._city_level.get(ai_def_cell, 3))
-				var ai_city_def: float = WallLib.city_defense_base(ai_city_lvl)
-				var bdef_ai: float = WallLib.wall_defense_buff(
+				var blds_ai: Array = []
+				if "_city_buildings" in m:
+					blds_ai = m._city_buildings.get(ai_def_cell, []) as Array
+				var bdef_ai: float = BuildingFxLib.city_building_def_buff(
+					blds_ai,
 					int(m._city_wall_hp[ai_def_cell]),
 					int(m._city_wall_max_hp.get(ai_def_cell, 0)),
-					ai_city_def
+					int(m._city_level.get(ai_def_cell, 3))
 				)
 				ai_def_ctx["building_def"] = ai_def_ctx.get("building_def", 0.0) + bdef_ai
 			var dmg_i: Dictionary = m._combat_resolver.compute_damage(
