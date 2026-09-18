@@ -14,6 +14,7 @@ const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 const SiegeLib := preload("res://scripts/systems/siege_resolver.gd")
+const MoveLib := preload("res://scripts/systems/movement_reach.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -127,45 +128,24 @@ func get_reachable_cells(unit_id: String) -> Dictionary:
 	var mp: int = int(unit.get("mp", 0))
 	if mp <= 0:
 		return result
-	var frontier: Array = [{"cell": start, "cost": 0}]
-	var best: Dictionary = {start: 0}
-	while not frontier.is_empty():
-		frontier.sort_custom(func(a, b) -> bool:
-			return int((a as Dictionary).get("cost", 0)) < int((b as Dictionary).get("cost", 0)))
-		var node: Variant = frontier.pop_front()
-		if not (node is Dictionary):
-			continue
-		var node_dict: Dictionary = node as Dictionary
-		var cell: Vector2i = node_dict["cell"] as Vector2i
-		var cost: int = int(node_dict.get("cost", 0))
-		if cost > mp:
-			continue
-		for neighbor: Vector2i in HexLib.neighbors_hex(cell):
-			var occ: Dictionary = get_unit_at_axial(neighbor)
-			if not occ.is_empty():
-				continue
-			var offset: Vector2i = HexLib.axial_to_offset_odd_r(neighbor.x, neighbor.y)
-			var terrain_id: String = CityManager.get_big_map_terrain_id(offset.x, offset.y)
-			var terrain: Dictionary = DataManager.get_terrain(terrain_id)
-			var move_cost: int = int(terrain.get("move_cost", 1))
-			if move_cost < 0:
-				continue
-			# 骑兵禁入山地等：cavalry_allowed=false
-			var category: String = str(DataManager.get_unit_type(str(unit["unit_type_id"])).get("category", ""))
-			if category == "cavalry" and not bool(terrain.get("cavalry_allowed", true)):
-				continue
-			var new_cost: int = cost + maxi(1, move_cost)
-			if new_cost > mp:
-				continue
-			if best.has(neighbor) and int(best[neighbor]) <= new_cost:
-				continue
-			best[neighbor] = new_cost
-			frontier.append({"cell": neighbor, "cost": new_cost})
-	for cell: Vector2i in best:
-		if cell == start:
-			continue
-		result[cell] = int(best[cell])
-	return result
+	var unit_type_id: String = str(unit["unit_type_id"])
+	var faction_id: String = str(unit["faction_id"])
+	var map_size: Vector2i = DataManager.get_big_map_size()
+	if map_size.x <= 0 or map_size.y <= 0:
+		map_size = Vector2i(100, 70)
+	# 统一规范 §6：Dijkstra + ZOC + 地形限制走 MovementReach
+	var occupied := func(axial: Vector2i) -> bool:
+		return not get_unit_at_axial(axial).is_empty()
+	return MoveLib.dijkstra_reachable(
+		start,
+		mp,
+		unit_type_id,
+		faction_id,
+		_units,
+		Vector2i.ZERO,
+		Vector2i(map_size.x - 1, map_size.y - 1),
+		occupied
+	)
 
 
 func try_move_unit(unit_id: String, dest_axial: Vector2i, allow_ai: bool = false) -> Dictionary:

@@ -4,6 +4,11 @@ extends RefCounted
 ## 从 TacticalSkirmishManager 提取，避免单文件超 2000 行。
 ## 持有 manager 引用，通过它访问所有战斗/移动/状态私有 API。
 ## 公共入口：run_turn()，由 TacticalSkirmishManager._run_ai_turn() 委派调用。
+## 目标评分走 AiCombatScoring（统一规范 §8）。
+
+const HexLib := preload("res://scripts/systems/hex_axial.gd")
+const ScoringLib := preload("res://scripts/systems/ai_combat_scoring.gd")
+const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 
 var m: Node
 
@@ -94,7 +99,32 @@ func run_turn() -> void:
 				if m._can_attack(u, o):
 					targets.append(str(o["id"]))
 		if targets.size() > 0:
-			var t_id: String = targets[m._rng.randi_range(0, targets.size() - 1)]
+			# 统一规范 §8：评分选目标（残血+近距）；tutorial 走弱化档
+			var ai_mode: String = ""
+			if m != null and "ai_mode" in m:
+				ai_mode = str(m.ai_mode)
+			var score_cands: Array = []
+			var my_cell: Vector2i = Vector2i(int(u.get("q", 0)), int(u.get("r", 0)))
+			for tid: String in targets:
+				var o: Dictionary = m.get_unit_by_id(tid)
+				if o.is_empty():
+					continue
+				var oc: Vector2i = Vector2i(int(o.get("q", 0)), int(o.get("r", 0)))
+				score_cands.append({
+					"id": tid,
+					"hp": int(o.get("hp", 0)),
+					"max_hp": int(o.get("max_hp", 1)),
+					"dist": HexLib.hex_distance_hex(my_cell, oc),
+				})
+			var t_id: String = ""
+			if ai_mode == "tutorial":
+				var tut: Variant = ScoringLib.pick_tutorial_move(score_cands)
+				if tut is Dictionary:
+					t_id = str((tut as Dictionary).get("id", ""))
+			if t_id == "":
+				t_id = ScoringLib.pick_best_unit_target(score_cands)
+			if t_id == "":
+				t_id = targets[m._rng.randi_range(0, targets.size() - 1)]
 			var defender: Dictionary = m.get_unit_by_id(t_id)
 			var ai_def_cell: Vector2i = Vector2i(int(defender["q"]), int(defender["r"]))
 			var def_ter: String = m.terrain_at(ai_def_cell)
@@ -110,25 +140,22 @@ func run_turn() -> void:
 			var ai_passive_bonus: float = m._get_passive_skill_bonus(u.get("skills", []))
 			if ai_passive_bonus > 0.0:
 				ai_atk_ctx["unit_ability_bonus"] = ai_atk_ctx.get("unit_ability_bonus", 0.0) + ai_passive_bonus
-			# 科技战斗修正
-			var ai_atk_udata: Dictionary = DataManager.get_unit_type(str(u["unit_type_id"]))
-			var ai_tech_atk: float = TechSystem.get_attack_modifier(str(ai_atk_udata.get("category", "")))
-			if ai_tech_atk != 0.0:
-				ai_atk_ctx["tech_atk"] = ai_tech_atk
-			var ai_def_udata: Dictionary = DataManager.get_unit_type(str(defender["unit_type_id"]))
-			var ai_tech_def: float = TechSystem.get_defense_modifier(str(ai_def_udata.get("category", "")))
-			if ai_tech_def != 0.0:
-				ai_def_ctx["tech_def"] = ai_tech_def
-			# 学派战斗修正
-			var ai_atk_school: Dictionary = m._get_school_combat_bonus(str(u["faction_id"]))
-			if ai_atk_school.get("school_atk", 0.0) != 0.0:
-				ai_atk_ctx["school_atk"] = ai_atk_school["school_atk"]
+			# 科技/学派/士气/断粮：委托 CombatCtxBuilder，再叠加演武特有关隘/城墙
+			var base_atk: Dictionary = CtxLib.build_attack_ctx(str(u["faction_id"]), str(u["unit_type_id"]), u.get("skills", []) if u.get("skills") is Array else [])
+			for k: String in base_atk:
+				if not ai_atk_ctx.has(k):
+					ai_atk_ctx[k] = base_atk[k]
+				elif k.ends_with("_atk") or k == "faction_atk":
+					ai_atk_ctx[k] = float(ai_atk_ctx.get(k, 0.0)) + float(base_atk[k])
+			var base_def: Dictionary = CtxLib.build_defense_ctx(str(defender["faction_id"]), str(defender["unit_type_id"]))
+			for k: String in base_def:
+				if not ai_def_ctx.has(k):
+					ai_def_ctx[k] = base_def[k]
+				elif k.ends_with("_def") or k == "faction_def":
+					ai_def_ctx[k] = float(ai_def_ctx.get(k, 0.0)) + float(base_def[k])
 			var ai_school_ambush: float = SchoolManager.get_effect_float(str(u["faction_id"]), "ambush_damage_bonus")
 			if ai_school_ambush > 0.001:
 				ai_atk_ctx["school_ambush_bonus"] = ai_school_ambush
-			var ai_def_school: Dictionary = m._get_school_combat_bonus(str(defender["faction_id"]))
-			if ai_def_school.get("school_def", 0.0) != 0.0:
-				ai_def_ctx["school_def"] = ai_def_school["school_def"]
 			# 关隘 crossing_rules 修正
 			var ai_tdata_def: Dictionary = DataManager.get_terrain(def_ter)
 			var ai_cr: Variant = ai_tdata_def.get("crossing_rules", null)

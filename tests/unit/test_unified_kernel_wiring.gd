@@ -19,6 +19,7 @@ func test_strategic_kernel_files_wired() -> void:
 	assert_true(sm.contains("UnitStateLib") or sm.contains("unit_state.gd"), "战略层必须引用 UnitState")
 	assert_true(sm.contains("CtxLib") or sm.contains("combat_ctx_builder.gd"), "战略层必须引用 CombatCtxBuilder")
 	assert_true(sm.contains("SiegeLib") or sm.contains("siege_resolver.gd"), "战略层必须引用 SiegeResolver")
+	assert_true(sm.contains("MoveLib") or sm.contains("movement_reach.gd"), "战略层必须引用 MovementReach")
 	assert_false(sm.contains("func _build_combat_ctx") and sm.contains("SchoolManager.get_effect_float(faction_id, \"attack_bonus\")"),
 		"_build_combat_ctx 不得再手写一套学派/科技加成（应委托 CtxBuilder）")
 
