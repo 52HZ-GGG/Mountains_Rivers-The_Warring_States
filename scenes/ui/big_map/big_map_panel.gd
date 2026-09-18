@@ -74,11 +74,15 @@ func _on_strategic_unit_attacked(attacker_id: String, defender_id: String, damag
 	elif def_name == "":
 		def_name = defender_id
 	var counter: int = int(a.get("last_counter_damage", 0)) if not a.is_empty() else 0
-	var text: String = "%s → %s，伤害 %d" % [atk_name if atk_name != "" else attacker_id, def_name, damage]
+	var text: String = I18n.t("big_map.attack_feed") % [
+		atk_name if atk_name != "" else attacker_id,
+		def_name,
+		damage
+	]
 	if counter > 0:
-		text += " ｜反击 %d" % counter
+		text += " ｜" + (I18n.t("big_map.counter_feed") % counter)
 	if d.is_empty() and def_name != "":
-		text += " ｜歼灭"
+		text += " ｜" + I18n.t("big_map.wiped_out")
 	_hover_info.text = text
 	_overlay_dirty = true
 	_refresh_overlay_display()
@@ -92,11 +96,12 @@ func _on_strategic_city_sieged(city_id: String, attacker_id: String, damage: int
 	var city_name: String = str(city.get("name", city_id))
 	var wall_hp: int = CityManager.get_wall_hp(city_id)
 	var city_hp: int = int(city.get("current_hp", 0))
-	var text: String = "攻城 %s，伤害 %d ｜ 城防 %d" % [city_name, damage, city_hp]
+	var text: String = I18n.t("big_map.siege_feed") % [city_name, damage, city_hp]
 	if wall_hp >= 0:
-		text += " ｜ 城墙 %d" % wall_hp
+		var wall_max: int = CityManager.get_wall_max_hp(city_id)
+		text += " ｜ " + (I18n.t("big_map.wall_hp") % [wall_hp, maxi(wall_max, wall_hp)])
 	if city_hp <= 0:
-		text += " ｜ 城破"
+		text += " ｜ " + I18n.t("big_map.city_broken")
 	_hover_info.text = text
 	_overlay_dirty = true
 	_refresh_overlay_display()

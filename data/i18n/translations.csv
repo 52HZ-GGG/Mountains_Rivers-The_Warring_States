@@ -45,6 +45,12 @@ big_map.culture_legend,文化地图图例,Culture Legend
 big_map.culture_legend_hint,高饱和=主流≠归属,High sat = culture conflict
 big_map.culture_line,文化 top：%s ｜ 主流：%s%s,Culture top: %s ｜ Mainstream: %s%s
 big_map.culture_mismatch,文化冲突,Culture Conflict
+big_map.wall_hp,城墙 %d/%d,Wall %d/%d
+big_map.attack_feed,%s → %s，伤害 %d,%s → %s, dmg %d
+big_map.counter_feed,反击 %d,Counter %d
+big_map.siege_feed,攻城 %s，伤害 %d ｜ 城防 %d,Siege %s, dmg %d ｜ City HP %d
+big_map.wiped_out,歼灭,Wiped out
+big_map.city_broken,城破,City fallen
 hud.culture_progress,文化 %d%% / 目标 %d%%,Culture %d%% / Target %d%%
 hud.culture_progress_active,文化 %d%% / %d%% · 维持 %d/%d,Culture %d%% / %d%% · Hold %d/%d
 hud.culture_flip,文化倒戈：%s 主流变为 %s,Culture flip: %s mainstream → %s
