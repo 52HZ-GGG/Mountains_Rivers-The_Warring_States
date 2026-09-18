@@ -548,10 +548,13 @@ func _on_end_turn_pressed() -> void:
 func _advance_formal_turn_for_tutorial() -> void:
 	if GameManager.get_current_phase() != GameManager.Phase.ACTION:
 		return
-	var old_season: String = MapGateway.get_current_season()
+	# 战役季节权威：CityManager；演武季节展示：TacticalSkirmishManager
+	var old_season: String = CityManager.get_current_season(GameManager.get_current_turn())
+	if old_season == "":
+		old_season = TacticalSkirmishManager.get_current_season()
 	GameManager.run_ai_continuation()
 	var new_season: String = CityManager.get_current_season(GameManager.get_current_turn())
-	MapGateway.set_season(new_season)
+	TacticalSkirmishManager.set_season(new_season)
 	_update_season_label()
 	_refresh_formal_resource_bar()
 	if is_instance_valid(_formal_city_panel):
