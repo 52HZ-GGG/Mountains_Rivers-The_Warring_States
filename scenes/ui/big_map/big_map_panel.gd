@@ -695,8 +695,19 @@ func _apply_overlay_to_terrain_payload() -> void:
 		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
 		var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
 		if not city.is_empty():
-			var built_count: int = (city.get("buildings", []) as Array).size()
-			var queue_count: int = (city.get("build_queue", []) as Array).size()
+			var city_id: String = str(city.get("id", ""))
+			var state: Dictionary = CityManager.get_city_state(city_id)
+			# 城防 HP / 墙 HP（设计：城池有本体 HP，墙为独立结构）
+			var city_hp: int = int(state.get("current_hp", city.get("current_hp", 0)))
+			var city_max_hp: int = CityManager.get_city_max_hp(city_id) if CityManager.has_method("get_city_max_hp") else city_hp
+			if city_max_hp <= 0:
+				city_max_hp = maxi(city_hp, 1)
+			caption = "%s\nHP%d" % [caption, city_hp] if city_max_hp <= 0 else "%s\nHP%d/%d" % [caption, city_hp, city_max_hp]
+			var wall_hp: int = CityManager.get_wall_hp(city_id)
+			if wall_hp >= 0:
+				caption += " 墙%d" % wall_hp
+			var built_count: int = (state.get("buildings", city.get("buildings", [])) as Array).size()
+			var queue_count: int = (state.get("build_queue", city.get("build_queue", [])) as Array).size()
 			if built_count > 0 or queue_count > 0:
 				var b_tag: String = I18n.t("big_map.build_tag") % built_count
 				if queue_count > 0:
@@ -1022,7 +1033,7 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 				_set_map_cursor(Control.CURSOR_MOVE)
 			if _drag_active:
 				_pan_by(-motion.relative)
-				motion.accept_event()
+				get_viewport().set_input_as_handled()
 				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
@@ -1034,7 +1045,7 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _placement_city_id != "":
 			cancel_building_placement()
-			mb.accept_event()
+			get_viewport().set_input_as_handled()
 			return
 		if mb.button_index != MOUSE_BUTTON_LEFT:
 			return
@@ -1042,11 +1053,11 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 			_drag_armed = true
 			_drag_active = false
 			_drag_press_pos = mb.position
-			mb.accept_event()
+			get_viewport().set_input_as_handled()
 			return
 		var was_dragging: bool = _drag_active
 		_end_drag()
-		mb.accept_event()
+		get_viewport().set_input_as_handled()
 		if was_dragging:
 			return
 		if _placement_city_id != "":
