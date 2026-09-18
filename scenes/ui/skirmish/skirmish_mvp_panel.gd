@@ -41,6 +41,8 @@ var _unit_frames_cache: Dictionary = {}  # "unit_type_id:faction_id" -> SpriteFr
 var _effect_frames_cache: Dictionary = {}  # effect_id -> SpriteFrames
 var _tutorial_city_btn: Button = null
 var _political_map_btn: Button = null
+var _skirmish_save_btn: Button = null
+var _skirmish_load_btn: Button = null
 var _formal_resource_bar: HBoxContainer = null
 var _resource_hover_hint: Label = null
 var _formal_resource_formula: RichTextLabel = null
@@ -148,6 +150,25 @@ func _create_tutorial_formal_buttons() -> void:
 	SkirmishTileTextures.style_scene_button(_political_map_btn)
 	row.add_child(_political_map_btn)
 	row.move_child(_political_map_btn, 0)
+
+	# 演武存档/读档（演武快照 + 战役档；Demo 与普通演武均可用）
+	_skirmish_save_btn = Button.new()
+	_skirmish_save_btn.name = "SkirmishSaveBtn"
+	_skirmish_save_btn.text = "存档"
+	_skirmish_save_btn.tooltip_text = "保存当前演武快照，并写入战役存档槽位 1"
+	_skirmish_save_btn.pressed.connect(_on_skirmish_save_pressed)
+	SkirmishTileTextures.style_scene_button(_skirmish_save_btn)
+	row.add_child(_skirmish_save_btn)
+	row.move_child(_skirmish_save_btn, 0)
+
+	_skirmish_load_btn = Button.new()
+	_skirmish_load_btn.name = "SkirmishLoadBtn"
+	_skirmish_load_btn.text = "读档"
+	_skirmish_load_btn.tooltip_text = "读取演武快照槽位 1；无快照时尝试战役槽位 1"
+	_skirmish_load_btn.pressed.connect(_on_skirmish_load_pressed)
+	SkirmishTileTextures.style_scene_button(_skirmish_load_btn)
+	row.add_child(_skirmish_load_btn)
+	row.move_child(_skirmish_load_btn, 1)
 
 
 func _update_tutorial_formal_ui() -> void:
@@ -533,6 +554,57 @@ func _on_restart_pressed() -> void:
 	TacticalSkirmishManager.reset_skirmish()
 	TacticalSkirmishManager.start_skirmish()
 	_prepare_panel_for_active_skirmish()
+
+
+## 演武 Demo/演武：存档（局中快照 + 战役结果，演武=战役）
+func _on_skirmish_save_pressed() -> void:
+	var parts: Array[String] = []
+	if TacticalSkirmishManager.is_active():
+		var sres: Dictionary = SkirmishSaveManager.save_to_slot(0)
+		if bool(sres.get("success", false)):
+			parts.append("演武快照槽1")
+		else:
+			parts.append("演武快照失败:%s" % str(sres.get("reason", "")))
+	var cres: Dictionary = SaveManager.save_to_slot(0)
+	if bool(cres.get("success", false)):
+		parts.append("战役槽1")
+	else:
+		parts.append("战役失败:%s" % str(cres.get("reason", "")))
+	_hint.text = "已存档：「%s」。" % " + ".join(parts)
+	_update_season_label()
+	_refresh_formal_resource_bar()
+
+
+## 读档：优先演武快照（续打）；否则读战役档
+func _on_skirmish_load_pressed() -> void:
+	if SkirmishSaveManager.has_save(0):
+		var lres: Dictionary = SkirmishSaveManager.load_from_slot(0)
+		if bool(lres.get("success", false)):
+			_selected_unit_id = ""
+			_reachable.clear()
+			show()
+			_prepare_panel_for_active_skirmish()
+			_hint.text = "已读取演武快照槽1（场景 %s，单位 %s）。" % [
+				str(lres.get("scenario_id", "")), str(lres.get("units", 0))
+			]
+			return
+		_hint.text = "演武读档失败：%s" % str(lres.get("reason", ""))
+		return
+	if SaveManager.has_save(0):
+		var cres: Dictionary = SaveManager.load_from_slot(0)
+		if bool(cres.get("success", false)):
+			# 战役档已恢复；演武需重新开局（结果在战役城池里）
+			if not TacticalSkirmishManager.is_active():
+				if not _panel_cfg.is_empty():
+					TacticalSkirmishManager.start_skirmish_with_config(_panel_cfg.duplicate(true), _panel_season)
+				else:
+					TacticalSkirmishManager.start_skirmish()
+			_prepare_panel_for_active_skirmish()
+			_hint.text = "已读取战役槽1（第 %s 回合）。演武局中无快照，已按当前场景重开。" % str(cres.get("turn", 0))
+			return
+		_hint.text = "战役读档失败：%s" % str(cres.get("reason", ""))
+		return
+	_hint.text = "槽位 1 无演武快照，也无战役存档。"
 
 
 func _on_end_turn_pressed() -> void:

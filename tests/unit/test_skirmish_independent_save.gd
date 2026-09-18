@@ -69,6 +69,15 @@ func test_campaign_save_has_no_skirmish_blob_but_receives_results() -> void:
 	assert_true(camp.has("strategic_units"))
 
 
+func test_skirmish_panel_has_save_load_buttons() -> void:
+	var panel: String = FileAccess.get_file_as_string("res://scenes/ui/skirmish/skirmish_mvp_panel.gd")
+	assert_true(panel.contains("SkirmishSaveBtn"), "演武面板须有存档按钮")
+	assert_true(panel.contains("SkirmishLoadBtn"), "演武面板须有读档按钮")
+	assert_true(panel.contains("_on_skirmish_save_pressed"))
+	assert_true(panel.contains("SkirmishSaveManager.save_to_slot"))
+	assert_true(panel.contains("SaveManager.save_to_slot"), "存档同时写战役档（演武=战役）")
+
+
 func test_skirmish_victory_writes_campaign_city() -> void:
 	TacticalSkirmishManager.reset_skirmish()
 	var cfg: Dictionary = DataManager.get_skirmish_scenario("luoyi_siege_demo")
