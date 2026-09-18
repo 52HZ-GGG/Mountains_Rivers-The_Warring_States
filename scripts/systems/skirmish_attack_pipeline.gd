@@ -7,6 +7,7 @@ extends RefCounted
 ## 入口由 TacticalSkirmishManager 同名 public 方法委派调用。
 
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
+const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 
 var m: Node
 
@@ -16,24 +17,47 @@ func initialize(manager: Node) -> void:
 
 
 func _get_national_morale_atk_offset(faction_id: String) -> float:
-	if not GameManager.is_player_faction(faction_id):
-		return 0.0
-	var morale_mod: float = float(GameManager.get_morale_threshold_effect().get("morale_atk_mod", 1.0))
-	return morale_mod - 1.0
+	return CtxLib.national_morale_atk_offset(faction_id)
 
 
 func _get_grain_shortage_atk_offset(faction_id: String) -> float:
-	return GameManager.get_grain_shortage_attack_mod(faction_id) - 1.0
+	return CtxLib.grain_shortage_atk_offset(faction_id)
 
 
 func _get_grain_shortage_def_offset(faction_id: String) -> float:
-	return GameManager.get_grain_shortage_defense_mod(faction_id) - 1.0
+	return CtxLib.grain_shortage_def_offset(faction_id)
 
 
 func _add_ctx_offset(ctx: Dictionary, key: String, offset: float) -> void:
-	if absf(offset) <= 0.001:
-		return
-	ctx[key] = float(ctx.get(key, 0.0)) + offset
+	CtxLib.add_offset(ctx, key, offset)
+
+
+## 经共享 CtxBuilder 组装攻击/防御修正（统一规范 §4）
+func _build_combatk_ctx(attacker: Dictionary, defender: Dictionary, is_fire: bool) -> Dictionary:
+	var atk_ctx: Dictionary = CtxLib.build_attack_ctx(
+		str(attacker["faction_id"]),
+		str(attacker["unit_type_id"]),
+		attacker.get("skills", []),
+		str(m._current_season),
+		is_fire
+	)
+	return atk_ctx
+
+
+func _build_combat_def_ctx(defender: Dictionary) -> Dictionary:
+	return CtxLib.build_defense_ctx(
+		str(defender["faction_id"]),
+		str(defender["unit_type_id"])
+	)
+
+
+## 攻击预览用：与 execute_player_attack 同源 ctx
+func _preview_ctx(attacker: Dictionary, defender: Dictionary) -> Array:
+	var def_terrain: String = m.terrain_at(Vector2i(int(defender["q"]), int(defender["r"])))
+	var is_fire: bool = m._can_fire_attack(def_terrain)
+	var atk_ctx: Dictionary = _build_combatk_ctx(attacker, defender, is_fire)
+	var def_ctx: Dictionary = _build_combat_def_ctx(defender)
+	return [atk_ctx, def_ctx]
 
 
 func execute_player_attack(attacker_id: String, defender_id: String) -> Dictionary:
@@ -64,40 +88,11 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var def_terrain: String = m.terrain_at(def_cell)
 	var atk_morale: int = int(a.get("morale", 100))
 	var def_morale: int = int(d.get("morale", 100))
-	# 火攻判定：夏秋 + 森林地形
-	var atk_ctx: Dictionary = {}
-	var def_ctx: Dictionary = {}
+	# 火攻判定：夏秋 + 森林地形；ctx 经共享 CtxBuilder
 	var is_fire: bool = m._can_fire_attack(def_terrain)
-	if is_fire:
-		atk_ctx = m._get_fire_attack_ctx()
-	_add_ctx_offset(atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(a["faction_id"])))
-	_add_ctx_offset(atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(a["faction_id"])))
-	_add_ctx_offset(def_ctx, "faction_def", _get_grain_shortage_def_offset(str(d["faction_id"])))
-	# 被动技能加成
-	var passive_bonus: float = m._get_passive_skill_bonus(a.get("skills", []))
-	if passive_bonus > 0.0:
-		atk_ctx["unit_ability_bonus"] = atk_ctx.get("unit_ability_bonus", 0.0) + passive_bonus
-	# 科技战斗修正
-	var atk_udata: Dictionary = DataManager.get_unit_type(str(a["unit_type_id"]))
-	var tech_atk: float = TechSystem.get_attack_modifier(str(atk_udata.get("category", "")))
-	if tech_atk != 0.0:
-		atk_ctx["tech_atk"] = tech_atk
-	var def_udata: Dictionary = DataManager.get_unit_type(str(d["unit_type_id"]))
-	var tech_def: float = TechSystem.get_defense_modifier(str(def_udata.get("category", "")))
-	if tech_def != 0.0:
-		def_ctx["tech_def"] = tech_def
-	# 学派战斗修正
-	var atk_school_bonus: Dictionary = m._get_school_combat_bonus(str(a["faction_id"]))
-	if atk_school_bonus.get("school_atk", 0.0) != 0.0:
-		atk_ctx["school_atk"] = atk_school_bonus["school_atk"]
-	# 武大夫勇武%
-	var mil_atk: float = MinisterManager.get_faction_military_attack_bonus(str(a["faction_id"]))
-	if mil_atk > 0.001:
-		atk_ctx["minister_bravery_pct"] = mil_atk
-	var def_school_bonus: Dictionary = m._get_school_combat_bonus(str(d["faction_id"]))
-	if def_school_bonus.get("school_def", 0.0) != 0.0:
-		def_ctx["school_def"] = def_school_bonus["school_def"]
-	# 关隘 crossing_rules 修正
+	var atk_ctx: Dictionary = _build_combatk_ctx(a, d, is_fire)
+	var def_ctx: Dictionary = _build_combat_def_ctx(d)
+	# 场景专属：关隘 crossing_rules 与结构防御（适配层数据）
 	var tdata_def: Dictionary = DataManager.get_terrain(def_terrain)
 	var cr: Variant = tdata_def.get("crossing_rules", null)
 	if cr is Dictionary:
@@ -186,38 +181,18 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 		var is_ranged_atk: bool = m._combat_resolver.is_ranged_unit(atk_type_id)
 		if m._combat_resolver.should_trigger_counter(def_type_id, is_ranged_atk):
 			var atk_terrain2: String = m.terrain_at(atk_cell)
-			var c_atk_ctx: Dictionary = {}
-			var c_def_ctx: Dictionary = {}
-			_add_ctx_offset(c_atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(d["faction_id"])))
-			_add_ctx_offset(c_atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(d["faction_id"])))
-			_add_ctx_offset(c_def_ctx, "faction_def", _get_grain_shortage_def_offset(str(a["faction_id"])))
-			# 反击方被动技能
-			var c_passive: float = m._get_passive_skill_bonus(d.get("skills", []))
-			if c_passive > 0.0:
-				c_atk_ctx["unit_ability_bonus"] = c_passive
-			# 反击方科技
-			var c_atk_udata: Dictionary = DataManager.get_unit_type(def_type_id)
-			var c_tech_atk: float = TechSystem.get_attack_modifier(str(c_atk_udata.get("category", "")))
-			if c_tech_atk != 0.0:
-				c_atk_ctx["tech_atk"] = c_tech_atk
-			# 被反击方防御
-			var c_tech_def: float = TechSystem.get_defense_modifier(str(atk_udata.get("category", "")))
-			if c_tech_def != 0.0:
-				c_def_ctx["tech_def"] = c_tech_def
-			var c_atk_school: Dictionary = m._get_school_combat_bonus(str(d["faction_id"]))
-			if c_atk_school.get("school_atk", 0.0) != 0.0:
-				c_atk_ctx["school_atk"] = c_atk_school["school_atk"]
-			var c_def_school: Dictionary = m._get_school_combat_bonus(str(a["faction_id"]))
-			if c_def_school.get("school_def", 0.0) != 0.0:
-				c_def_ctx["school_def"] = c_def_school["school_def"]
-			# 攻击方所在地形修正
+			# 反击方/被反击方 ctx 均经共享 CtxBuilder
+			var c_atk_ctx: Dictionary = _build_combatk_ctx(d, a, false)
+			var c_def_ctx: Dictionary = _build_combat_def_ctx(a)
+			# 场景专属：攻击方所在地形 crossing_rules
 			var tdata_atk2: Dictionary = DataManager.get_terrain(atk_terrain2)
 			var cr_atk: Variant = tdata_atk2.get("crossing_rules", null)
 			if cr_atk is Dictionary:
 				var cr_a: Dictionary = cr_atk as Dictionary
-				c_atk_ctx["terrain_atk_offset"] = float(cr_a.get("atk_mod", 0.0))
-				c_def_ctx["terrain_def_offset"] = float(cr_a.get("def_bonus", 0.0))
+				c_atk_ctx["terrain_atk_offset"] = c_atk_ctx.get("terrain_atk_offset", 0.0) + float(cr_a.get("atk_mod", 0.0))
+				c_def_ctx["terrain_def_offset"] = c_def_ctx.get("terrain_def_offset", 0.0) + float(cr_a.get("def_bonus", 0.0))
 			# 远程单位被近战攻击时用 melee_attack
+			var c_atk_udata: Dictionary = DataManager.get_unit_type(def_type_id)
 			if m._combat_resolver.is_ranged_unit(def_type_id):
 				var melee_v: Variant = c_atk_udata.get("melee_attack", null)
 				if melee_v != null:
