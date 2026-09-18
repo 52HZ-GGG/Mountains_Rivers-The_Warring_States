@@ -241,6 +241,7 @@ func try_attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 		counter_dmg = _compute_counter_damage(defender, attacker, a_pos, d_pos)
 		if counter_dmg > 0:
 			attacker["hp"] = int(attacker["hp"]) - counter_dmg
+	attacker["last_counter_damage"] = counter_dmg
 	attacker["acted"] = true
 	attacker["mp"] = 0
 	if int(defender["hp"]) <= 0:

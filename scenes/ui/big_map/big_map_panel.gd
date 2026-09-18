@@ -59,6 +59,49 @@ func _debug_log(message: String) -> void:
 		print(message)
 
 
+## 战略单位交战反馈（统一规范 §5 结果展示）
+func _on_strategic_unit_attacked(attacker_id: String, defender_id: String, damage: int) -> void:
+	if not visible or _hover_info == null:
+		return
+	var a: Dictionary = StrategicMapManager.get_unit(attacker_id)
+	var d: Dictionary = StrategicMapManager.get_unit(defender_id)
+	var atk_name: String = ""
+	var def_name: String = ""
+	if not a.is_empty():
+		atk_name = str(DataManager.get_unit_type(str(a.get("unit_type_id", ""))).get("name", attacker_id))
+	if not d.is_empty():
+		def_name = str(DataManager.get_unit_type(str(d.get("unit_type_id", ""))).get("name", defender_id))
+	elif def_name == "":
+		def_name = defender_id
+	var counter: int = int(a.get("last_counter_damage", 0)) if not a.is_empty() else 0
+	var text: String = "%s → %s，伤害 %d" % [atk_name if atk_name != "" else attacker_id, def_name, damage]
+	if counter > 0:
+		text += " ｜反击 %d" % counter
+	if d.is_empty() and def_name != "":
+		text += " ｜歼灭"
+	_hover_info.text = text
+	_overlay_dirty = true
+	_refresh_overlay_display()
+
+
+## 攻城反馈
+func _on_strategic_city_sieged(city_id: String, attacker_id: String, damage: int) -> void:
+	if not visible or _hover_info == null:
+		return
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	var city_name: String = str(city.get("name", city_id))
+	var wall_hp: int = CityManager.get_wall_hp(city_id)
+	var city_hp: int = int(city.get("current_hp", 0))
+	var text: String = "攻城 %s，伤害 %d ｜ 城防 %d" % [city_name, damage, city_hp]
+	if wall_hp >= 0:
+		text += " ｜ 城墙 %d" % wall_hp
+	if city_hp <= 0:
+		text += " ｜ 城破"
+	_hover_info.text = text
+	_overlay_dirty = true
+	_refresh_overlay_display()
+
+
 func _ready() -> void:
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomOutBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomInBtn)
@@ -85,6 +128,8 @@ func _ready() -> void:
 	SignalBus.city_occupied.connect(_on_city_control_changed)
 	SignalBus.city_revolted.connect(_on_city_revolted)
 	SignalBus.capital_relocated.connect(_on_capital_relocated)
+	StrategicMapManager.unit_attacked.connect(_on_strategic_unit_attacked)
+	StrategicMapManager.city_sieged.connect(_on_strategic_city_sieged)
 	_minimap.connect("navigate_requested", Callable(self, "_on_minimap_navigate_requested"))
 	var h_scroll: ScrollBar = _scroll.get_h_scroll_bar()
 	if h_scroll != null:
