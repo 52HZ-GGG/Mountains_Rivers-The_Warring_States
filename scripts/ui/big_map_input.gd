@@ -33,9 +33,10 @@ static func city_caption(city_id: String, base_name: String) -> String:
 	if max_hp <= 0:
 		max_hp = maxi(hp, 1)
 	var caption: String = "%s\nHP%d/%d" % [base_name, hp, max_hp]
-	var wall: int = CityManager.get_wall_hp(city_id)
-	if wall >= 0:
-		caption += " 墙%d" % wall
+	if CityManager.has_method("get_wall_hp"):
+		var wall: int = CityManager.get_wall_hp(city_id)
+		if wall >= 0:
+			caption += " 墙%d" % wall
 	var built: int = (state.get("buildings", []) as Array).size()
 	var queue: int = (state.get("build_queue", []) as Array).size()
 	if built > 0 or queue > 0:

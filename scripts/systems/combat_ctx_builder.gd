@@ -94,6 +94,12 @@ static func build_defense_ctx(
 	var school: Dictionary = school_combat_bonus(defender_faction)
 	if float(school.get("school_def", 0.0)) != 0.0:
 		add_offset(def_ctx, "school_def", float(school["school_def"]))
+	var mil_def: float = MinisterManager.get_faction_military_defense_bonus(defender_faction)
+	if mil_def > 0.001:
+		def_ctx["minister_strategy_pct"] = mil_def
+	var wonder_def: float = WonderManager.get_effect_float(defender_faction, "defense_national")
+	if wonder_def > 0.001:
+		def_ctx["wonder_def"] = wonder_def
 	# 文化 mismatch：只读 CityManager，不落演武状态（统一规范 §9）
 	if defender_city_id != "" and CityManager.has_culture_mismatch(defender_city_id):
 		var pen_v: Variant = DataManager.get_balance_param("culture.culture_mismatch_garrison_def_penalty")

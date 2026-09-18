@@ -7,6 +7,7 @@ extends RefCounted
 ## 入口由 TacticalSkirmishManager 同名 public 方法委派调用。
 
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
+const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 
 var m: Node
 
@@ -16,24 +17,19 @@ func initialize(manager: Node) -> void:
 
 
 func _get_national_morale_atk_offset(faction_id: String) -> float:
-	if not GameManager.is_player_faction(faction_id):
-		return 0.0
-	var morale_mod: float = float(GameManager.get_morale_threshold_effect().get("morale_atk_mod", 1.0))
-	return morale_mod - 1.0
+	return CtxLib.national_morale_atk_offset(faction_id)
 
 
 func _get_grain_shortage_atk_offset(faction_id: String) -> float:
-	return GameManager.get_grain_shortage_attack_mod(faction_id) - 1.0
+	return CtxLib.grain_shortage_atk_offset(faction_id)
 
 
 func _get_grain_shortage_def_offset(faction_id: String) -> float:
-	return GameManager.get_grain_shortage_defense_mod(faction_id) - 1.0
+	return CtxLib.grain_shortage_def_offset(faction_id)
 
 
 func _add_ctx_offset(ctx: Dictionary, key: String, offset: float) -> void:
-	if absf(offset) <= 0.001:
-		return
-	ctx[key] = float(ctx.get(key, 0.0)) + offset
+	CtxLib.add_offset(ctx, key, offset)
 
 
 func execute_player_attack(attacker_id: String, defender_id: String) -> Dictionary:

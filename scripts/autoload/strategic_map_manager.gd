@@ -11,6 +11,9 @@ signal city_sieged(city_id: String, attacker_id: String, damage: int)
 
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
+const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
+const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
+const SiegeLib := preload("res://scripts/systems/siege_resolver.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -104,22 +107,10 @@ func spawn_unit_at_city(faction_id: String, unit_type_id: String, col: int, row:
 	var unit_id: String = "su_%d_%s_%s" % [_next_unit_seq, faction_id, unit_type_id]
 	_next_unit_seq += 1
 	var axial: Vector2i = HexLib.offset_odd_r_to_axial(col, row)
-	var unit: Dictionary = {
-		"id": unit_id,
-		"faction_id": faction_id,
-		"unit_type_id": unit_type_id,
-		"col": col,
-		"row": row,
-		"q": axial.x,
-		"r": axial.y,
-		"hp": hp,
-		"max_hp": hp,
-		"count": count,
-		"max_mp": speed,
-		"mp": speed,
-		"morale": 100,
-		"acted": false,
-	}
+	# UnitState v3 权威字段（统一规范 §3）
+	var unit: Dictionary = UnitStateLib.make(
+		faction_id, unit_type_id, axial.x, axial.y, hp, speed, maxi(1, count), unit_id, col, row
+	)
 	_units.append(unit)
 	units_changed.emit()
 	return {"success": true, "unit_id": unit_id}
@@ -344,7 +335,10 @@ func _try_counter_attack(attacker: Dictionary, defender: Dictionary) -> int:
 	var is_ranged_atk: bool = _combat.is_ranged_unit(a_type_id)
 	if not _combat.should_trigger_counter(d_type_id, is_ranged_atk):
 		return 0
-	var c_atk_ctx: Dictionary = _build_combat_ctx(d_type_id, str(defender["faction_id"]), true)
+	var c_atk_ctx: Dictionary = _build_combat_ctx(
+		d_type_id, str(defender["faction_id"]), true,
+		defender.get("skills", []) if defender.get("skills") is Array else []
+	)
 	var c_def_ctx: Dictionary = _build_combat_ctx(a_type_id, str(attacker["faction_id"]), false)
 	if _combat.is_ranged_unit(d_type_id):
 		var d_data: Dictionary = DataManager.get_unit_type(d_type_id)
@@ -368,45 +362,17 @@ func _try_counter_attack(attacker: Dictionary, defender: Dictionary) -> int:
 	return counter_dmg
 
 
-## 构建攻/防 context：科技 + 学派 + 大夫 + 奇观 + 国家民心 + 断粮（对齐演武层）
-func _build_combat_ctx(unit_type_id: String, faction_id: String, is_attacker: bool) -> Dictionary:
-	var ctx: Dictionary = {}
-	var udata: Dictionary = DataManager.get_unit_type(unit_type_id)
-	var category: String = str(udata.get("category", ""))
+## 构建攻/防 context：统一走 CombatCtxBuilder（禁止大地图/演武各拼一套，U2）
+func _build_combat_ctx(
+	unit_type_id: String,
+	faction_id: String,
+	is_attacker: bool,
+	skills: Array = [],
+	city_id: String = ""
+) -> Dictionary:
 	if is_attacker:
-		var tech_atk: float = TechSystem.get_attack_modifier(category)
-		if tech_atk != 0.0:
-			ctx["tech_atk"] = tech_atk
-		var school_atk: float = SchoolManager.get_effect_float(faction_id, "attack_bonus")
-		if school_atk != 0.0:
-			ctx["school_atk"] = school_atk
-		var mil_atk: float = MinisterManager.get_faction_military_attack_bonus(faction_id)
-		if mil_atk > 0.001:
-			ctx["minister_bravery_pct"] = mil_atk
-		if GameManager.is_player_faction(faction_id):
-			var morale_mod: float = float(GameManager.get_morale_threshold_effect().get("morale_atk_mod", 1.0))
-			if absf(morale_mod - 1.0) > 0.001:
-				ctx["faction_atk"] = float(ctx.get("faction_atk", 0.0)) + (morale_mod - 1.0)
-		var grain_atk: float = GameManager.get_grain_shortage_attack_mod(faction_id) - 1.0
-		if absf(grain_atk) > 0.001:
-			ctx["faction_atk"] = float(ctx.get("faction_atk", 0.0)) + grain_atk
-	else:
-		var tech_def: float = TechSystem.get_defense_modifier(category)
-		if tech_def != 0.0:
-			ctx["tech_def"] = tech_def
-		var school_def: float = SchoolManager.get_effect_float(faction_id, "defense_bonus")
-		if school_def != 0.0:
-			ctx["school_def"] = school_def
-		var mil_def: float = MinisterManager.get_faction_military_defense_bonus(faction_id)
-		if mil_def > 0.001:
-			ctx["minister_strategy_pct"] = mil_def
-		var wonder_def: float = WonderManager.get_effect_float(faction_id, "defense_national")
-		if wonder_def > 0.001:
-			ctx["wonder_def"] = wonder_def
-		var grain_def: float = GameManager.get_grain_shortage_defense_mod(faction_id) - 1.0
-		if absf(grain_def) > 0.001:
-			ctx["faction_def"] = grain_def
-	return ctx
+		return CtxLib.build_attack_ctx(faction_id, unit_type_id, skills)
+	return CtxLib.build_defense_ctx(faction_id, unit_type_id, city_id)
 
 
 ## 击杀/阵亡士气：亲自击杀 + 自身阵营击杀 + 敌方阵亡（§6.2）
@@ -431,8 +397,14 @@ func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
 	var d_type_id: String = str(defender["unit_type_id"])
 	var d_offset: Vector2i = HexLib.axial_to_offset_odd_r(int(defender["q"]), int(defender["r"]))
 	var d_terrain_id: String = CityManager.get_big_map_terrain_id(d_offset.x, d_offset.y)
-	var atk_ctx: Dictionary = _build_combat_ctx(a_type_id, str(attacker["faction_id"]), true)
-	var def_ctx: Dictionary = _build_combat_ctx(d_type_id, str(defender["faction_id"]), false)
+	var atk_ctx: Dictionary = _build_combat_ctx(
+		a_type_id, str(attacker["faction_id"]), true,
+		attacker.get("skills", []) if attacker.get("skills") is Array else []
+	)
+	var def_ctx: Dictionary = _build_combat_ctx(
+		d_type_id, str(defender["faction_id"]), false,
+		defender.get("skills", []) if defender.get("skills") is Array else []
+	)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.randomize()
 	var result: Dictionary = _combat.compute_damage(
@@ -470,32 +442,47 @@ func try_attack_city(unit_id: String, city_id: String) -> Dictionary:
 	var range: int = int(a_type.get("range", 1))
 	if HexLib.hex_distance_hex(u_pos, c_pos) > range:
 		return {"ok": false, "reason": "OUT_OF_RANGE"}
-	var atk: int = int(a_type.get("attack", 10))
-	var siege_mult: float = 1.0
-	var special: String = str(a_type.get("special", ""))
-	if str(a_type.get("category", "")) == "siege" or special == "siege_bonus" or special == "siege":
-		siege_mult = float(DataManager.get_balance_param("city_combat.siege_damage_multiplier"))
-	var city_def: float = float(CityManager.get_city_defense(city_id))
-	var atk_ctx: Dictionary = _build_combat_ctx(str(unit["unit_type_id"]), str(unit["faction_id"]), true)
+	# 统一规范 §7：攻城走 SiegeResolver（墙 HP 分流 + ctx + 器械倍率）
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.randomize()
-	var siege_info: Dictionary = CombatLib.compute_siege_damage(
-		str(unit["unit_type_id"]), 1, int(city_def), int(city.get("current_hp", 1)), rng, atk_ctx,
-	)
-	var dmg: int = int(siege_info.get("damage", 1))
-	if dmg <= 0:
+	var skills: Array = unit.get("skills", []) if unit.get("skills") is Array else []
+	# SiegeResolver 内部用 CtxBuilder；此处保证 skills 进入 unit dict 供其读取
+	unit["skills"] = skills
+	var siege_result: Dictionary = SiegeLib.compute_city_attack(unit, city_id, rng)
+	var dmg: int = int(siege_result.get("damage", 0))
+	if dmg <= 0 and not bool(siege_result.get("city_destroyed", false)):
+		# 兜底：无 ctx 时至少 1 点，避免零伤害死锁
+		var atk: int = int(a_type.get("attack", 10))
+		var siege_mult: float = SiegeLib.siege_multiplier(str(unit["unit_type_id"]))
+		var city_def: float = float(CityManager.get_city_defense(city_id))
 		dmg = maxi(1, int(float(atk) * siege_mult * 20.0 / (20.0 + maxf(city_def, 0.0))))
-	var result: Dictionary = CityManager.damage_city(city_id, dmg)
+		var fallback: Dictionary = CityManager.damage_city(city_id, dmg)
+		siege_result["city_destroyed"] = bool(fallback.get("destroyed", false))
+		siege_result["city_damage"] = dmg
+	# 城防反击（统一规范 §7）
+	var counter: int = 0
+	if not bool(siege_result.get("city_destroyed", false)):
+		counter = SiegeLib.city_counter_damage(city_id, unit, rng)
+		if counter > 0:
+			unit["hp"] = maxi(0, int(unit.get("hp", 1)) - counter)
+			if int(unit["hp"]) <= 0:
+				_remove_unit(str(unit["id"]))
 	unit["acted"] = true
 	unit["mp"] = 0
-	if bool(result.get("destroyed", false)):
+	if bool(siege_result.get("city_destroyed", false)):
 		var captor: String = str(unit["faction_id"])
 		CityManager.change_ownership(city_id, captor)
-		# 占城胜利有机会招募武大夫
 		MinisterManager.try_acquire_military_minister(captor)
 	city_sieged.emit(city_id, unit_id, dmg)
 	units_changed.emit()
-	return {"ok": true, "damage": dmg, "destroyed": bool(result.get("destroyed", false))}
+	return {
+		"ok": true,
+		"damage": dmg,
+		"wall_damage": int(siege_result.get("wall_damage", 0)),
+		"city_damage": int(siege_result.get("city_damage", dmg)),
+		"counter_damage": counter,
+		"destroyed": bool(siege_result.get("city_destroyed", false)),
+	}
 
 
 func _city_id_at_offset(col: int, row: int) -> String:
@@ -552,7 +539,7 @@ func load_save_data(data: Dictionary) -> void:
 	if raw is Array:
 		for item: Variant in raw:
 			if item is Dictionary:
-				_units.append((item as Dictionary).duplicate(true))
+				_units.append(UnitStateLib.normalize((item as Dictionary).duplicate(true)))
 	_next_unit_seq = int(data.get("next_unit_seq", _units.size() + 1))
 	_selected_unit_id = ""
 	units_changed.emit()

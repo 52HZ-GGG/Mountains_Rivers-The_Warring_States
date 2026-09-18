@@ -321,6 +321,83 @@ func damage_city(city_id: String, damage: int) -> Dictionary:
 	return {"destroyed": city["current_hp"] <= 0, "damage": actual}
 
 
+## 城墙总 HP：城内 wall 实体建筑 structure_hp 之和；无墙返回 -1（统一规范 §7 / SiegeResolver）。
+func get_wall_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return -1
+	var total: int = 0
+	var has_wall: bool = false
+	for b: Variant in city.get("buildings", []):
+		var e: Dictionary = b as Dictionary
+		if str(e.get("building_id", "")) != "wall":
+			continue
+		if bool(e.get("disabled", false)):
+			continue
+		has_wall = true
+		total += maxi(0, int(e.get("structure_hp", 0)))
+	return total if has_wall else -1
+
+
+## 城墙最大 HP（max_structure_hp 之和）；无墙返回 0。
+func get_wall_max_hp(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var total: int = 0
+	var has_wall: bool = false
+	for b: Variant in city.get("buildings", []):
+		var e: Dictionary = b as Dictionary
+		if str(e.get("building_id", "")) != "wall":
+			continue
+		has_wall = true
+		var mx: int = int(e.get("max_structure_hp", e.get("structure_hp", 0)))
+		total += maxi(0, mx)
+	if not has_wall:
+		return 0
+	return total
+
+
+## 对城墙分流伤害，按墙段扣 structure_hp。返回 {"destroyed": bool, "damage": int}。
+func damage_wall(city_id: String, damage: int) -> Dictionary:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty() or damage <= 0:
+		return {"destroyed": false, "damage": 0}
+	var remain: int = damage
+	var applied: int = 0
+	var any_wall: bool = false
+	var all_down: bool = true
+	for b: Variant in city.get("buildings", []):
+		var e: Dictionary = b as Dictionary
+		if str(e.get("building_id", "")) != "wall":
+			continue
+		any_wall = true
+		if bool(e.get("disabled", false)):
+			continue
+		var hp: int = maxi(0, int(e.get("structure_hp", 0)))
+		if hp <= 0:
+			continue
+		all_down = false
+		var hit: int = mini(remain, hp)
+		e["structure_hp"] = hp - hit
+		applied += hit
+		remain -= hit
+		if remain <= 0:
+			break
+	if not any_wall:
+		return {"destroyed": false, "damage": 0}
+	# 是否全部墙段 HP 归零
+	all_down = true
+	for b2: Variant in city.get("buildings", []):
+		var e2: Dictionary = b2 as Dictionary
+		if str(e2.get("building_id", "")) != "wall":
+			continue
+		if int(e2.get("structure_hp", 0)) > 0:
+			all_down = false
+			break
+	return {"destroyed": all_down, "damage": applied}
+
+
 ## 修复城池 HP（每回合自然恢复或建筑效果）。
 func repair_city(city_id: String, amount: int) -> void:
 	var city: Dictionary = _city_states.get(city_id, {})

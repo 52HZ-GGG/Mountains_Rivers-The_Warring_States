@@ -46,8 +46,11 @@ static func compute_city_attack(
 	var dmg: int = int(result.get("damage", 0))
 
 	# 墙壁分流：有墙时先伤墙，余量伤城体
-	var wall_hp: int = CityManager.get_wall_hp(city_id)
-	var wall_max: int = CityManager.get_wall_max_hp(city_id)
+	var wall_hp: int = -1
+	var wall_max: int = 0
+	if CityManager.has_method("get_wall_hp"):
+		wall_hp = CityManager.get_wall_hp(city_id)
+		wall_max = CityManager.get_wall_max_hp(city_id) if CityManager.has_method("get_wall_max_hp") else 0
 	var wall_dmg: int = 0
 	var city_dmg: int = dmg
 	if wall_hp >= 0:
@@ -66,7 +69,7 @@ static func compute_city_attack(
 		city_dmg = maxi(0, dmg - wall_dmg)
 
 	var wall_result: Dictionary = {}
-	if wall_dmg > 0:
+	if wall_dmg > 0 and CityManager.has_method("damage_wall"):
 		wall_result = CityManager.damage_wall(city_id, wall_dmg)
 	if city_dmg > 0:
 		var city_result: Dictionary = CityManager.damage_city(city_id, city_dmg)
