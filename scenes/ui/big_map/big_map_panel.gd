@@ -693,25 +693,9 @@ func _apply_overlay_to_terrain_payload() -> void:
 			continue
 		var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
 		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
-		var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
+		var caption: String = ""
 		if not city.is_empty():
-			var cid: String = str(city.get("id", ""))
-			var state: Dictionary = CityManager.get_city_state(cid)
-			var city_hp: int = int(state.get("current_hp", city.get("current_hp", 0)))
-			var city_max: int = CityManager.get_city_max_hp(cid) if CityManager.has_method("get_city_max_hp") else city_hp
-			if city_max <= 0:
-				city_max = maxi(city_hp, 1)
-			caption = "%s\nHP%d/%d" % [caption, city_hp, city_max]
-			var wall_hp: int = CityManager.get_wall_hp(cid)
-			if wall_hp >= 0:
-				caption += " 墙%d" % wall_hp
-			var built_count: int = (state.get("buildings", city.get("buildings", [])) as Array).size()
-			var queue_count: int = (state.get("build_queue", city.get("build_queue", [])) as Array).size()
-			if built_count > 0 or queue_count > 0:
-				var b_tag: String = I18n.t("big_map.build_tag") % built_count
-				if queue_count > 0:
-					b_tag += "+%d" % queue_count
-				caption = "%s\n%s" % [caption, b_tag]
+			caption = BigMapInput.city_caption(str(city.get("id", "")), str(city.get("name", "")))
 		if not unit.is_empty():
 			var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
 			var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
@@ -1032,7 +1016,7 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 				_set_map_cursor(Control.CURSOR_MOVE)
 			if _drag_active:
 				_pan_by(-motion.relative)
-				get_viewport().set_input_as_handled()
+				BigMapInput.consume()
 				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
@@ -1042,21 +1026,21 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 			_on_hex_mouse_exit()
 	elif event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _placement_city_id != "":
+		if BigMapInput.is_right_button(mb) and mb.pressed and _placement_city_id != "":
 			cancel_building_placement()
-			get_viewport().set_input_as_handled()
+			BigMapInput.consume()
 			return
-		if mb.button_index != MOUSE_BUTTON_LEFT:
+		if not BigMapInput.is_left_button(mb):
 			return
 		if mb.pressed:
 			_drag_armed = true
 			_drag_active = false
 			_drag_press_pos = mb.position
-			get_viewport().set_input_as_handled()
+			BigMapInput.consume()
 			return
 		var was_dragging: bool = _drag_active
 		_end_drag()
-		get_viewport().set_input_as_handled()
+		BigMapInput.consume()
 		if was_dragging:
 			return
 		if _placement_city_id != "":
