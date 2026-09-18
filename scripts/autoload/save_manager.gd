@@ -1,7 +1,8 @@
 extends Node
 
-## 完整存档管理器：多槽位 + 自动存档。
-## 汇总 GameManager / CityManager / Diplomacy / Tech / School / Minister / Wonder / Event / Demo。
+## 完整存档管理器：战役（大地图）多槽位 + 自动存档。
+## 汇总 GameManager / CityManager / Diplomacy / Tech / School / Minister / Wonder / Event / Strategic / Disaster。
+## **不含演武**：演武状态由 SkirmishSaveManager 独立存档（演武是演武）。
 
 const SCHEMA_VERSION: int = 2
 const SLOT_COUNT: int = 3

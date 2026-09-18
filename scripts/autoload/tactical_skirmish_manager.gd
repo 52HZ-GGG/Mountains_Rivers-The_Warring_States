@@ -194,6 +194,142 @@ func reset_skirmish() -> void:
 	state_changed.emit()
 
 
+# ============= 演武独立存档（与大地图战役存档分离） =============
+
+const SAVE_SCHEMA_VERSION: int = 1
+
+
+static func _cell_key(c: Vector2i) -> String:
+	return "%d_%d" % [c.x, c.y]
+
+
+static func _cell_from_key(k: String) -> Vector2i:
+	var parts: PackedStringArray = String(k).split("_")
+	if parts.size() < 2:
+		return Vector2i.ZERO
+	return Vector2i(int(parts[0]), int(parts[1]))
+
+
+static func _pack_cell_dict(src: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for k: Variant in src:
+		out[_cell_key(k as Vector2i)] = src[k]
+	return out
+
+
+static func _unpack_cell_dict(src: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for k: Variant in src:
+		out[_cell_from_key(str(k))] = src[k]
+	return out
+
+
+static func _pack_units(units: Array) -> Array:
+	var out: Array = []
+	for u: Variant in units:
+		if u is Dictionary:
+			out.append((u as Dictionary).duplicate(true))
+	return out
+
+
+static func _pack_cells_list(cells: Array) -> Array:
+	var out: Array = []
+	for c: Variant in cells:
+		if c is Vector2i:
+			out.append({"x": (c as Vector2i).x, "y": (c as Vector2i).y})
+	return out
+
+
+## 演武局内完整快照（独立于 SaveManager 战役存档）
+func get_save_data() -> Dictionary:
+	return {
+		"schema_version": SAVE_SCHEMA_VERSION,
+		"kind": "skirmish",
+		"active": _skirmish_active,
+		"season": _current_season,
+		"player_faction": _player_faction,
+		"enemy_faction": _enemy_faction,
+		"player_city": {"x": _player_city.x, "y": _player_city.y},
+		"enemy_city": {"x": _enemy_city.x, "y": _enemy_city.y},
+		"cfg": _cfg.duplicate(true),
+		"units": _pack_units(_units),
+		"tiles": _pack_cell_dict(_tiles),
+		"all_cells": _pack_cells_list(_all_cells),
+		"pass_hp": _pack_cell_dict(_pass_hp),
+		"pass_owner": _pack_cell_dict(_pass_owner),
+		"pass_attacked": _pack_cell_dict(_pass_attacked),
+		"city_wall_hp": _pack_cell_dict(_city_wall_hp),
+		"city_wall_max_hp": _pack_cell_dict(_city_wall_max_hp),
+		"city_buildings": _pack_cell_dict(_city_buildings),
+		"city_body_hp": _pack_cell_dict(_city_body_hp),
+		"city_body_max_hp": _pack_cell_dict(_city_body_max_hp),
+		"city_level": _pack_cell_dict(_city_level),
+		"city_attacked": _pack_cell_dict(_city_attacked),
+		"city_tower_hp": _pack_cell_dict(_city_tower_hp),
+		"demo_attack_multiplier": _demo_attack_multiplier,
+	}
+
+
+func _unpack_cell_array(src: Array) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for item: Variant in src:
+		if item is Dictionary:
+			var d: Dictionary = item as Dictionary
+			out.append(Vector2i(int(d.get("x", d.get("q", 0))), int(d.get("y", d.get("r", 0)))))
+		elif item is Vector2i:
+			out.append(item as Vector2i)
+	return out
+
+
+## 恢复演武快照（只动演武状态，不读写战役存档/CityManager）
+func apply_save_data(data: Dictionary) -> String:
+	if str(data.get("kind", "")) != "skirmish":
+		return "NOT_SKIRMISH_SAVE"
+	if int(data.get("schema_version", 0)) > SAVE_SCHEMA_VERSION:
+		return "SKIRMISH_SAVE_VERSION_TOO_NEW"
+	reset_skirmish()
+	_cfg = data.get("cfg", {}) as Dictionary
+	_current_season = str(data.get("season", "summer"))
+	_player_faction = str(data.get("player_faction", ""))
+	_enemy_faction = str(data.get("enemy_faction", ""))
+	var pc: Dictionary = data.get("player_city", {}) as Dictionary
+	var ec: Dictionary = data.get("enemy_city", {}) as Dictionary
+	_player_city = Vector2i(int(pc.get("x", 0)), int(pc.get("y", 0)))
+	_enemy_city = Vector2i(int(ec.get("x", 0)), int(ec.get("y", 0)))
+	_tiles = _unpack_cell_dict(data.get("tiles", {}) as Dictionary)
+	_all_cells.clear()
+	for c: Vector2i in _unpack_cell_dict(data.get("tiles", {}) as Dictionary):
+		_all_cells.append(c)
+	# all_cells 若单独存过则覆盖
+	if data.has("all_cells"):
+		var packed_cells: Variant = data.get("all_cells")
+		if packed_cells is Array and (packed_cells as Array).size() > 0:
+			_all_cells.clear()
+			for item: Variant in (packed_cells as Array):
+				if item is Dictionary:
+					var d: Dictionary = item as Dictionary
+					_all_cells.append(Vector2i(int(d.get("x", d.get("q", 0))), int(d.get("y", d.get("r", 0)))))
+	_units.clear()
+	for u: Variant in data.get("units", []):
+		if u is Dictionary:
+			_units.append((u as Dictionary).duplicate(true))
+	_pass_hp = _unpack_cell_dict(data.get("pass_hp", {}) as Dictionary)
+	_pass_owner = _unpack_cell_dict(data.get("pass_owner", {}) as Dictionary)
+	_pass_attacked = _unpack_cell_dict(data.get("pass_attacked", {}) as Dictionary)
+	_city_wall_hp = _unpack_cell_dict(data.get("city_wall_hp", {}) as Dictionary)
+	_city_wall_max_hp = _unpack_cell_dict(data.get("city_wall_max_hp", {}) as Dictionary)
+	_city_buildings = _unpack_cell_dict(data.get("city_buildings", {}) as Dictionary)
+	_city_body_hp = _unpack_cell_dict(data.get("city_body_hp", {}) as Dictionary)
+	_city_body_max_hp = _unpack_cell_dict(data.get("city_body_max_hp", {}) as Dictionary)
+	_city_level = _unpack_cell_dict(data.get("city_level", {}) as Dictionary)
+	_city_attacked = _unpack_cell_dict(data.get("city_attacked", {}) as Dictionary)
+	_city_tower_hp = _unpack_cell_dict(data.get("city_tower_hp", {}) as Dictionary)
+	_demo_attack_multiplier = float(data.get("demo_attack_multiplier", 1.0))
+	_skirmish_active = bool(data.get("active", true))
+	state_changed.emit()
+	return ""
+
+
 ## 测试辅助：执行士气处理（恢复/崩溃/衰减）+ 烧伤DOT，不重置行动状态
 func process_morale_for_test() -> void:
 	# 烧伤 DOT 结算
