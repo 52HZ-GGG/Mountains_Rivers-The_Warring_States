@@ -9,6 +9,7 @@ extends RefCounted
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const ScoringLib := preload("res://scripts/systems/ai_combat_scoring.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
+const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
 
 var m: Node
 
@@ -168,20 +169,17 @@ func run_turn() -> void:
 			if ai_pass_has_structure:
 				var ai_pass_def_v: Variant = DataManager.get_balance_param("fortification.pass_defense")
 				ai_def_ctx["building_def"] = ai_def_ctx.get("building_def", 0.0) + float(ai_pass_def_v) / 100.0
-			# 城防防御加成
+			# 城防防御加成（WallCombatRules，与大地图一致）
 			var ai_city_has_wall: bool = m._city_wall_hp.has(ai_def_cell) and int(m._city_wall_hp[ai_def_cell]) > 0
 			if ai_city_has_wall:
 				var ai_city_lvl: int = int(m._city_level.get(ai_def_cell, 3))
-				var ai_city_levels_all: Variant = DataManager.get_balance_param("city_levels")
-				var ai_city_def_data: Dictionary = {}
-				if ai_city_levels_all is Dictionary:
-					ai_city_def_data = (ai_city_levels_all as Dictionary).get(str(ai_city_lvl), {})
-				var ai_city_def: float = float(ai_city_def_data.get("city_defense", 45))
-				var ai_wall_ratio: float = float(m._city_wall_hp[ai_def_cell]) / float(m._city_wall_max_hp[ai_def_cell]) if int(m._city_wall_max_hp[ai_def_cell]) > 0 else 1.0
-				var ai_min_r_v: Variant = DataManager.get_balance_param("city_combat.wall_defense_min_ratio")
-				var ai_min_r: float = float(ai_min_r_v) if ai_min_r_v != null else 0.5
-				var ai_eff_ratio: float = maxf(ai_wall_ratio, ai_min_r)
-				ai_def_ctx["building_def"] = ai_def_ctx.get("building_def", 0.0) + ai_city_def * ai_eff_ratio / 100.0
+				var ai_city_def: float = WallLib.city_defense_base(ai_city_lvl)
+				var bdef_ai: float = WallLib.wall_defense_buff(
+					int(m._city_wall_hp[ai_def_cell]),
+					int(m._city_wall_max_hp.get(ai_def_cell, 0)),
+					ai_city_def
+				)
+				ai_def_ctx["building_def"] = ai_def_ctx.get("building_def", 0.0) + bdef_ai
 			var dmg_i: Dictionary = m._combat_resolver.compute_damage(
 				str(u["unit_type_id"]),
 				str(defender["unit_type_id"]),

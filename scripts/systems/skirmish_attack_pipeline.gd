@@ -8,6 +8,8 @@ extends RefCounted
 
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
+const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
+const MoveLib := preload("res://scripts/systems/movement_reach.gd")
 
 var m: Node
 
@@ -121,19 +123,16 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	if pass_has_structure:
 		var pass_def_v: Variant = DataManager.get_balance_param("fortification.pass_defense")
 		def_ctx["building_def"] = def_ctx.get("building_def", 0.0) + float(pass_def_v) / 100.0
-	# 城防防御加成：城墙 HP > 0 时按 HP 比例缩放
+	# 城防防御加成：城墙 HP > 0 时按 HP 比例缩放（WallCombatRules，与大地图一致）
 	var city_has_wall: bool = m._city_wall_hp.has(def_cell) and int(m._city_wall_hp[def_cell]) > 0
 	if city_has_wall:
-		var city_def_data: Dictionary = {}
-		var city_levels_all: Variant = DataManager.get_balance_param("city_levels")
-		if city_levels_all is Dictionary:
-			city_def_data = (city_levels_all as Dictionary).get(str(int(m._city_level.get(def_cell, 3))), {})
-		var city_def_base: float = float(city_def_data.get("city_defense", 45))
-		var wall_ratio: float = float(m._city_wall_hp[def_cell]) / float(m._city_wall_max_hp[def_cell]) if int(m._city_wall_max_hp[def_cell]) > 0 else 1.0
-		var min_ratio_v: Variant = DataManager.get_balance_param("city_combat.wall_defense_min_ratio")
-		var min_ratio: float = float(min_ratio_v) if min_ratio_v != null else 0.5
-		var effective_ratio: float = maxf(wall_ratio, min_ratio)
-		def_ctx["building_def"] = def_ctx.get("building_def", 0.0) + city_def_base * effective_ratio / 100.0
+		var city_def_base: float = WallLib.city_defense_base(int(m._city_level.get(def_cell, 3)))
+		var wall_buff: float = WallLib.wall_defense_buff(
+			int(m._city_wall_hp[def_cell]),
+			int(m._city_wall_max_hp.get(def_cell, 0)),
+			city_def_base
+		)
+		def_ctx["building_def"] = def_ctx.get("building_def", 0.0) + wall_buff
 	var dmg_info: Dictionary = m._combat_resolver.compute_damage(
 		str(a["unit_type_id"]),
 		str(d["unit_type_id"]),
@@ -155,24 +154,12 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	# 关隘结构伤害（攻城器械 × siege_damage_multiplier）
 	if pass_has_structure:
 		m._damage_pass_structure(def_cell, str(a["unit_type_id"]), eff_atk)
-	# 城防伤害分流
+	# 城防伤害分流（WallCombatRules，与大地图 SiegeResolver 一致）
 	if city_has_wall:
-		var split_wall_v: Variant = DataManager.get_balance_param("city_combat.damage_split_wall")
-		var split_wall: float = float(split_wall_v) if split_wall_v != null else 0.5
-		var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
-		var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
-		var siege_factor: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
 		var city_lv: int = int(m._city_level.get(def_cell, 3))
-		var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
-		var wall_struct_def: float = 8.0
-		if wsdef_v is Dictionary:
-			var wsdef_dict: Dictionary = wsdef_v as Dictionary
-			var lv_val: Variant = wsdef_dict.get(str(city_lv), null)
-			if lv_val != null:
-				wall_struct_def = float(lv_val)
-		var coeff: float = 20.0
-		var wall_dmg: int = maxi(1, int(float(dmg) * split_wall * siege_factor * coeff / (coeff + wall_struct_def)))
-		var unit_dmg: int = dmg - wall_dmg
+		var split: Dictionary = WallLib.split_damage_to_wall(dmg, str(a["unit_type_id"]), city_lv, true)
+		var wall_dmg: int = maxi(1, int(split.get("wall_damage", 0)))
+		var unit_dmg: int = maxi(0, dmg - wall_dmg)
 		unit_dmg = mini(unit_dmg, int(d["hp"]))
 		d["hp"] = int(d["hp"]) - unit_dmg
 		m._damage_city_wall(def_cell, wall_dmg)
@@ -306,35 +293,24 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 	if int(a.get("mp_remaining", 0)) < atk_cost:
 		return {"ok": false, "reason": "insufficient_mp"}
 	var ac: Vector2i = Vector2i(int(a["q"]), int(a["r"]))
-	var dist: int = HexLib.hex_distance_hex(ac, cell)
 	var ug: Dictionary = DataManager.get_unit_type(str(a["unit_type_id"]))
 	var base_range: int = int(ug.get("range", 1))
-	var eff_range: int = m._get_effective_range(ac, cell, base_range)
+	var off_a: Vector2i = HexLib.axial_to_offset_odd_r(ac.x, ac.y)
+	var off_c: Vector2i = HexLib.axial_to_offset_odd_r(cell.x, cell.y)
+	var dist: int = HexLib.hex_distance_hex(ac, cell)
+	var eff_range: int = MoveLib.effective_range(off_a, off_c, base_range)
 	if dist < 1 or dist > eff_range:
 		return {"ok": false, "reason": "out_of_range"}
 	var eff_atk: float = float(ug.get("attack", 10))
 	eff_atk *= m.get_demo_attack_multiplier()
-	var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
-	var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
-	var siege_factor: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
 	var city_lv: int = int(m._city_level.get(cell, 3))
-	var coeff: float = 20.0
-	# 城墙未破：打城墙结构；已破：打城市本体（机制：城市经营系统.md §9.2）
+	# 统一规范 §7：与大地图 SiegeResolver 共用 WallCombatRules
 	if wall_left > 0:
-		var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
-		var wall_struct_def: float = 8.0
-		if wsdef_v is Dictionary:
-			var wsdef_dict: Dictionary = wsdef_v as Dictionary
-			var lv_val: Variant = wsdef_dict.get(str(city_lv), null)
-			if lv_val != null:
-				wall_struct_def = float(lv_val)
-		var wall_dmg: int = maxi(1, int(eff_atk * siege_factor * coeff / (coeff + wall_struct_def)))
+		var wall_dmg: int = WallLib.direct_wall_or_city_damage(eff_atk, str(a["unit_type_id"]), city_lv, wall_left)
 		m._damage_city_wall(cell, wall_dmg)
 		m._append_log("%s 攻击城墙，造成 %d 伤害" % [attacker_id, wall_dmg])
 	else:
-		var city_def_v: Variant = DataManager.get_balance_param("city_levels.%d.city_defense" % city_lv)
-		var city_def: float = float(city_def_v) if city_def_v != null else 10.0
-		var body_dmg: int = maxi(1, int(eff_atk * siege_factor * coeff / (coeff + city_def)))
+		var body_dmg: int = WallLib.direct_wall_or_city_damage(eff_atk, str(a["unit_type_id"]), city_lv, 0)
 		m._damage_city_body(cell, body_dmg)
 		m._append_log("%s 攻击城市本体，造成 %d 伤害" % [attacker_id, body_dmg])
 	m._city_attacked[cell] = true
@@ -467,19 +443,15 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			var bdef: float = float(pass_def_v) / 100.0 if pass_def_v != null else 0.0
 			def_buff += bdef
 			def_details.append("关隘 +%d%%" % int(bdef * 100.0))
-		# 城墙
+		# 城墙（WallCombatRules 与大地图一致）
 		var city_has: bool = m._city_wall_hp.has(def_cell) and int(m._city_wall_hp[def_cell]) > 0
 		if city_has:
-			var cld: Dictionary = {}
-			var clv: Variant = DataManager.get_balance_param("city_levels")
-			if clv is Dictionary:
-				cld = (clv as Dictionary).get(str(int(m._city_level.get(def_cell, 3))), {})
-			var cdef_base: float = float(cld.get("city_defense", 45))
-			var wr: float = float(m._city_wall_hp[def_cell]) / float(m._city_wall_max_hp[def_cell]) if int(m._city_wall_max_hp[def_cell]) > 0 else 1.0
-			var mrv: Variant = DataManager.get_balance_param("city_combat.wall_defense_min_ratio")
-			var mr: float = float(mrv) if mrv != null else 0.5
-			var er: float = maxf(wr, mr)
-			var bdef2: float = cdef_base * er / 100.0
+			var cdef_base: float = WallLib.city_defense_base(int(m._city_level.get(def_cell, 3)))
+			var bdef2: float = WallLib.wall_defense_buff(
+				int(m._city_wall_hp[def_cell]),
+				int(m._city_wall_max_hp.get(def_cell, 0)),
+				cdef_base
+			)
 			def_buff += bdef2
 			def_details.append("城防 +%d%%" % int(bdef2 * 100.0))
 		# 士气防御崩溃
@@ -499,16 +471,14 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 	var counter_dmg: float = effective_atk * counter
 	var raw_dmg: float = maxf(counter_dmg - effective_def, 1.0)
 
-	# 攻城城墙伤害
+	# 攻城城墙伤害（WallCombatRules 与大地图一致）
 	var wall_dmg: int = 0
 	var unit_dmg: int = 0
 	if is_wall_attack:
-		var split_wall_v: Variant = DataManager.get_balance_param("city_combat.damage_split_wall")
-		var split_wall: float = float(split_wall_v) if split_wall_v != null else 0.5
-		var siege_mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
-		var siege_mult: float = float(siege_mult_v) if siege_mult_v != null else 3.0
-		var sf: float = siege_mult if m._is_siege_unit(str(a["unit_type_id"])) else 1.0
-		wall_dmg = maxi(1, int(raw_dmg * split_wall * sf))
+		var split: Dictionary = WallLib.split_damage_to_wall(
+			int(raw_dmg), str(a["unit_type_id"]), int(m._city_level.get(def_cell, 3)), true
+		)
+		wall_dmg = maxi(1, int(split.get("wall_damage", raw_dmg * 0.5)))
 	else:
 		# 海军修正
 		var naval_atk_mod: float = m._calc_naval_combat_mod(str(a["unit_type_id"]), str(d["unit_type_id"]), atk_cell, def_cell)

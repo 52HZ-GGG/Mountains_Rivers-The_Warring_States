@@ -7,22 +7,15 @@ class_name SiegeResolver
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
+const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
 
 
 static func is_siege_unit(unit_type_id: String) -> bool:
-	var udata: Dictionary = DataManager.get_unit_type(unit_type_id)
-	if udata.is_empty():
-		return false
-	if str(udata.get("special", "")) == "siege":
-		return true
-	return str(udata.get("category", "")) == "siege"
+	return WallLib.is_siege_unit(unit_type_id)
 
 
 static func siege_multiplier(unit_type_id: String) -> float:
-	if is_siege_unit(unit_type_id):
-		var mult_v: Variant = DataManager.get_balance_param("city_combat.siege_damage_multiplier")
-		return float(mult_v) if mult_v != null else 3.0
-	return 1.0
+	return WallLib.siege_multiplier(unit_type_id)
 
 
 ## 计算对城池的总伤害（含 ctx 与器械倍率），并拆分到城墙/城体
@@ -45,28 +38,15 @@ static func compute_city_attack(
 	)
 	var dmg: int = int(result.get("damage", 0))
 
-	# 墙壁分流：有墙时先伤墙，余量伤城体
+	# 墙壁分流：与演武共用 WallCombatRules（统一规范 §7）
 	var wall_hp: int = -1
-	var wall_max: int = 0
 	if CityManager.has_method("get_wall_hp"):
 		wall_hp = CityManager.get_wall_hp(city_id)
-		wall_max = CityManager.get_wall_max_hp(city_id) if CityManager.has_method("get_wall_max_hp") else 0
-	var wall_dmg: int = 0
-	var city_dmg: int = dmg
-	if wall_hp >= 0:
-		var split_wall_v: Variant = DataManager.get_balance_param("city_combat.damage_split_wall")
-		var split_wall: float = float(split_wall_v) if split_wall_v != null else 0.5
-		var siege_factor: float = siege_multiplier(unit_type_id)
-		var coeff: float = 20.0
-		var wall_struct_def: float = 8.0
-		var wsdef_v: Variant = DataManager.get_balance_param("city_combat.wall_struct_def_by_level")
-		if wsdef_v is Dictionary:
-			var lv: int = int(CityManager.get_city_state(city_id).get("city_level", 1))
-			var lv_val: Variant = (wsdef_v as Dictionary).get(str(lv), null)
-			if lv_val != null:
-				wall_struct_def = float(lv_val)
-		wall_dmg = maxi(0, int(float(dmg) * split_wall * siege_factor * coeff / (coeff + wall_struct_def)))
-		city_dmg = maxi(0, dmg - wall_dmg)
+	var city_state: Dictionary = CityManager.get_city_state(city_id)
+	var city_level: int = int(city_state.get("city_level", 1))
+	var split: Dictionary = WallLib.split_damage_to_wall(dmg, unit_type_id, city_level, wall_hp >= 0)
+	var wall_dmg: int = int(split.get("wall_damage", 0))
+	var city_dmg: int = int(split.get("city_damage", dmg))
 
 	var wall_result: Dictionary = {}
 	if wall_dmg > 0 and CityManager.has_method("damage_wall"):

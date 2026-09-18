@@ -7,6 +7,7 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const AILib := preload("res://scripts/systems/skirmish_ai.gd")
 const AttackPipelineLib := preload("res://scripts/systems/skirmish_attack_pipeline.gd")
+const MoveLib := preload("res://scripts/systems/movement_reach.gd")
 var _combat_resolver: RefCounted = CombatLib.new()
 var _ai: AILib = AILib.new()
 var _attack: AttackPipelineLib = AttackPipelineLib.new()
@@ -1058,55 +1059,54 @@ func _execute_rout(unit: Dictionary) -> void:
 
 
 func _dijkstra_reachable(origin: Vector2i, mp_budget: int, unit_type_id: String, moving_unit_id: String, moving_faction: String = "", unit_skills: Array = []) -> Dictionary:
-	var dist: Dictionary = {}
+	# 统一规范 §6：演武与大地图共用 MovementReach
+	# 边界取场景格集合的 offset 包围盒
+	var bmin: Vector2i = Vector2i(99999, 99999)
+	var bmax: Vector2i = Vector2i(-99999, -99999)
 	for c: Vector2i in _all_cells:
-		dist[c] = BIG_MOVE
-	dist[origin] = 0
-	var visited: Dictionary = {}
-	while true:
-		var u: Vector2i = Vector2i(-9999, -9999)
-		var best: int = BIG_MOVE
-		for c: Vector2i in _all_cells:
-			if visited.has(c):
+		var off: Vector2i = HexLib.axial_to_offset_odd_r(c.x, c.y)
+		bmin = Vector2i(mini(bmin.x, off.x), mini(bmin.y, off.y))
+		bmax = Vector2i(maxi(bmax.x, off.x), maxi(bmax.y, off.y))
+	if bmin.x > bmax.x:
+		bmin = Vector2i.ZERO
+		bmax = Vector2i(99, 99)
+	var occupied := func(axial: Vector2i) -> bool:
+		if not _all_cells.has(axial):
+			return true
+		var occ: String = _occupant_id_at(axial)
+		return occ != "" and occ != moving_unit_id
+	var wall_block := func(axial: Vector2i) -> bool:
+		return _city_wall_hp.has(axial) and int(_city_wall_hp[axial]) > 0
+	var terrain_provider := func(col: int, row: int) -> String:
+		var ax: Vector2i = HexLib.offset_odd_r_to_axial(col, row)
+		return terrain_at(ax)
+	# 统一核心：地形 + ZOC + 骑兵限制 + 城墙挡格（MovementReach）
+	var reach: Dictionary = MoveLib.dijkstra_reachable(
+		origin,
+		mp_budget,
+		unit_type_id,
+		moving_faction,
+		_units,
+		bmin,
+		bmax,
+		occupied,
+		wall_block,
+		terrain_provider
+	)
+	# 适配层：场景技能改移耗时，在共享 cost/ZOC 规则上重算一次预算
+	if unit_skills is Array and not (unit_skills as Array).is_empty():
+		var skill_reach: Dictionary = {}
+		for cell_v: Variant in reach:
+			var cell: Vector2i = cell_v as Vector2i
+			var cost: int = _tile_move_cost_cell(cell, unit_type_id, unit_skills)
+			if cost >= BIG_MOVE:
 				continue
-			var d: int = int(dist[c])
-			if d < best:
-				best = d
-				u = c
-		if best >= BIG_MOVE or best > mp_budget:
-			break
-		visited[u] = true
-		for v: Vector2i in HexLib.neighbors_hex(u):
-			if not dist.has(v):
-				continue
-			var occ: String = _occupant_id_at(v)
-			if occ != "" and occ != moving_unit_id:
-				continue
-			# 城墙未破的城格不可通行
-			if _city_wall_hp.has(v) and int(_city_wall_hp[v]) > 0:
-				continue
-			var w: int = _tile_move_cost_cell(v, unit_type_id, unit_skills)
-			if w >= BIG_MOVE:
-				continue
-			if moving_faction != "" and not _is_zoc_immune(unit_type_id):
-				if _is_in_enemy_zoc(v, moving_faction):
-					var zoc_cost_v: Variant = DataManager.get_balance_param("zoc.extra_move_cost")
-					w += int(zoc_cost_v) if zoc_cost_v != null else 1
-			var alt: int = int(dist[u]) + w
-			if alt < int(dist[v]):
-				dist[v] = alt
-	var reach: Dictionary = {}
-	for k: Vector2i in dist.keys():
-		var cost: int = int(dist[k])
-		if cost <= mp_budget and cost < BIG_MOVE and k != origin:
-			# 不能停在友军格（起点除外已在上面迭代）
-			var occf: String = _occupant_id_at(k)
-			if occf != "" and occf != moving_unit_id:
-				continue
-			# 城墙未破的城格不可停留
-			if _city_wall_hp.has(k) and int(_city_wall_hp[k]) > 0:
-				continue
-			reach[k] = cost
+			if moving_faction != "" and not MoveLib.is_zoc_immune(unit_type_id) \
+				and MoveLib.is_in_enemy_zoc(cell, moving_faction, _units):
+				cost += MoveLib.zoc_extra_move_cost()
+			if cost <= mp_budget:
+				skill_reach[cell] = cost
+		return skill_reach
 	return reach
 
 
@@ -1124,17 +1124,13 @@ func _can_attack(a: Dictionary, d: Dictionary) -> bool:
 
 
 ## 计算远程遮挡后的有效射程：低处向高处射击时，每高 1 级高程射程 -1
+## 统一规范 §6：与大地图共用 MovementReach.effective_range
 func _get_effective_range(attacker_cell: Vector2i, defender_cell: Vector2i, base_range: int) -> int:
 	if base_range <= 1:
 		return base_range
 	var atk_terrain: String = terrain_at(attacker_cell)
 	var def_terrain: String = terrain_at(defender_cell)
-	var atk_elev: int = int(DataManager.get_terrain(atk_terrain).get("elevation", 0))
-	var def_elev: int = int(DataManager.get_terrain(def_terrain).get("elevation", 0))
-	var diff: int = def_elev - atk_elev
-	if diff > 0:
-		return maxi(0, base_range - diff)
-	return base_range
+	return MoveLib.effective_range_terrain(atk_terrain, def_terrain, base_range)
 
 
 func _remove_unit(uid: String) -> void:
