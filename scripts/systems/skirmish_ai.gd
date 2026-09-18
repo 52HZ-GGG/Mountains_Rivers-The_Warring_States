@@ -105,6 +105,10 @@ func run_turn() -> void:
 			var ai_mode: String = ""
 			if m != null and "ai_mode" in m:
 				ai_mode = str(m.ai_mode)
+			elif m != null and m.has_method("get_active_config"):
+				ai_mode = str((m.get_active_config() as Dictionary).get("ai_mode", "scored"))
+			if ai_mode == "":
+				ai_mode = "scored"
 			var score_cands: Array = []
 			var my_cell: Vector2i = Vector2i(int(u.get("q", 0)), int(u.get("r", 0)))
 			for tid: String in targets:
@@ -123,7 +127,10 @@ func run_turn() -> void:
 				var tut: Variant = ScoringLib.pick_tutorial_move(score_cands)
 				if tut is Dictionary:
 					t_id = str((tut as Dictionary).get("id", ""))
+			elif ai_mode == "random" and not score_cands.is_empty():
+				t_id = str((score_cands[m._rng.randi_range(0, score_cands.size() - 1)] as Dictionary).get("id", ""))
 			if t_id == "":
+				# scored（默认）：统一评分选目标
 				t_id = ScoringLib.pick_best_unit_target(score_cands)
 			if t_id == "":
 				t_id = targets[m._rng.randi_range(0, targets.size() - 1)]

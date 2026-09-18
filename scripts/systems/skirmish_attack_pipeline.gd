@@ -54,7 +54,9 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 		if int(a.get("attacks_this_turn", 0)) >= per_turn:
 			return {"ok": false, "reason": "attack_limit_reached"}
 	var atk_cost: int = int(maa_skill.get("attack_move_cost", 0)) if is_maa else m.get_attack_move_cost()
-	if int(a.get("mp_remaining", 0)) < atk_cost:
+	if m.has_method("unit_mp") and int(m.unit_mp(a)) < atk_cost:
+		return {"ok": false, "reason": "insufficient_mp_for_attack"}
+	if not m.has_method("unit_mp") and int(a.get("mp_remaining", 0)) < atk_cost:
 		return {"ok": false, "reason": "insufficient_mp_for_attack"}
 	if not m._can_attack(a, d):
 		return {"ok": false, "reason": "out_of_range"}
@@ -63,55 +65,24 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var def_terrain: String = m.terrain_at(def_cell)
 	var atk_morale: int = int(a.get("morale", 100))
 	var def_morale: int = int(d.get("morale", 100))
-	# 火攻判定：夏秋 + 森林地形
-	var atk_ctx: Dictionary = {}
-	var def_ctx: Dictionary = {}
+	# 统一规范 §4：基础攻/防修正一律 CtxBuilder；场景仅叠加关隘/墙城/海军等适配层项
 	var is_fire: bool = m._can_fire_attack(def_terrain)
-	if is_fire:
-		atk_ctx = m._get_fire_attack_ctx(str(a["faction_id"]))
-	_add_ctx_offset(atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(a["faction_id"])))
-	_add_ctx_offset(atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(a["faction_id"])))
-	_add_ctx_offset(def_ctx, "faction_def", _get_grain_shortage_def_offset(str(d["faction_id"])))
-	# 被动技能加成
-	var passive_bonus: float = m._get_passive_skill_bonus(a.get("skills", []))
-	if passive_bonus > 0.0:
-		atk_ctx["unit_ability_bonus"] = atk_ctx.get("unit_ability_bonus", 0.0) + passive_bonus
-	# pack_tactics（秦锐士虎狼之师）
+	var skills_a: Array = a.get("skills", []) if a.get("skills") is Array else []
+	var skills_d: Array = d.get("skills", []) if d.get("skills") is Array else []
+	var season: String = str(m.get_current_season()) if m.has_method("get_current_season") else ""
+	var atk_ctx: Dictionary = CtxLib.build_attack_ctx(
+		str(a["faction_id"]), str(a["unit_type_id"]), skills_a, season, is_fire
+	)
+	var def_ctx: Dictionary = CtxLib.build_defense_ctx(
+		str(d["faction_id"]), str(d["unit_type_id"])
+	)
+	# 场景层额外项（CtxBuilder 未覆盖）
 	var pack_bonus: float = m.get_pack_tactics_bonus(a)
 	if pack_bonus > 0.001:
-		atk_ctx["unit_ability_bonus"] = atk_ctx.get("unit_ability_bonus", 0.0) + pack_bonus
-	# 科技战斗修正
-	var atk_udata: Dictionary = DataManager.get_unit_type(str(a["unit_type_id"]))
-	var tech_atk: float = TechSystem.get_attack_modifier(str(atk_udata.get("category", "")))
-	if tech_atk != 0.0:
-		atk_ctx["tech_atk"] = tech_atk
-	var def_udata: Dictionary = DataManager.get_unit_type(str(d["unit_type_id"]))
-	var tech_def: float = TechSystem.get_defense_modifier(str(def_udata.get("category", "")))
-	if tech_def != 0.0:
-		def_ctx["tech_def"] = tech_def
-	# 学派战斗修正
-	var atk_school_bonus: Dictionary = m._get_school_combat_bonus(str(a["faction_id"]))
-	if atk_school_bonus.get("school_atk", 0.0) != 0.0:
-		atk_ctx["school_atk"] = atk_school_bonus["school_atk"]
-	# 兵家伏击伤害加成（仅在 CombatResolver 判定触发伏击后生效，§12.2）
+		atk_ctx["unit_ability_bonus"] = float(atk_ctx.get("unit_ability_bonus", 0.0)) + pack_bonus
 	var school_ambush: float = SchoolManager.get_effect_float(str(a["faction_id"]), "ambush_damage_bonus")
 	if school_ambush > 0.001:
 		atk_ctx["school_ambush_bonus"] = school_ambush
-	# 武大夫勇武%
-	var mil_atk: float = MinisterManager.get_faction_military_attack_bonus(str(a["faction_id"]))
-	if mil_atk > 0.001:
-		atk_ctx["minister_bravery_pct"] = mil_atk
-	var def_school_bonus: Dictionary = m._get_school_combat_bonus(str(d["faction_id"]))
-	if def_school_bonus.get("school_def", 0.0) != 0.0:
-		def_ctx["school_def"] = def_school_bonus["school_def"]
-	# 奇观防御（万里长城 defense_national，§12.5）
-	var wonder_def: float = WonderManager.get_effect_float(str(d["faction_id"]), "defense_national")
-	if wonder_def > 0.001:
-		def_ctx["wonder_def"] = wonder_def
-	# 武大夫韬略%
-	var mil_def: float = MinisterManager.get_faction_military_defense_bonus(str(d["faction_id"]))
-	if mil_def > 0.001:
-		def_ctx["minister_strategy_pct"] = mil_def
 	# 关隘 crossing_rules 修正
 	var tdata_def: Dictionary = DataManager.get_terrain(def_terrain)
 	var cr: Variant = tdata_def.get("crossing_rules", null)
@@ -155,7 +126,6 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	dmg = maxi(1, int(float(dmg) * naval_atk_mod * naval_def_mod * stranded_mod * m.get_demo_attack_multiplier()))
 	var effective_atk_v: Variant = dmg_info.get("effective_atk", null)
 	var eff_atk: float = float(effective_atk_v) if effective_atk_v != null else float(DataManager.get_unit_type(str(a["unit_type_id"])).get("attack", 10))
-	# 关隘结构伤害（攻城器械 × siege_damage_multiplier）
 	if pass_has_structure:
 		m._damage_pass_structure(def_cell, str(a["unit_type_id"]), eff_atk)
 	# 城防伤害分流（WallCombatRules，与大地图 SiegeResolver 一致）
@@ -189,31 +159,15 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 		var is_ranged_atk: bool = m._combat_resolver.is_ranged_unit(atk_type_id)
 		if m._combat_resolver.should_trigger_counter(def_type_id, is_ranged_atk):
 			var atk_terrain2: String = m.terrain_at(atk_cell)
-			var c_atk_ctx: Dictionary = {}
-			var c_def_ctx: Dictionary = {}
-			_add_ctx_offset(c_atk_ctx, "faction_atk", _get_national_morale_atk_offset(str(d["faction_id"])))
-			_add_ctx_offset(c_atk_ctx, "faction_atk", _get_grain_shortage_atk_offset(str(d["faction_id"])))
-			_add_ctx_offset(c_def_ctx, "faction_def", _get_grain_shortage_def_offset(str(a["faction_id"])))
-			# 反击方被动技能
-			var c_passive: float = m._get_passive_skill_bonus(d.get("skills", []))
-			if c_passive > 0.0:
-				c_atk_ctx["unit_ability_bonus"] = c_passive
-			# 反击方科技
+			var skills_c: Array = d.get("skills", []) if d.get("skills") is Array else []
+			var c_atk_ctx: Dictionary = CtxLib.build_attack_ctx(
+				str(d["faction_id"]), def_type_id, skills_c, season, false
+			)
+			var c_def_ctx: Dictionary = CtxLib.build_defense_ctx(
+				str(a["faction_id"]), atk_type_id
+			)
 			var c_atk_udata: Dictionary = DataManager.get_unit_type(def_type_id)
-			var c_tech_atk: float = TechSystem.get_attack_modifier(str(c_atk_udata.get("category", "")))
-			if c_tech_atk != 0.0:
-				c_atk_ctx["tech_atk"] = c_tech_atk
-			# 被反击方防御
-			var c_tech_def: float = TechSystem.get_defense_modifier(str(atk_udata.get("category", "")))
-			if c_tech_def != 0.0:
-				c_def_ctx["tech_def"] = c_tech_def
-			var c_atk_school: Dictionary = m._get_school_combat_bonus(str(d["faction_id"]))
-			if c_atk_school.get("school_atk", 0.0) != 0.0:
-				c_atk_ctx["school_atk"] = c_atk_school["school_atk"]
-			var c_def_school: Dictionary = m._get_school_combat_bonus(str(a["faction_id"]))
-			if c_def_school.get("school_def", 0.0) != 0.0:
-				c_def_ctx["school_def"] = c_def_school["school_def"]
-			# 攻击方所在地形修正
+			# 攻击方所在地形 crossing_rules
 			var tdata_atk2: Dictionary = DataManager.get_terrain(atk_terrain2)
 			var cr_atk: Variant = tdata_atk2.get("crossing_rules", null)
 			if cr_atk is Dictionary:
@@ -237,11 +191,15 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 			a["hp"] = int(a["hp"]) - counter_dmg
 			m._append_log("%s 反击 %s，造成 %d 伤害" % [defender_id, attacker_id, counter_dmg])
 
-	a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost
+	if m.has_method("spend_unit_mp"):
+		m.spend_unit_mp(a, atk_cost)
+	else:
+		a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost
 	if is_maa:
 		a["attacks_this_turn"] = int(a.get("attacks_this_turn", 0)) + 1
 		# 移动力耗尽时自动结束行动
-		if int(a["mp_remaining"]) <= 0:
+		var left: int = int(m.unit_mp(a)) if m.has_method("unit_mp") else int(a["mp_remaining"])
+		if left <= 0:
 			a["acted"] = true
 	else:
 		a["acted"] = true

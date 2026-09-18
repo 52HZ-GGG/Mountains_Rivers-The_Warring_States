@@ -5,6 +5,7 @@
     {
       "id": "basic_plains",
       "name": "基础平原战",
+      "ai_mode": "tutorial",
       "description": "基本步骑对抗，熟悉移动、攻击、ZoC 和地形修正。",
       "mechanics": ["基本战斗", "地形修正", "ZoC 区域控制", "士气系统"],
       "map_width": 7,
@@ -33,6 +34,7 @@
     },
     {
       "id": "ranged_warfare",
+      "ai_mode": "scored",
       "name": "弓弩射程战",
       "description": "远程单位对抗，验证高程遮挡和兵种克制矩阵。",
       "mechanics": ["远程遮挡", "克制矩阵", "射程计算", "高程差"],
@@ -95,6 +97,7 @@
     },
     {
       "id": "siege_warfare",
+      "ai_mode": "scored",
       "name": "攻城战",
       "description": "攻城器械对抗城墙，验证伤害分流、攻城倍率和箭塔。",
       "mechanics": ["城墙 HP", "伤害分流", "攻城器械倍率", "箭塔攻击", "关隘通行", "占领判定"],
@@ -129,6 +132,7 @@
     {
       "id": "luoyi_siege_demo",
       "name": "洛邑攻城 Demo",
+      "ai_mode": "tutorial",
       "description": "秦军攻取洛邑的 Demo 主战斗：使用冲车与投石车破城墙，清理守军后占领洛邑城格。",
       "mechanics": ["Demo 主线", "攻城器械", "城墙 HP", "守军压制", "占领判定"],
       "map_width": 9,
@@ -167,6 +171,7 @@
     },
     {
       "id": "supply_warfare",
+      "ai_mode": "scored",
       "name": "补给线战",
       "description": "沙漠和沼泽地形切断补给线，验证断粮、士气崩溃和溃退。",
       "mechanics": ["断粮 BFS", "士气崩溃", "溃退/追击", "治疗回复"],
@@ -229,6 +234,7 @@
     },
     {
       "id": "fire_attack",
+      "ai_mode": "scored",
       "name": "火攻演兵",
       "description": "夏季森林火攻，验证烧伤 DOT、夹击包围和伏击机制。",
       "mechanics": ["火攻触发", "烧伤 DOT", "夹击/包围", "伏击判定", "季节限制"],

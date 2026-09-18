@@ -9,6 +9,7 @@ const AILib := preload("res://scripts/systems/skirmish_ai.gd")
 const AttackPipelineLib := preload("res://scripts/systems/skirmish_attack_pipeline.gd")
 const MoveLib := preload("res://scripts/systems/movement_reach.gd")
 const BuildingFxLib := preload("res://scripts/systems/building_combat_effects.gd")
+const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 var _combat_resolver: RefCounted = CombatLib.new()
 var _ai: AILib = AILib.new()
 var _attack: AttackPipelineLib = AttackPipelineLib.new()
@@ -48,6 +49,8 @@ var _city_tower_hp: Dictionary = {}    # Vector2i → int（箭塔 HP，0 = 无�
 var _demo_attack_multiplier: float = 1.0
 ## 演武就是战役：结算默认写入战役（CityManager + 战役自动存档）
 var _campaign_writeback: bool = true
+## AI 档位：scored/tutorial/random（统一规范 §8；场景 JSON 可覆盖）
+var ai_mode: String = "scored"
 
 
 func _ready() -> void:
@@ -228,6 +231,7 @@ func start_skirmish_with_config(cfg: Dictionary, season: String = "summer") -> v
 	_debug_log("[TSM] start_skirmish_with_config: name=%s season=%s" % [str(cfg.get("name", "???")), season])
 	_cfg = cfg
 	_current_season = season
+	ai_mode = _resolve_ai_mode(cfg)
 	_player_faction = str(_cfg.get("player_faction_id", "qin"))
 	_enemy_faction = str(_cfg.get("enemy_faction_id", "zhao"))
 	var pc: Dictionary = _cfg.get("player_city", {})
@@ -438,8 +442,8 @@ func process_morale_for_test() -> void:
 		if int(u.get("morale", 100)) > natural_cap:
 			u["morale"] = int(u.get("morale", 100)) - 1
 		if int(u.get("morale", 100)) < break_threshold:
-			var base_speed: int = int(u.get("speed", 3))
-			u["mp_remaining"] = maxi(1, int(float(base_speed) * broken_speed_mod))
+			var base_speed: int = int(u.get("max_mp", u.get("speed", 3)))
+			set_unit_mp(u, maxi(1, int(float(base_speed) * broken_speed_mod)))
 	# 溃退处理
 	var rout_units: Array[Dictionary] = []
 	for u2: Dictionary in _units:
@@ -495,13 +499,13 @@ func begin_player_phase() -> void:
 				u["hp"] = maxi(1, int(u.get("hp", max_hp)) - hp_loss)
 
 			# 速度计算：崩溃态速度衰减
-			var base_speed: int = int(u.get("speed", 3))
+			var base_speed: int = int(u.get("max_mp", u.get("speed", 3)))
 			var effective_speed: int = base_speed
 			if int(u.get("morale", 100)) < break_threshold:
 				effective_speed = maxi(1, int(float(base_speed) * broken_speed_mod))
 
 			u["acted"] = false
-			u["mp_remaining"] = effective_speed
+			set_unit_mp(u, effective_speed)
 			u["attacks_this_turn"] = 0
 
 	# 溃退处理：崩溃态单位自动移向友方城市（收集后处理，避免迭代时修改 _units）
@@ -571,7 +575,7 @@ func get_reachable_cells(unit_id: String) -> Dictionary:
 	if _is_unit_stranded(u):
 		return {}
 	var origin: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
-	var mp: int = int(u.get("mp_remaining", int(u.get("speed", 3))))
+	var mp: int = unit_mp(u)
 	return _dijkstra_reachable(origin, mp, str(u["unit_type_id"]), str(u["id"]), str(u["faction_id"]), u.get("skills", []))
 
 
@@ -591,10 +595,10 @@ func try_move_unit(unit_id: String, dest: Vector2i) -> Dictionary:
 	if _occupant_id_at(dest) != "":
 		return {"ok": false, "reason": "occupied"}
 	var path_cost: int = int(reach[dest])
-	var mp_after: int = int(u.get("mp_remaining", int(u.get("speed", 3)))) - path_cost
+	spend_unit_mp(u, path_cost)
+	var mp_after: int = unit_mp(u)
 	u["q"] = dest.x
 	u["r"] = dest.y
-	u["mp_remaining"] = mp_after
 	u["acted"] = false
 	_append_log("%s 移动至 (%d,%d)，剩余移动力 %d" % [unit_id, dest.x, dest.y, mp_after])
 	var capture_winner: String = check_victory()
@@ -640,7 +644,7 @@ func try_retreat(unit_id: String) -> Dictionary:
 	var safe_v: Variant = DataManager.get_balance_param("retreat.safe_distance")
 	var safe_dist: int = int(safe_v) if safe_v != null else 3
 	u["acted"] = true
-	u["mp_remaining"] = 0
+	set_unit_mp(u, 0)
 	var old_pos: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 	var dir: Vector2i = _find_retreat_direction(u)
 	if dir == Vector2i.ZERO:
@@ -682,7 +686,7 @@ func list_attack_targets(attacker_id: String) -> Array[String]:
 	var out: Array[String] = []
 	if a.is_empty():
 		return out
-	if int(a.get("mp_remaining", 0)) < get_attack_move_cost():
+	if unit_mp(a) < get_attack_move_cost():
 		return out
 	var acell: Vector2i = Vector2i(int(a["q"]), int(a["r"]))
 	var ug: Dictionary = DataManager.get_unit_type(str(a["unit_type_id"]))
@@ -745,6 +749,56 @@ func _enemy_pass_blocks(attacker_faction: String) -> bool:
 
 
 # ============= 内部 =============
+
+## 场景 AI 档：JSON `ai_mode` 优先；教学场景默认 tutorial；其余默认 scored
+## （正式内容不用 random；random 仅测试显式指定）
+func _resolve_ai_mode(cfg: Dictionary) -> String:
+	var explicit: String = str(cfg.get("ai_mode", ""))
+	if explicit != "":
+		return explicit
+	var sid: String = str(cfg.get("id", ""))
+	if sid == "basic_plains" or sid == "luoyi_siege_demo":
+		return "tutorial"
+	return "scored"
+
+
+## 统一移动力：权威字段 mp/max_mp（UnitState v3），mp_remaining/speed 为兼容别名
+func unit_mp(unit: Dictionary) -> int:
+	return int(unit.get("mp", unit.get("mp_remaining", 0)))
+
+
+func spend_unit_mp(unit: Dictionary, cost: int) -> void:
+	var mp: int = maxi(0, unit_mp(unit) - cost)
+	unit["mp"] = mp
+	unit["mp_remaining"] = mp
+
+
+func set_unit_mp(unit: Dictionary, value: int) -> void:
+	var mp: int = maxi(0, value)
+	unit["mp"] = mp
+	unit["mp_remaining"] = mp
+
+
+func _make_skirmish_unit(
+	faction_id: String,
+	unit_type_id: String,
+	axial: Vector2i,
+	hp: int,
+	max_mp: int,
+	unit_id: String,
+	col: int,
+	row: int,
+	skills: Array
+) -> Dictionary:
+	var u: Dictionary = UnitStateLib.make(
+		faction_id, unit_type_id, axial.x, axial.y, hp, max_mp, 1, unit_id, col, row, skills
+	)
+	# 演武兼容别名（统一规范 §3.2）
+	u["speed"] = int(u.get("max_mp", max_mp))
+	u["mp_remaining"] = int(u.get("mp", max_mp))
+	u["in_combat_this_turn"] = false
+	return UnitStateLib.normalize(u)
+
 
 func _finish(winner: String) -> void:
 	_debug_log("[TSM] _finish 被调用, winner=%s" % winner)
@@ -815,25 +869,11 @@ func _spawn_units() -> void:
 		var row_u: int = int(e.get("r", 0))
 		var axial_u: Vector2i = HexLib.offset_odd_r_to_axial(col_u, row_u)
 		var skills: Array = DataManager.get_unit_skills(fid, ut)
-		_units.append({
-			"id": str(e.get("id", "")),
-			"faction_id": fid,
-			"unit_type_id": ut,
-			"q": axial_u.x,
-			"r": axial_u.y,
-			"hp": max_hp,
-			"max_hp": max_hp,
-			"speed": spd,
-			"mp_remaining": spd,
-			"acted": false,
-			"morale": base_morale,
-			"in_combat_this_turn": false,
-			"burn_damage": 0,
-			"burn_turns": 0,
-			"flanking_penalty": 0,
-			"skills": skills,
-			"attacks_this_turn": 0,
-		})
+		var unit_new: Dictionary = _make_skirmish_unit(
+			fid, ut, axial_u, max_hp, spd, str(e.get("id", "")), col_u, row_u, skills
+		)
+		unit_new["morale"] = base_morale
+		_units.append(unit_new)
 
 
 func _occupant_id_at(cell: Vector2i) -> String:
@@ -856,25 +896,14 @@ func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vecto
 	var spd: int = int(def.get("speed", 3))
 	var uid: String = "%s_recruit_%s_%d" % [faction_id, unit_type_id, _units.size() + 1]
 	var skills: Array = DataManager.get_unit_skills(faction_id, unit_type_id)
-	_units.append({
-		"id": uid,
-		"faction_id": faction_id,
-		"unit_type_id": unit_type_id,
-		"q": spawn_cell.x,
-		"r": spawn_cell.y,
-		"hp": max_hp,
-		"max_hp": max_hp,
-		"speed": spd,
-		"mp_remaining": spd,
-		"acted": false,
-		"morale": base_morale,
-		"in_combat_this_turn": false,
-		"burn_damage": 0,
-		"burn_turns": 0,
-		"flanking_penalty": 0,
-		"skills": skills,
-		"attacks_this_turn": 0,
-	})
+	var recruited: Dictionary = _make_skirmish_unit(
+		faction_id, unit_type_id, spawn_cell, max_hp, spd, uid,
+		int(HexLib.axial_to_offset_odd_r(spawn_cell.x, spawn_cell.y).x),
+		int(HexLib.axial_to_offset_odd_r(spawn_cell.x, spawn_cell.y).y),
+		skills
+	)
+	recruited["morale"] = base_morale
+	_units.append(recruited)
 	_append_log("征兵完成：%s 在 (%d,%d) 入场。" % [uid, spawn_cell.x, spawn_cell.y])
 	state_changed.emit()
 	return {"ok": true, "reason": "OK", "unit_id": uid, "cell": spawn_cell}
