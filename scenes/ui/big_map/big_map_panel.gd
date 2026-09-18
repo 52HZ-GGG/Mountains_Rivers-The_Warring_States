@@ -695,15 +695,14 @@ func _apply_overlay_to_terrain_payload() -> void:
 		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
 		var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
 		if not city.is_empty():
-			var city_id: String = str(city.get("id", ""))
-			var state: Dictionary = CityManager.get_city_state(city_id)
-			# 城防 HP / 墙 HP（设计：城池有本体 HP，墙为独立结构）
+			var cid: String = str(city.get("id", ""))
+			var state: Dictionary = CityManager.get_city_state(cid)
 			var city_hp: int = int(state.get("current_hp", city.get("current_hp", 0)))
-			var city_max_hp: int = CityManager.get_city_max_hp(city_id) if CityManager.has_method("get_city_max_hp") else city_hp
-			if city_max_hp <= 0:
-				city_max_hp = maxi(city_hp, 1)
-			caption = "%s\nHP%d" % [caption, city_hp] if city_max_hp <= 0 else "%s\nHP%d/%d" % [caption, city_hp, city_max_hp]
-			var wall_hp: int = CityManager.get_wall_hp(city_id)
+			var city_max: int = CityManager.get_city_max_hp(cid) if CityManager.has_method("get_city_max_hp") else city_hp
+			if city_max <= 0:
+				city_max = maxi(city_hp, 1)
+			caption = "%s\nHP%d/%d" % [caption, city_hp, city_max]
+			var wall_hp: int = CityManager.get_wall_hp(cid)
 			if wall_hp >= 0:
 				caption += " 墙%d" % wall_hp
 			var built_count: int = (state.get("buildings", city.get("buildings", [])) as Array).size()
