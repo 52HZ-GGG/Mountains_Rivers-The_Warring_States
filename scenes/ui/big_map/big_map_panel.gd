@@ -1255,12 +1255,18 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var build_text: String = ""
 		if not built_names.is_empty():
 			build_text = " ｜ 建筑：%s" % "、".join(PackedStringArray(built_names))
-		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s" % [
+		var wall_hp: int = CityManager.get_wall_hp(city_id)
+		var wall_text: String = ""
+		if wall_hp >= 0:
+			var wall_max: int = CityManager.get_wall_max_hp(city_id)
+			wall_text = " ｜ 城墙 %d/%d" % [wall_hp, maxi(wall_max, wall_hp)]
+		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s%s" % [
 			str(state.get("name", city.get("name", ""))),
 			cap_tag,
 			_faction_display_name(fid),
 			int(state.get("current_population", city.get("base_population", 0))),
 			int(state.get("current_hp", city.get("current_hp", 0))),
+			wall_text,
 			special_text,
 			build_text
 		])

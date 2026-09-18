@@ -228,6 +228,7 @@ func process_morale_for_test() -> void:
 		if int(u.get("morale", 100)) < break_threshold:
 			var base_speed: int = int(u.get("speed", 3))
 			u["mp_remaining"] = maxi(1, int(float(base_speed) * broken_speed_mod))
+			u["mp"] = int(u["mp_remaining"])
 	# 溃退处理
 	var rout_units: Array[Dictionary] = []
 	for u2: Dictionary in _units:
@@ -290,6 +291,7 @@ func begin_player_phase() -> void:
 
 			u["acted"] = false
 			u["mp_remaining"] = effective_speed
+			u["mp"] = effective_speed
 			u["attacks_this_turn"] = 0
 
 	# 溃退处理：崩溃态单位自动移向友方城市（收集后处理，避免迭代时修改 _units）
@@ -383,6 +385,11 @@ func try_move_unit(unit_id: String, dest: Vector2i) -> Dictionary:
 	u["q"] = dest.x
 	u["r"] = dest.y
 	u["mp_remaining"] = mp_after
+	# UnitState v3：同步 mp 别名
+	u["mp"] = mp_after
+	var off_dest: Vector2i = HexLib.axial_to_offset_odd_r(dest.x, dest.y)
+	u["col"] = off_dest.x
+	u["row"] = off_dest.y
 	u["acted"] = false
 	_append_log("%s 移动至 (%d,%d)，剩余移动力 %d" % [unit_id, dest.x, dest.y, mp_after])
 	var capture_winner: String = check_victory()
@@ -429,6 +436,7 @@ func try_retreat(unit_id: String) -> Dictionary:
 	var safe_dist: int = int(safe_v) if safe_v != null else 3
 	u["acted"] = true
 	u["mp_remaining"] = 0
+	u["mp"] = 0
 	var old_pos: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 	var dir: Vector2i = _find_retreat_direction(u)
 	if dir == Vector2i.ZERO:

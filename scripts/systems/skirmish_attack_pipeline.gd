@@ -210,6 +210,7 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 			m._append_log("%s 反击 %s，造成 %d 伤害" % [defender_id, attacker_id, counter_dmg])
 
 	a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost
+	a["mp"] = int(a["mp_remaining"])
 	if is_maa:
 		a["attacks_this_turn"] = int(a.get("attacks_this_turn", 0)) + 1
 		# 移动力耗尽时自动结束行动
@@ -302,6 +303,7 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 		m._append_log("%s 攻击城市本体，造成 %d 伤害" % [attacker_id, body_dmg])
 	m._city_attacked[cell] = true
 	a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost
+	a["mp"] = int(a["mp_remaining"])
 	a["acted"] = true
 	m.state_changed.emit()
 	m.combat_effect_requested.emit("fx_siege", cell, ac)
