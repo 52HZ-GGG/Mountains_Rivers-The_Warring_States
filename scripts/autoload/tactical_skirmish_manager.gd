@@ -17,6 +17,7 @@ signal log_appended(line: String)
 signal state_changed()
 signal skirmish_ended(winner_faction_id: String)
 signal combat_effect_requested(effect_id: String, cell: Vector2i, attacker_cell: Vector2i)
+signal campaign_writeback_applied(report: Dictionary)
 
 const BIG_MOVE: int = 999999
 
@@ -45,12 +46,85 @@ var _city_level: Dictionary = {}       # Vector2i → int (1-5)
 var _city_attacked: Dictionary = {}    # Vector2i → bool
 var _city_tower_hp: Dictionary = {}    # Vector2i → int（箭塔 HP，0 = 无箭塔）
 var _demo_attack_multiplier: float = 1.0
+## 演武就是战役：结算默认写入战役（CityManager + 战役自动存档）
+var _campaign_writeback: bool = true
 
 
 func _ready() -> void:
 	_rng.randomize()
 	_ai.initialize(self)
 	_attack.initialize(self)
+
+
+func set_campaign_writeback(enabled: bool) -> void:
+	_campaign_writeback = enabled
+
+
+func is_campaign_writeback_enabled() -> bool:
+	return _campaign_writeback
+
+
+## 演武结算写入战役（策划定稿：演武结果=战役结果）
+## - 场景 city_id 绑定的城：墙 HP / 城体 HP 同步到 CityManager
+## - 胜方占领对方据点城（change_ownership）
+## - 写回后触发战役自动存档（SaveManager）
+func apply_result_to_campaign(winner: String) -> Dictionary:
+	var report: Dictionary = {
+		"ok": true,
+		"winner": winner,
+		"cities": [],
+		"captured": [],
+	}
+	if _cfg.is_empty():
+		report["ok"] = false
+		report["reason"] = "NO_CONFIG"
+		return report
+	var pairs: Array = [
+		{"key": "player_city", "cell": _player_city, "faction": _player_faction},
+		{"key": "enemy_city", "cell": _enemy_city, "faction": _enemy_faction},
+	]
+	for pair: Variant in pairs:
+		var p: Dictionary = pair as Dictionary
+		var ccfg: Dictionary = _cfg.get(str(p["key"]), {}) as Dictionary
+		var city_id: String = str(ccfg.get("city_id", ""))
+		if city_id.is_empty() or not CityManager.has_method("get_city_state"):
+			continue
+		if CityManager.get_city_state(city_id).is_empty():
+			continue
+		var cell: Vector2i = p["cell"] as Vector2i
+		var wall_now: int = int(_city_wall_hp.get(cell, -1))
+		var body_now: int = int(_city_body_hp.get(cell, -1))
+		if wall_now >= 0 and CityManager.has_method("set_wall_hp"):
+			CityManager.set_wall_hp(city_id, wall_now)
+		if body_now >= 0 and CityManager.has_method("set_city_hp"):
+			CityManager.set_city_hp(city_id, body_now)
+		var city_rec: Dictionary = {
+			"city_id": city_id,
+			"wall_hp": wall_now,
+			"body_hp": body_now,
+			"owner_before": str(CityManager.get_city_state(city_id).get("current_faction_id", "")),
+		}
+		(report["cities"] as Array).append(city_rec)
+	# 占城：胜方获得对方据点对应战役城
+	var capture_target_key: String = "enemy_city" if winner == _player_faction else "player_city"
+	if winner != "" and winner != _player_faction and winner != _enemy_faction:
+		capture_target_key = ""
+	if capture_target_key != "":
+		var tcfg: Dictionary = _cfg.get(capture_target_key, {}) as Dictionary
+		var tid: String = str(tcfg.get("city_id", ""))
+		if not tid.is_empty() and CityManager.has_method("change_ownership"):
+			var tstate: Dictionary = CityManager.get_city_state(tid)
+			if not tstate.is_empty():
+				var before: String = str(tstate.get("current_faction_id", ""))
+				if before != winner:
+					if CityManager.change_ownership(tid, winner):
+						(report["captured"] as Array).append({"city_id": tid, "from": before, "to": winner})
+						_append_log("战役写回：%s 归属 %s → %s" % [tid, before, winner])
+	if SaveManager.has_method("save_to_slot"):
+		var auto_res: Dictionary = SaveManager.save_to_slot(SaveManager.AUTO_SLOT)
+		report["campaign_autosave"] = bool(auto_res.get("success", false))
+	campaign_writeback_applied.emit(report)
+	return report
 
 
 func _debug_log(message: String) -> void:
@@ -676,6 +750,11 @@ func _finish(winner: String) -> void:
 	_debug_log("[TSM] _finish 被调用, winner=%s" % winner)
 	_skirmish_active = false
 	_append_log("演武结束，获胜方：%s" % winner)
+	if _campaign_writeback:
+		apply_result_to_campaign(winner)
+	# Demo 步骤标记（占城已由 apply_result_to_campaign 执行；Demo 仍推进任务）
+	if DemoFlow.has_method("apply_skirmish_victory"):
+		DemoFlow.apply_skirmish_victory(winner)
 	skirmish_ended.emit(winner)
 	state_changed.emit()
 

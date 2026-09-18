@@ -321,6 +321,57 @@ func damage_city(city_id: String, damage: int) -> Dictionary:
 	return {"destroyed": city["current_hp"] <= 0, "damage": actual}
 
 
+## 直接设定城池当前 HP（演武结算写回战役用）。
+func set_city_hp(city_id: String, hp: int) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	var max_hp: int = get_city_max_hp(city_id)
+	city["current_hp"] = clampi(hp, 0, maxi(max_hp, 0))
+	return true
+
+
+## 直接设定城墙总 HP（按墙段 max_structure_hp 比例分摊；无墙返回 false）。
+## 演武结算写回战役：演武墙损 = 战役墙损。
+func set_wall_hp(city_id: String, wall_hp: int) -> bool:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return false
+	var has_wall: bool = false
+	var total_max: int = 0
+	for b: Variant in city.get("buildings", []):
+		var e: Dictionary = b as Dictionary
+		if str(e.get("building_id", "")) != "wall":
+			continue
+		if bool(e.get("disabled", false)):
+			continue
+		has_wall = true
+		total_max += maxi(0, int(e.get("max_structure_hp", e.get("structure_hp", 0))))
+	if not has_wall:
+		return false
+	var target: int = clampi(wall_hp, 0, total_max)
+	var remain: int = target
+	var first: bool = true
+	for b2: Variant in city.get("buildings", []):
+		var e2: Dictionary = b2 as Dictionary
+		if str(e2.get("building_id", "")) != "wall":
+			continue
+		if bool(e2.get("disabled", false)):
+			continue
+		var mx: int = maxi(0, int(e2.get("max_structure_hp", e2.get("structure_hp", 0))))
+		if first:
+			e2["structure_hp"] = mini(remain, mx)
+			remain -= int(e2["structure_hp"])
+			first = false
+		else:
+			if remain <= 0:
+				e2["structure_hp"] = 0
+			else:
+				e2["structure_hp"] = mini(remain, mx)
+				remain -= int(e2["structure_hp"])
+	return true
+
+
 ## 城墙总 HP：城内 wall 实体建筑 structure_hp 之和；无墙返回 -1（统一规范 §7 / SiegeResolver）。
 func get_wall_hp(city_id: String) -> int:
 	var city: Dictionary = _city_states.get(city_id, {})

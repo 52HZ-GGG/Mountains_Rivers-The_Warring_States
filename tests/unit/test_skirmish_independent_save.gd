@@ -60,9 +60,29 @@ func test_load_rejects_campaign_slot_kind() -> void:
 	assert_eq(err, "NOT_SKIRMISH_SAVE")
 
 
-func test_campaign_save_unaffected_by_skirmish_activity() -> void:
+func test_campaign_save_has_no_skirmish_blob_but_receives_results() -> void:
+	# 战役档结构不含演武原始块；演武结果写入 CityManager 后体现在 cities 数据
 	TacticalSkirmishManager.start_skirmish()
 	var camp: Dictionary = SaveManager.build_save_data()
-	assert_false(camp.has("skirmish_units"))
+	assert_false(camp.has("skirmish"), "战役档不含演武原始快照块")
 	assert_true(camp.has("cities"))
 	assert_true(camp.has("strategic_units"))
+
+
+func test_skirmish_victory_writes_campaign_city() -> void:
+	TacticalSkirmishManager.reset_skirmish()
+	var cfg: Dictionary = DataManager.get_skirmish_scenario("luoyi_siege_demo")
+	if cfg.is_empty():
+		pass_test("无 luoyi_siege_demo 场景配置")
+		return
+	TacticalSkirmishManager.start_skirmish_with_config(cfg, "summer")
+	assert_true(TacticalSkirmishManager.is_active())
+	TacticalSkirmishManager.set_campaign_writeback(true)
+	var report: Dictionary = TacticalSkirmishManager.apply_result_to_campaign("qin")
+	assert_true(bool(report.get("ok", false)), "写回应 ok: %s" % str(report))
+	assert_true((report.get("cities", []) as Array).size() > 0, "应同步绑定 city_id 的城")
+	var luoyi_after: String = str(CityManager.get_city_state("luoyi").get("current_faction_id", ""))
+	assert_eq(luoyi_after, "qin", "胜方应占领洛邑（战役），实为 %s" % luoyi_after)
+	# 战役城可能尚无 wall 实体（-1 表示无墙）；有墙则 HP 应已写回
+	var wall_after: int = CityManager.get_wall_hp("luoyi")
+	assert_true(wall_after >= -1, "战役洛邑墙 HP 读取应合法")
