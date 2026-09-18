@@ -7,6 +7,8 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const AILib := preload("res://scripts/systems/skirmish_ai.gd")
 const AttackPipelineLib := preload("res://scripts/systems/skirmish_attack_pipeline.gd")
+const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
+const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 var _combat_resolver: RefCounted = CombatLib.new()
 var _ai: AILib = AILib.new()
 var _attack: AttackPipelineLib = AttackPipelineLib.new()
@@ -601,8 +603,13 @@ func _spawn_units() -> void:
 			"unit_type_id": ut,
 			"q": axial_u.x,
 			"r": axial_u.y,
+			"col": col_u,
+			"row": row_u,
 			"hp": max_hp,
 			"max_hp": max_hp,
+			# UnitState v3 权威字段 + 演武兼容别名
+			"mp": spd,
+			"max_mp": spd,
 			"speed": spd,
 			"mp_remaining": spd,
 			"acted": false,
@@ -610,9 +617,12 @@ func _spawn_units() -> void:
 			"in_combat_this_turn": false,
 			"burn_damage": 0,
 			"burn_turns": 0,
+			"stranded_turns": 0,
 			"flanking_penalty": 0,
 			"skills": skills,
+			"is_supplied": true,
 			"attacks_this_turn": 0,
+			"schema_v": 3,
 		})
 
 
@@ -636,14 +646,19 @@ func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vecto
 	var spd: int = int(def.get("speed", 3))
 	var uid: String = "%s_recruit_%s_%d" % [faction_id, unit_type_id, _units.size() + 1]
 	var skills: Array = DataManager.get_unit_skills(faction_id, unit_type_id)
+	var offset_u: Vector2i = HexLib.axial_to_offset_odd_r(spawn_cell.x, spawn_cell.y)
 	_units.append({
 		"id": uid,
 		"faction_id": faction_id,
 		"unit_type_id": unit_type_id,
 		"q": spawn_cell.x,
 		"r": spawn_cell.y,
+		"col": offset_u.x,
+		"row": offset_u.y,
 		"hp": max_hp,
 		"max_hp": max_hp,
+		"mp": spd,
+		"max_mp": spd,
 		"speed": spd,
 		"mp_remaining": spd,
 		"acted": false,
@@ -651,9 +666,12 @@ func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vecto
 		"in_combat_this_turn": false,
 		"burn_damage": 0,
 		"burn_turns": 0,
+		"stranded_turns": 0,
 		"flanking_penalty": 0,
 		"skills": skills,
+		"is_supplied": true,
 		"attacks_this_turn": 0,
+		"schema_v": 3,
 	})
 	_append_log("征兵完成：%s 在 (%d,%d) 入场。" % [uid, spawn_cell.x, spawn_cell.y])
 	state_changed.emit()
@@ -1270,12 +1288,9 @@ func _get_fire_attack_ctx() -> Dictionary:
 	return ctx
 
 
-## 学派战斗加成（从 SchoolManager 读取运行时学派）
+## 学派战斗加成：走共享 CtxLib（统一规范 §4）
 func _get_school_combat_bonus(faction_id: String) -> Dictionary:
-	var result: Dictionary = {"school_atk": 0.0, "school_def": 0.0}
-	result["school_atk"] = SchoolManager.get_effect_float(faction_id, "attack_bonus")
-	result["school_def"] = SchoolManager.get_effect_float(faction_id, "defense_bonus")
-	return result
+	return CtxLib.school_combat_bonus(faction_id)
 
 
 ## 对目标施加烧伤 DOT
