@@ -21,6 +21,7 @@ var _refresh_pending: bool = false
 
 signal return_to_map
 signal panel_closed
+signal place_building_requested(city_id: String, building_id: String)
 
 ## 建筑 ID → 图标文件名映射（无匹配的建筑不显示图标）
 const _BUILDING_ICON_MAP: Dictionary = {
@@ -45,6 +46,16 @@ const _BUILDING_ICON_MAP: Dictionary = {
 func _ready() -> void:
 	_build_ui()
 	visible = false
+
+
+func _is_own_city() -> bool:
+	var city: Dictionary = CityManager.get_city_state(_city_id)
+	if city.is_empty():
+		return false
+	var owner: String = str(city.get("current_faction_id", ""))
+	if owner == "" or owner == "neutral":
+		return false
+	return owner == GameManager.get_player_faction()
 
 
 func open(city_id: String) -> void:
@@ -412,6 +423,11 @@ func _refresh_queue() -> void:
 func _refresh_build_list() -> void:
 	for ch in _build_list.get_children():
 		ch.queue_free()
+	if not _is_own_city():
+		var locked := Label.new()
+		locked.text = "非己方城市：仅可查看信息，无法建造。"
+		_build_list.add_child(locked)
+		return
 
 	var all_buildings: Array = DataManager.get_all_buildings()
 	for bdata in all_buildings:
@@ -463,6 +479,11 @@ func _refresh_build_list() -> void:
 func _refresh_recruit_list() -> void:
 	for ch in _recruit_list.get_children():
 		ch.queue_free()
+	if not _is_own_city():
+		var locked := Label.new()
+		locked.text = "非己方城市：无法征兵。"
+		_recruit_list.add_child(locked)
+		return
 
 	var city: Dictionary = CityManager.get_city_state(_city_id)
 	if city.is_empty():
@@ -590,12 +611,35 @@ func _on_back_pressed() -> void:
 
 
 func _on_build_pressed(building_id: String) -> void:
-	if CityManager.start_build(_city_id, building_id):
-		_status_label.text = "已加入建造队列：%s。资源栏已扣除建造费用。" % str(DataManager.get_building(building_id).get("name", building_id))
+	if not _is_own_city():
+		_status_label.text = "非己方城市，无法建造。"
+		return
+	var check: Dictionary = CityManager.can_build(_city_id, building_id)
+	if not bool(check.get("allowed", false)):
+		_status_label.text = "建造失败：%s" % _reason_text(str(check.get("reason", "UNKNOWN")))
+		return
+	place_building_requested.emit(_city_id, building_id)
+	# 无宿主监听时自动落到空闲辖区格，保证建造仍可完成
+	if place_building_requested.get_connections().is_empty():
+		for cell: Vector2i in CityManager.get_jurisdiction_hexes(_city_id):
+			if CityManager.start_build(_city_id, building_id, cell):
+				_status_label.text = "已自动放置于 (%d,%d)，回合计完成建造。" % [cell.x, cell.y]
+				_refresh_all()
+				_refresh_resource_bar()
+				return
+		_status_label.text = "建造失败：无空闲辖区格"
+		return
+	_status_label.text = "请在地图上点击绿色辖区格放置（右键取消）。"
+
+
+func _do_build_on_hex(building_id: String, axial: Vector2i) -> void:
+	if CityManager.start_build(_city_id, building_id, axial):
+		var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
+		_status_label.text = "已加入建造队列：%s → 辖区格(%d,%d)。" % [bname, axial.x, axial.y]
 		_refresh_all()
 		_refresh_resource_bar()
 	else:
-		_status_label.text = "建造失败：%s" % _reason_text(str(CityManager.can_build(_city_id, building_id).get("reason", "UNKNOWN")))
+		_status_label.text = "建造失败：%s" % _reason_text(str(CityManager.can_build(_city_id, building_id, axial).get("reason", "UNKNOWN")))
 
 
 func _on_upgrade_pressed(building_id: String) -> void:

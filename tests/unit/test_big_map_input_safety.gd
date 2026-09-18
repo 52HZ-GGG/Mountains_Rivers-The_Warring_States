@@ -20,7 +20,8 @@ func test_big_map_panel_uses_safe_input_consume() -> void:
 	assert_not_null(file)
 	var text: String = file.get_as_text()
 	file.close()
-	assert_true(text.contains("BigMapInput.consume()") or text.contains("set_input_as_handled"), "input must be consumed safely")
+	assert_true(text.contains("_BigMapInput.consume()") or text.contains("set_input_as_handled"), "input must be consumed safely")
+	assert_true(text.contains("preload(\"res://scripts/ui/big_map_input.gd\")"), "must preload BigMapInput (class_name cache may be stale)")
 
 
 func test_big_map_input_helper_exists() -> void:

@@ -2041,8 +2041,38 @@ func _on_city_clicked(city_id: String) -> void:
 	_city_layer.visible = true
 	_city_panel.return_to_map.connect(_on_city_panel_back)
 	_city_panel.panel_closed.connect(_on_city_panel_closed)
+	if _city_panel.has_signal("place_building_requested"):
+		_city_panel.place_building_requested.connect(_on_place_building_requested)
 	_city_panel.open(city_id)
 	_embed_resource_bar(_city_panel.get_resource_bar_slot())
+
+
+func _on_place_building_requested(city_id: String, building_id: String) -> void:
+	# 关城池 → 开大地图放置模式（决策 #123）
+	_close_city_panel()
+	_set_end_turn_visible(true)
+	_ensure_big_map()
+	_big_map_panel.open()
+	if not _big_map_panel.building_placed.is_connected(_on_building_placed_on_map):
+		_big_map_panel.building_placed.connect(_on_building_placed_on_map)
+	if not _big_map_panel.building_placement_cancelled.is_connected(_on_building_placement_cancelled):
+		_big_map_panel.building_placement_cancelled.connect(_on_building_placement_cancelled)
+	_big_map_panel.begin_building_placement(city_id, building_id)
+	_embed_resource_bar(_big_map_panel.get_resource_bar_slot())
+	_last_big_map_city_focus_id = city_id
+
+
+func _on_building_placed_on_map(city_id: String, _building_id: String, _hex_q: int, _hex_r: int) -> void:
+	# 放置完成 → 回城池面板刷新
+	_close_big_map()
+	_on_city_clicked(city_id)
+
+
+func _on_building_placement_cancelled() -> void:
+	var city_id: String = _last_big_map_city_focus_id
+	_close_big_map()
+	if city_id != "":
+		_on_city_clicked(city_id)
 
 
 func _ensure_city_layer() -> void:

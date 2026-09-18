@@ -15,6 +15,7 @@ const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
 const _DRAG_THRESHOLD_PX: float = 6.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
+const _BigMapInput := preload("res://scripts/ui/big_map_input.gd")
 signal city_clicked(city_id: String)
 signal map_closed
 signal hub_action_requested(action: String)
@@ -215,13 +216,14 @@ func _placement_highlight_map() -> Dictionary:
 	var out: Dictionary = {}
 	if _placement_city_id == "":
 		return out
+	# get_jurisdiction_hexes 返回轴向，与 payload/_axial_at_local_point 同一坐标系
 	for cell: Vector2i in CityManager.get_jurisdiction_hexes(_placement_city_id):
 		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, cell)
 		if bool(check.get("allowed", false)):
 			out[cell] = Color(0.25, 0.95, 0.35, 0.55)
 		else:
 			var reason: String = str(check.get("reason", ""))
-			if reason == "HEX_OCCUPIED" or reason == "HEX_RESERVED":
+			if reason == CityManager.REASON_HEX_OCCUPIED or reason == "HEX_RESERVED":
 				out[cell] = Color(0.9, 0.55, 0.15, 0.5)
 			else:
 				out[cell] = Color(0.9, 0.2, 0.2, 0.4)
@@ -262,8 +264,36 @@ func _building_mark_map() -> Dictionary:
 			out[axial] = {
 				"letter": letter,
 				"color": _building_category_color(str(bdata.get("category", "")), bool(e.get("disabled", false))),
+				"building_id": bid,
+				"category": str(bdata.get("category", "")),
+				"under_construction": false,
+			}
+		for qentry: Variant in city.get("build_queue", []):
+			var q: Dictionary = qentry as Dictionary
+			if bool(q.get("is_upgrade", false)):
+				continue
+			if not q.has("hex_q") or not q.has("hex_r"):
+				continue
+			var qaxial: Vector2i = Vector2i(int(q["hex_q"]), int(q["hex_r"]))
+			if out.has(qaxial):
+				continue
+			var qbid: String = str(q.get("building_id", ""))
+			var qbdata: Dictionary = DataManager.get_building(qbid)
+			var qname: String = str(qbdata.get("name", qbid))
+			out[qaxial] = {
+				"letter": "建",
+				"color": Color(0.92, 0.78, 0.25, 0.55),
+				"building_id": qbid,
+				"category": str(qbdata.get("category", "")),
+				"under_construction": true,
 			}
 	return out
+
+
+func _building_rect(cell_pos: Vector2) -> Rect2:
+	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.55
+	var center: Vector2 = cell_pos + _cell_size * 0.5
+	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.35, size_px, size_px)
 
 
 func focus_city(city_id: String) -> void:
@@ -458,7 +488,8 @@ func _build_political_control_grid() -> void:
 		CityManager.get_all_city_states(),
 		DataManager.get_big_map_control_overrides(),
 		DataManager.get_big_map_size(),
-		DataManager.get_big_map_political_radius_rules()
+		DataManager.get_big_map_political_control(),
+		DataManager.get_big_map_rows()
 	)
 
 
@@ -670,6 +701,8 @@ func _build_terrain_payload_cells(layout_cells: Array) -> Array:
 			"capital_rect": Rect2(),
 			"unit_texture": null,
 			"unit_rect": Rect2(),
+			"building_texture": null,
+			"building_rect": Rect2(),
 		})
 		_cell_payload_by_axial[cell_axial] = {
 			"polygon": entry["polygon"],
@@ -695,7 +728,7 @@ func _apply_overlay_to_terrain_payload() -> void:
 		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
 		var caption: String = ""
 		if not city.is_empty():
-			caption = BigMapInput.city_caption(str(city.get("id", "")), str(city.get("name", "")))
+			caption = _BigMapInput.city_caption(str(city.get("id", "")), str(city.get("name", "")))
 		if not unit.is_empty():
 			var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
 			var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
@@ -719,6 +752,14 @@ func _apply_overlay_to_terrain_payload() -> void:
 		payload["capital_rect"] = _capital_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
 		payload["unit_texture"] = _unit_texture(unit)
 		payload["unit_rect"] = _unit_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+		if building_marks.has(cell_axial):
+			var bmark: Dictionary = building_marks[cell_axial] as Dictionary
+			payload["building_texture"] = SkirmishTileTextures.building_texture(
+				str(bmark.get("building_id", "")), str(bmark.get("category", "")))
+			payload["building_rect"] = _building_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+		else:
+			payload["building_texture"] = null
+			payload["building_rect"] = Rect2()
 		_terrain_payload_cells[i] = payload
 
 
@@ -1016,7 +1057,7 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 				_set_map_cursor(Control.CURSOR_MOVE)
 			if _drag_active:
 				_pan_by(-motion.relative)
-				BigMapInput.consume()
+				_BigMapInput.consume()
 				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
@@ -1026,21 +1067,21 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 			_on_hex_mouse_exit()
 	elif event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if BigMapInput.is_right_button(mb) and mb.pressed and _placement_city_id != "":
+		if _BigMapInput.is_right_button(mb) and mb.pressed and _placement_city_id != "":
 			cancel_building_placement()
-			BigMapInput.consume()
+			_BigMapInput.consume()
 			return
-		if not BigMapInput.is_left_button(mb):
+		if not _BigMapInput.is_left_button(mb):
 			return
 		if mb.pressed:
 			_drag_armed = true
 			_drag_active = false
 			_drag_press_pos = mb.position
-			BigMapInput.consume()
+			_BigMapInput.consume()
 			return
 		var was_dragging: bool = _drag_active
 		_end_drag()
-		BigMapInput.consume()
+		_BigMapInput.consume()
 		if was_dragging:
 			return
 		if _placement_city_id != "":
@@ -1190,11 +1231,22 @@ func _focus_city_deferred(city_id: String) -> void:
 
 func _axial_at_local_point(point: Vector2) -> Variant:
 	var logical_point: Vector2 = point / maxf(_zoom_level, 0.001)
-	var center_local: Vector2 = logical_point - Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX) + _board_origin_shift + _cell_size * 0.5
-	var candidate: Vector2i = _HexAxial.pixel_flat_top_to_axial(center_local, _cell_radius_px)
-	var candidates: Array[Vector2i] = [candidate]
-	for neighbor: Vector2i in _HexAxial.neighbors_hex(candidate):
-		candidates.append(neighbor)
+	if _cell_radius_px <= 0.0 or _cell_payload_by_axial.is_empty():
+		return null
+	# 布局为 odd-R 平顶矩形：中心 ≈ (1.5R·col, √3R·(row+0.5·(col&1)))
+	# 不能用纯轴向 flat-top 反推，否则奇数列会偏出邻域导致点不中格子。
+	var center_layout: Vector2 = logical_point + _board_origin_shift - Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX)
+	var col_f: float = center_layout.x / (1.5 * _cell_radius_px)
+	var col: int = int(round(col_f))
+	var row_f: float = center_layout.y / (sqrt(3.0) * _cell_radius_px) - 0.5 * float(col & 1)
+	var row: int = int(round(row_f))
+	var candidates: Array[Vector2i] = []
+	candidates.append(_HexAxial.offset_odd_r_to_axial(col, row))
+	for dcol in range(-1, 2):
+		for drow in range(-1, 2):
+			if dcol == 0 and drow == 0:
+				continue
+			candidates.append(_HexAxial.offset_odd_r_to_axial(col + dcol, row + drow))
 	for axial: Vector2i in candidates:
 		var payload: Dictionary = _cell_payload_by_axial.get(axial, {}) as Dictionary
 		if payload.is_empty():
