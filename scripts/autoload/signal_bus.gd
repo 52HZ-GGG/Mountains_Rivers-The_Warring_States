@@ -28,6 +28,12 @@ signal event_triggered(event_data: Dictionary)
 ## 事件结算后发出（效果已应用）。choice_id 为空串表示无选项事件
 signal event_resolved(event_id: String, choice_id: String)
 
+## 事件链节点推进时发出（chain_id 为链 ID，event_id 为已触发的事件 ID）
+signal chain_advanced(chain_id: String, event_id: String)
+
+## 事件链完结时发出（chain_id 为链 ID）
+signal chain_completed(chain_id: String)
+
 # ============= 外交系统 =============
 
 signal war_declared(attacker: String, defender: String)
@@ -86,6 +92,9 @@ signal garrison_changed(city_id: String, old_value: int, new_value: int)
 # ============= 文化 =============
 signal culture_mainstream_changed(city_id: String, old_faction: String, new_faction: String)
 signal culture_coverage_threshold(faction_id: String, ratio: float, threshold: float)
+
+# ============= 政治疆域 / 接壤 =============
+signal border_changed(faction_a: String, faction_b: String, now_bordering: bool)
 
 # ============= 学派系统 =============
 signal school_exp_gained(amount: int)

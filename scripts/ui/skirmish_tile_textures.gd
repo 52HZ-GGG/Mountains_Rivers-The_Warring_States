@@ -1,4 +1,4 @@
-extends RefCounted
+﻿extends RefCounted
 class_name SkirmishTileTextures
 
 ## 战术演武：地形 / 兵种贴图路径（占位美术），运行时缓存 Texture2D。
@@ -73,42 +73,6 @@ const _EVENT_CATEGORY_PATHS: Dictionary = {
 	"school": "res://assets/events/event_philosophy.png",
 }
 
-## 实体建筑占位贴图（决策 #123，32x32 像素风）
-const _BUILDING_PATHS: Dictionary = {
-	"farm": "res://assets/buildings/tile_building_farm.png",
-	"market": "res://assets/buildings/tile_building_market.png",
-	"wall": "res://assets/buildings/tile_building_wall.png",
-	"arrow_tower": "res://assets/buildings/tile_building_arrow_tower.png",
-	"barracks": "res://assets/buildings/tile_building_barracks.png",
-	"academy": "res://assets/buildings/tile_building_academy.png",
-	"granary": "res://assets/buildings/tile_building_granary.png",
-	"ironworks": "res://assets/buildings/tile_building_forge.png",
-	"stable": "res://assets/buildings/tile_building_stable.png",
-	"temple": "res://assets/buildings/tile_building_temple.png",
-	"shrine": "res://assets/buildings/tile_building_temple.png",
-	"dock": "res://assets/buildings/tile_building_dock.png",
-	"workshop": "res://assets/buildings/tile_building_workshop.png",
-	"beacon_tower": "res://assets/buildings/tile_building_beacon_tower.png",
-	"inner_gate": "res://assets/buildings/tile_building_inner_gate.png",
-}
-
-
-static func building_texture(building_id: String, category: String = "") -> Texture2D:
-	var path: String = str(_BUILDING_PATHS.get(building_id, ""))
-	if path.is_empty():
-		match category:
-			"economy":
-				path = "res://assets/buildings/tile_building_economy.png"
-			"military":
-				path = "res://assets/buildings/tile_building_military.png"
-			"defense":
-				path = "res://assets/buildings/tile_building_defense.png"
-			"politics":
-				path = "res://assets/buildings/tile_building_politics.png"
-			_:
-				path = "res://assets/buildings/tile_building_economy.png"
-	return _load_cached(path)
-
 const _UNIT_PATHS: Dictionary = {
 	# 基础步兵
 	"militia": "res://assets/units/portraits/unit_militia.png",
@@ -149,6 +113,43 @@ const _UNIT_PATHS: Dictionary = {
 }
 
 static var _cache: Dictionary = {}
+
+
+## 实体建筑占位贴图（决策 #123，32x32 像素风）
+const _BUILDING_PATHS: Dictionary = {
+	"farm": "res://assets/buildings/tile_building_farm.png",
+	"market": "res://assets/buildings/tile_building_market.png",
+	"wall": "res://assets/buildings/tile_building_wall.png",
+	"arrow_tower": "res://assets/buildings/tile_building_arrow_tower.png",
+	"barracks": "res://assets/buildings/tile_building_barracks.png",
+	"academy": "res://assets/buildings/tile_building_academy.png",
+	"granary": "res://assets/buildings/tile_building_granary.png",
+	"ironworks": "res://assets/buildings/tile_building_forge.png",
+	"stable": "res://assets/buildings/tile_building_stable.png",
+	"temple": "res://assets/buildings/tile_building_temple.png",
+	"shrine": "res://assets/buildings/tile_building_temple.png",
+	"dock": "res://assets/buildings/tile_building_dock.png",
+	"workshop": "res://assets/buildings/tile_building_workshop.png",
+	"beacon_tower": "res://assets/buildings/tile_building_beacon_tower.png",
+	"inner_gate": "res://assets/buildings/tile_building_inner_gate.png",
+}
+
+
+static func building_texture(building_id: String, category: String = "") -> Texture2D:
+	var path: String = str(_BUILDING_PATHS.get(building_id, ""))
+	if path.is_empty():
+		match category:
+			"economy":
+				path = "res://assets/buildings/tile_building_economy.png"
+			"military":
+				path = "res://assets/buildings/tile_building_military.png"
+			"defense":
+				path = "res://assets/buildings/tile_building_defense.png"
+			"politics":
+				path = "res://assets/buildings/tile_building_politics.png"
+			_:
+				path = "res://assets/buildings/tile_building_economy.png"
+	return _load_cached(path)
 
 
 static func terrain_texture(terrain_id: String) -> Texture2D:

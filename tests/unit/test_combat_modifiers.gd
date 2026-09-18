@@ -16,8 +16,8 @@ func before_each() -> void:
 # ============= 科技加成测试 =============
 
 func test_tech_attack_bonus_increases_damage() -> void:
-	var base: Dictionary = _combat.compute_damage("infantry", "infantry", "plains", 100, 100, _rng, {}, {})
-	var with_tech: Dictionary = _combat.compute_damage("infantry", "infantry", "plains", 100, 100, _rng, {"tech_atk": 0.1}, {})
+	var base: Dictionary = _combat.compute_damage("infantry", "infantry", "plains", 100, 100, _rng, {"disable_ambush": true}, {})
+	var with_tech: Dictionary = _combat.compute_damage("infantry", "infantry", "plains", 100, 100, _rng, {"tech_atk": 0.1, "disable_ambush": true}, {})
 	assert_gt(int(with_tech["damage"]), int(base["damage"]), "科技攻击 +10%% 应增加伤害（%d → %d）" % [int(base["damage"]), int(with_tech["damage"])])
 
 
@@ -66,9 +66,26 @@ func test_multiple_modifiers_stack() -> void:
 
 
 func test_modifiers_with_terrain() -> void:
-	var terrain_only: Dictionary = _combat.compute_damage("infantry", "infantry", "forest", 100, 100, _rng, {}, {})
-	var terrain_plus_tech: Dictionary = _combat.compute_damage("infantry", "infantry", "forest", 100, 100, _rng, {"tech_atk": 0.1}, {})
+	var terrain_only: Dictionary = _combat.compute_damage("infantry", "infantry", "forest", 100, 100, _rng, {"disable_ambush": true}, {})
+	var terrain_plus_tech: Dictionary = _combat.compute_damage("infantry", "infantry", "forest", 100, 100, _rng, {"tech_atk": 0.1, "disable_ambush": true}, {})
 	assert_gt(int(terrain_plus_tech["damage"]), int(terrain_only["damage"]), "森林地形下科技攻击加成仍应生效")
+
+
+func test_ambush_increases_damage() -> void:
+	# 强制伏击 vs 关闭伏击：伏击应进加法层抬高伤害
+	# 山地 atk_mod=0.8 → offset=-0.2；伏击 +0.3 → atk_buff = 1.1
+	var no_ambush: Dictionary = _combat.compute_damage(
+		"infantry", "infantry", "mountain", 100, 100, _rng, {"disable_ambush": true}, {},
+	)
+	var forced: Dictionary = _combat.compute_damage(
+		"infantry", "infantry", "mountain", 100, 100, _rng,
+		{"is_ambush": true, "ambush_bonus": 0.3}, {},
+	)
+	assert_true(bool(forced.get("was_ambush", false)), "强制 is_ambush 时返回 was_ambush=true")
+	assert_almost_eq(float(forced.get("atk_buff", 1.0)), 1.1, 0.01, "山地-0.2 + 伏击+0.3 → atk_buff=1.1")
+	assert_gt(int(forced["damage"]), int(no_ambush["damage"]), "伏击伤害应高于无伏击（%d → %d）" % [
+		int(no_ambush["damage"]), int(forced["damage"]),
+	])
 
 
 # ============= 学派数据加载测试 =============

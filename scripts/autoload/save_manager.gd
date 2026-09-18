@@ -3,7 +3,7 @@ extends Node
 ## 完整存档管理器：多槽位 + 自动存档。
 ## 汇总 GameManager / CityManager / Diplomacy / Tech / School / Minister / Wonder / Event / Demo。
 
-const SCHEMA_VERSION: int = 3
+const SCHEMA_VERSION: int = 2
 const SLOT_COUNT: int = 3
 const AUTO_SLOT: int = -1
 
@@ -43,6 +43,16 @@ func save_to_slot(slot: int) -> Dictionary:
 	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
 	return {"success": true, "path": path, "slot": slot, "turn": int(data.get("turn", 0))}
+
+
+## 把快照写入 user:// 指定文件名（兼容旧单槽镜像测试路径）
+func write_snapshot_file(file_name: String, data: Dictionary) -> bool:
+	var file: FileAccess = FileAccess.open("user://" + file_name, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(JSON.stringify(data, "\t"))
+	file.close()
+	return true
 
 
 func load_from_slot(slot: int) -> Dictionary:

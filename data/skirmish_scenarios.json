@@ -7,7 +7,6 @@
       "name": "基础平原战",
       "description": "基本步骑对抗，熟悉移动、攻击、ZoC 和地形修正。",
       "mechanics": ["基本战斗", "地形修正", "ZoC 区域控制", "士气系统"],
-      "ai_mode": "tutorial",
       "map_width": 7,
       "map_height": 7,
       "player_faction_id": "qin",
@@ -35,7 +34,6 @@
     {
       "id": "ranged_warfare",
       "name": "弓弩射程战",
-      "ai_mode": "random",
       "description": "远程单位对抗，验证高程遮挡和兵种克制矩阵。",
       "mechanics": ["远程遮挡", "克制矩阵", "射程计算", "高程差"],
       "map_width": 9,
@@ -67,7 +65,6 @@
     {
       "id": "naval_battle",
       "name": "水战演兵",
-      "ai_mode": "random",
       "description": "水军与陆军在河流地形上的对抗，验证海军战斗修正。",
       "mechanics": ["海军战斗修正", "水面移动", "水军 vs 陆军", "渡口通行"],
       "map_width": 9,
@@ -99,7 +96,6 @@
     {
       "id": "siege_warfare",
       "name": "攻城战",
-      "ai_mode": "scored",
       "description": "攻城器械对抗城墙，验证伤害分流、攻城倍率和箭塔。",
       "mechanics": ["城墙 HP", "伤害分流", "攻城器械倍率", "箭塔攻击", "关隘通行", "占领判定"],
       "map_width": 9,
@@ -135,7 +131,6 @@
       "name": "洛邑攻城 Demo",
       "description": "秦军攻取洛邑的 Demo 主战斗：使用冲车与投石车破城墙，清理守军后占领洛邑城格。",
       "mechanics": ["Demo 主线", "攻城器械", "城墙 HP", "守军压制", "占领判定"],
-      "ai_mode": "tutorial",
       "map_width": 9,
       "map_height": 9,
       "player_faction_id": "qin",
@@ -167,7 +162,6 @@
     {
       "id": "supply_warfare",
       "name": "补给线战",
-      "ai_mode": "scored",
       "description": "沙漠和沼泽地形切断补给线，验证断粮、士气崩溃和溃退。",
       "mechanics": ["断粮 BFS", "士气崩溃", "溃退/追击", "治疗回复"],
       "map_width": 9,
@@ -199,7 +193,6 @@
     {
       "id": "winter_naval",
       "name": "冬季水战",
-      "ai_mode": "random",
       "description": "冬季河流冻结，水军搁浅无法行动，验证冻结和搁浅机制。",
       "mechanics": ["河流冻结", "搁浅状态", "搁浅攻击限制", "冬季火攻禁用"],
       "map_width": 9,
@@ -231,7 +224,6 @@
     {
       "id": "fire_attack",
       "name": "火攻演兵",
-      "ai_mode": "scored",
       "description": "夏季森林火攻，验证烧伤 DOT、夹击包围和伏击机制。",
       "mechanics": ["火攻触发", "烧伤 DOT", "夹击/包围", "伏击判定", "季节限制"],
       "map_width": 7,

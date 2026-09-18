@@ -12,8 +12,8 @@ static func evaluate_economy(faction_id: String) -> void:
 	var cities: Array = CityManager.get_faction_city_states(faction_id)
 	if cities.is_empty():
 		return
-	# 每回合最多处理 2 城，避免 AI 一次铺满
-	var budget_turns: int = 2
+	# 每回合最多处理 N 城（ai_economy.budget_cities_per_turn），避免 AI 一次铺满
+	var budget_turns: int = int(DataManager.get_balance_param("ai_economy").get("budget_cities_per_turn", 2))
 	for city_v in cities:
 		if budget_turns <= 0:
 			break
@@ -36,13 +36,16 @@ static func _try_build_or_upgrade(faction_id: String, city_id: String) -> bool:
 
 
 static func _pick_build_target(city_id: String) -> String:
-	# 经济优先级：农田 → 市集 → 伐木场；军事城补兵营
-	var preference: Array[String] = ["farm", "market", "lumbermill", "barracks"]
+	# 经济优先级来自 ai_economy.build_preference；低人口城只补农田
+	var build_pref: Array = DataManager.get_balance_param("ai_economy").get("build_preference", ["farm", "market", "lumbermill", "barracks"])
+	var preference: Array[String] = []
+	for b in build_pref:
+		preference.append(str(b))
 	var city: Dictionary = CityManager.get_city_state(city_id)
 	if city.is_empty():
 		return ""
 	var pop: int = int(city.get("current_population", 0))
-	if pop <= 5:
+	if pop <= int(DataManager.get_balance_param("ai_economy").get("low_population_threshold", 5)):
 		preference = ["farm"]
 	for building_id in preference:
 		if CityManager.can_build(city_id, building_id).get("allowed", false):
@@ -54,13 +57,17 @@ static func _pick_upgrade_target(city_id: String) -> String:
 	var city: Dictionary = CityManager.get_city_state(city_id)
 	if city.is_empty():
 		return ""
-	var candidates: Array[String] = ["farm", "market", "lumbermill", "barracks"]
+	var build_pref: Array = DataManager.get_balance_param("ai_economy").get("build_preference", ["farm", "market", "lumbermill", "barracks"])
+	var max_level: int = int(DataManager.get_balance_param("ai_economy").get("max_upgrade_level", 3))
+	var candidates: Array[String] = []
+	for b in build_pref:
+		candidates.append(str(b))
 	for building_id in candidates:
 		for entry_v in city.get("buildings", []):
 			var entry: Dictionary = entry_v as Dictionary
 			if str(entry.get("building_id", "")) != building_id:
 				continue
-			if int(entry.get("level", 1)) >= 3:
+			if int(entry.get("level", 1)) >= max_level:
 				continue
 			if CityManager.can_upgrade(city_id, building_id).get("allowed", false):
 				return building_id

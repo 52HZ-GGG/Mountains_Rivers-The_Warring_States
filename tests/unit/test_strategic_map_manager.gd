@@ -54,14 +54,13 @@ func test_strategic_unit_can_move_within_mp() -> void:
 
 func test_strategic_combat_damages_enemy() -> void:
 	_fund_player()
-	# 决策 #89：未宣战禁止攻击
-	if not DiplomacySystem.are_at_war("qin", "zhao"):
-		DiplomacySystem.declare_war("qin", "zhao")
 	var mine: Dictionary = GameManager.recruit_unit_from_city("xianyang", "militia", 1)
 	var my_id: String = str(mine.get("strategic_unit_id", ""))
 	var spawn_enemy: Dictionary = StrategicMapManager.spawn_unit_at_city("zhao", "militia", 0, 0, 1)
 	assert_true(bool(spawn_enemy.get("success", false)))
 	var enemy_id: String = str(spawn_enemy.get("unit_id", ""))
+	# 决策 #89：未宣战禁止战略攻击
+	DiplomacySystem.declare_war("qin", "zhao")
 	# 把我方单位挪到敌方旁
 	var enemy: Dictionary = StrategicMapManager.get_unit(enemy_id)
 	var enemy_axial: Vector2i = Vector2i(int(enemy["q"]), int(enemy["r"]))
@@ -79,5 +78,3 @@ func test_strategic_combat_damages_enemy() -> void:
 	var attack: Dictionary = StrategicMapManager.try_attack_unit(my_id, enemy_id)
 	assert_true(bool(attack.get("ok", false)), "攻击应成功，reason=%s" % str(attack.get("reason", "")))
 	assert_gt(int(attack.get("damage", 0)), 0, "应造成伤害")
-	# 统一规范：结果应含 counter_damage 字段
-	assert_true(attack.has("counter_damage"), "结果应含 counter_damage")

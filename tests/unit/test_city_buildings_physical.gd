@@ -3,8 +3,6 @@ extends GutTest
 ## 实体建筑辖区系统（决策 #123）
 ## 坐标放置 / 槽位 / 可重复墙 / 通行规则 / 旧档迁移
 
-const HexAxial := preload("res://scripts/systems/hex_axial.gd")
-
 
 func before_each() -> void:
 	GameManager.reset()

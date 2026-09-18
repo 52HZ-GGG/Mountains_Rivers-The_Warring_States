@@ -663,7 +663,7 @@ func _ensure_resolved_control() -> void:
 		get_all_cities(),
 		get_overrides(),
 		get_map_size(),
-		_control_doc.get("derived_radius_rules", {})
+		_control_doc
 	)
 	_resolved_control_dirty = false
 

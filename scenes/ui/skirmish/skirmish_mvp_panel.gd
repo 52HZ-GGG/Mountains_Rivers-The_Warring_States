@@ -49,6 +49,8 @@ var _formula_detail_btn: Button = null
 var _formula_detail_panel: PanelContainer = null
 var _formal_city_panel: Panel = null
 var _political_mode: bool = false
+var _placement_city_id: String = ""
+var _placement_building_id: String = ""
 
 
 func _debug_log(message: String) -> void:
@@ -367,11 +369,52 @@ func _open_formal_city_panel(city_id: String) -> void:
 	add_child(_formal_city_panel)
 	_formal_city_panel.return_to_map.connect(_on_formal_city_panel_return_to_skirmish)
 	_formal_city_panel.panel_closed.connect(_on_formal_city_panel_closed)
+	if _formal_city_panel.has_signal("place_building_requested"):
+		_formal_city_panel.place_building_requested.connect(_on_place_building_requested_in_skirmish)
 	_formal_city_panel.open(city_id)
 	if _formal_city_panel.has_method("set_back_button_text"):
 		_formal_city_panel.set_back_button_text("返回演武")
 	_embed_formal_resource_bar(_formal_city_panel.get_resource_bar_slot())
 	_hint.text = "已打开正式城市面板。这里的建造、产出、人口与征兵和完整 Demo 使用同一套逻辑。"
+
+
+## 演武=小号大地图：与主地图相同的放置模式
+func _on_place_building_requested_in_skirmish(city_id: String, building_id: String) -> void:
+	_placement_city_id = city_id
+	_placement_building_id = building_id
+	if is_instance_valid(_formal_city_panel):
+		_detach_formal_resource_bar()
+		_formal_city_panel.close()
+	_formal_city_panel = null
+	_ensure_formal_resource_bar()
+	var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
+	_hint.text = "放置模式：点击绿色辖区格建造「%s」（右键取消）" % bname
+	_hover_info.text = _hint.text
+	_refresh_display()
+
+
+func _cancel_skirmish_building_placement() -> void:
+	if _placement_city_id == "":
+		return
+	_placement_city_id = ""
+	_placement_building_id = ""
+	_hint.text = "已取消建筑放置。"
+	_refresh_display()
+
+
+func _try_place_building_in_skirmish(axial: Vector2i) -> void:
+	if _placement_city_id == "" or _placement_building_id == "":
+		return
+	if CityManager.start_build(_placement_city_id, _placement_building_id, axial):
+		var cid: String = _placement_city_id
+		_placement_city_id = ""
+		_placement_building_id = ""
+		_hint.text = "已在 (%d,%d) 放置建筑，回合计完成建造。" % [axial.x, axial.y]
+		_refresh_display()
+		_open_formal_city_panel(cid)
+	else:
+		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, axial)
+		_hint.text = "无法放置：%s" % str(check.get("reason", ""))
 
 
 func _embed_formal_resource_bar(target_vbox: VBoxContainer) -> void:
@@ -505,12 +548,10 @@ func _on_end_turn_pressed() -> void:
 func _advance_formal_turn_for_tutorial() -> void:
 	if GameManager.get_current_phase() != GameManager.Phase.ACTION:
 		return
-	var old_season: String = TacticalSkirmishManager.get_current_season()
-	GameManager.end_current_turn()
-	while GameManager.get_current_phase() == GameManager.Phase.ACTION and not GameManager.is_player_faction(GameManager.get_current_faction()):
-		GameManager.process_ai_turn()
+	var old_season: String = MapGateway.get_current_season()
+	GameManager.run_ai_continuation()
 	var new_season: String = CityManager.get_current_season(GameManager.get_current_turn())
-	TacticalSkirmishManager.set_season(new_season)
+	MapGateway.set_season(new_season)
 	_update_season_label()
 	_refresh_formal_resource_bar()
 	if is_instance_valid(_formal_city_panel):
@@ -893,6 +934,10 @@ func _on_hex_pressed(q: int, r: int) -> void:
 	if not TacticalSkirmishManager.is_active():
 		return
 	var cell: Vector2i = Vector2i(q, r)
+	# 建筑放置模式（与大地图同逻辑）
+	if _placement_city_id != "":
+		_try_place_building_in_skirmish(cell)
+		return
 	var occ: Dictionary = _unit_at_cell(cell)
 	if _selected_unit_id == "" and DemoFlow.is_tutorial_enabled() and _is_tutorial_city_cell(cell):
 		_open_formal_capital_panel()
@@ -1304,10 +1349,10 @@ func _unit_sprite_base_paths(unit_type_id: String, faction_id: String) -> Array[
 	var normalized_id: String = _normalized_unit_id(unit_type_id)
 	var unit_dir: String = "unit_%s" % normalized_id
 	return [
-		"res://assets/units/animations/%s/%s/" % [faction_id, unit_type_id],
-		"res://assets/units/animations/%s/%s/" % [faction_id, unit_dir],
-		"res://assets/units/animations/base/%s/" % unit_type_id,
-		"res://assets/units/animations/base/%s/" % unit_dir,
+		"res://assets/sprites/units/%s/%s/" % [faction_id, unit_type_id],
+		"res://assets/sprites/units/%s/%s/" % [faction_id, unit_dir],
+		"res://assets/sprites/units/base/%s/" % unit_type_id,
+		"res://assets/sprites/units/base/%s/" % unit_dir,
 	]
 
 

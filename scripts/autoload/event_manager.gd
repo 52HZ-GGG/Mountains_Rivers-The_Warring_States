@@ -27,6 +27,7 @@ var _chain_states: Dictionary = {}  # chain_id -> { "current_index": int }
 var _triggered_categories: Dictionary = {}  # category -> true（本回合已触发的类型）
 var _muted: bool = false
 var _recent_events: Array[Dictionary] = []
+var _pending_variant_settle: Dictionary = {}  # event_id -> 已抽档字典（待玩家确认后结算）
 
 
 func _ready() -> void:
@@ -38,8 +39,7 @@ func _ready() -> void:
 func _on_turn_started(turn_number: int, faction_id: String) -> void:
 	if _muted:
 		return
-	if not GameManager.is_player_faction(faction_id):
-		return
+	# 放开玩家限制：AI 势力也在其回合触发随机事件（效果归属 AI 自身，AI 自动选选项）。
 	_check_and_trigger_events("turn_start", turn_number, faction_id)
 
 
@@ -79,12 +79,8 @@ func _process_chain_events(turn_number: int, faction_id: String) -> void:
 			var evt: Dictionary = DataManager.get_event(node["event_id"])
 			if evt.is_empty():
 				continue
-			# 链式事件必定触发，无视概率和冷却
-			if evt.get("options") != null:
-				SignalBus.event_triggered.emit(evt)
-			else:
-				_apply_effects(evt["effects"])
-				SignalBus.event_resolved.emit(evt["id"], "")
+			# 链式事件必定触发，无视概率和冷却；玩家弹窗等待选择，AI 自动结算。
+			_dispatch_event(evt, faction_id)
 			SignalBus.chain_advanced.emit(chain_id, node["event_id"])
 			# 推进指针
 			if node["next"] == null:
@@ -167,12 +163,12 @@ func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: Str
 			return false
 
 	if conditions.has("morale_min"):
-		var morale: int = GameManager.get_player_morale()
+		var morale: int = _get_faction_morale(faction_id)
 		if morale < conditions["morale_min"]:
 			return false
 
 	if conditions.has("morale_max"):
-		var morale: int = GameManager.get_player_morale()
+		var morale: int = _get_faction_morale(faction_id)
 		if morale > conditions["morale_max"]:
 			return false
 
@@ -273,21 +269,96 @@ func _check_conditions(conditions: Dictionary, turn_number: int, faction_id: Str
 		if elapsed < int(conditions["lianheng_turns_min"]):
 			return false
 
+	# 地理条件：北方边境（胡马市集等）。要求事件所属势力至少拥有一座
+	# hex_r <= 阈值的城市（北方蛮荒带相邻地带）。阈值取自 balance_params.json。
+	if conditions.has("border_north"):
+		var target_faction: String = faction_id if faction_id != "" else GameManager.get_player_faction()
+		var geo_cfg: Dictionary = DataManager.get_balance_param("event_geography.horse_trade")
+		var north_r_max: int = int(geo_cfg.get("north_border_r_max", 15))
+		var has_north_border: bool = false
+		for city in CityManager.get_faction_cities(target_faction):
+			if int(city.get("hex_r", 999)) <= north_r_max:
+				has_north_border = true
+				break
+		if not has_north_border:
+			return false
+
 	return true
+
+
+## 获取势力民心用于条件判定：玩家走 get_player_morale（行为不变）；AI 用其 faction morale 资源；
+## 未指定势力或尚未开局（玩家未设定）时按玩家兜底（兼容旧调用）。
+func _get_faction_morale(faction_id: String) -> int:
+	if faction_id == "" or GameManager.get_player_faction() == "" or GameManager.is_player_faction(faction_id):
+		return GameManager.get_player_morale()
+	return GameManager.get_faction_resource(faction_id, "morale")
 
 
 # ============= 触发与冷却 =============
 
-func _trigger_event(evt: Dictionary, _faction_id: String) -> void:
+func _trigger_event(evt: Dictionary, faction_id: String) -> void:
 	var cooldown_turns: int = _get_cooldown_for_event(evt)
 	_cooldowns[evt["id"]] = cooldown_turns
 	_record_recent_event(evt, "triggered")
+	_dispatch_event(evt, faction_id)
 
+
+## 按势力分派事件结算：
+##   - 玩家 + 有选项 → 弹窗等待选择（resolve_event_choice）
+##   - 玩家 + 无选项 + 有 effects_variants → 抽档后弹窗展示该档描述与效果，确认后结算
+##   - 玩家 + 无选项 + 无档位 → 应用玩家效果并结算
+##   - AI + 有选项 → 自动选择并应用（外交/特殊胜利效果对 AI 跳过）
+##   - AI + 无选项 → 按势力应用效果并结算（同样按档位抽取）
+## 尚未开局（玩家未设定）时一律走玩家路径，兼容旧调用方与旧测试。
+func _dispatch_event(evt: Dictionary, faction_id: String) -> void:
+	if faction_id == "" or GameManager.get_player_faction() == "" or GameManager.is_player_faction(faction_id):
+		if evt.get("options") != null:
+			SignalBus.event_triggered.emit(evt)
+		else:
+			var variants: Array = evt.get("effects_variants", [])
+			if not variants.is_empty():
+				# 多档效果：先抽档，把该档描述与效果随弹窗展示，确认后再结算
+				var picked: Dictionary = _pick_effects_variant(evt)
+				_pending_variant_settle[evt["id"]] = picked
+				var display_evt: Dictionary = evt.duplicate()
+				display_evt["description"] = picked.get("description", str(evt.get("description", "")))
+				display_evt["effects"] = picked.get("effects", {})
+				SignalBus.event_triggered.emit(display_evt)
+			else:
+				_apply_effects(_pick_effects_variant(evt).get("effects", {}))
+				SignalBus.event_resolved.emit(evt["id"], "")
+		return
 	if evt.get("options") != null:
-		SignalBus.event_triggered.emit(evt)
+		_choose_ai_option(evt, faction_id)
 	else:
-		_apply_effects(evt["effects"])
+		_apply_effects_for(faction_id, _pick_effects_variant(evt).get("effects", {}))
 		SignalBus.event_resolved.emit(evt["id"], "")
+
+
+## 效果档位解析：
+##   - 事件含 effects_variants（多档效果）时，按各档 probability 加权随机抽一档，返回该档字典（含 description/effects）。
+##   - 普通事件（无 effects_variants）原样返回 evt["effects"] 包装档（description 回退事件描述）。
+## 数据约定各档概率和 = 1；此处按加权随机实现，并对总和不为 1 的情况做防御性归一化，
+## 概率全为 0 或数组为空时回退到原 effects（保持普通事件行为不变）。
+func _pick_effects_variant(evt: Dictionary) -> Dictionary:
+	var variants: Array = evt.get("effects_variants", [])
+	if variants.is_empty():
+		return {"description": str(evt.get("description", "")), "effects": evt.get("effects", {})}
+	var total_weight: float = 0.0
+	for variant: Variant in variants:
+		var vd: Dictionary = variant as Dictionary
+		total_weight += float(vd.get("probability", 0.0))
+	if total_weight <= 0.0:
+		return {"description": str(evt.get("description", "")), "effects": evt.get("effects", {})}
+	var roll: float = randf() * total_weight
+	var acc: float = 0.0
+	for variant: Variant in variants:
+		var vd: Dictionary = variant as Dictionary
+		acc += float(vd.get("probability", 0.0))
+		if roll < acc:
+			return vd
+	# 防御性兜底：浮点边界（roll 恰等于 total_weight）时取最后一档
+	return variants[variants.size() - 1] as Dictionary
 
 
 func _get_cooldown_for_event(evt: Dictionary) -> int:
@@ -321,6 +392,21 @@ func _is_on_cooldown(event_id: String) -> bool:
 
 
 # ============= 选项处理 =============
+
+## 玩家确认多档效果事件（季节事件等）：应用已抽档效果并结算。
+## 弹窗展示档位描述与效果后由玩家点击确认调用。
+func resolve_variant_event(event_id: String) -> bool:
+	if not _pending_variant_settle.has(event_id):
+		push_warning("EventManager: 事件 %s 无待结算档位" % event_id)
+		return false
+	var picked: Dictionary = _pending_variant_settle[event_id] as Dictionary
+	_pending_variant_settle.erase(event_id)
+	_apply_effects(picked.get("effects", {}))
+	var evt: Dictionary = DataManager.get_event(event_id)
+	_record_recent_event(evt, "resolved", "")
+	SignalBus.event_resolved.emit(event_id, "")
+	return true
+
 
 func resolve_event_choice(event_id: String, choice_id: String) -> bool:
 	var evt: Dictionary = DataManager.get_event(event_id)
@@ -357,6 +443,35 @@ func can_afford_option(event_id: String, choice_id: String) -> bool:
 	return false
 
 
+## AI 自动选择选项并应用：
+##   1. 优先选第一个可负担的选项（cost 为空视为可负担）
+##   2. 全部负担不起 → 选 cost 为空的首项
+##   3. 仍无 → 选第一个选项
+## 结果按势力归属（扣费 + outcomes 应用），外交/特殊胜利效果由 _apply_effects_for 对 AI 跳过。
+func _choose_ai_option(evt: Dictionary, faction_id: String) -> void:
+	var options: Array = evt.get("options", [])
+	if options.is_empty():
+		return
+	var chosen: Dictionary = {}
+	for opt: Dictionary in options:
+		if _can_afford_for(faction_id, opt.get("cost", {})):
+			chosen = opt
+			break
+	if chosen.is_empty():
+		for opt: Dictionary in options:
+			if (opt.get("cost", {}) as Dictionary).is_empty():
+				chosen = opt
+				break
+	if chosen.is_empty():
+		chosen = options[0]
+	var cost: Dictionary = chosen.get("cost", {})
+	if not cost.is_empty():
+		_deduct_cost_for(faction_id, cost)
+	_apply_effects_for(faction_id, chosen.get("outcomes", {}))
+	_record_recent_event(evt, "resolved", str(chosen.get("id", "")))
+	SignalBus.event_resolved.emit(evt["id"], str(chosen.get("id", "")))
+
+
 func _can_afford(cost: Dictionary) -> bool:
 	if cost.has("food") and GameManager.get_player_food() < cost["food"]:
 		return false
@@ -375,6 +490,16 @@ func _can_afford(cost: Dictionary) -> bool:
 	return true
 
 
+## 检查势力是否能承担选项成本：玩家走原玩家接口（行为不变）；AI 用 get_faction_resource。
+func _can_afford_for(faction_id: String, cost: Dictionary) -> bool:
+	if faction_id == "" or GameManager.is_player_faction(faction_id):
+		return _can_afford(cost)
+	for resource: String in cost:
+		if GameManager.get_faction_resource(faction_id, resource) < int(cost[resource]):
+			return false
+	return true
+
+
 func _deduct_cost(cost: Dictionary) -> void:
 	if cost.has("food"):
 		GameManager.apply_food_delta(-cost["food"])
@@ -390,6 +515,15 @@ func _deduct_cost(cost: Dictionary) -> void:
 		GameManager.apply_horse_delta(-cost["horse"])
 	if cost.has("refined_iron"):
 		GameManager.apply_refined_iron_delta(-cost["refined_iron"])
+
+
+## 扣除势力选项成本：玩家走原玩家接口（行为不变）；AI 用 apply_faction_resource_delta。
+func _deduct_cost_for(faction_id: String, cost: Dictionary) -> void:
+	if faction_id == "" or GameManager.is_player_faction(faction_id):
+		_deduct_cost(cost)
+		return
+	for resource: String in cost:
+		GameManager.apply_faction_resource_delta(faction_id, resource, -int(cost[resource]))
 
 
 # ============= 效果应用 =============
@@ -465,6 +599,39 @@ func _apply_effects(effects: Dictionary) -> void:
 	if effects.has("special_victory"):
 		var victory_type: String = str(effects["special_victory"])
 		GameManager.grant_special_victory(GameManager.get_player_faction(), victory_type)
+
+
+## 按势力应用事件效果：玩家走原玩家接口（行为不变）；AI 资源类效果加到 AI 自身。
+## school_exp 与全部外交/特殊胜利类效果（reputation_change / opinion_* / tribute_change /
+## diplomacy_*_trigger / special_victory 等）对 AI 保守跳过——它们会改写玩家的合纵/连横标记、
+## 九鼎/禅让特殊胜利状态机等全局外交状态，AI 触发时不应污染玩家状态机。
+func _apply_effects_for(faction_id: String, effects: Dictionary) -> void:
+	if effects == null:
+		return
+	if faction_id == "" or GameManager.is_player_faction(faction_id):
+		_apply_effects(effects)
+		return
+	if effects.has("food_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "food", int(effects["food_delta"]))
+	if effects.has("gold_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "gold", int(effects["gold_delta"]))
+	if effects.has("wood_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "wood", int(effects["wood_delta"]))
+	if effects.has("craftsmen_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "craftsmen", int(effects["craftsmen_delta"]))
+	if effects.has("building_materials_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "building_materials", int(effects["building_materials_delta"]))
+	if effects.has("horse_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "horse", int(effects["horse_delta"]))
+	if effects.has("refined_iron_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "refined_iron", int(effects["refined_iron_delta"]))
+	if effects.has("morale_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "morale", int(effects["morale_delta"]))
+	if effects.has("population_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "population", int(effects["population_delta"]))
+	if effects.has("troops_delta"):
+		GameManager.apply_faction_resource_delta(faction_id, "troops", int(effects["troops_delta"]))
+	# 其余效果键（school_exp / 外交数值 / 外交链标记 / 特殊胜利）为玩家专属，AI 跳过（见函数头注释）。
 
 
 func _record_recent_event(evt: Dictionary, status: String, choice_id: String = "") -> void:

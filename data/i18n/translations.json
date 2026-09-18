@@ -1,0 +1,706 @@
+{
+    "ui.close":  {
+                     "zh-CN":  "关闭",
+                     "en-US":  "Close"
+                 },
+    "ui.back":  {
+                    "zh-CN":  "返回",
+                    "en-US":  "Back"
+                },
+    "ui.save":  {
+                    "zh-CN":  "保存",
+                    "en-US":  "Save"
+                },
+    "ui.load":  {
+                    "zh-CN":  "读取",
+                    "en-US":  "Load"
+                },
+    "ui.settings":  {
+                        "zh-CN":  "设置",
+                        "en-US":  "Settings"
+                    },
+    "ui.ministers":  {
+                         "zh-CN":  "官员 / 大夫",
+                         "en-US":  "Ministers"
+                     },
+    "ui.schools":  {
+                       "zh-CN":  "学派 / 文化",
+                       "en-US":  "Schools"
+                   },
+    "ui.save_load":  {
+                         "zh-CN":  "存档 / 读档",
+                         "en-US":  "Save / Load"
+                     },
+    "ui.big_map":  {
+                       "zh-CN":  "大地图",
+                       "en-US":  "World Map"
+                   },
+    "ui.diplomacy":  {
+                         "zh-CN":  "外交",
+                         "en-US":  "Diplomacy"
+                     },
+    "ui.tech":  {
+                    "zh-CN":  "科技",
+                    "en-US":  "Tech"
+                },
+    "ui.military":  {
+                        "zh-CN":  "军事 / 战役",
+                        "en-US":  "Military"
+                    },
+    "ui.events":  {
+                      "zh-CN":  "事件",
+                      "en-US":  "Events"
+                  },
+    "ui.intelligence":  {
+                            "zh-CN":  "情报",
+                            "en-US":  "Intel"
+                        },
+    "ui.resources":  {
+                         "zh-CN":  "资源",
+                         "en-US":  "Resources"
+                     },
+    "minister.panel_title":  {
+                                 "zh-CN":  "大夫府",
+                                 "en-US":  "Minister Hall"
+                             },
+    "minister.civil":  {
+                           "zh-CN":  "文大夫",
+                           "en-US":  "Civil Minister"
+                       },
+    "minister.military":  {
+                              "zh-CN":  "武大夫",
+                              "en-US":  "Military Minister"
+                          },
+    "minister.diplomat":  {
+                              "zh-CN":  "外交大夫",
+                              "en-US":  "Diplomat"
+                          },
+    "minister.assign_capital":  {
+                                    "zh-CN":  "派驻首都",
+                                    "en-US":  "Assign to Capital"
+                                },
+    "minister.unassign_capital":  {
+                                      "zh-CN":  "卸任首都",
+                                      "en-US":  "Unassign Capital"
+                                  },
+    "minister.assign_diplomat":  {
+                                     "zh-CN":  "派驻外交大夫",
+                                     "en-US":  "Send Diplomat"
+                                 },
+    "minister.diplomat_target":  {
+                                     "zh-CN":  "外交目标：",
+                                     "en-US":  "Diplomat Target:"
+                                 },
+    "minister.military_bonus":  {
+                                    "zh-CN":  "武大夫攻防加成：+%d%% / +%d%%",
+                                    "en-US":  "Military Bonus: +%d%% / +%d%%"
+                                },
+    "minister.empty_hint":  {
+                                "zh-CN":  "选择列表中的大夫查看详情。",
+                                "en-US":  "Select a minister to view details."
+                            },
+    "minister.no_capital":  {
+                                "zh-CN":  "未找到首都。",
+                                "en-US":  "No capital found."
+                            },
+    "minister.no_civil":  {
+                              "zh-CN":  "没有可派驻的文大夫。",
+                              "en-US":  "No civil minister available."
+                          },
+    "minister.assign_ok":  {
+                               "zh-CN":  "派驻首都成功。",
+                               "en-US":  "Assigned to capital."
+                           },
+    "minister.assign_fail":  {
+                                 "zh-CN":  "派驻失败。",
+                                 "en-US":  "Assign failed."
+                             },
+    "minister.unassign_ok":  {
+                                 "zh-CN":  "已卸任首都大夫。",
+                                 "en-US":  "Capital minister unassigned."
+                             },
+    "minister.no_diplomat_target":  {
+                                        "zh-CN":  "没有可派驻的外交目标。",
+                                        "en-US":  "No diplomat target available."
+                                    },
+    "minister.diplomat_ok":  {
+                                 "zh-CN":  "已派驻外交大夫至 %s。",
+                                 "en-US":  "Diplomat sent to %s."
+                             },
+    "minister.diplomat_fail":  {
+                                   "zh-CN":  "派驻外交大夫失败。",
+                                   "en-US":  "Failed to send diplomat."
+                               },
+    "minister.not_assigned":  {
+                                  "zh-CN":  "未派驻",
+                                  "en-US":  "Unassigned"
+                              },
+    "minister.status_label":  {
+                                  "zh-CN":  "状态：%s",
+                                  "en-US":  "Status: %s"
+                              },
+    "minister.city_label":  {
+                                "zh-CN":  "驻城：%s",
+                                "en-US":  "City: %s"
+                            },
+    "minister.target_label":  {
+                                  "zh-CN":  "派驻目标：%s",
+                                  "en-US":  "Target: %s"
+                              },
+    "big_map.political_on":  {
+                                 "zh-CN":  "政治地图：开",
+                                 "en-US":  "Political: On"
+                             },
+    "big_map.political_off":  {
+                                  "zh-CN":  "政治地图：关",
+                                  "en-US":  "Political: Off"
+                              },
+    "big_map.culture_on":  {
+                               "zh-CN":  "文化地图：开",
+                               "en-US":  "Culture: On"
+                           },
+    "big_map.culture_off":  {
+                                "zh-CN":  "文化地图：关",
+                                "en-US":  "Culture: Off"
+                            },
+    "big_map.political_legend":  {
+                                     "zh-CN":  "政治地图图例",
+                                     "en-US":  "Political Legend"
+                                 },
+    "big_map.culture_legend":  {
+                                   "zh-CN":  "文化地图图例",
+                                   "en-US":  "Culture Legend"
+                               },
+    "big_map.culture_legend_hint":  {
+                                        "zh-CN":  "高饱和=主流≠归属",
+                                        "en-US":  "High sat = culture conflict"
+                                    },
+    "big_map.culture_line":  {
+                                 "zh-CN":  "文化 top：%s ｜ 主流：%s%s",
+                                 "en-US":  "Culture top: %s ｜ Mainstream: %s%s"
+                             },
+    "big_map.culture_mismatch":  {
+                                     "zh-CN":  "文化冲突",
+                                     "en-US":  "Culture Conflict"
+                                 },
+    "hud.culture_progress":  {
+                                 "zh-CN":  "文化 %d%% / 目标 %d%%",
+                                 "en-US":  "Culture %d%% / Target %d%%"
+                             },
+    "hud.culture_progress_active":  {
+                                        "zh-CN":  "文化 %d%% / %d%% · 维持 %d/%d",
+                                        "en-US":  "Culture %d%% / %d%% · Hold %d/%d"
+                                    },
+    "hud.culture_flip":  {
+                             "zh-CN":  "文化倒戈：%s 主流变为 %s",
+                             "en-US":  "Culture flip: %s mainstream → %s"
+                         },
+    "big_map.hover_hint":  {
+                               "zh-CN":  "左键拖动平移视角；悬停格子查看地形与城市。",
+                               "en-US":  "Left-drag to pan; hover a hex for terrain and city info."
+                           },
+    "big_map.click_city":  {
+                               "zh-CN":  "点击城市格：打开城池管理",
+                               "en-US":  "Click city hex to manage"
+                           },
+    "big_map.impassable":  {
+                               "zh-CN":  "不可通行",
+                               "en-US":  "Impassable"
+                           },
+    "big_map.build_tag":  {
+                              "zh-CN":  "建%d",
+                              "en-US":  "B%d"
+                          },
+    "big_map.reachable":  {
+                              "zh-CN":  "可达（移耗 %d）— 点击移动",
+                              "en-US":  "Reachable (cost %d) — click to move"
+                          },
+    "big_map.neutral":  {
+                            "zh-CN":  "中立",
+                            "en-US":  "Neutral"
+                        },
+    "school.policy":  {
+                          "zh-CN":  "学派政策",
+                          "en-US":  "School Policies"
+                      },
+    "school.quests":  {
+                          "zh-CN":  "学派任务",
+                          "en-US":  "School Quests"
+                      },
+    "school.switch":  {
+                          "zh-CN":  "切换学派",
+                          "en-US":  "Switch School"
+                      },
+    "school.activate_policy":  {
+                                   "zh-CN":  "激活政策",
+                                   "en-US":  "Activate Policy"
+                               },
+    "school.build_wonder":  {
+                                "zh-CN":  "建造都江堰",
+                                "en-US":  "Build Dujiangyan"
+                            },
+    "school.events":  {
+                          "zh-CN":  "相关事件",
+                          "en-US":  "Related Events"
+                      },
+    "school.view_tech":  {
+                             "zh-CN":  "查看科技",
+                             "en-US":  "View Tech"
+                         },
+    "school.overview_title":  {
+                                  "zh-CN":  "学派 / 文化总览",
+                                  "en-US":  "Schools / Culture"
+                              },
+    "school.policy_title":  {
+                                "zh-CN":  "学派政策",
+                                "en-US":  "School Policies"
+                            },
+    "school.back_to_overview":  {
+                                    "zh-CN":  "返回总览",
+                                    "en-US":  "Back to Overview"
+                                },
+    "school.policy_general":  {
+                                  "zh-CN":  "通用·%s（经验%s）",
+                                  "en-US":  "General·%s (EXP %s)"
+                              },
+    "school.policy_exclusive":  {
+                                    "zh-CN":  "专属·%s（经验%s）",
+                                    "en-US":  "Exclusive·%s (EXP %s)"
+                                },
+    "save.slot1":  {
+                       "zh-CN":  "保存槽位 1",
+                       "en-US":  "Save Slot 1"
+                   },
+    "save.slot2":  {
+                       "zh-CN":  "保存槽位 2",
+                       "en-US":  "Save Slot 2"
+                   },
+    "save.slot3":  {
+                       "zh-CN":  "保存槽位 3",
+                       "en-US":  "Save Slot 3"
+                   },
+    "save.load1":  {
+                       "zh-CN":  "读取槽位 1",
+                       "en-US":  "Load Slot 1"
+                   },
+    "save.load2":  {
+                       "zh-CN":  "读取槽位 2",
+                       "en-US":  "Load Slot 2"
+                   },
+    "save.load3":  {
+                       "zh-CN":  "读取槽位 3",
+                       "en-US":  "Load Slot 3"
+                   },
+    "save.load_auto":  {
+                           "zh-CN":  "读取自动存档",
+                           "en-US":  "Load Auto Save"
+                       },
+    "save.success":  {
+                         "zh-CN":  "保存成功",
+                         "en-US":  "Saved"
+                     },
+    "save.failed":  {
+                        "zh-CN":  "保存失败",
+                        "en-US":  "Save Failed"
+                    },
+    "save.load_success":  {
+                              "zh-CN":  "读取成功",
+                              "en-US":  "Loaded"
+                          },
+    "settings.mute":  {
+                          "zh-CN":  "切换静音",
+                          "en-US":  "Toggle Mute"
+                      },
+    "settings.fullscreen":  {
+                                "zh-CN":  "切换全屏",
+                                "en-US":  "Toggle Fullscreen"
+                            },
+    "settings.vol_down":  {
+                              "zh-CN":  "音量 -10%",
+                              "en-US":  "Volume -10%"
+                          },
+    "settings.vol_up":  {
+                            "zh-CN":  "音量 +10%",
+                            "en-US":  "Volume +10%"
+                        },
+    "settings.lang":  {
+                          "zh-CN":  "切换语言(中/英)",
+                          "en-US":  "Switch Language (ZH/EN)"
+                      },
+    "settings.cheat":  {
+                           "zh-CN":  "切换作弊",
+                           "en-US":  "Toggle Cheat"
+                       },
+    "victory.nine_tripods":  {
+                                 "zh-CN":  "九鼎天命",
+                                 "en-US":  "Nine Tripods Mandate"
+                             },
+    "victory.mandate_of_heaven":  {
+                                      "zh-CN":  "天子禅让",
+                                      "en-US":  "Mandate of Heaven"
+                                  },
+    "combat.not_at_war":  {
+                              "zh-CN":  "未宣战不可攻击",
+                              "en-US":  "Cannot attack without war"
+                          },
+    "intel.unit_name":  {
+                            "zh-CN":  "兵种名",
+                            "en-US":  "Unit"
+                        },
+    "intel.attack_defense":  {
+                                 "zh-CN":  "攻防",
+                                 "en-US":  "ATK/DEF"
+                             },
+    "intel.minister_name":  {
+                                "zh-CN":  "大夫",
+                                "en-US":  "Minister"
+                            },
+    "turn.success":  {
+                         "zh-CN":  "回合切换成功",
+                         "en-US":  "Turn Advanced"
+                     },
+    "turn.next":  {
+                      "zh-CN":  "结束回合",
+                      "en-US":  "End Turn"
+                  },
+    "demo.objective":  {
+                           "zh-CN":  "Demo 目标",
+                           "en-US":  "Demo Objective"
+                       },
+    "demo.sortie":  {
+                        "zh-CN":  "出征洛邑",
+                        "en-US":  "Sortie to Luoyi"
+                    },
+    "diplomacy.title":  {
+                            "zh-CN":  "外交",
+                            "en-US":  "Diplomacy"
+                        },
+    "diplomacy.faction_list":  {
+                                   "zh-CN":  "国家列表",
+                                   "en-US":  "Faction List"
+                               },
+    "diplomacy.detail":  {
+                             "zh-CN":  "外交详情",
+                             "en-US":  "Diplomacy Details"
+                         },
+    "diplomacy.gift":  {
+                           "zh-CN":  "赠礼",
+                           "en-US":  "Gift"
+                       },
+    "diplomacy.declare_war":  {
+                                  "zh-CN":  "宣战",
+                                  "en-US":  "Declare War"
+                              },
+    "diplomacy.ceasefire":  {
+                                "zh-CN":  "停战",
+                                "en-US":  "Ceasefire"
+                            },
+    "diplomacy.non_aggression":  {
+                                     "zh-CN":  "互不侵犯",
+                                     "en-US":  "Non-Aggression"
+                                 },
+    "diplomacy.alliance":  {
+                               "zh-CN":  "结盟",
+                               "en-US":  "Alliance"
+                           },
+    "diplomacy.military_access":  {
+                                      "zh-CN":  "通行权",
+                                      "en-US":  "Military Access"
+                                  },
+    "diplomacy.trade_route":  {
+                                  "zh-CN":  "商路",
+                                  "en-US":  "Trade Route"
+                              },
+    "diplomacy.peace":  {
+                            "zh-CN":  "和平",
+                            "en-US":  "Peace"
+                        },
+    "diplomacy.at_war":  {
+                             "zh-CN":  "战争中",
+                             "en-US":  "At War"
+                         },
+    "diplomacy.allied":  {
+                             "zh-CN":  "同盟",
+                             "en-US":  "Allied"
+                         },
+    "diplomacy.trading":  {
+                              "zh-CN":  "贸易中",
+                              "en-US":  "Trading"
+                          },
+    "diplomacy.bordering":  {
+                                "zh-CN":  "接壤",
+                                "en-US":  "Bordering"
+                            },
+    "diplomacy.not_bordering":  {
+                                    "zh-CN":  "不接壤",
+                                    "en-US":  "No Border"
+                                },
+    "tech.title":  {
+                       "zh-CN":  "科 技 树",
+                       "en-US":  "Tech Tree"
+                   },
+    "tech.military":  {
+                          "zh-CN":  "军事",
+                          "en-US":  "Military"
+                      },
+    "tech.economy":  {
+                         "zh-CN":  "经济",
+                         "en-US":  "Economy"
+                     },
+    "tech.livelihood":  {
+                            "zh-CN":  "民生",
+                            "en-US":  "Livelihood"
+                        },
+    "tech.architecture":  {
+                              "zh-CN":  "建筑",
+                              "en-US":  "Architecture"
+                          },
+    "tech.era_early":  {
+                           "zh-CN":  "早期",
+                           "en-US":  "Early"
+                       },
+    "tech.era_mid":  {
+                         "zh-CN":  "中期",
+                         "en-US":  "Mid"
+                     },
+    "tech.era_late":  {
+                          "zh-CN":  "晚期",
+                          "en-US":  "Late"
+                      },
+    "tech.cost":  {
+                      "zh-CN":  "研究费用: %d 金币",
+                      "en-US":  "Cost: %d Gold"
+                  },
+    "tech.turns":  {
+                       "zh-CN":  "研究回合: %d",
+                       "en-US":  "Turns: %d"
+                   },
+    "tech.effect":  {
+                        "zh-CN":  "效果: %s",
+                        "en-US":  "Effect: %s"
+                    },
+    "tech.prereq":  {
+                        "zh-CN":  "前置: %s",
+                        "en-US":  "Prereq: %s"
+                    },
+    "tech.status_researched":  {
+                                   "zh-CN":  "状态: 已研究",
+                                   "en-US":  "Status: Researched"
+                               },
+    "tech.status_researching":  {
+                                    "zh-CN":  "状态: 研究中 (%d/%d)",
+                                    "en-US":  "Status: Researching (%d/%d)"
+                                },
+    "tech.status_available":  {
+                                  "zh-CN":  "状态: 可研究",
+                                  "en-US":  "Status: Available"
+                              },
+    "tech.status_locked":  {
+                               "zh-CN":  "状态: 未解锁",
+                               "en-US":  "Status: Locked"
+                           },
+    "tech.start_research":  {
+                                "zh-CN":  "开始研究",
+                                "en-US":  "Start Research"
+                            },
+    "tech.cancel_research":  {
+                                 "zh-CN":  "取消研究",
+                                 "en-US":  "Cancel Research"
+                             },
+    "city.back_to_map":  {
+                             "zh-CN":  "返回大地图",
+                             "en-US":  "Back to Map"
+                         },
+    "city.built_title":  {
+                             "zh-CN":  "── 已建建筑 ──",
+                             "en-US":  "── Built ──"
+                         },
+    "city.queue_title":  {
+                             "zh-CN":  "── 建造队列 ──",
+                             "en-US":  "── Build Queue ──"
+                         },
+    "city.build_title":  {
+                             "zh-CN":  "── 可建造 ──",
+                             "en-US":  "── Available ──"
+                         },
+    "city.recruit_title":  {
+                               "zh-CN":  "── 可征兵 ──",
+                               "en-US":  "── Recruit ──"
+                           },
+    "city.detail_title":  {
+                              "zh-CN":  "── 建筑详情 ──",
+                              "en-US":  "── Building Detail ──"
+                          },
+    "city.unknown":  {
+                         "zh-CN":  "未知城市",
+                         "en-US":  "Unknown City"
+                     },
+    "city.capital":  {
+                         "zh-CN":  "（首都）",
+                         "en-US":  "(Capital)"
+                     },
+    "city.upgrade":  {
+                         "zh-CN":  "升级",
+                         "en-US":  "Upgrade"
+                     },
+    "city.demolish":  {
+                          "zh-CN":  "拆除",
+                          "en-US":  "Demolish"
+                      },
+    "city.cancel":  {
+                        "zh-CN":  "取消",
+                        "en-US":  "Cancel"
+                    },
+    "city.recruit_one":  {
+                             "zh-CN":  "征 1 队",
+                             "en-US":  "Recruit 1"
+                         },
+    "city.conscription_pool":  {
+                                   "zh-CN":  "征兵池：",
+                                   "en-US":  "Conscription:"
+                               },
+    "city.empty":  {
+                       "zh-CN":  "（空）",
+                       "en-US":  "(Empty)"
+                   },
+    "city.category_economic":  {
+                                   "zh-CN":  "经济",
+                                   "en-US":  "Economy"
+                               },
+    "city.category_military":  {
+                                   "zh-CN":  "军事",
+                                   "en-US":  "Military"
+                               },
+    "city.category_political":  {
+                                    "zh-CN":  "政治",
+                                    "en-US":  "Political"
+                                },
+    "city.category_special":  {
+                                  "zh-CN":  "特殊",
+                                  "en-US":  "Special"
+                              },
+    "city.culture_title":  {
+                               "zh-CN":  "── 文化 ──",
+                               "en-US":  "── Culture ──"
+                           },
+    "city.culture_empty":  {
+                               "zh-CN":  "暂无文化数据",
+                               "en-US":  "No culture data"
+                           },
+    "city.culture_mainstream":  {
+                                    "zh-CN":  "主流：%s",
+                                    "en-US":  "Mainstream: %s"
+                                },
+    "city.culture_match":  {
+                               "zh-CN":  "与归属一致",
+                               "en-US":  "Matches owner"
+                           },
+    "city.culture_conflict":  {
+                                  "zh-CN":  "文化冲突",
+                                  "en-US":  "Culture conflict"
+                              },
+    "event.title":  {
+                        "zh-CN":  "事件",
+                        "en-US":  "Event"
+                    },
+    "event.unknown":  {
+                          "zh-CN":  "未知事件",
+                          "en-US":  "Unknown Event"
+                      },
+    "event.effect_preview":  {
+                                 "zh-CN":  "效果预览\\n将鼠标悬停在右侧选项上。",
+                                 "en-US":  "Effect Preview\\nHover options on the right."
+                             },
+    "event.confirm":  {
+                          "zh-CN":  "确定",
+                          "en-US":  "OK"
+                      },
+    "event.no_effect":  {
+                            "zh-CN":  "无效果",
+                            "en-US":  "No Effect"
+                        },
+    "event.res_food":  {
+                           "zh-CN":  "粮食",
+                           "en-US":  "Food"
+                       },
+    "event.res_gold":  {
+                           "zh-CN":  "金币",
+                           "en-US":  "Gold"
+                       },
+    "event.res_iron":  {
+                           "zh-CN":  "铁矿",
+                           "en-US":  "Iron"
+                       },
+    "event.res_morale":  {
+                             "zh-CN":  "民心",
+                             "en-US":  "Morale"
+                         },
+    "event.res_population":  {
+                                 "zh-CN":  "人口",
+                                 "en-US":  "Population"
+                             },
+    "event.res_troops":  {
+                             "zh-CN":  "兵力",
+                             "en-US":  "Troops"
+                         },
+    "negotiation.title":  {
+                              "zh-CN":  "停战谈判",
+                              "en-US":  "Ceasefire Talks"
+                          },
+    "negotiation.in_progress":  {
+                                    "zh-CN":  "谈判进行中...",
+                                    "en-US":  "Talks in progress..."
+                                },
+    "negotiation.gold_label":  {
+                                   "zh-CN":  "赔款金额:",
+                                   "en-US":  "Gold Indemnity:"
+                               },
+    "negotiation.city_label":  {
+                                   "zh-CN":  "割让城市:",
+                                   "en-US":  "Cede City:"
+                               },
+    "negotiation.none":  {
+                             "zh-CN":  "无",
+                             "en-US":  "None"
+                         },
+    "negotiation.vassal":  {
+                               "zh-CN":  "称臣纳贡",
+                               "en-US":  "Become Vassal"
+                           },
+    "negotiation.history":  {
+                                "zh-CN":  "谈判历史:",
+                                "en-US":  "Talk History:"
+                            },
+    "negotiation.reject":  {
+                               "zh-CN":  "拒绝",
+                               "en-US":  "Reject"
+                           },
+    "negotiation.counter":  {
+                                "zh-CN":  "还价",
+                                "en-US":  "Counter"
+                            },
+    "negotiation.accept":  {
+                               "zh-CN":  "接受",
+                               "en-US":  "Accept"
+                           },
+    "negotiation.broken":  {
+                               "zh-CN":  "谈判破裂",
+                               "en-US":  "Talks Collapsed"
+                           },
+    "negotiation.ai_accept":  {
+                                  "zh-CN":  "AI接受",
+                                  "en-US":  "AI Accept"
+                              },
+    "negotiation.ai_counter":  {
+                                   "zh-CN":  "AI还价",
+                                   "en-US":  "AI Counter"
+                               },
+    "school.title":  {
+                         "zh-CN":  "学派",
+                         "en-US":  "School"
+                     },
+    "big_map.title":  {
+                          "zh-CN":  "大地图",
+                          "en-US":  "World Map"
+                      }
+}

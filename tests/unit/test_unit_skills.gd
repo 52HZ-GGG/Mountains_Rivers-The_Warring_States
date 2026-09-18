@@ -38,6 +38,43 @@ func test_passive_bonus_applied_to_attack_ctx() -> void:
 	assert_almost_eq(buff, 2.5, 0.01, "unit_ability_bonus=1.5 应使 atk_buff=2.5")
 
 
+func test_pack_tactics_scales_with_adjacent_allies() -> void:
+	TacticalSkirmishManager.start_skirmish()
+	var p1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
+	p1["skills"] = [{
+		"id": "pack_tactics", "type": "passive", "value": 0.05, "max_stacks": 3,
+	}]
+	# 无相邻友军
+	var bonus0: float = TacticalSkirmishManager.get_pack_tactics_bonus(p1)
+	assert_almost_eq(bonus0, 0.0, 0.01, "无相邻友军时 pack_tactics=0")
+	# 放 2 个友军到相邻格
+	var p2: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p2")
+	if p2.is_empty():
+		p2 = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
+	p2["q"] = int(p1["q"]) + 1
+	p2["r"] = int(p1["r"])
+	p2["faction_id"] = str(p1["faction_id"])
+	var p3: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p3")
+	if p3.is_empty():
+		p3 = p2.duplicate(true)
+		p3["id"] = "mvp_p3_pack"
+		TacticalSkirmishManager._units.append(p3)
+	p3["q"] = int(p1["q"])
+	p3["r"] = int(p1["r"]) + 1
+	p3["faction_id"] = str(p1["faction_id"])
+	var bonus2: float = TacticalSkirmishManager.get_pack_tactics_bonus(p1)
+	assert_almost_eq(bonus2, 0.10, 0.01, "2 相邻友军 → pack_tactics=0.10")
+
+
+func test_pack_tactics_not_in_passive_sum() -> void:
+	var skills: Array = [
+		{"id": "pack_tactics", "type": "passive", "value": 0.05, "max_stacks": 3},
+		{"id": "enhanced_siege", "type": "passive", "value": 1.5},
+	]
+	var bonus: float = TacticalSkirmishManager._get_passive_skill_bonus(skills)
+	assert_almost_eq(bonus, 1.5, 0.01, "pack_tactics 不应计入固定 passive 汇总")
+
+
 # ============= terrain_move_modifier 技能测试 =============
 
 func test_terrain_move_modifier_forest_march() -> void:

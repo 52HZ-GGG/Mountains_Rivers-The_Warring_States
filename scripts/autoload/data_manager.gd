@@ -387,6 +387,18 @@ func get_all_factions() -> Array:
 	return _factions.get("factions", [])
 
 
+## 势力显示名：优先 factions.json 的 name；neutral 等特殊 id 走内置映射；未知原样返回
+func get_faction_display_name(faction_id: String) -> String:
+	if _faction_index.has(faction_id):
+		var n: String = str(_faction_index[faction_id].get("name", ""))
+		if not n.is_empty():
+			return n
+	var special: Dictionary = {"neutral": "中立"}
+	if special.has(faction_id):
+		return str(special[faction_id])
+	return faction_id
+
+
 func get_initial_tribute(faction_id: String) -> int:
 	var faction: Dictionary = get_faction(faction_id)
 	return int(faction.get("initial_tribute", 0))
@@ -656,7 +668,8 @@ func _ensure_big_map_control_cache() -> void:
 		CityManager.get_all_city_states(),
 		get_big_map_control_overrides(),
 		get_big_map_size(),
-		get_big_map_political_radius_rules()
+		get_big_map_political_control(),
+		get_big_map_rows()
 	)
 	_big_map_control_cache_ready = true
 

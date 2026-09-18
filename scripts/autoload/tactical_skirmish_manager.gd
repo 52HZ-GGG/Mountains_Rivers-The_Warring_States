@@ -7,8 +7,6 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const AILib := preload("res://scripts/systems/skirmish_ai.gd")
 const AttackPipelineLib := preload("res://scripts/systems/skirmish_attack_pipeline.gd")
-const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
-const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 var _combat_resolver: RefCounted = CombatLib.new()
 var _ai: AILib = AILib.new()
 var _attack: AttackPipelineLib = AttackPipelineLib.new()
@@ -48,7 +46,7 @@ var _demo_attack_multiplier: float = 1.0
 
 func _ready() -> void:
 	_rng.randomize()
-	_ai.initialize(self, str(_cfg.get("ai_mode", "random")))
+	_ai.initialize(self)
 	_attack.initialize(self)
 
 
@@ -228,7 +226,6 @@ func process_morale_for_test() -> void:
 		if int(u.get("morale", 100)) < break_threshold:
 			var base_speed: int = int(u.get("speed", 3))
 			u["mp_remaining"] = maxi(1, int(float(base_speed) * broken_speed_mod))
-			u["mp"] = int(u["mp_remaining"])
 	# 溃退处理
 	var rout_units: Array[Dictionary] = []
 	for u2: Dictionary in _units:
@@ -291,7 +288,6 @@ func begin_player_phase() -> void:
 
 			u["acted"] = false
 			u["mp_remaining"] = effective_speed
-			u["mp"] = effective_speed
 			u["attacks_this_turn"] = 0
 
 	# 溃退处理：崩溃态单位自动移向友方城市（收集后处理，避免迭代时修改 _units）
@@ -385,11 +381,6 @@ func try_move_unit(unit_id: String, dest: Vector2i) -> Dictionary:
 	u["q"] = dest.x
 	u["r"] = dest.y
 	u["mp_remaining"] = mp_after
-	# UnitState v3：同步 mp 别名
-	u["mp"] = mp_after
-	var off_dest: Vector2i = HexLib.axial_to_offset_odd_r(dest.x, dest.y)
-	u["col"] = off_dest.x
-	u["row"] = off_dest.y
 	u["acted"] = false
 	_append_log("%s 移动至 (%d,%d)，剩余移动力 %d" % [unit_id, dest.x, dest.y, mp_after])
 	var capture_winner: String = check_victory()
@@ -436,7 +427,6 @@ func try_retreat(unit_id: String) -> Dictionary:
 	var safe_dist: int = int(safe_v) if safe_v != null else 3
 	u["acted"] = true
 	u["mp_remaining"] = 0
-	u["mp"] = 0
 	var old_pos: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 	var dir: Vector2i = _find_retreat_direction(u)
 	if dir == Vector2i.ZERO:
@@ -611,13 +601,8 @@ func _spawn_units() -> void:
 			"unit_type_id": ut,
 			"q": axial_u.x,
 			"r": axial_u.y,
-			"col": col_u,
-			"row": row_u,
 			"hp": max_hp,
 			"max_hp": max_hp,
-			# UnitState v3 权威字段 + 演武兼容别名
-			"mp": spd,
-			"max_mp": spd,
 			"speed": spd,
 			"mp_remaining": spd,
 			"acted": false,
@@ -625,12 +610,9 @@ func _spawn_units() -> void:
 			"in_combat_this_turn": false,
 			"burn_damage": 0,
 			"burn_turns": 0,
-			"stranded_turns": 0,
 			"flanking_penalty": 0,
 			"skills": skills,
-			"is_supplied": true,
 			"attacks_this_turn": 0,
-			"schema_v": 3,
 		})
 
 
@@ -654,19 +636,14 @@ func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vecto
 	var spd: int = int(def.get("speed", 3))
 	var uid: String = "%s_recruit_%s_%d" % [faction_id, unit_type_id, _units.size() + 1]
 	var skills: Array = DataManager.get_unit_skills(faction_id, unit_type_id)
-	var offset_u: Vector2i = HexLib.axial_to_offset_odd_r(spawn_cell.x, spawn_cell.y)
 	_units.append({
 		"id": uid,
 		"faction_id": faction_id,
 		"unit_type_id": unit_type_id,
 		"q": spawn_cell.x,
 		"r": spawn_cell.y,
-		"col": offset_u.x,
-		"row": offset_u.y,
 		"hp": max_hp,
 		"max_hp": max_hp,
-		"mp": spd,
-		"max_mp": spd,
 		"speed": spd,
 		"mp_remaining": spd,
 		"acted": false,
@@ -674,12 +651,9 @@ func _add_recruited_unit(faction_id: String, unit_type_id: String, origin: Vecto
 		"in_combat_this_turn": false,
 		"burn_damage": 0,
 		"burn_turns": 0,
-		"stranded_turns": 0,
 		"flanking_penalty": 0,
 		"skills": skills,
-		"is_supplied": true,
 		"attacks_this_turn": 0,
-		"schema_v": 3,
 	})
 	_append_log("征兵完成：%s 在 (%d,%d) 入场。" % [uid, spawn_cell.x, spawn_cell.y])
 	state_changed.emit()
@@ -1279,26 +1253,24 @@ func _can_fire_attack(defender_terrain: String) -> bool:
 	return defender_terrain == "forest"
 
 
-## 构建火攻上下文（含兵家季节加成）
-func _get_fire_attack_ctx() -> Dictionary:
+## 构建火攻上下文（含兵家季节/政策火攻加成）
+func _get_fire_attack_ctx(faction_id: String = "") -> Dictionary:
 	var ctx: Dictionary = {"is_fire_attack": true}
 	var fire_bonus_v: Variant = DataManager.get_balance_param("combat.fire_atk_bonus")
-	ctx["fire_bonus"] = float(fire_bonus_v) if fire_bonus_v != null else 0.4
-	# 兵家学派夏秋加成
-	var school_data: Dictionary = DataManager.get_school("military")
-	if not school_data.is_empty():
-		for sb: Variant in school_data.get("season_bonus", []):
-			var bonus: Dictionary = sb as Dictionary
-			if bonus.get("effect", "") == "fire_attack_bonus":
-				var seasons: Array = bonus.get("season", [])
-				if seasons.has(_current_season):
-					ctx["school_atk"] = float(bonus.get("value", 0.0))
+	var fire_bonus: float = float(fire_bonus_v) if fire_bonus_v != null else 0.4
+	if faction_id != "":
+		# SchoolManager 已合并 season_bonus 与政策 fire_attack_bonus（§5.3/§12.2）
+		fire_bonus += SchoolManager.get_effect_float(faction_id, "fire_attack_bonus")
+	ctx["fire_bonus"] = fire_bonus
 	return ctx
 
 
-## 学派战斗加成：走共享 CtxLib（统一规范 §4）
+## 学派战斗加成（从 SchoolManager 读取运行时学派）
 func _get_school_combat_bonus(faction_id: String) -> Dictionary:
-	return CtxLib.school_combat_bonus(faction_id)
+	var result: Dictionary = {"school_atk": 0.0, "school_def": 0.0}
+	result["school_atk"] = SchoolManager.get_effect_float(faction_id, "attack_bonus")
+	result["school_def"] = SchoolManager.get_effect_float(faction_id, "defense_bonus")
+	return result
 
 
 ## 对目标施加烧伤 DOT
@@ -1433,8 +1405,39 @@ func _get_passive_skill_bonus(skills: Array) -> float:
 	for skill: Variant in skills:
 		var s: Dictionary = skill as Dictionary
 		if s.get("type", "") == "passive":
+			# pack_tactics 按相邻友军数叠加，不在这里直接累加
+			if str(s.get("id", "")) == "pack_tactics":
+				continue
 			bonus += float(s.get("value", 0.0))
 	return bonus
+
+
+## pack_tactics（虎狼之师）：min(相邻友军, max_stacks) × value（§3.4）
+func get_pack_tactics_bonus(unit: Dictionary) -> float:
+	for skill: Variant in unit.get("skills", []):
+		var s: Dictionary = skill as Dictionary
+		if str(s.get("id", "")) != "pack_tactics":
+			continue
+		var value: float = float(s.get("value", 0.05))
+		var max_stacks: int = int(s.get("max_stacks", 3))
+		var allies: int = _count_adjacent_allies(unit)
+		return minf(float(allies), float(max_stacks)) * value
+	return 0.0
+
+
+func _count_adjacent_allies(unit: Dictionary) -> int:
+	var origin: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
+	var faction: String = str(unit["faction_id"])
+	var count: int = 0
+	for u: Dictionary in _units:
+		if str(u["faction_id"]) != faction:
+			continue
+		if str(u["id"]) == str(unit.get("id", "")):
+			continue
+		var cell: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
+		if HexLib.hex_distance_hex(origin, cell) == 1:
+			count += 1
+	return count
 
 
 ## 查找 move_after_attack 技能数据；无此技能返回空字典

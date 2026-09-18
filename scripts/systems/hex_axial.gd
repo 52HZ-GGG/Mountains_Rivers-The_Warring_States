@@ -64,6 +64,7 @@ static func offset_odd_r_flat_top_cell_top_left(col: int, row: int, circumradius
 	return axial_flat_top_cell_top_left(ax.x, ax.y, circumradius_px)
 
 
+## odd-R + 平顶矩形布局：列/行 → 六角控件左上角（像素）。
 ## 奇数列下移 √3·R/2，行间无 q 偏移 → 视觉为矩形（类文明系列）。
 static func offset_odd_r_flat_top_cell_top_left_rect(col: int, row: int, circumradius_px: float) -> Vector2:
 	var sqrt3: float = sqrt(3.0)
@@ -72,25 +73,6 @@ static func offset_odd_r_flat_top_cell_top_left_rect(col: int, row: int, circumr
 	var bw: float = circumradius_px * 2.0
 	var bh: float = circumradius_px * sqrt3
 	return Vector2(cx - bw * 0.5, cy - bh * 0.5)
-
-
-## 与大地图 offset_odd_r_flat_top_cell_top_left_rect 一致的视觉邻格。
-## 该布局「奇数列下移」，邻格必须按 odd-Q 偏移规则，不能直接用 odd-R 轴向邻格。
-## 决策 #123：建筑辖区环必须与地图绘制一致，否则环会偏一格。
-static func offset_visual_neighbors(col: int, row: int) -> Array[Vector2i]:
-	var out: Array[Vector2i] = []
-	var even_dirs: Array[Vector2i] = [
-		Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
-		Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(0, 1),
-	]
-	var odd_dirs: Array[Vector2i] = [
-		Vector2i(1, 1), Vector2i(1, 0), Vector2i(0, -1),
-		Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1),
-	]
-	var dirs: Array[Vector2i] = even_dirs if (col & 1) == 0 else odd_dirs
-	for d: Vector2i in dirs:
-		out.append(Vector2i(col + d.x, row + d.y))
-	return out
 
 
 ## 矩形布局下轴向邻格的像素位移（供 SkirmishHexCell 邻格边检测使用）
@@ -123,6 +105,24 @@ static func hex_distance_axial(q1: int, r1: int, q2: int, r2: int) -> int:
 	var dr: int = absi(r1 - r2)
 	var ds: int = absi((q1 + r1) - (q2 + r2))
 	return maxi(dq, maxi(dr, ds))
+
+
+## 与大地图 offset_odd_r_flat_top_cell_top_left_rect 一致的视觉邻格。
+## 该布局「奇数列下移」，邻格必须按 odd-Q 偏移规则，不能直接用 odd-R 轴向邻格。
+static func offset_visual_neighbors(col: int, row: int) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var even_dirs: Array[Vector2i] = [
+		Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
+		Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(0, 1),
+	]
+	var odd_dirs: Array[Vector2i] = [
+		Vector2i(1, 1), Vector2i(1, 0), Vector2i(0, -1),
+		Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1),
+	]
+	var dirs: Array[Vector2i] = even_dirs if (col & 1) == 0 else odd_dirs
+	for d: Vector2i in dirs:
+		out.append(Vector2i(col + d.x, row + d.y))
+	return out
 
 
 static func neighbors_hex(cell: Vector2i) -> Array[Vector2i]:

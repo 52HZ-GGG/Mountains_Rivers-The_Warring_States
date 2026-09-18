@@ -79,7 +79,7 @@ func _try_roll_disaster(turn_number: int) -> void:
 			_trigger_omen("five_star", int(cfg.get("five_star_duration", 8)))
 			for fid in GameManager.FACTION_IDS:
 				GameManager.apply_faction_resource_delta(fid, "morale", int(cfg.get("five_star_morale_bonus", 10)))
-				DiplomacySystem._change_reputation(fid, int(cfg.get("five_star_reputation_bonus", 10)))
+				DiplomacySystem.change_reputation(fid, int(cfg.get("five_star_reputation_bonus", 10)))
 			_last_disaster_turn = turn_number
 			return
 
@@ -89,7 +89,7 @@ func _try_roll_disaster(turn_number: int) -> void:
 			_trigger_omen("comet", int(cfg.get("omen_duration", 5)))
 			for fid in GameManager.FACTION_IDS:
 				GameManager.apply_faction_resource_delta(fid, "morale", int(cfg.get("comet_morale_penalty", -15)))
-				DiplomacySystem._change_reputation(fid, int(cfg.get("comet_reputation_penalty", -5)))
+				DiplomacySystem.change_reputation(fid, int(cfg.get("comet_reputation_penalty", -5)))
 				_apply_stability_to_faction(fid, int(cfg.get("omen_stability_penalty", -5)))
 			_last_disaster_turn = turn_number
 			return

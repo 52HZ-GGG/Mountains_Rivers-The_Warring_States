@@ -15,7 +15,6 @@ const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
 const _DRAG_THRESHOLD_PX: float = 6.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
-const _BigMapInput := preload("res://scripts/ui/big_map_input.gd")
 signal city_clicked(city_id: String)
 signal map_closed
 signal hub_action_requested(action: String)
@@ -60,54 +59,6 @@ func _debug_log(message: String) -> void:
 		print(message)
 
 
-## 战略单位交战反馈（统一规范 §5 结果展示）
-func _on_strategic_unit_attacked(attacker_id: String, defender_id: String, damage: int) -> void:
-	if not visible or _hover_info == null:
-		return
-	var a: Dictionary = StrategicMapManager.get_unit(attacker_id)
-	var d: Dictionary = StrategicMapManager.get_unit(defender_id)
-	var atk_name: String = ""
-	var def_name: String = ""
-	if not a.is_empty():
-		atk_name = str(DataManager.get_unit_type(str(a.get("unit_type_id", ""))).get("name", attacker_id))
-	if not d.is_empty():
-		def_name = str(DataManager.get_unit_type(str(d.get("unit_type_id", ""))).get("name", defender_id))
-	elif def_name == "":
-		def_name = defender_id
-	var counter: int = int(a.get("last_counter_damage", 0)) if not a.is_empty() else 0
-	var text: String = I18n.t("big_map.attack_feed") % [
-		atk_name if atk_name != "" else attacker_id,
-		def_name,
-		damage
-	]
-	if counter > 0:
-		text += " ｜" + (I18n.t("big_map.counter_feed") % counter)
-	if d.is_empty() and def_name != "":
-		text += " ｜" + I18n.t("big_map.wiped_out")
-	_hover_info.text = text
-	_overlay_dirty = true
-	_refresh_overlay_display()
-
-
-## 攻城反馈
-func _on_strategic_city_sieged(city_id: String, attacker_id: String, damage: int) -> void:
-	if not visible or _hover_info == null:
-		return
-	var city: Dictionary = CityManager.get_city_state(city_id)
-	var city_name: String = str(city.get("name", city_id))
-	var wall_hp: int = CityManager.get_wall_hp(city_id)
-	var city_hp: int = int(city.get("current_hp", 0))
-	var text: String = I18n.t("big_map.siege_feed") % [city_name, damage, city_hp]
-	if wall_hp >= 0:
-		var wall_max: int = CityManager.get_wall_max_hp(city_id)
-		text += " ｜ " + (I18n.t("big_map.wall_hp") % [wall_hp, maxi(wall_max, wall_hp)])
-	if city_hp <= 0:
-		text += " ｜ " + I18n.t("big_map.city_broken")
-	_hover_info.text = text
-	_overlay_dirty = true
-	_refresh_overlay_display()
-
-
 func _ready() -> void:
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomOutBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/ZoomInBtn)
@@ -134,8 +85,6 @@ func _ready() -> void:
 	SignalBus.city_occupied.connect(_on_city_control_changed)
 	SignalBus.city_revolted.connect(_on_city_revolted)
 	SignalBus.capital_relocated.connect(_on_capital_relocated)
-	StrategicMapManager.unit_attacked.connect(_on_strategic_unit_attacked)
-	StrategicMapManager.city_sieged.connect(_on_strategic_city_sieged)
 	_minimap.connect("navigate_requested", Callable(self, "_on_minimap_navigate_requested"))
 	var h_scroll: ScrollBar = _scroll.get_h_scroll_bar()
 	if h_scroll != null:
@@ -191,7 +140,9 @@ func cancel_building_placement() -> void:
 
 func _try_place_building_at(axial: Vector2i) -> void:
 	if _placement_city_id == "" or _placement_building_id == "":
+		print("[BigMap] place inactive")
 		return
+	print("[BigMap] place try city=", _placement_city_id, " bid=", _placement_building_id, " hex=", axial)
 	if CityManager.start_build(_placement_city_id, _placement_building_id, axial):
 		var cid: String = _placement_city_id
 		var bid: String = _placement_building_id
@@ -216,14 +167,13 @@ func _placement_highlight_map() -> Dictionary:
 	var out: Dictionary = {}
 	if _placement_city_id == "":
 		return out
-	# get_jurisdiction_hexes 返回轴向，与 payload/_axial_at_local_point 同一坐标系
 	for cell: Vector2i in CityManager.get_jurisdiction_hexes(_placement_city_id):
 		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, cell)
 		if bool(check.get("allowed", false)):
 			out[cell] = Color(0.25, 0.95, 0.35, 0.55)
 		else:
 			var reason: String = str(check.get("reason", ""))
-			if reason == CityManager.REASON_HEX_OCCUPIED or reason == "HEX_RESERVED":
+			if reason == "HEX_OCCUPIED" or reason == "HEX_RESERVED":
 				out[cell] = Color(0.9, 0.55, 0.15, 0.5)
 			else:
 				out[cell] = Color(0.9, 0.2, 0.2, 0.4)
@@ -266,34 +216,8 @@ func _building_mark_map() -> Dictionary:
 				"color": _building_category_color(str(bdata.get("category", "")), bool(e.get("disabled", false))),
 				"building_id": bid,
 				"category": str(bdata.get("category", "")),
-				"under_construction": false,
-			}
-		for qentry: Variant in city.get("build_queue", []):
-			var q: Dictionary = qentry as Dictionary
-			if bool(q.get("is_upgrade", false)):
-				continue
-			if not q.has("hex_q") or not q.has("hex_r"):
-				continue
-			var qaxial: Vector2i = Vector2i(int(q["hex_q"]), int(q["hex_r"]))
-			if out.has(qaxial):
-				continue
-			var qbid: String = str(q.get("building_id", ""))
-			var qbdata: Dictionary = DataManager.get_building(qbid)
-			var qname: String = str(qbdata.get("name", qbid))
-			out[qaxial] = {
-				"letter": "建",
-				"color": Color(0.92, 0.78, 0.25, 0.55),
-				"building_id": qbid,
-				"category": str(qbdata.get("category", "")),
-				"under_construction": true,
 			}
 	return out
-
-
-func _building_rect(cell_pos: Vector2) -> Rect2:
-	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.55
-	var center: Vector2 = cell_pos + _cell_size * 0.5
-	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.35, size_px, size_px)
 
 
 func focus_city(city_id: String) -> void:
@@ -449,23 +373,14 @@ func _sync_map_mode_buttons() -> void:
 
 func _build_terrain_lookup() -> void:
 	_terrain_at_axial.clear()
-	var fa: FileAccess = FileAccess.open("res://data/big_map_terrain.json", FileAccess.READ)
-	if fa == null:
-		push_error("BigMapPanel: 无法加载 big_map_terrain.json")
-		return
-	var parsed: Variant = JSON.parse_string(fa.get_as_text())
-	if parsed is not Dictionary:
-		push_error("BigMapPanel: big_map_terrain.json 解析失败")
-		return
-	_terrain_cfg = parsed as Dictionary
-	var rows: Array = _terrain_cfg.get("rows", []) as Array
-	var map_w: int = int(_terrain_cfg.get("map_width", 30))
-	var map_h: int = int(_terrain_cfg.get("map_height", 20))
+	_terrain_cfg = DataManager.get_big_map_terrain_config()
+	var rows: Array = DataManager.get_big_map_rows()
+	var map_size: Vector2i = DataManager.get_big_map_size()
 	var row_i: int = 0
-	while row_i < rows.size() and row_i < map_h:
+	while row_i < rows.size() and row_i < map_size.y:
 		var row: Array = rows[row_i] as Array
 		var col_i: int = 0
-		while col_i < row.size() and col_i < map_w:
+		while col_i < row.size() and col_i < map_size.x:
 			var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(col_i, row_i)
 			_terrain_at_axial[axial] = str(row[col_i])
 			col_i += 1
@@ -701,8 +616,6 @@ func _build_terrain_payload_cells(layout_cells: Array) -> Array:
 			"capital_rect": Rect2(),
 			"unit_texture": null,
 			"unit_rect": Rect2(),
-			"building_texture": null,
-			"building_rect": Rect2(),
 		})
 		_cell_payload_by_axial[cell_axial] = {
 			"polygon": entry["polygon"],
@@ -726,9 +639,15 @@ func _apply_overlay_to_terrain_payload() -> void:
 			continue
 		var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
 		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
-		var caption: String = ""
+		var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
 		if not city.is_empty():
-			caption = _BigMapInput.city_caption(str(city.get("id", "")), str(city.get("name", "")))
+			var built_count: int = (city.get("buildings", []) as Array).size()
+			var queue_count: int = (city.get("build_queue", []) as Array).size()
+			if built_count > 0 or queue_count > 0:
+				var b_tag: String = I18n.t("big_map.build_tag") % built_count
+				if queue_count > 0:
+					b_tag += "+%d" % queue_count
+				caption = "%s\n%s" % [caption, b_tag]
 		if not unit.is_empty():
 			var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
 			var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
@@ -942,6 +861,12 @@ func _unit_texture(unit: Dictionary) -> Texture2D:
 	return SkirmishTileTextures.unit_texture(str(unit.get("unit_type_id", "")))
 
 
+func _building_rect(cell_pos: Vector2) -> Rect2:
+	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.55
+	var center: Vector2 = cell_pos + _cell_size * 0.5
+	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.35, size_px, size_px)
+
+
 func _unit_rect(cell_pos: Vector2) -> Rect2:
 	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.42
 	var center: Vector2 = cell_pos + _cell_size * 0.5
@@ -1057,7 +982,7 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 				_set_map_cursor(Control.CURSOR_MOVE)
 			if _drag_active:
 				_pan_by(-motion.relative)
-				_BigMapInput.consume()
+				get_viewport().set_input_as_handled()
 				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
@@ -1067,27 +992,32 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 			_on_hex_mouse_exit()
 	elif event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if _BigMapInput.is_right_button(mb) and mb.pressed and _placement_city_id != "":
+		if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _placement_city_id != "":
 			cancel_building_placement()
-			_BigMapInput.consume()
+			get_viewport().set_input_as_handled()
 			return
-		if not _BigMapInput.is_left_button(mb):
+		if mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		# 放置模式：按下左键立即落点
+		if mb.pressed and _placement_city_id != "":
+			var hit_place: Variant = _axial_at_local_point(mb.position)
+			if hit_place == null:
+				hit_place = _nearest_axial_at_local_point(mb.position)
+			print("[BigMap] click place pos=", mb.position, " hit=", hit_place)
+			if hit_place is Vector2i:
+				_try_place_building_at(hit_place as Vector2i)
+			get_viewport().set_input_as_handled()
 			return
 		if mb.pressed:
 			_drag_armed = true
 			_drag_active = false
 			_drag_press_pos = mb.position
-			_BigMapInput.consume()
+			get_viewport().set_input_as_handled()
 			return
 		var was_dragging: bool = _drag_active
 		_end_drag()
-		_BigMapInput.consume()
+		get_viewport().set_input_as_handled()
 		if was_dragging:
-			return
-		if _placement_city_id != "":
-			var hit_place: Variant = _axial_at_local_point(mb.position)
-			if hit_place is Vector2i:
-				_try_place_building_at(hit_place as Vector2i)
 			return
 		# 固定城池触发区：优先直接进内政，不依赖六角多边形命中
 		var city_id: String = _city_id_at_local_point(mb.position)
@@ -1229,24 +1159,35 @@ func _focus_city_deferred(city_id: String) -> void:
 	_refresh_minimap_viewport()
 
 
+func _nearest_axial_at_local_point(point: Vector2) -> Variant:
+	var logical_point: Vector2 = point / maxf(_zoom_level, 0.001)
+	var best: Variant = null
+	var best_d: float = INF
+	for axial: Variant in _cell_payload_by_axial.keys():
+		var payload: Dictionary = _cell_payload_by_axial.get(axial, {}) as Dictionary
+		var poly: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
+		if poly.size() < 3:
+			continue
+		var c: Vector2 = Vector2.ZERO
+		for pt: Vector2 in poly:
+			c += pt
+		c /= float(poly.size())
+		var d: float = c.distance_squared_to(logical_point)
+		if d < best_d:
+			best_d = d
+			best = axial
+	if best_d > pow(_cell_radius_px * 2.0 / maxf(_zoom_level, 0.001), 2.0):
+		return null
+	return best
+
+
 func _axial_at_local_point(point: Vector2) -> Variant:
 	var logical_point: Vector2 = point / maxf(_zoom_level, 0.001)
-	if _cell_radius_px <= 0.0 or _cell_payload_by_axial.is_empty():
-		return null
-	# 布局为 odd-R 平顶矩形：中心 ≈ (1.5R·col, √3R·(row+0.5·(col&1)))
-	# 不能用纯轴向 flat-top 反推，否则奇数列会偏出邻域导致点不中格子。
-	var center_layout: Vector2 = logical_point + _board_origin_shift - Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX)
-	var col_f: float = center_layout.x / (1.5 * _cell_radius_px)
-	var col: int = int(round(col_f))
-	var row_f: float = center_layout.y / (sqrt(3.0) * _cell_radius_px) - 0.5 * float(col & 1)
-	var row: int = int(round(row_f))
-	var candidates: Array[Vector2i] = []
-	candidates.append(_HexAxial.offset_odd_r_to_axial(col, row))
-	for dcol in range(-1, 2):
-		for drow in range(-1, 2):
-			if dcol == 0 and drow == 0:
-				continue
-			candidates.append(_HexAxial.offset_odd_r_to_axial(col + dcol, row + drow))
+	var center_local: Vector2 = logical_point - Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX) + _board_origin_shift + _cell_size * 0.5
+	var candidate: Vector2i = _HexAxial.pixel_flat_top_to_axial(center_local, _cell_radius_px)
+	var candidates: Array[Vector2i] = [candidate]
+	for neighbor: Vector2i in _HexAxial.neighbors_hex(candidate):
+		candidates.append(neighbor)
 	for axial: Vector2i in candidates:
 		var payload: Dictionary = _cell_payload_by_axial.get(axial, {}) as Dictionary
 		if payload.is_empty():
@@ -1351,18 +1292,12 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var build_text: String = ""
 		if not built_names.is_empty():
 			build_text = " ｜ 建筑：%s" % "、".join(PackedStringArray(built_names))
-		var wall_hp: int = CityManager.get_wall_hp(city_id)
-		var wall_text: String = ""
-		if wall_hp >= 0:
-			var wall_max: int = CityManager.get_wall_max_hp(city_id)
-			wall_text = " ｜ 城墙 %d/%d" % [wall_hp, maxi(wall_max, wall_hp)]
-		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s%s" % [
+		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s" % [
 			str(state.get("name", city.get("name", ""))),
 			cap_tag,
 			_faction_display_name(fid),
 			int(state.get("current_population", city.get("base_population", 0))),
 			int(state.get("current_hp", city.get("current_hp", 0))),
-			wall_text,
 			special_text,
 			build_text
 		])

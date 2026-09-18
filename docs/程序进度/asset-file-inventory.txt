@@ -1,4 +1,4 @@
-﻿.claude/README.md
+.claude/README.md
 .claude/commands/audit.md
 .claude/commands/balance.md
 .claude/commands/event.md
@@ -1849,8 +1849,6 @@ scenes/ui/diplomacy/negotiation_dialog.gd
 scenes/ui/diplomacy/negotiation_dialog.tscn
 scenes/ui/event_popup/event_popup.gd
 scenes/ui/event_popup/event_popup.tscn
-scenes/ui/event_test/event_test_panel.gd
-scenes/ui/event_test/event_test_panel.tscn
 scenes/ui/minister_panel/minister_panel.gd
 scenes/ui/minister_panel/minister_panel.tscn
 scenes/ui/resource_bar/resource_bar.gd

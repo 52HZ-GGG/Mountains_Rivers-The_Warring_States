@@ -15,7 +15,8 @@
       "action_speed": 80,
       "default_school": "legalism",
       "initial_tribute": 20,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "战国初期的秦国仍居西陲，凭关中沃土与函谷险要自守。魏国一度强压秦东线，但秦廷已经开始重视法制、军功与集权，正处在由守转攻的临界点。"
     },
     {
       "id": "zhao",
@@ -31,7 +32,8 @@
       "action_speed": 70,
       "default_school": "military",
       "initial_tribute": 45,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "战国初期的赵国刚从三家分晋的格局中站稳脚跟，北面接胡地、南面争中原，兼具边地骑战压力与中原争霸野心，是一支正在成形的强军国家。"
     },
     {
       "id": "qi",
@@ -47,7 +49,8 @@
       "action_speed": 55,
       "default_school": "confucianism",
       "initial_tribute": 60,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "齐国据东方海岱之利，工商与盐铁富庶，临淄繁华。战国初期的齐国尚未完全卷入西方连年大战，更像一位财力深厚、谋而后动的东方霸主候选者。"
     },
     {
       "id": "chu",
@@ -63,7 +66,8 @@
       "action_speed": 50,
       "default_school": "daoism",
       "initial_tribute": 30,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "楚国在战国初期版图最广、腹地最深，从江汉到淮泗都拥有影响力。它兵源丰厚、地方色彩浓重，强在纵深与人口，但也常因疆域过大而显得调度迟缓。"
     },
     {
       "id": "wei",
@@ -79,7 +83,8 @@
       "action_speed": 65,
       "default_school": "military",
       "initial_tribute": 50,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "战国初期的魏国是最先完成强国转型的一员。凭借李悝变法与魏武卒，它率先压制诸侯、据有河东河内，是中原秩序的主导者，也是秦赵韩共同警惕的对象。"
     },
     {
       "id": "yan",
@@ -95,7 +100,8 @@
       "action_speed": 60,
       "default_school": "mohism",
       "initial_tribute": 55,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "燕国地处北方边缘，核心在蓟城，既要防范山戎胡骑，也要提防齐赵压力。战国初期的燕国国力不及中原强邻，但边地经验丰富，适合以韧性与机动寻找生机。"
     },
     {
       "id": "han",
@@ -111,7 +117,8 @@
       "action_speed": 45,
       "default_school": "diplomacy",
       "initial_tribute": 50,
-      "ai_capital_relocation_weight": null
+      "ai_capital_relocation_weight": null,
+      "history": "韩国处在天下腹心，也是三晋中疆域最小的一国。战国初期它凭借弩兵、冶铁与工匠传统维持竞争力，却必须在魏楚秦赵夹缝中精打细算，每一步都很关键。"
     },
     {
       "id": "zhou",

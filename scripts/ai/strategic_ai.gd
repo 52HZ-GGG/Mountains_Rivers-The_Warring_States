@@ -2,9 +2,6 @@ class_name StrategicAI
 
 ## 大地图战略 AI：操作本势力战略单位移动/攻城/交战。
 ## 由 MilitaryAI.evaluate_military() 在征兵后调用。
-## 目标评分走 AiCombatScoring（统一规范 §8）。
-
-const AiScore := preload("res://scripts/systems/ai_combat_scoring.gd")
 
 
 static func evaluate_strategic_units(faction_id: String) -> void:
@@ -25,8 +22,8 @@ static func evaluate_strategic_units(faction_id: String) -> void:
 	var targets: Array = _enemy_target_axials(faction_id)
 	if targets.is_empty():
 		return
-	# 每回合最多操作 5 支，避免大地图单位多了拖慢 AI 回合
-	var action_budget: int = 5
+	# 每回合最多操作 N 支（ai_strategic.action_budget_per_turn），避免大地图单位多了拖慢 AI 回合
+	var action_budget: int = int(DataManager.get_balance_param("ai_strategic").get("action_budget_per_turn", 5))
 	for unit_v in units:
 		if action_budget <= 0:
 			break
@@ -82,23 +79,19 @@ static func _try_attack_adjacent_enemy(unit_id: String, faction_id: String) -> b
 	var my_pos: Vector2i = Vector2i(int(me.get("q", 0)), int(me.get("r", 0)))
 	var my_type: Dictionary = DataManager.get_unit_type(str(me.get("unit_type_id", "")))
 	var atk_range: int = int(my_type.get("range", 1))
-	var is_siege: bool = str(my_type.get("category", "")) == "siege" or str(my_type.get("special", "")) == "siege"
-	var candidates: Array = []
+	var best_id: String = ""
+	var best_hp: int = 999999
 	for enemy: Dictionary in StrategicMapManager.get_units():
 		var enemy_fid: String = str(enemy.get("faction_id", ""))
 		if not _can_engage(faction_id, enemy_fid):
 			continue
 		var e_pos: Vector2i = Vector2i(int(enemy.get("q", 0)), int(enemy.get("r", 0)))
-		var dist: int = HexAxial.hex_distance_hex(my_pos, e_pos)
-		if dist > atk_range:
+		if HexAxial.hex_distance_hex(my_pos, e_pos) > atk_range:
 			continue
-		candidates.append({
-			"id": str(enemy.get("id", "")),
-			"hp": int(enemy.get("hp", 0)),
-			"max_hp": int(enemy.get("max_hp", 1)),
-			"dist": dist,
-		})
-	var best_id: String = AiScore.pick_best_unit_target(candidates, is_siege)
+		var hp: int = int(enemy.get("hp", 0))
+		if hp < best_hp:
+			best_hp = hp
+			best_id = str(enemy.get("id", ""))
 	if best_id == "":
 		return false
 	return bool(StrategicMapManager.try_attack_unit(unit_id, best_id).get("ok", false))
@@ -115,7 +108,7 @@ static func _try_attack_adjacent_enemy_city(unit_id: String, faction_id: String)
 		var owner: String = str(city.get("current_faction_id", ""))
 		if not _can_engage(faction_id, owner):
 			continue
-		if owner == "neutral" and int(city.get("city_level", 1)) < 3:
+		if owner == "neutral" and int(city.get("city_level", 1)) < int(DataManager.get_balance_param("ai_strategic").get("neutral_city_min_level_to_attack", 3)):
 			continue
 		var c_pos: Vector2i = HexAxial.offset_odd_r_to_axial(int(city.get("hex_q", 0)), int(city.get("hex_r", 0)))
 		if HexAxial.hex_distance_hex(my_pos, c_pos) > atk_range:

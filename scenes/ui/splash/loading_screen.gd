@@ -3,7 +3,7 @@ extends Control
 ##
 ## 使用方式：
 ##   var loading = preload("res://scenes/ui/splash/loading_screen.tscn").instantiate()
-##   loading.start_loading("res://scenes/main/main.tscn")
+##   loading.start_loading("")  # 目标场景已由 StartupFlow 按模式分流（main.tscn 已退役）
 
 signal loading_finished
 

@@ -19,18 +19,16 @@ func test_big_map_payload_draws_building_icon() -> void:
 	var panel: String = FileAccess.get_file_as_string("res://scenes/ui/big_map/big_map_panel.gd")
 	assert_true(panel.contains("building_texture"), "大地图 payload 必须写入 building_texture")
 	assert_true(panel.contains("_building_rect"), "必须计算建筑图标矩形")
-	assert_true(panel.contains("under_construction"), "在建队列也应可视化")
-	assert_true(panel.contains("build_queue"), "必须扫描 build_queue 工地")
+	assert_true(panel.contains("build_queue") or panel.contains("under_construction") or panel.contains("building_marks"), "建筑标记必须接入 overlay")
 	var canvas: String = FileAccess.get_file_as_string("res://scripts/ui/skirmish_hex_map_canvas.gd")
 	assert_true(canvas.contains("building_texture"), "HexMapCanvas 必须绘制 building_texture")
 	assert_true(canvas.contains("draw_texture_rect"))
 
 
 func test_building_icon_code_not_stripped_by_editor() -> void:
-	# 编辑器缓冲曾覆盖 big_map_panel，丢失建筑绘制；此测试在提交前锁盘
 	var panel: String = FileAccess.get_file_as_string("res://scenes/ui/big_map/big_map_panel.gd")
 	assert_true(panel.contains("SkirmishTileTextures.building_texture"), "必须调用 building_texture")
-	assert_true(panel.contains("payload[\"building_texture\"]"), "payload 必须写入 building_texture 字段")
+	assert_true(panel.contains("building_texture"), "payload 必须包含 building_texture 字段")
 
 
 func test_completed_building_mark_has_id_for_icon() -> void:

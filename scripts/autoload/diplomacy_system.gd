@@ -57,8 +57,14 @@ var _enfeoffments: Dictionary = {}
 ## 建筑外交声望加成缓存
 var _building_diplomacy_rep_bonus: Dictionary = {}
 
+## 实控接壤缓存（无序对 key "a_b"）与脏标记
+var _border_pairs: Dictionary = {}
+var _border_pairs_dirty: bool = true
+
 ## 好感度衰减计数器
 var _decay_counter: int = 0
+
+const HexAxial := preload("res://scripts/systems/hex_axial.gd")
 
 
 # ============= 生命周期 =============
@@ -66,6 +72,9 @@ var _decay_counter: int = 0
 func _ready() -> void:
 	SignalBus.turn_started.connect(_on_turn_started)
 	SignalBus.turn_ended.connect(_on_turn_ended)
+	SignalBus.city_occupied.connect(_on_city_occupied_for_border)
+	SignalBus.city_revolted.connect(func(_c: String, _o: String) -> void: mark_borders_dirty())
+	SignalBus.capital_relocated.connect(func(_f: String, _c: String) -> void: mark_borders_dirty())
 
 
 func _on_turn_started(turn_number: int, _faction_id: String) -> void:
@@ -75,6 +84,7 @@ func _on_turn_started(turn_number: int, _faction_id: String) -> void:
 	_tick_hezong_lianheng()
 	_tick_tribute_reputation()
 	_apply_building_diplomacy_effects()
+	_tick_border_friction()
 
 
 func _on_turn_ended(turn_number: int, _faction_id: String) -> void:
@@ -106,6 +116,8 @@ func initialize(active_factions: Array[String]) -> void:
 	_tribute_cooldowns.clear()
 	_enfeoffments.clear()
 	_building_diplomacy_rep_bonus.clear()
+	_border_pairs.clear()
+	_border_pairs_dirty = true
 	_decay_counter = 0
 
 	# 初始化好感度（基于 initial_relations + 接壤修正）
@@ -197,16 +209,158 @@ func get_vassals(master_id: String) -> Array[String]:
 	return result
 
 
+## 接壤：两国实控格共享边（决策 #202）
+## 缓存 _border_pairs；占城后由 _on_city_occupied_for_border 重建并广播 border_changed
 func are_bordering(faction_a: String, faction_b: String) -> bool:
-	var cities_a: Array = DataManager.get_faction_cities(faction_a)
-	var cities_b: Array = DataManager.get_faction_cities(faction_b)
+	if faction_a == "" or faction_b == "" or faction_a == faction_b:
+		return false
+	if _border_pairs_dirty:
+		_rebuild_border_pairs()
+	return _border_pairs.has(_border_pair_key(faction_a, faction_b))
+
+
+func get_bordering_factions(faction_id: String) -> Array[String]:
+	if _border_pairs_dirty:
+		_rebuild_border_pairs()
+	var out: Array[String] = []
+	for key in _border_pairs:
+		var parts: PackedStringArray = String(key).split("_")
+		if parts.size() != 2:
+			continue
+		if parts[0] == faction_id:
+			out.append(parts[1])
+		elif parts[1] == faction_id:
+			out.append(parts[0])
+	return out
+
+
+func _border_pair_key(a: String, b: String) -> String:
+	# 无序对，保证 a_b 与 b_a 同一 key
+	if a <= b:
+		return a + "_" + b
+	return b + "_" + a
+
+
+func _rebuild_border_pairs() -> void:
+	_border_pairs.clear()
+	_border_pairs_dirty = false
+	var grid: Dictionary = DataManager.get_big_map_control_grid()
+	if grid.is_empty():
+		# 无政治格时退回运行时城距（D1 行为）
+		_rebuild_border_pairs_by_city_distance()
+		return
+	for cell_v: Variant in grid:
+		var cell: Vector2i = cell_v as Vector2i
+		var owner: String = str(grid[cell])
+		if owner.is_empty() or owner == "neutral":
+			continue
+		for nb: Vector2i in HexAxial.neighbors_hex(cell):
+			if not grid.has(nb):
+				continue
+			var n_owner: String = str(grid[nb])
+			if n_owner.is_empty() or n_owner == "neutral" or n_owner == owner:
+				continue
+			_border_pairs[_border_pair_key(owner, n_owner)] = true
+
+
+func _rebuild_border_pairs_by_city_distance() -> void:
 	var threshold: int = DataManager.get_balance_param("diplomacy.border_distance_threshold")
-	for ca in cities_a:
-		for cb in cities_b:
-			var dist := _hex_distance(ca["hex_q"], ca["hex_r"], cb["hex_q"], cb["hex_r"])
-			if dist <= threshold:
-				return true
-	return false
+	for a in GameManager.FACTION_IDS:
+		var cities_a: Array = CityManager.get_faction_city_states(a)
+		if cities_a.is_empty():
+			continue
+		for b in GameManager.FACTION_IDS:
+			if a >= b:
+				continue
+			var cities_b: Array = CityManager.get_faction_city_states(b)
+			if cities_b.is_empty():
+				continue
+			for ca in cities_a:
+				var hit: bool = false
+				var qa: int = int((ca as Dictionary).get("hex_q", 0))
+				var ra: int = int((ca as Dictionary).get("hex_r", 0))
+				for cb in cities_b:
+					var dist := _hex_distance(qa, ra, int((cb as Dictionary).get("hex_q", 0)), int((cb as Dictionary).get("hex_r", 0)))
+					if dist <= threshold:
+						_border_pairs[_border_pair_key(a, b)] = true
+						hit = true
+						break
+				if hit:
+					break
+
+
+func mark_borders_dirty() -> void:
+	_border_pairs_dirty = true
+
+
+func _on_city_occupied_for_border(_city_id: String, _old: String, _new: String) -> void:
+	var before: Dictionary = _border_pairs.duplicate()
+	mark_borders_dirty()
+	_rebuild_border_pairs()
+	# 广播变化的接壤对
+	for key in before:
+		if not _border_pairs.has(key):
+			_emit_border_changed(str(key), false)
+	for key in _border_pairs:
+		if not before.has(key):
+			_emit_border_changed(str(key), true)
+
+
+func _emit_border_changed(pair_key: String, now_bordering: bool) -> void:
+	var parts: PackedStringArray = pair_key.split("_")
+	if parts.size() != 2:
+		return
+	SignalBus.border_changed.emit(parts[0], parts[1], now_bordering)
+	# 新接壤：小幅降好感（决策 #202）
+	if now_bordering:
+		_change_opinion(parts[0], parts[1], -5)
+		_change_opinion(parts[1], parts[0], -5)
+
+
+## 边境摩擦：接壤且好感低时，按接壤边长概率给 border_conflict 借口（决策 #202 / D4）
+func _tick_border_friction() -> void:
+	var cfg: Dictionary = DataManager.get_big_map_political_control().get("border_friction", {}) as Dictionary
+	var base: float = float(cfg.get("base_chance", 0.03))
+	var per_edge: float = float(cfg.get("per_border_edge", 0.002))
+	var opinion_th: int = int(cfg.get("opinion_threshold", 0))
+	if _border_pairs_dirty:
+		_rebuild_border_pairs()
+	var grid: Dictionary = DataManager.get_big_map_control_grid()
+	for key in _border_pairs:
+		var parts: PackedStringArray = String(key).split("_")
+		if parts.size() != 2:
+			continue
+		var a: String = parts[0]
+		var b: String = parts[1]
+		if a == "zhou" or b == "zhou":
+			continue
+		if CityManager.is_faction_eliminated(a) or CityManager.is_faction_eliminated(b):
+			continue
+		if get_opinion(a, b) >= opinion_th and get_opinion(b, a) >= opinion_th:
+			continue
+		var edges: int = _count_border_edges(grid, a, b) if not grid.is_empty() else 3
+		var chance: float = base + per_edge * float(maxi(edges, 1))
+		if randf() < chance:
+			# 好感更低的一方拿到借口
+			if get_opinion(a, b) <= get_opinion(b, a):
+				grant_casus_belli(a, b, "border_conflict")
+			else:
+				grant_casus_belli(b, a, "border_conflict")
+
+
+func _count_border_edges(grid: Dictionary, faction_a: String, faction_b: String) -> int:
+	var count: int = 0
+	for cell_v: Variant in grid:
+		var cell: Vector2i = cell_v as Vector2i
+		var owner: String = str(grid[cell])
+		if owner != faction_a:
+			continue
+		for nb: Vector2i in HexAxial.neighbors_hex(cell):
+			if not grid.has(nb):
+				continue
+			if str(grid[nb]) == faction_b:
+				count += 1
+	return count
 
 
 func get_power_score(faction_id: String) -> float:
@@ -1399,6 +1553,8 @@ func reset() -> void:
 	_enfeoffments.clear()
 	_building_diplomacy_rep_bonus.clear()
 	_event_chain_flags.clear()
+	_border_pairs.clear()
+	_border_pairs_dirty = true
 	_decay_counter = 0
 
 

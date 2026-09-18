@@ -4,20 +4,12 @@ extends RefCounted
 ## 从 TacticalSkirmishManager 提取，避免单文件超 2000 行。
 ## 持有 manager 引用，通过它访问所有战斗/移动/状态私有 API。
 ## 公共入口：run_turn()，由 TacticalSkirmishManager._run_ai_turn() 委派调用。
-## ai_mode：tutorial / random / scored（统一规范 §8）
-
-const AiCombatScoring := preload("res://scripts/systems/ai_combat_scoring.gd")
 
 var m: Node
 
-## AI 难度档（统一规范 §8）：tutorial / random / scored
-## 教学场景默认 tutorial，避免完整评分打爆新手关
-var ai_mode: String = "random"
 
-
-func initialize(manager: Node, mode: String = "random") -> void:
+func initialize(manager: Node) -> void:
 	m = manager
-	ai_mode = mode if mode != "" else "random"
 
 
 func run_turn() -> void:
@@ -77,13 +69,8 @@ func run_turn() -> void:
 			if m._occupant_id_at(p) == "":
 				candidates.append(p)
 		if candidates.size() > 0:
-			var dest: Vector2i = candidates[m._rng.randi_range(0, candidates.size() - 1)]
-			# tutorial：取靠前候选，不做最优搜索
-			if ai_mode == "tutorial":
-				var pick_i: int = 0
-				if candidates.size() > 1:
-					pick_i = candidates.size() / 3
-				dest = candidates[pick_i]
+			var pick_i: int = m._rng.randi_range(0, candidates.size() - 1)
+			var dest: Vector2i = candidates[pick_i]
 			var step_cost: int = int(reach[dest])
 			u["mp_remaining"] = int(u["mp_remaining"]) - step_cost
 			u["q"] = dest.x
@@ -108,22 +95,6 @@ func run_turn() -> void:
 					targets.append(str(o["id"]))
 		if targets.size() > 0:
 			var t_id: String = targets[m._rng.randi_range(0, targets.size() - 1)]
-			# scored / tutorial：按共享评分选目标（残血优先）
-			if ai_mode == "scored" or ai_mode == "tutorial":
-				var cands: Array = []
-				for tid: String in targets:
-					var tu: Dictionary = m.get_unit_by_id(tid)
-					if tu.is_empty():
-						continue
-					cands.append({
-						"id": tid,
-						"hp": int(tu.get("hp", 0)),
-						"max_hp": int(tu.get("max_hp", 1)),
-						"dist": 1,
-					})
-				var scored_id: String = AiCombatScoring.pick_best_unit_target(cands, false)
-				if scored_id != "":
-					t_id = scored_id
 			var defender: Dictionary = m.get_unit_by_id(t_id)
 			var ai_def_cell: Vector2i = Vector2i(int(defender["q"]), int(defender["r"]))
 			var def_ter: String = m.terrain_at(ai_def_cell)
@@ -134,7 +105,7 @@ func run_turn() -> void:
 			var ai_def_ctx: Dictionary = {}
 			var ai_is_fire: bool = m._can_fire_attack(def_ter)
 			if ai_is_fire:
-				ai_atk_ctx = m._get_fire_attack_ctx()
+				ai_atk_ctx = m._get_fire_attack_ctx(str(u["faction_id"]))
 			# 被动技能加成
 			var ai_passive_bonus: float = m._get_passive_skill_bonus(u.get("skills", []))
 			if ai_passive_bonus > 0.0:
@@ -152,6 +123,9 @@ func run_turn() -> void:
 			var ai_atk_school: Dictionary = m._get_school_combat_bonus(str(u["faction_id"]))
 			if ai_atk_school.get("school_atk", 0.0) != 0.0:
 				ai_atk_ctx["school_atk"] = ai_atk_school["school_atk"]
+			var ai_school_ambush: float = SchoolManager.get_effect_float(str(u["faction_id"]), "ambush_damage_bonus")
+			if ai_school_ambush > 0.001:
+				ai_atk_ctx["school_ambush_bonus"] = ai_school_ambush
 			var ai_def_school: Dictionary = m._get_school_combat_bonus(str(defender["faction_id"]))
 			if ai_def_school.get("school_def", 0.0) != 0.0:
 				ai_def_ctx["school_def"] = ai_def_school["school_def"]

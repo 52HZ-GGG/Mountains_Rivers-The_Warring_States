@@ -303,7 +303,7 @@ func _refresh_info() -> void:
 	var national_prod: Dictionary = preview.get("production", {})
 	var national_delta: Dictionary = preview.get("deltas", {})
 
-	_info_label.text = "势力：%s\n人口：%s\n发展度：%d\n建筑槽位：%d / %d%s\n\n本城产出（结算前）：\n  粮食 %+d  金币 %+d  木材 %+d  工匠 %+d  建材 %+d\n\n预计国家入库（税后/维护后）：\n  粮食 %+d  金币 %+d  木材 %+d  工匠 %+d  建材 %+d\n  税率 %.0f%%  税收效率 %.0f%%" % [
+	_info_label.text = "势力：%s\n人口：%s\n发展度：%d\n建筑槽位：%d / %d%s\n\n本城产出（结算前）：\n  粮食 %+d  金币 %+d  木材 %+d  工匠 %+d  建材 %+d\n\n预计国家入库（税后/维护后）：\n  粮食 %+d  金币 %+d  木材 %+d  工匠 %+d  建材 %+d\n  税率 %.0f%%  税收效率 %.0f%%\n\n%s" % [
 		fname,
 		_format_pop(pop),
 		dev,
@@ -315,7 +315,49 @@ func _refresh_info() -> void:
 		national_prod.get("craftsmen", 0), national_prod.get("building_materials", 0),
 		float(preview.get("tax_rate", 0.0)) * 100.0,
 		float(preview.get("tax_efficiency", 0.0)) * 100.0,
+		_build_culture_section(fid),
 	]
+
+
+## 本城文化：本国 + top2 对手；标出主流与是否冲突
+func _build_culture_section(owner_fid: String) -> String:
+	var cult: Dictionary = CityManager.get_city_culture(_city_id)
+	if cult.is_empty():
+		return I18n.t("city.culture_title") + "\n  " + I18n.t("city.culture_empty")
+	var ranked: Array = []
+	for fid_key in cult:
+		ranked.append({"id": str(fid_key), "v": float(cult[fid_key])})
+	ranked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a["v"]) > float(b["v"])
+	)
+	var total: float = 0.0
+	for item in ranked:
+		total += float(item["v"])
+	if total <= 0.0:
+		return I18n.t("city.culture_title") + "\n  " + I18n.t("city.culture_empty")
+
+	var lines: Array[String] = [I18n.t("city.culture_title")]
+	var shown: Dictionary = {}
+	for item in ranked:
+		if str(item["id"]) == owner_fid:
+			shown[str(item["id"])] = float(item["v"])
+			break
+	for item in ranked:
+		if shown.size() >= 3:
+			break
+		shown[str(item["id"])] = float(item["v"])
+	for fid_key in shown:
+		var pct: int = int(round(shown[fid_key] / total * 100.0))
+		var bar_len: int = clampi(pct / 5, 0, 20)
+		var bar: String = "█".repeat(bar_len)
+		lines.append("  %s %d%% %s" % [_faction_display_name(str(fid_key)), pct, bar])
+	var mainstream: String = CityManager.get_mainstream_culture(_city_id)
+	if mainstream.is_empty():
+		lines.append("  " + (I18n.t("city.culture_mainstream") % "-"))
+	else:
+		var tag: String = I18n.t("city.culture_match") if mainstream == owner_fid else I18n.t("city.culture_conflict")
+		lines.append("  " + (I18n.t("city.culture_mainstream") % _faction_display_name(mainstream)) + " · " + tag)
+	return "\n".join(lines)
 
 
 func _refresh_buildings() -> void:
@@ -332,6 +374,16 @@ func _refresh_buildings() -> void:
 		var bdata: Dictionary = DataManager.get_building(bid)
 		var bname: String = str(bdata.get("name", bid))
 		var effects_str: String = _effects_summary(_building_level_data(bdata, level).get("effects", {}), 1)
+		var hex_q: int = int(b.get("hex_q", -9999))
+		var hex_r: int = int(b.get("hex_r", -9999))
+		var hex_str: String = ""
+		if hex_q != -9999:
+			hex_str = " @(%d,%d)" % [hex_q, hex_r]
+		var hp_str: String = ""
+		if b.has("structure_hp"):
+			hp_str = " HP %d/%d" % [int(b.get("structure_hp", 0)), int(b.get("max_structure_hp", 0))]
+		if bool(b.get("disabled", false)):
+			hp_str += " [失效]"
 
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
@@ -350,14 +402,15 @@ func _refresh_buildings() -> void:
 				row.add_child(icon_rect)
 
 		var lbl := Label.new()
-		lbl.text = "%s Lv.%d  %s" % [bname, level, effects_str]
+		lbl.text = "%s Lv.%d%s%s  %s" % [bname, level, hex_str, hp_str, effects_str]
 		lbl.add_theme_font_size_override("font_size", 13)
 		lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(lbl)
 
+		var b_hex: Vector2i = Vector2i(hex_q, hex_r)
 		# 升级按钮
-		var upgrade_check: Dictionary = CityManager.can_upgrade(_city_id, bid)
+		var upgrade_check: Dictionary = CityManager.can_upgrade(_city_id, bid, b_hex)
 		var up_btn := SkirmishTileTextures.styled_button(I18n.t("city.upgrade"))
 		up_btn.add_theme_font_size_override("font_size", 12)
 		up_btn.disabled = not upgrade_check["allowed"]
@@ -369,13 +422,13 @@ func _refresh_buildings() -> void:
 			var up_gold: int = int(next_level.get("cost_gold", 0))
 			var up_wood: int = int(next_level.get("cost_wood", 0))
 			up_btn.tooltip_text = "费用：%d金 %d木材" % [up_gold, up_wood]
-		up_btn.pressed.connect(_on_upgrade_pressed.bind(bid))
+		up_btn.pressed.connect(_on_upgrade_pressed.bind(bid, b_hex))
 		row.add_child(up_btn)
 
 		# 拆除按钮
 		var del_btn := SkirmishTileTextures.styled_button(I18n.t("city.demolish"))
 		del_btn.add_theme_font_size_override("font_size", 12)
-		del_btn.pressed.connect(_on_demolish_pressed.bind(bid))
+		del_btn.pressed.connect(_on_demolish_pressed.bind(bid, b_hex))
 		row.add_child(del_btn)
 
 
@@ -615,7 +668,7 @@ func _on_build_pressed(building_id: String) -> void:
 		_status_label.text = "非己方城市，无法建造。"
 		return
 	var check: Dictionary = CityManager.can_build(_city_id, building_id)
-	if not bool(check.get("allowed", false)):
+	if not check["allowed"]:
 		_status_label.text = "建造失败：%s" % _reason_text(str(check.get("reason", "UNKNOWN")))
 		return
 	place_building_requested.emit(_city_id, building_id)
@@ -632,6 +685,15 @@ func _on_build_pressed(building_id: String) -> void:
 	_status_label.text = "请在地图上点击绿色辖区格放置（右键取消）。"
 
 
+func _free_jurisdiction_hexes_for(building_id: String) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for cell: Vector2i in CityManager.get_jurisdiction_hexes(_city_id):
+		var hex_check: Dictionary = CityManager.can_build(_city_id, building_id, cell)
+		if bool(hex_check.get("allowed", false)):
+			out.append(cell)
+	return out
+
+
 func _do_build_on_hex(building_id: String, axial: Vector2i) -> void:
 	if CityManager.start_build(_city_id, building_id, axial):
 		var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
@@ -642,14 +704,60 @@ func _do_build_on_hex(building_id: String, axial: Vector2i) -> void:
 		_status_label.text = "建造失败：%s" % _reason_text(str(CityManager.can_build(_city_id, building_id, axial).get("reason", "UNKNOWN")))
 
 
-func _on_upgrade_pressed(building_id: String) -> void:
-	if CityManager.start_upgrade(_city_id, building_id):
+## 辖区六格选点弹窗（决策 #123 实体建筑）。
+func _show_hex_picker(building_id: String, free_hexes: Array[Vector2i]) -> void:
+	var win := Window.new()
+	win.title = "选择建筑位置（辖区）"
+	win.size = Vector2i(420, 360)
+	win.unresizable = true
+	win.always_on_top = true
+	add_child(win)
+	win.popup_centered()
+
+	var root := VBoxContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_theme_constant_override("separation", 8)
+	win.add_child(root)
+
+	var hint := Label.new()
+	var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
+	hint.text = "为「%s」选择要放置的辖区六角格：" % bname
+	hint.add_theme_font_size_override("font_size", 14)
+	root.add_child(hint)
+
+	for cell: Vector2i in CityManager.get_jurisdiction_hexes(_city_id):
+		var terrain_id: String = CityManager.get_big_map_terrain_id(cell.x, cell.y)
+		var occupied: bool = not CityManager.get_building_at_hex(cell).is_empty()
+		var free: bool = free_hexes.has(cell)
+		var label: String = "(%d,%d) %s" % [cell.x, cell.y, terrain_id]
+		if occupied:
+			label += " [已有建筑]"
+		elif not free:
+			label += " [不可建]"
+		var btn := SkirmishTileTextures.styled_button(label)
+		btn.disabled = not free
+		SkirmishTileTextures.update_button_disabled(btn)
+		btn.pressed.connect(func() -> void:
+			_do_build_on_hex(building_id, cell)
+			win.queue_free()
+		)
+		root.add_child(btn)
+
+	var cancel := SkirmishTileTextures.styled_button("取消")
+	cancel.pressed.connect(func() -> void:
+		win.queue_free()
+	)
+	root.add_child(cancel)
+
+
+func _on_upgrade_pressed(building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> void:
+	if CityManager.start_upgrade(_city_id, building_id, target_hex):
 		_refresh_all()
 		_refresh_resource_bar()
 
 
-func _on_demolish_pressed(building_id: String) -> void:
-	if CityManager.demolish(_city_id, building_id):
+func _on_demolish_pressed(building_id: String, target_hex: Vector2i = Vector2i(-9999, -9999)) -> void:
+	if CityManager.demolish(_city_id, building_id, target_hex):
 		_refresh_all()
 		_refresh_resource_bar()
 
@@ -712,13 +820,14 @@ func _faction_display_name(faction_id: String) -> String:
 
 
 func _special_resource_name(sr: String) -> String:
-	match sr:
-		"wood": return "林木（木材产量+30%）"
-		"horse": return "马匹（骑兵训练+30%）"
-		"salt": return "盐池（金钱收入+20%）"
-		"craftsmen": return "工匠（工匠产量+30%）"
-		"building_materials": return "建材（建材产量+30%）"
-		_: return sr
+	var special_res: Variant = DataManager.get_balance_param("resources.special_resources")
+	if special_res is Dictionary and (special_res as Dictionary).has(sr):
+		var entry: Dictionary = (special_res as Dictionary)[sr] as Dictionary
+		var bonus_text: String = str(entry.get("bonus_description", ""))
+		if bonus_text != "":
+			return bonus_text
+		return str(entry.get("description", sr))
+	return sr
 
 
 func _category_name(cat: String) -> String:
@@ -800,4 +909,9 @@ func _reason_text(reason: String) -> String:
 		"MAX_LEVEL_REACHED": return "已达最高等级"
 		"NOT_OWN_CITY": return "非己方城市"
 		"RELOCATION_LIMIT": return "迁都次数耗尽"
+		"INVALID_HEX": return "无效格子"
+		"HEX_OUT_OF_JURISDICTION": return "不在城市辖区内"
+		"HEX_OCCUPIED": return "该格已有建筑"
+		"HEX_RESERVED": return "该格已在建造队列中"
+		"HEX_TERRAIN": return "地形不允许该建筑"
 		_: return reason

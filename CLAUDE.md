@@ -245,7 +245,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 | `scenes/ui/diplomacy/diplomacy_panel.tscn` | 外交面板 |
 | `scenes/ui/diplomacy/negotiation_dialog.tscn` | 谈判对话框 |
 | `scenes/ui/event_popup/event_popup.tscn` | 事件弹窗 |
-| `scenes/ui/event_test/event_test_panel.tscn` | 事件测试面板 |
 | `scenes/ui/big_map/big_map_panel.tscn` | 大地图面板 |
 | `scenes/ui/buff/buff_panel.tscn` | Buff 面板 |
 | `scenes/ui/skirmish/skirmish_scenario_panel.tscn` | 演武场景选择 |

@@ -13,6 +13,11 @@ const MODE_STRATEGY_HUB: String = "strategy_hub"
 const MODE_TEST_MENU: String = "test_menu"
 const TRACE_PATH: String = "user://startup_trace.log"
 
+# 模式分流目标场景（main.tscn 已退役，不再作为任何模式的游戏入口）
+const HUB_SCENE: String = "res://scenes/ui/hub/hub_scene.tscn"
+const BIG_MAP_SCENE: String = "res://scenes/ui/big_map/big_map_scene.tscn"
+const SKIRMISH_SCENE: String = "res://scenes/ui/skirmish/skirmish_scene.tscn"
+
 # 当前流程步骤
 var _current_step: String = ""
 
@@ -22,6 +27,8 @@ var is_startup_flow_active: bool = false
 # 玩家选择
 var selected_mode: String = ""
 var selected_faction: String = ""
+# 从中枢「军事」模块切入演武时置位；由 skirmish_scene._ready 消费后清除
+var pending_skirmish: bool = false
 var _game_start_pending: bool = false
 
 # 启动配置
@@ -29,6 +36,7 @@ var _game_start_pending: bool = false
 @export var mode_select_scene: String = "res://scenes/ui/splash/mode_select.tscn"
 @export var faction_select_scene: String = "res://scenes/ui/splash/faction_select.tscn"
 @export var loading_scene: String = "res://scenes/ui/splash/loading_screen.tscn"
+# 【已废弃】main.tscn 退役后不再作为游戏入口；保留 @export 仅避免改动旧配置。模式分流见 _scene_for_mode()。
 @export var game_scene: String = "res://scenes/main/main.tscn"
 
 # 是否跳过 Splash（调试用）
@@ -112,6 +120,16 @@ func return_to_mode_select() -> void:
 # 场景跳转
 # ────────────────────────────────────────────
 
+# ── 场景切换进度条（线程加载）────────────────────
+## 过渡界面实例（root 顶层子节点）；null 表示当前无过渡界面
+var _transition: Control = null
+## 过渡界面场景（预加载，避免首次切换时再解析）
+const _TRANSITION_SCENE: PackedScene = preload("res://scenes/ui/loading/scene_transition.tscn")
+## 待切换目标场景路径（加载失败回退用）
+var _pending_scene_path: String = ""
+## 标志：加载完成后是否继续 change_scene
+var _pending_change_after_load: bool = false
+
 func goto_splash() -> void:
 	trace("goto_splash")
 	_game_start_pending = false
@@ -154,9 +172,27 @@ func goto_game() -> void:
 	is_startup_flow_active = false
 	_game_start_pending = true
 	flow_changed.emit(_current_step)
-	_request_scene_change(game_scene)
+	_request_scene_change(_scene_for_mode(selected_mode))
 	call_deferred("_nudge_window_to_front")
 	call_deferred("_start_pending_game")
+
+
+## 从中枢场景切入大地图（中枢已加载，切场景重进独立大地图场景）。
+## 不改 selected_mode：big_map_scene._ready 在独立场景模式下总是自动开图，
+## 仅 full_demo 额外定位首都，其余模式由玩家自行点选城池/顶栏功能。
+func goto_big_map_from_hub() -> void:
+	trace("goto_big_map_from_hub mode=%s" % selected_mode)
+	_request_scene_change(BIG_MAP_SCENE)
+	call_deferred("_nudge_window_to_front")
+
+
+## 从中枢场景切入演武：置位 pending_skirmish，由 skirmish_scene._ready 消费并打开军事入口
+## （DemoFlow 启用时直进洛邑演武，否则打开演武场景选择器）。
+func goto_skirmish_from_hub() -> void:
+	trace("goto_skirmish_from_hub mode=%s" % selected_mode)
+	pending_skirmish = true
+	_request_scene_change(SKIRMISH_SCENE)
+	call_deferred("_nudge_window_to_front")
 
 # ────────────────────────────────────────────
 # 流程回调（由各场景调用）
@@ -215,10 +251,65 @@ func _ensure_initial_scene() -> void:
 			return
 	_request_scene_change(splash_scene)
 
+## 请求切换场景：统一走「线程加载 + 进度条过渡界面」，
+## 目标场景由后台线程加载，界面显示真实进度，完成后 change_scene_to_packed 切换，
+## 避免同步加载导致的瞬间卡顿。
 func _request_scene_change(scene_path: String) -> void:
-	trace("request_scene_change path=%s" % scene_path)
-	call_deferred("_change_scene_deferred", scene_path)
+	trace("request_scene_change path=%s (threaded)" % scene_path)
+	_pending_scene_path = scene_path
+	_pending_change_after_load = true
+	_show_transition_and_start_load(scene_path)
 
+
+## 显示过渡界面并开始后台加载；过渡界面只实例化一次，可复用多次加载。
+func _show_transition_and_start_load(scene_path: String) -> void:
+	if _transition == null:
+		_transition = _TRANSITION_SCENE.instantiate()
+		get_tree().root.add_child(_transition)
+		_transition.loaded.connect(_on_transition_loaded)
+		_transition.load_failed.connect(_on_transition_load_failed)
+	_transition.start_load(scene_path)
+
+
+## 过渡界面加载完成：用已加载的 PackedScene 切换（避免二次解析），随后清理过渡界面。
+func _on_transition_loaded() -> void:
+	if _transition == null:
+		return
+	var packed: PackedScene = _transition.get_loaded_packed()
+	_pending_change_after_load = false
+	_pending_scene_path = ""
+	if packed == null:
+		trace("transition_loaded but packed=null")
+		_cleanup_transition()
+		return
+	var err: Error = get_tree().change_scene_to_packed(packed)
+	trace("transition_loaded change_scene_to_packed path=%s err=%s" % [packed.resource_path, str(err)])
+	_cleanup_transition()
+
+
+## 过渡界面加载失败：记录错误并回退到同步加载，保证流程不卡死。
+func _on_transition_load_failed(error_text: String) -> void:
+	trace("transition load_failed: %s" % error_text)
+	_pending_change_after_load = false
+	_cleanup_transition()
+	var path: String = _pending_scene_path
+	_pending_scene_path = ""
+	if path == "":
+		return
+	var err: Error = get_tree().change_scene_to_file(path)
+	trace("transition fallback change_scene_to_file path=%s err=%s" % [path, str(err)])
+
+
+## 清理过渡界面节点（加载完成或失败后调用）
+func _cleanup_transition() -> void:
+	if _transition == null:
+		return
+	_transition.queue_free()
+	_transition = null
+
+
+## 【已废弃】场景切换统一走 _request_scene_change 的线程加载 + 进度条；
+## 保留本函数仅为兼容潜在外部引用，不再被调用。
 func _change_scene_deferred(scene_path: String) -> void:
 	trace("change_scene_deferred begin path=%s" % scene_path)
 	var err: Error = get_tree().change_scene_to_file(scene_path)
@@ -283,7 +374,7 @@ func start_demo_game_direct(mode_id: String = MODE_FULL_DEMO) -> void:
 	DemoFlow.set_full_demo_enabled(mode_id == MODE_FULL_DEMO)
 	DemoFlow.set_tutorial_enabled(mode_id == MODE_DEMO)
 	GameManager.start_game(GameManager.FACTION_IDS, selected_faction)
-	_request_scene_change(game_scene)
+	_request_scene_change(_scene_for_mode(mode_id))
 	call_deferred("_nudge_window_to_front")
 	trace("start_demo_game_direct end phase=%s" % _phase_name())
 
@@ -306,6 +397,21 @@ func _handle_direct_launch_args() -> bool:
 	else:
 		call_deferred("start_demo_game_direct", MODE_FULL_DEMO)
 	return true
+
+## 按模式返回游戏入口场景（main.tscn 已退役；各模式直达独立场景）。
+## strategy_hub / test_menu → 战略中枢；full_demo → 大地图；demo → 演武；
+## 其余模式（classic/quick/story/sandbox 等未来模式）默认落地大地图。
+func _scene_for_mode(mode_id: String) -> String:
+	match mode_id:
+		MODE_STRATEGY_HUB, MODE_TEST_MENU:
+			return HUB_SCENE
+		MODE_FULL_DEMO:
+			return BIG_MAP_SCENE
+		MODE_DEMO:
+			return SKIRMISH_SCENE
+		_:
+			return BIG_MAP_SCENE
+
 
 func _get_active_factions() -> Array[String]:
 	match selected_mode:
