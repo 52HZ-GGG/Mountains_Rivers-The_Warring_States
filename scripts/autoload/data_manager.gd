@@ -15,6 +15,8 @@ const BALANCE_PARAMS_PATH := "res://data/balance_params.json"
 const WONDERS_PATH := "res://data/wonders.json"
 const FACTIONS_PATH := "res://data/factions.json"
 const DIPLOMACY_PATH := "res://data/diplomacy.json"
+const TECH_SYNERGIES_PATH := "res://data/tech_synergies.json"
+const TECH_EVENTS_PATH := "res://data/tech_events.json"
 const TECH_TREE_PATH := "res://data/tech_tree.json"
 const BIG_MAP_TERRAIN_PATH := "res://data/big_map_terrain.json"
 const BIG_MAP_POLITICAL_CONTROL_PATH := "res://data/big_map_political_control.json"
@@ -33,6 +35,10 @@ var _balance_params: Dictionary = {}
 var _wonders: Dictionary = {}
 var _factions: Dictionary = {}
 var _diplomacy: Dictionary = {}
+var _tech_synergies: Dictionary = {}
+var _tech_events: Dictionary = {}
+var _tech_mutual_index: Dictionary = {}
+var _tech_to_mutual: Dictionary = {}
 var _tech_tree: Dictionary = {}
 var _big_map_terrain: Dictionary = {}
 var _big_map_political_control: Dictionary = {}
@@ -78,6 +84,8 @@ func _load_all_data() -> void:
 	_factions = _load_json(FACTIONS_PATH)
 	_diplomacy = _load_json(DIPLOMACY_PATH)
 	_tech_tree = _load_json(TECH_TREE_PATH)
+	_tech_synergies = _load_json(TECH_SYNERGIES_PATH)
+	_tech_events = _load_json(TECH_EVENTS_PATH)
 	_big_map_terrain = _load_json(BIG_MAP_TERRAIN_PATH)
 	_big_map_political_control = _load_json(BIG_MAP_POLITICAL_CONTROL_PATH)
 	_tactical_skirmish_mvp = _load_json(TACTICAL_SKIRMISH_MVP_PATH)
@@ -128,8 +136,22 @@ func _build_indices() -> void:
 		_faction_index[f["id"]] = f
 
 	_tech_index.clear()
+	_tech_mutual_index.clear()
+	_tech_to_mutual.clear()
 	for t in _tech_tree.get("techs", []):
 		_tech_index[t["id"]] = t
+		var mgroup: String = str(t.get("mutual_exclusion_group", ""))
+		if mgroup != "":
+			_tech_to_mutual[t["id"]] = mgroup
+			if not _tech_mutual_index.has(mgroup):
+				_tech_mutual_index[mgroup] = []
+			(_tech_mutual_index[mgroup] as Array).append(t["id"])
+	for g in _tech_tree.get("mutual_exclusion_groups", []):
+		var gid: String = str(g.get("id", ""))
+		if gid == "" or _tech_mutual_index.has(gid):
+			continue
+		_tech_mutual_index[gid] = (g.get("members", []) as Array).duplicate()
+
 
 	_school_index.clear()
 	for s in _schools.get("schools", []):
@@ -549,6 +571,46 @@ func get_tech_prerequisites(tech_id: String) -> Array:
 	var tech := get_tech(tech_id)
 	return tech.get("prerequisites", [])
 
+
+
+func get_tech_mutual_exclusion_group(tech_id: String) -> String:
+	if _tech_to_mutual.has(tech_id):
+		return str(_tech_to_mutual[tech_id])
+	return str(get_tech(tech_id).get("mutual_exclusion_group", ""))
+
+
+func get_tech_mutual_exclusion_members(group_id: String) -> Array:
+	if group_id == "":
+		return []
+	if _tech_mutual_index.has(group_id):
+		return (_tech_mutual_index[group_id] as Array).duplicate()
+	for g in _tech_tree.get("mutual_exclusion_groups", []):
+		if str(g.get("id", "")) == group_id:
+			return (g.get("members", []) as Array).duplicate()
+	return []
+
+
+func get_tech_mutual_exclusion_groups() -> Array:
+	return _tech_tree.get("mutual_exclusion_groups", [])
+
+
+func get_tech_synergies() -> Array:
+	return _tech_synergies.get("synergies", [])
+
+
+func get_tech_research_events() -> Array:
+	return _tech_events.get("tech_events", [])
+
+
+func get_tech_research_event(event_id: String) -> Dictionary:
+	for e in get_tech_research_events():
+		if str(e.get("id", "")) == event_id:
+			return e
+	return {}
+
+
+func get_tech_knowledge_card(tech_id: String) -> Dictionary:
+	return get_tech(tech_id).get("knowledge_card", {})
 
 # ============= 数据校验 =============
 

@@ -1313,13 +1313,6 @@
         "malus_value": -0.1
       },
       "mutual_exclusion_group": "policy_governance",
-      "malus_effects": [
-        {
-          "type": "resource_penalty",
-          "resource": "gold",
-          "value": -0.1
-        }
-      ],
       "knowledge_card": {
         "historical_background": "农者天下之本，商者末业。重本抑末，仓廪实而知礼节。商鞅之策，秦之所以强也。",
         "key_figures": [
@@ -1845,12 +1838,6 @@
         "security_value": 0.2,
         "morale_value": -5
       },
-      "malus_effects": [
-        {
-          "type": "morale_penalty",
-          "value": -5
-        }
-      ],
       "knowledge_card": {
         "historical_background": "循名责实，赏罚分明。名实相符，则吏治清明。刑名之学，法家之精髓也。",
         "key_figures": [

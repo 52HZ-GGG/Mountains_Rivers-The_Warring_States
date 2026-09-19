@@ -42,14 +42,16 @@ static func passive_skill_bonus(skills: Array) -> float:
 	return bonus
 
 
-static func tech_attack_modifier(unit_type_id: String) -> float:
+static func tech_attack_modifier(unit_type_id: String, faction_id: String = "") -> float:
 	var udata: Dictionary = DataManager.get_unit_type(unit_type_id)
-	return TechSystem.get_attack_modifier(str(udata.get("category", "")))
+	var fid: String = faction_id if faction_id != "" else "qin"
+	return TechEffects.attack_modifier(fid, str(udata.get("category", "")))
 
 
-static func tech_defense_modifier(unit_type_id: String) -> float:
+static func tech_defense_modifier(unit_type_id: String, faction_id: String = "") -> float:
 	var udata: Dictionary = DataManager.get_unit_type(unit_type_id)
-	return TechSystem.get_defense_modifier(str(udata.get("category", "")))
+	var fid: String = faction_id if faction_id != "" else "qin"
+	return TechEffects.defense_modifier(fid, str(udata.get("category", "")))
 
 
 ## 组装攻击方修正（不含地形/关隘/城墙——由调用方或 compute_damage 补）
@@ -68,7 +70,7 @@ static func build_attack_ctx(
 	var passive: float = passive_skill_bonus(attacker_skills)
 	if passive > 0.0:
 		atk_ctx["unit_ability_bonus"] = float(atk_ctx.get("unit_ability_bonus", 0.0)) + passive
-	var tech_atk: float = tech_attack_modifier(attacker_unit_type_id)
+	var tech_atk: float = tech_attack_modifier(attacker_unit_type_id, attacker_faction)
 	if tech_atk != 0.0:
 		atk_ctx["tech_atk"] = tech_atk
 	var school: Dictionary = school_combat_bonus(attacker_faction)
@@ -88,7 +90,7 @@ static func build_defense_ctx(
 ) -> Dictionary:
 	var def_ctx: Dictionary = {}
 	add_offset(def_ctx, "faction_def", grain_shortage_def_offset(defender_faction))
-	var tech_def: float = tech_defense_modifier(defender_unit_type_id)
+	var tech_def: float = tech_defense_modifier(defender_unit_type_id, defender_faction)
 	if tech_def != 0.0:
 		def_ctx["tech_def"] = tech_def
 	var school: Dictionary = school_combat_bonus(defender_faction)

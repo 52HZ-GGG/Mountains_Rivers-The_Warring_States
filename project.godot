@@ -20,6 +20,8 @@ config/icon="res://assets/icon.svg"
 
 SignalBus="*res://scripts/autoload/signal_bus.gd"
 DataManager="*res://scripts/autoload/data_manager.gd"
+TechEffects="*res://scripts/autoload/tech_effects.gd"
+TechUnlockContext="*res://scripts/autoload/tech_unlock_context.gd"
 StartupFlow="*res://scripts/autoload/startup_flow.gd"
 EventManager="*res://scripts/autoload/event_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"

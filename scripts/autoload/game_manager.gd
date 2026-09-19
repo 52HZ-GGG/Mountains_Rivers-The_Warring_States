@@ -257,7 +257,7 @@ func get_food_consumption_reduction(faction_id: String) -> float:
 
 func get_recruit_efficiency(faction_id: String, city_id: String = "") -> float:
 	var total: float = _get_school_effect_float(faction_id, "recruit_efficiency")
-	total += TechSystem.get_recruit_cost_reduction("all")
+	total += TechEffects.recruit_cost_reduction(faction_id, unit_category if unit_category != "" else "all")
 	var city: Dictionary = CityManager.get_city_state(city_id) if city_id != "" else {}
 	if not city.is_empty():
 		total += _sum_city_building_effect(city, "recruit_efficiency")
@@ -686,7 +686,7 @@ func _apply_season_morale() -> void:
 		morale_delta += int((mods as Dictionary).get(season, 0))
 
 	# 科技 / 学派 / 建筑 / 腐败 / 奇观 / 战争带来的全国民心变化
-	morale_delta += TechSystem.get_morale_bonus()
+	morale_delta += TechEffects.morale_bonus(_player_faction)
 	morale_delta += int(round(_get_school_effect_float(_player_faction, "morale_bonus")))
 	morale_delta += WonderManager.get_effect_int(_player_faction, "morale_national")
 	morale_delta += _get_total_national_building_morale(_player_faction)
@@ -1485,7 +1485,7 @@ func _get_total_building_upkeep(faction_id: String) -> int:
 func _apply_resource_modifier(total: Dictionary, resource: String) -> void:
 	if not total.has(resource):
 		return
-	var modifier: float = TechSystem.get_resource_modifier(resource)
+	var modifier: float = TechEffects.resource_modifier(faction_id if faction_id != "" else _player_faction, resource)
 	if absf(modifier) <= 0.001:
 		return
 	total[resource] = int(round(int(total.get(resource, 0)) * (1.0 + modifier)))
@@ -1702,7 +1702,7 @@ func _promote_player_to_front() -> void:
 
 func _get_faction_action_speed(faction_id: String) -> float:
 	var speed: float = 1.0
-	speed += TechSystem.get_faction_action_speed_bonus(faction_id)
+	pass
 	return speed
 
 
