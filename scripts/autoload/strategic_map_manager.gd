@@ -98,23 +98,55 @@ func clear_selection() -> void:
 
 # ============= 生产 =============
 
-## 在城市格生产一队战略单位。col/row 为 odd-R 偏移。
+## 在城市格生产战略单位。
+## 规则与演武一致：**一格最多一支军队**（不叠放实体）。
+## 若城格已有己方同兵种 → 合并 count；否则落到邻接空格。
 func spawn_unit_at_city(faction_id: String, unit_type_id: String, col: int, row: int, count: int = 1) -> Dictionary:
 	var type_data: Dictionary = DataManager.get_unit_type(unit_type_id)
 	if type_data.is_empty():
 		return {"success": false, "reason": "INVALID_UNIT", "unit_id": ""}
 	var hp: int = int(type_data.get("hp", 100)) * maxi(1, count)
 	var speed: int = int(type_data.get("speed", 3))
+	var axial: Vector2i = HexLib.offset_odd_r_to_axial(col, row)
+	# 1) 同格己方同兵种：合并编制，不新开实体
+	var here: Dictionary = get_unit_at_axial(axial)
+	if not here.is_empty() and str(here.get("faction_id", "")) == faction_id and str(here.get("unit_type_id", "")) == unit_type_id:
+		here["count"] = int(here.get("count", 1)) + maxi(1, count)
+		here["hp"] = int(here.get("hp", 0)) + hp
+		units_changed.emit()
+		return {"success": true, "unit_id": str(here.get("id", "")), "merged": true}
+	# 2) 城格被占：找邻接空格（一格一军）
+	var place: Vector2i = axial
+	if not here.is_empty():
+		var free_cell: Vector2i = _find_free_adjacent(axial)
+		if free_cell == Vector2i(-9999, -9999):
+			return {"success": false, "reason": "HEX_OCCUPIED", "unit_id": ""}
+		place = free_cell
+	# UnitState v3 权威字段（统一规范 §3）
 	var unit_id: String = "su_%d_%s_%s" % [_next_unit_seq, faction_id, unit_type_id]
 	_next_unit_seq += 1
-	var axial: Vector2i = HexLib.offset_odd_r_to_axial(col, row)
-	# UnitState v3 权威字段（统一规范 §3）
+	var off: Vector2i = HexLib.axial_to_offset_odd_r(place.x, place.y)
 	var unit: Dictionary = UnitStateLib.make(
-		faction_id, unit_type_id, axial.x, axial.y, hp, speed, maxi(1, count), unit_id, col, row
+		faction_id, unit_type_id, place.x, place.y, hp, speed, maxi(1, count), unit_id, off.x, off.y
 	)
 	_units.append(unit)
 	units_changed.emit()
-	return {"success": true, "unit_id": unit_id}
+	return {"success": true, "unit_id": unit_id, "merged": false, "axial": place}
+
+
+func _find_free_adjacent(origin: Vector2i) -> Vector2i:
+	var map_size: Vector2i = DataManager.get_big_map_size()
+	if map_size.x <= 0:
+		map_size = Vector2i(100, 70)
+	for n: Vector2i in HexLib.neighbors_hex(origin):
+		if n.x < 0 or n.y < 0:
+			continue
+		var off: Vector2i = HexLib.axial_to_offset_odd_r(n.x, n.y)
+		if off.x < 0 or off.y < 0 or off.x >= map_size.x or off.y >= map_size.y:
+			continue
+		if get_unit_at_axial(n).is_empty():
+			return n
+	return Vector2i(-9999, -9999)
 
 
 # ============= 移动 =============
