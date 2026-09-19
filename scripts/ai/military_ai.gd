@@ -31,7 +31,7 @@ static func _evaluate_recruitment(faction_id: String) -> void:
 
 	for city in cities:
 		var city_id: String = city["id"]
-		var pool: int = CityManager.get_conscription_pool(city_id)
+		var pool: int = GameManager.get_available_conscription(faction_id)
 		if pool <= 0:
 			continue
 		# 计算征兵量

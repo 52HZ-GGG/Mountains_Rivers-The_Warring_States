@@ -384,12 +384,13 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	SchoolManager.initialize_factions(active_factions)
 	MinisterManager.initialize_factions(active_factions)
 	_change_phase(Phase.TURN_START)
-	# 首回合：季节民心修正 + 城市结算 + 资源产出 + 军队维护
+	# 首回合：季节民心 → **先资源结算** → 再城市经营（保证「当前+绿色=下一时刻」）
 	_apply_season_morale()
 	var first_faction := get_current_faction()
-	CityManager.process_turn(first_faction)
 	_process_production(first_faction)
 	_apply_upkeep(first_faction)
+	CityManager.process_turn(first_faction)
+	process_national_conscription(first_faction)
 	_process_national_culture_turn()
 	SignalBus.game_started.emit(active_factions.duplicate(), player_faction)
 	SignalBus.turn_started.emit(_turn_number, first_faction)
@@ -431,10 +432,12 @@ func end_current_turn() -> void:
 	if _faction_index == 0:
 		_apply_season_morale()
 	var new_faction := get_current_faction()
-	# 回合开始：城市结算（建造队列+人口）→ 资源产出 → 军队维护
-	CityManager.process_turn(new_faction)
+	# 顺序：先资源产出/维护（与预览同一税基），再城市经营/征兵池
+	# 这样玩家在回合中看到的「当前 + 绿色净变化」= 结束回合后的资源
 	_process_production(new_faction)
 	_apply_upkeep(new_faction)
+	CityManager.process_turn(new_faction)
+	process_national_conscription(new_faction)
 	SignalBus.turn_started.emit(_turn_number, new_faction)
 	SchoolManager.tick_policy_durations(new_faction)
 	SchoolManager.check_quests(new_faction)
@@ -499,36 +502,50 @@ func _ai_research_tick(faction_id: String) -> void:
 
 # ============= 每回合资源产出 =============
 
-## 预览势力下一次资源结算。用于 UI 展示，公式与 _process_production / _apply_upkeep 保持一致，但不修改状态。
+## 预览：当前值 + 本回合结算（产出入库 - 维护）= 预计下一回合
+## 与 _process_production / _apply_upkeep 共用 _build_production_total 与 _compute_upkeep_totals
 func preview_faction_turn_income(faction_id: String) -> Dictionary:
 	var total: Dictionary = _build_production_total(faction_id)
-	var upkeep: Dictionary = _preview_upkeep(faction_id)
+	var upkeep: Dictionary = _compute_upkeep_totals(faction_id)
 	var before: Dictionary = get_faction_resources(faction_id).duplicate()
-	var after_income: Dictionary = before.duplicate()
-	_preview_apply_resource_delta(after_income, faction_id, "food", int(total.get("food_taxed", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "gold", int(total.get("gold_taxed", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "wood", int(total.get("wood", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "horse", int(total.get("horse", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "refined_iron", int(total.get("refined_iron", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "craftsmen", int(total.get("craftsmen", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "building_materials", int(total.get("building_materials", 0)))
-	_preview_apply_resource_delta(after_income, faction_id, "silk_books", int(total.get("silk_books", 0)))
-	var actual_income: Dictionary = {}
+	var after: Dictionary = before.duplicate()
+	# 入库（粮/金为税后；其余资源全额）
 	for income_resource: String in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books"]:
-		actual_income[income_resource] = int(after_income.get(income_resource, 0)) - int(before.get(income_resource, 0))
-	var caps: Dictionary = {}
-	for capped_resource: String in ["food", "gold", "wood", "silk_books"]:
-		caps[capped_resource] = get_resource_cap(capped_resource, faction_id)
-	var after: Dictionary = after_income.duplicate()
+		var income_delta: int = 0
+		if income_resource == "food":
+			income_delta = int(total.get("food_taxed", 0))
+		elif income_resource == "gold":
+			income_delta = int(total.get("gold_taxed", 0))
+		else:
+			income_delta = int(total.get(income_resource, 0))
+		_preview_apply_resource_delta(after, faction_id, income_resource, income_delta)
+	var after_income: Dictionary = after.duplicate()
+	# 维护
 	_preview_apply_resource_delta(after, faction_id, "food", -int(upkeep.get("food", 0)))
 	_preview_apply_resource_delta(after, faction_id, "gold", -int(upkeep.get("gold", 0)))
 	_preview_apply_resource_delta(after, faction_id, "gold", -int(upkeep.get("building_gold", 0)))
+	var actual_income: Dictionary = {}
 	var deltas: Dictionary = {}
-	for resource: String in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books", "population", "troops", "morale"]:
+	var income_only: Dictionary = {}
+	var upkeep_only: Dictionary = {
+		"food": -int(upkeep.get("food", 0)),
+		"gold": -int(upkeep.get("gold", 0)) - int(upkeep.get("building_gold", 0)),
+	}
+	var caps: Dictionary = {}
+	for resource: String in ["food", "gold", "wood", "horse", "refined_iron", "craftsmen", "building_materials", "silk_books"]:
+		actual_income[resource] = int(after_income.get(resource, 0)) - int(before.get(resource, 0))
+		income_only[resource] = actual_income[resource]
 		deltas[resource] = int(after.get(resource, 0)) - int(before.get(resource, 0))
+	for capped_resource: String in ["food", "gold", "wood", "silk_books"]:
+		caps[capped_resource] = get_resource_cap(capped_resource, faction_id)
+	deltas["population"] = 0
+	deltas["troops"] = 0
+	deltas["morale"] = 0
 	return {
 		"production": total,
 		"upkeep": upkeep,
+		"upkeep_only": upkeep_only,
+		"income_only": income_only,
 		"deltas": deltas,
 		"before": before,
 		"after_income": after_income,
@@ -603,10 +620,11 @@ func _build_production_total(faction_id: String) -> Dictionary:
 	return total
 
 
-func _preview_upkeep(faction_id: String) -> Dictionary:
-	var comp: Dictionary = _unit_composition.get(faction_id, {})
+## 结算用的维护量（与 _preview_upkeep 同一实现，避免预览/实算不一致）
+func _compute_upkeep_totals(faction_id: String) -> Dictionary:
 	var total_food_upkeep: int = 0
 	var total_gold_upkeep: int = 0
+	var comp: Dictionary = _unit_composition.get(faction_id, {})
 	if not comp.is_empty():
 		for unit_id in comp:
 			var count: int = int(comp[unit_id])
@@ -618,7 +636,7 @@ func _preview_upkeep(faction_id: String) -> Dictionary:
 			total_food_upkeep += count * int(unit_data.get("upkeep_food", 0))
 			total_gold_upkeep += count * int(unit_data.get("upkeep_gold", 0))
 	else:
-		var troops: int = get_faction_resource(faction_id, "troops")
+		var troops: int = get_total_troops(faction_id)
 		total_food_upkeep = troops * int(DataManager.get_balance_param("resources.army_upkeep_food_per_unit"))
 		total_gold_upkeep = troops * int(DataManager.get_balance_param("resources.army_upkeep_gold_per_unit"))
 	var horse: int = get_faction_resource(faction_id, "horse")
@@ -630,33 +648,15 @@ func _preview_upkeep(faction_id: String) -> Dictionary:
 	}
 
 
-## 扣除军队维护费（粮食 + 金币）。按兵种构成计算，无构成时回退 flat rate。
+func _preview_upkeep(faction_id: String) -> Dictionary:
+	return _compute_upkeep_totals(faction_id)
+
+
 func _apply_upkeep(faction_id: String) -> void:
-	var comp: Dictionary = _unit_composition.get(faction_id, {})
-	var total_food_upkeep: int = 0
-	var total_gold_upkeep: int = 0
-	if not comp.is_empty():
-		# 按兵种维护费
-		for unit_id in comp:
-			var count: int = int(comp[unit_id])
-			if count <= 0:
-				continue
-			var unit_data: Dictionary = DataManager.get_unit_type(unit_id)
-			if unit_data.is_empty():
-				continue
-			total_food_upkeep += count * int(unit_data.get("upkeep_food", 0))
-			total_gold_upkeep += count * int(unit_data.get("upkeep_gold", 0))
-	else:
-		# 回退：flat rate（AI 未建立兵种构成时）
-		var troops: int = get_faction_resource(faction_id, "troops")
-		var food_per_troop: int = int(DataManager.get_balance_param("resources.army_upkeep_food_per_unit"))
-		var gold_per_troop: int = int(DataManager.get_balance_param("resources.army_upkeep_gold_per_unit"))
-		total_food_upkeep = troops * food_per_troop
-		total_gold_upkeep = troops * gold_per_troop
-	# 马匹维护（独立于兵种构成）
-	var horse: int = get_faction_resource(faction_id, "horse")
-	var food_per_horse: int = int(DataManager.get_balance_param("resources.horse_upkeep_food_per_unit"))
-	total_food_upkeep += horse * food_per_horse
+	var upkeep: Dictionary = _compute_upkeep_totals(faction_id)
+	var total_food_upkeep: int = int(upkeep.get("food", 0))
+	var total_gold_upkeep: int = int(upkeep.get("gold", 0))
+	var building_upkeep: int = int(upkeep.get("building_gold", 0))
 	var food_before: int = get_faction_resource(faction_id, "food")
 	var has_shortage: bool = total_food_upkeep > 0 and food_before < total_food_upkeep
 	_grain_shortage_factions[faction_id] = has_shortage
@@ -664,7 +664,6 @@ func _apply_upkeep(faction_id: String) -> void:
 		apply_faction_resource_delta(faction_id, "food", -total_food_upkeep)
 	if total_gold_upkeep > 0:
 		apply_faction_resource_delta(faction_id, "gold", -total_gold_upkeep)
-	var building_upkeep: int = _get_total_building_upkeep(faction_id)
 	if building_upkeep > 0:
 		apply_faction_resource_delta(faction_id, "gold", -building_upkeep)
 	if has_shortage:
@@ -794,11 +793,80 @@ func get_player_wood() -> int:
 
 
 func get_player_population() -> int:
-	return _player_population
+	# 全国人口 = 各城 current_population 之和（机制文档）
+	return _get_faction_runtime_population(_player_faction) if _player_faction != "" else _player_population
 
 
 func get_player_troops() -> int:
+	if _player_faction != "":
+		return get_total_troops(_player_faction)
 	return _player_troops
+
+
+## 征兵（机制文档 §6.1）：**全国可服役池**，不是按城池条
+## max_cons = 全国总人口 × conscription_rate
+## available += max_cons × fill_rate / 回合
+## available + active ≤ max_cons
+var _national_conscription: Dictionary = {}  # faction_id → available
+
+
+func get_max_conscription(faction_id: String) -> int:
+	var pop: int = _get_faction_runtime_population(faction_id)
+	var rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
+	if rate <= 0.0:
+		rate = 0.2
+	return maxi(0, int(pop * rate))
+
+
+func get_available_conscription(faction_id: String) -> int:
+	if not _national_conscription.has(faction_id):
+		return 0
+	return maxi(0, int(_national_conscription[faction_id]))
+
+
+func get_player_conscription_pool() -> int:
+	if _player_faction == "":
+		return 0
+	return get_available_conscription(_player_faction)
+
+
+func get_conscription_progress_ratio(faction_id: String) -> float:
+	var mx: int = get_max_conscription(faction_id)
+	if mx <= 0:
+		return 0.0
+	return clampf(float(get_available_conscription(faction_id)) / float(mx), 0.0, 1.0)
+
+
+## 每回合：available += max × fill_rate，并夹紧 available+active ≤ max
+func process_national_conscription(faction_id: String) -> void:
+	var mx: int = get_max_conscription(faction_id)
+	if mx <= 0:
+		_national_conscription[faction_id] = 0
+		return
+	var rate: float = float(DataManager.get_balance_param("population.conscription_fill_rate"))
+	if rate <= 0.0:
+		rate = 0.1
+	var avail: int = get_available_conscription(faction_id) + int(float(mx) * rate)
+	var active: int = get_total_troops(faction_id)
+	avail = clampi(avail, 0, maxi(0, mx - active))
+	_national_conscription[faction_id] = avail
+
+
+func _seed_national_conscription(faction_id: String) -> void:
+	var mx: int = get_max_conscription(faction_id)
+	var active: int = get_total_troops(faction_id)
+	_national_conscription[faction_id] = clampi(int(float(mx) * 0.5), 0, maxi(0, mx - active))
+
+
+## 扣减全国可服役池；不足则返回 false
+func try_consume_conscription(faction_id: String, amount: int) -> bool:
+	if amount <= 0:
+		return false
+	var avail: int = get_available_conscription(faction_id)
+	if avail < amount:
+		return false
+	_national_conscription[faction_id] = avail - amount
+	return true
 
 
 func apply_food_delta(delta: int) -> void:
@@ -844,7 +912,9 @@ func add_units(faction_id: String, unit_id: String, count: int) -> void:
 		_player_troops = _sum_composition(faction_id)
 
 
-## 从城市招募指定兵种，统一扣除征兵池、人口与国家资源，并同步兵种构成。
+## 征兵（完全依照决策 #94 / 粮食人口征兵系统 §6.1）
+## 消耗：全国可服役池 + 兵种资源；**不扣城市人口**
+## 约束：available + active ≤ max_cons（max = 全国人口×20%）
 func recruit_unit_from_city(city_id: String, unit_id: String, count: int) -> Dictionary:
 	if count <= 0:
 		return {"success": false, "reason": "INVALID_AMOUNT", "recruited": 0}
@@ -857,25 +927,24 @@ func recruit_unit_from_city(city_id: String, unit_id: String, count: int) -> Dic
 	var unit_data: Dictionary = DataManager.get_unit_type(unit_id)
 	if unit_data.is_empty():
 		return {"success": false, "reason": "INVALID_UNIT", "recruited": 0}
-	var pool: int = CityManager.get_conscription_pool(city_id)
-	var max_by_pool: int = pool
-	var actual: int = mini(count, max_by_pool)
+	var pool: int = get_available_conscription(faction_id)
+	var actual: int = mini(count, pool)
 	if actual <= 0:
 		return {"success": false, "reason": "POOL_EMPTY", "recruited": 0}
+	var max_cons: int = get_max_conscription(faction_id)
+	var active: int = get_total_troops(faction_id)
+	actual = mini(actual, maxi(0, max_cons - active))
+	if actual <= 0:
+		return {"success": false, "reason": "CONSCRIPTION_CAP", "recruited": 0}
 	var reserve: Dictionary = _get_recruit_resource_reserve(faction_id)
 	var max_by_resources: int = _get_affordable_unit_count(faction_id, unit_data, actual, reserve)
 	actual = mini(actual, max_by_resources)
 	if actual <= 0:
 		return {"success": false, "reason": "INSUFFICIENT_RESOURCES", "recruited": 0}
-
-	var conscription: Dictionary = CityManager.conscribe(city_id, actual)
-	actual = int(conscription.get("recruited", 0))
-	if actual <= 0:
-		return {"success": false, "reason": str(conscription.get("reason", "POOL_EMPTY")), "recruited": 0}
+	if not try_consume_conscription(faction_id, actual):
+		return {"success": false, "reason": "POOL_EMPTY", "recruited": 0}
 	_pay_unit_cost(faction_id, city_id, unit_data, actual)
-	apply_faction_resource_delta(faction_id, "population", -actual)
 	add_units(faction_id, unit_id, actual)
-	# 大地图生产战略单位（与城市同格）
 	var spawn: Dictionary = StrategicMapManager.spawn_unit_at_city(
 		faction_id,
 		unit_id,
@@ -1122,11 +1191,16 @@ func load_save_data(data: Dictionary) -> void:
 func get_faction_resources(faction_id: String) -> Dictionary:
 	if faction_id == _player_faction:
 		return {"food": _player_food, "gold": _player_gold, "wood": _player_wood,
-				"morale": _player_morale, "population": _player_population, "troops": _player_troops,
+				"morale": _player_morale, "population": _get_faction_runtime_population(faction_id), "troops": get_total_troops(faction_id),
 				"horse": _player_horse, "refined_iron": _player_refined_iron,
 				"craftsmen": _player_craftsmen, "building_materials": _player_building_materials,
 				"silk_books": _player_silk_books}
-	return _faction_resources.get(faction_id, {})
+	if not _faction_resources.has(faction_id):
+		return {}
+	var base: Dictionary = (_faction_resources[faction_id] as Dictionary).duplicate()
+	base["population"] = _get_faction_runtime_population(faction_id)
+	base["troops"] = get_total_troops(faction_id)
+	return base
 
 
 func get_faction_resource(faction_id: String, resource: String) -> int:
@@ -1174,35 +1248,93 @@ func set_difficulty(difficulty: String) -> void:
 # ============= 内部 =============
 
 func _init_player_resources() -> void:
-	var capital: Dictionary = DataManager.get_capital(_player_faction)
-	if capital.is_empty():
-		push_warning("GameManager: 未找到玩家首都，使用默认资源")
-		_player_food = 500
-		_player_gold = 300
-		_player_wood = 100
-		_player_population = 10000
-		_player_troops = 0
-		_player_horse = 0
-		_player_refined_iron = 0
-		_player_craftsmen = 0
-		_player_building_materials = 0
-		_player_silk_books = 0
-		return
-	_player_population = int(capital.get("initial_population", capital.get("base_population", 10000)))
-	# 初始资源基于城市人口和基础产出（路径：population.food_per_pop / gold_per_pop）
+	# 全国人口 = 各城之和；开局资源按全国口径，且不顶资源上限
+	var cities: Array = CityManager.get_faction_city_states(_player_faction)
+	var national_pop: int = 0
+	for city in cities:
+		national_pop += int((city as Dictionary).get("current_population", 0))
+	if national_pop <= 0:
+		var capital0: Dictionary = DataManager.get_capital(_player_faction)
+		national_pop = int(capital0.get("initial_population", 50)) if not capital0.is_empty() else 50
+	_player_population = national_pop
+	_national_conscription.clear()
+	for fid0: String in _active_factions:
+		_national_conscription[fid0] = 0
 	var food_pp: float = float(DataManager.get_balance_param("population.food_per_pop"))
 	var gold_pp: float = float(DataManager.get_balance_param("population.gold_per_pop"))
-	_player_food = int(_player_population * food_pp * 10)
-	_player_gold = int(_player_population * gold_pp * 5)
-	_player_wood = int(DataManager.get_balance_param("resources.city_base_wood") * 3)
+	# 开局储备：约 2～3 回合税基规模，且不超过上限的 40%，避免「开局满仓」
+	var gold_cap: int = int(DataManager.get_balance_param("resources.gold_cap_base"))
+	var food_cap: int = int(DataManager.get_balance_param("population.national_grain_cap_base"))
+	_player_gold = clampi(int(national_pop * gold_pp * 0.6), 80, maxi(gold_cap * 2 / 5, 80))
+	_player_food = clampi(int(national_pop * food_pp * 2.0), 120, maxi(food_cap * 2 / 5, 120))
+	_player_wood = clampi(int(DataManager.get_balance_param("resources.city_base_wood") * maxi(cities.size(), 1)), 20, 80)
 	_player_troops = 0
+	# 开局驻军 + 全国可服役池
+	_seed_starting_garrison_and_pool(_player_faction, cities)
+	_seed_national_conscription(_player_faction)
 	_player_horse = 0
 	_player_refined_iron = 0
 	_player_craftsmen = 0
 	_player_building_materials = 0
 	_player_silk_books = 0
-	_player_morale = 50
+	_player_morale = int(DataManager.get_balance_param("game_settings.starting_morale")) if DataManager.get_balance_param("game_settings.starting_morale") != null else 50
+	_player_population = _get_faction_runtime_population(_player_faction)
+	_player_troops = get_total_troops(_player_faction)
 	_clamp_faction_resource_caps(_player_faction)
+
+
+## 开局：每城征兵池按 pop×conscription_rate 预填一半；首都/大城给基础驻军
+func _seed_starting_garrison_and_pool(faction_id: String, cities: Array) -> void:
+	var conscript_rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
+	if conscript_rate <= 0.0:
+		conscript_rate = 0.2
+	var default_unit: String = "infantry"
+	for city in cities:
+		var c: Dictionary = city as Dictionary
+		var city_id: String = str(c.get("id", ""))
+		if city_id.is_empty():
+			continue
+		var pop: int = int(c.get("current_population", 0))
+		var cap: int = maxi(1, int(pop * conscript_rate))
+		# 首回合可征：池预填 50%
+		c["conscription_pool"] = int(cap * 0.5)
+		c["conscription_fill_progress"] = 0.0
+		var level: int = int(c.get("city_level", 1))
+		var is_cap: bool = bool(c.get("is_capital", false))
+		# 开局驻军：克制数量，避免超过全国征召上限后被 clamp 清空兵源池
+		var garrison_count: int = 1 if is_cap else (1 if level >= 4 else 0)
+		if garrison_count <= 0:
+			continue
+		# 优先城级解锁兵种
+		var unlocks: Array[String] = CityManager.get_recruitable_units(city_id)
+		var unit_id: String = default_unit
+		if not unlocks.is_empty():
+			unit_id = unlocks[0]
+		# 用 add_units + 大地图落兵；不重复扣人口（开局编制）
+		for i: int in range(garrison_count):
+			add_units(faction_id, unit_id, 1)
+		if StrategicMapManager != null and StrategicMapManager.has_method("spawn_unit_at_city"):
+			StrategicMapManager.spawn_unit_at_city(
+				faction_id,
+				unit_id,
+				int(c.get("hex_q", 0)),
+				int(c.get("hex_r", 0)),
+				garrison_count
+			)
+		# 编制占用人口（与文档服役口径一致，但不把城人口打穿）
+		c["current_population"] = maxi(1, pop - 0)
+
+
+## 确保各城兵源池至少有 1（开局与 clamp 之后）
+func _reseed_conscription_pools(faction_id: String) -> void:
+	for city in CityManager.get_faction_city_states(faction_id):
+		var c: Dictionary = city as Dictionary
+		if int(c.get("conscription_pool", 0)) <= 0:
+			var cap: int = CityManager.get_conscription_pool_cap(str(c.get("id", "")))
+			if cap > 0:
+				c["conscription_pool"] = maxi(1, int(cap * 0.5))
+	_player_population = _get_faction_runtime_population(faction_id)
+	_player_troops = get_total_troops(faction_id)
 
 
 func _init_ai_factions() -> void:
@@ -1214,20 +1346,21 @@ func _init_ai_factions() -> void:
 	for fid in _active_factions:
 		if fid == _player_faction:
 			continue
-		var capital: Dictionary = DataManager.get_capital(fid)
-		var population: int = int(capital.get("initial_population", capital.get("base_population", 10000))) if not capital.is_empty() else 10000
-		var ai_food_pp: float = float(DataManager.get_balance_param("population.food_per_pop"))
-		var ai_gold_pp: float = float(DataManager.get_balance_param("population.gold_per_pop"))
-		var base_food: int = int(population * ai_food_pp * 10)
-		var base_gold: int = int(population * ai_gold_pp * 5)
-		var base_wood: int = int(DataManager.get_balance_param("resources.city_base_wood") * 3)
-		# 应用难度修正
+		var cities_ai: Array = CityManager.get_faction_city_states(fid)
+		var pop_ai: int = 0
+		for city in cities_ai:
+			pop_ai += int((city as Dictionary).get("current_population", 0))
+		if pop_ai <= 0:
+			var capital: Dictionary = DataManager.get_capital(fid)
+			pop_ai = int(capital.get("initial_population", 50)) if not capital.is_empty() else 50
+		var food_pp_ai: float = float(DataManager.get_balance_param("population.food_per_pop"))
+		var gold_pp_ai: float = float(DataManager.get_balance_param("population.gold_per_pop"))
 		_faction_resources[fid] = {
-			"food": int(base_food * (1.0 + res_mod)),
-			"gold": int(base_gold * (1.0 + res_mod)) + gold_bonus,
-			"wood": int(base_wood * (1.0 + res_mod)),
-			"morale": 50,
-			"population": population,
+			"food": int(clampi(int(pop_ai * food_pp_ai * 2.0 * (1.0 + res_mod)) + gold_bonus / 2, 80, 400)),
+			"gold": int(clampi(int(pop_ai * gold_pp_ai * 0.6 * (1.0 + res_mod)) + gold_bonus, 80, 400)),
+			"wood": 40,
+			"morale": int(DataManager.get_balance_param("game_settings.starting_morale")) if DataManager.get_balance_param("game_settings.starting_morale") != null else 50,
+			"population": pop_ai,
 			"troops": 0,
 			"horse": 0,
 			"refined_iron": 0,
@@ -1235,6 +1368,10 @@ func _init_ai_factions() -> void:
 			"building_materials": 0,
 			"silk_books": 0
 		}
+		_seed_starting_garrison_and_pool(fid, cities_ai)
+		_seed_national_conscription(fid)
+		(_faction_resources[fid] as Dictionary)["population"] = _get_faction_runtime_population(fid)
+		(_faction_resources[fid] as Dictionary)["troops"] = get_total_troops(fid)
 		_clamp_faction_resource_caps(fid)
 
 

@@ -53,6 +53,7 @@ func _ready() -> void:
 	_add_resource_cell("craftsmen", "工匠")
 	_add_resource_cell("building_materials", "建材")
 	_add_resource_cell("troops", "兵力")
+	_add_resource_cell("conscription", "兵源")
 	_add_resource_cell("population", "人口")
 	_add_resource_cell("morale", "民心")
 	add_theme_constant_override("separation", 0)
@@ -157,6 +158,7 @@ func refresh() -> void:
 	_set_val("craftsmen", GameManager.get_player_craftsmen())
 	_set_val("building_materials", GameManager.get_player_building_materials())
 	_set_val("troops", GameManager.get_player_troops())
+	_set_val("conscription", GameManager.get_player_conscription_pool())
 	_set_val("population", GameManager.get_player_population())
 	_set_val("morale", GameManager.get_player_morale())
 	_refresh_tooltips()
@@ -174,7 +176,8 @@ func _set_val(key: String, value: int) -> void:
 	if _labels.has(key):
 		var cap: int = _resource_cap(key)
 		if cap >= 0:
-			_labels[key].text = "%s/%s" % [_format_number(value), _format_number(cap)]
+			# 左=当前存量；右=仓库上限（不是预计产出，不可与左边相加）
+			_labels[key].text = "%s / 上限%s" % [_format_number(value), _format_number(cap)]
 		else:
 			_labels[key].text = _format_number(value)
 
@@ -209,10 +212,11 @@ func _set_delta(key: String, delta: int) -> void:
 	if not _delta_labels.has(key):
 		return
 	var lbl: Label = _delta_labels[key] as Label
-	if key == "population" or key == "troops" or key == "morale":
+	if key == "population" or key == "troops" or key == "conscription" or key == "morale":
 		lbl.text = ""
 		return
-	lbl.text = "(%+d)" % delta
+	# 绿色 = 本回合净变化（入库−维护）；下一回合 ≈ 当前 + 本值（受仓库上限）
+	lbl.text = "(净%+d)" % delta
 	if delta > 0:
 		lbl.add_theme_color_override("font_color", Color(0.45, 0.95, 0.58, 1))
 	elif delta < 0:
@@ -224,47 +228,61 @@ func _set_delta(key: String, delta: int) -> void:
 func _resource_tooltip(key: String, production: Dictionary, upkeep: Dictionary, deltas: Dictionary, preview: Dictionary) -> String:
 	var actual_income: Dictionary = preview.get("actual_income", {})
 	var before: Dictionary = preview.get("before", {})
+	var after: Dictionary = preview.get("after", {})
 	var after_income: Dictionary = preview.get("after_income", {})
 	var caps: Dictionary = preview.get("caps", {})
 	match key:
 		"food":
-			return "粮食预计变化：%+d\n税后应入库：%d = 全国粮税基 %d × 税率 %.0f%% × 税收效率 %.0f%%\n粮仓与入库：%d/%d，实际入库 %+d（%d→%d）\n维护扣除：军队/马匹耗粮 %d\n当前季节：%s\n%s" % [
-				int(deltas.get("food", 0)),
+			var f_before: int = int(before.get("food", 0))
+			var f_income: int = int(actual_income.get("food", 0))
+			var f_keep: int = int(upkeep.get("food", 0))
+			var f_after: int = int(after.get("food", 0))
+			var f_delta: int = int(deltas.get("food", 0))
+			return "粮食\n· 左侧 %d = 当前存量；右侧「上限 %d」= 粮仓，**不可相加**\n· 绿色(净%+d) = 本回合入库−维护\n· 结束回合后：当前 + 净 = %d\n· 算式：%d + %d - %d = %d（触顶则截断到上限）\n· 税后入库 %d = 税基 %d × 税率 %.0f%% × 税效 %.0f%%" % [
+				f_before,
+				int(caps.get("food", -1)),
+				f_delta,
+				f_after,
+				f_before,
+				f_income,
+				f_keep,
+				f_after,
 				int(production.get("food_taxed", 0)),
 				int(production.get("food", 0)),
 				float(preview.get("tax_rate", 0.0)) * 100.0,
 				float(preview.get("tax_efficiency", 0.0)) * 100.0,
-				int(before.get("food", 0)),
-				int(caps.get("food", -1)),
-				int(actual_income.get("food", 0)),
-				int(before.get("food", 0)),
-				int(after_income.get("food", 0)),
-				int(upkeep.get("food", 0)),
-				_season_name(str(preview.get("season", ""))),
-				_formula_factor_text(),
 			]
 		"gold":
-			return "金币预计变化：%+d\n税后应入库：%d = 全国金税基 %d × 税率 %.0f%% × 税收效率 %.0f%%\n金库与入库：%d/%d，实际入库 %+d（%d→%d）\n维护扣除：军饷 %d，建筑维护 %d\n当前季节：%s\n%s" % [
-				int(deltas.get("gold", 0)),
+			var g_before: int = int(before.get("gold", 0))
+			var g_income: int = int(actual_income.get("gold", 0))
+			var g_keep: int = int(upkeep.get("gold", 0)) + int(upkeep.get("building_gold", 0))
+			var g_after: int = int(after.get("gold", 0))
+			var g_delta: int = int(deltas.get("gold", 0))
+			return "金币\n· 左侧 %d = 当前存量；右侧「上限 %d」= 金库，**不可相加**\n· 绿色(净%+d) = 本回合入库−维护\n· 结束回合后：当前 + 净 = %d\n· 算式：%d + %d - %d = %d（触顶则截断到上限）\n· 税后入库 %d = 税基 %d × 税率 %.0f%% × 税效 %.0f%%\n· 维护：军饷 %d + 建筑 %d" % [
+				g_before,
+				int(caps.get("gold", -1)),
+				g_delta,
+				g_after,
+				g_before,
+				g_income,
+				g_keep,
+				g_after,
 				int(production.get("gold_taxed", 0)),
 				int(production.get("gold", 0)),
 				float(preview.get("tax_rate", 0.0)) * 100.0,
 				float(preview.get("tax_efficiency", 0.0)) * 100.0,
-				int(before.get("gold", 0)),
-				int(caps.get("gold", -1)),
-				int(actual_income.get("gold", 0)),
-				int(before.get("gold", 0)),
-				int(after_income.get("gold", 0)),
 				int(upkeep.get("gold", 0)),
 				int(upkeep.get("building_gold", 0)),
-				_season_name(str(preview.get("season", ""))),
-				_formula_factor_text(),
 			]
 		"wood":
-			return "木材预计变化：%+d\n作用：建造、升级建筑，部分生产链会消耗木材。\n如何获得：城市基础木材产出、伐木场等建筑固定产出、林木特产、季节木材修正、科技资源修正、奇观木材修正。\n如何影响：木材不走粮/金税率，按全国木材产出直接入库；受木材仓储上限限制，建造/升级会即时扣除。\n本回合：全国木材产出 %d，当前/上限 %d/%d。" % [
-				int(deltas.get("wood", 0)),
-				int(production.get("wood", 0)),
-				int(before.get("wood", 0)),
+			var w_before: int = int(before.get("wood", 0))
+			var w_income: int = int(production.get("wood", 0))
+			var w_after: int = int(after.get("wood", 0))
+			return "木材\n预计下一回合 = 当前 + 入库\n%d + %d = %d\n全国木材产出 %d ｜ 上限 %d" % [
+				w_before,
+				w_income,
+				w_after,
+				w_income,
 				int(caps.get("wood", -1)),
 			]
 		"horse":
@@ -276,9 +294,35 @@ func _resource_tooltip(key: String, production: Dictionary, upkeep: Dictionary, 
 		"building_materials":
 			return "建材预计变化：%+d\n作用：高级建筑、城防、奇观或后续大型工程会消耗建材。\n如何获得：建材坊、建材特产、季节建材修正、科技/奇观/学派产出修正。\n如何影响：建材不走税率，按全国建材产出直接入库；建造需要建材的项目会即时扣除。\n本回合：全国建材产出 %d。" % [int(deltas.get("building_materials", 0)), int(production.get("building_materials", 0))]
 		"troops":
-			return "兵力\n作用：代表已征发部队总量和兵种构成，是出征、守城、战斗维护的基础。\n如何获得：在城市面板消耗征兵池、人口和兵种资源成本征兵；教程中成功征兵会生成战术地图单位。\n如何影响：兵种构成决定军队维护，维护会扣粮和金币；兵力越多，服役人口占比越高，可能降低粮/金产出和人口增长。"
+			return "兵力\n作用：全国已服役编制之和（兵种构成）。\n如何获得：城池面板征兵；消耗全国可服役池 + 兵种资源（不扣城人口）。\n如何影响：军队维护扣粮金；服役比例过高触发服役惩罚。"
+		"conscription":
+			var fid: String = GameManager.get_player_faction()
+			var avail: int = GameManager.get_available_conscription(fid)
+			var mx: int = GameManager.get_max_conscription(fid)
+			var active: int = GameManager.get_total_troops(fid)
+			var pop: int = GameManager.get_player_population()
+			var rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
+			var fill: float = float(DataManager.get_balance_param("population.conscription_fill_rate"))
+			var bar_w: int = 20
+			var filled: int = int(round(clampf(float(avail) / float(maxi(mx, 1)), 0.0, 1.0) * bar_w))
+			var bar: String = "["
+			for i: int in range(bar_w):
+				bar += "█" if i < filled else "░"
+			bar += "]"
+			var fill_per_turn: int = int(float(mx) * fill)
+			return "兵源（全国可服役池 · 全局悬浮总览）\n%s  %d / %d\n已服役：%d ｜ 硬约束：可服役+已服役≤最大征召\n最大征召 = 全国人口 %d × %.0f%% = %d\n每回合填充 = 最大征召 × %.0f%% ≈ +%d\n征兵消耗：可服役池 + 兵种金/粮/马/铁/工匠（不扣城人口）\n入口：城池面板「征兵」" % [
+				bar,
+				avail,
+				mx,
+				active,
+				pop,
+				rate * 100.0,
+				mx,
+				fill * 100.0,
+				fill_per_turn,
+			]
 		"population":
-			return "人口\n作用：城市粮食/金币基础税基来自人口，人口也是征兵来源。\n如何获得：城市回合结算按粮食供给、季节、安定度、服役人口占比增长；饥荒、叛乱和征兵会减少人口。\n如何影响：人口越高，粮/金税基越高，同时口粮消耗也越高；征兵会把人口转化为部队并消耗城市征兵池。"
+			return "人口\n作用：全国各城人口之和；税基；决定最大征召 = 人口×20%。\n如何获得：城市回合按粮食/季节/安定度进度条增长。\n如何影响：人口越高税基与兵源上限越高；**征兵不扣城人口**（决策 #94）；服役比例过高有产出惩罚。"
 		"morale":
 			return "民心\n作用：影响税收效率、征兵效率、战斗士气相关效果，并可能影响安定度。\n如何变化：季节民心修正、税率调整、腐败、建筑民心、学派政策、奇观、战争疲劳、胜利奖励、首都陷落/收复都会改变民心。\n如何影响：高民心提高税收/产出和征兵，低民心降低税收/征兵并可能带来骚乱或安定下降。当前税收效率 %.0f%%，当前/上限 %d/%d。" % [
 				float(preview.get("tax_efficiency", 0.0)) * 100.0,

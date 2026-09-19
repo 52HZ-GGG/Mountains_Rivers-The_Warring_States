@@ -166,9 +166,34 @@ func get_culture_coverage_ratio(faction_id: String) -> float:
 func get_conscription_pool(city_id: String) -> int:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
-		push_warning("CityManager: 未找到城市 %s" % city_id)
 		return 0
+	var fid: String = str(city.get("current_faction_id", ""))
+	if GameManager != null and fid != "" and GameManager.has_method("get_available_conscription"):
+		return GameManager.get_available_conscription(fid)
 	return int(city.get("conscription_pool", 0))
+
+
+## 征兵池上限 ≈ 城人口 × conscription_rate
+func get_conscription_pool_cap(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var pop: int = int(city.get("current_population", 0))
+	var rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
+	if rate <= 0.0:
+		rate = 0.2
+	return maxi(0, int(pop * rate))
+
+
+## 池填充进度 0～1（机制：进度条满后入池 +1）
+func get_conscription_fill_ratio(city_id: String) -> float:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0.0
+	var cap: int = get_conscription_pool_cap(city_id)
+	if cap <= 0:
+		return 0.0
+	return clampf(float(city.get("conscription_fill_progress", 0.0)) / float(cap), 0.0, 1.0)
 
 
 ## 获取 faction 所有城市征兵池总和。
@@ -949,7 +974,9 @@ func can_build(city_id: String, building_id: String, target_hex: Vector2i = Vect
 	)
 	var cost_gold: int = costs[0]
 	var cost_wood: int = costs[1]
-	if GameManager.get_player_gold() < cost_gold or GameManager.get_player_wood() < cost_wood:
+	var owner_fid: String = str(city.get("current_faction_id", ""))
+	if GameManager.get_faction_resource(owner_fid, "gold") < cost_gold \
+		or GameManager.get_faction_resource(owner_fid, "wood") < cost_wood:
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES, "cost_gold": cost_gold, "cost_wood": cost_wood}
 
 	return {
@@ -982,8 +1009,8 @@ func start_build(city_id: String, building_id: String, target_hex: Vector2i = Ve
 	var build_turns: int = int(lv0.get("build_turns", 1))
 	var place: Vector2i = Vector2i(int(check.get("hex_q", -9999)), int(check.get("hex_r", -9999)))
 
-	GameManager.apply_gold_delta(-cost_gold)
-	GameManager.apply_wood_delta(-cost_wood)
+	GameManager.apply_faction_resource_delta(faction_id, "gold", -cost_gold)
+	GameManager.apply_faction_resource_delta(faction_id, "wood", -cost_wood)
 
 	(city["build_queue"] as Array).append({
 		"building_id": building_id,
@@ -1030,7 +1057,8 @@ func can_upgrade(city_id: String, building_id: String, target_hex: Vector2i = Ve
 
 	var faction_id: String = str(city.get("current_faction_id", ""))
 	var costs: Array[int] = _calculate_upgrade_cost(building, current_level, faction_id)
-	if GameManager.get_player_gold() < int(costs[0]) or GameManager.get_player_wood() < int(costs[1]):
+	if GameManager.get_faction_resource(faction_id, "gold") < int(costs[0]) \
+		or GameManager.get_faction_resource(faction_id, "wood") < int(costs[1]):
 		return {"allowed": false, "reason": REASON_INSUFFICIENT_RESOURCES}
 
 	return {
@@ -1062,8 +1090,8 @@ func start_upgrade(city_id: String, building_id: String, target_hex: Vector2i = 
 	var target_lv: Dictionary = levels[current_level] if current_level < levels.size() else {}
 	var build_turns: int = int(target_lv.get("build_turns", 1))
 
-	GameManager.apply_gold_delta(-int(costs[0]))
-	GameManager.apply_wood_delta(-int(costs[1]))
+	GameManager.apply_faction_resource_delta(faction_id, "gold", -int(costs[0]))
+	GameManager.apply_faction_resource_delta(faction_id, "wood", -int(costs[1]))
 
 	var q: Dictionary = {
 		"building_id": building_id,
@@ -1106,10 +1134,11 @@ func demolish(city_id: String, building_id: String, target_hex: Vector2i = Vecto
 		var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
 		var refund_gold: int = int(round(float(lv0.get("cost_gold", 0)) * ratio))
 		var refund_wood: int = int(round(float(lv0.get("cost_wood", 0)) * ratio))
+		var demolish_fid: String = str(city.get("current_faction_id", ""))
 		if refund_gold > 0:
-			GameManager.apply_gold_delta(refund_gold)
+			GameManager.apply_faction_resource_delta(demolish_fid, "gold", refund_gold)
 		if refund_wood > 0:
-			GameManager.apply_wood_delta(refund_wood)
+			GameManager.apply_faction_resource_delta(demolish_fid, "wood", refund_wood)
 
 	var buildings: Array = city["buildings"]
 	var removed_key: String = ""
@@ -1163,10 +1192,13 @@ func cancel_build(city_id: String, queue_index: int) -> bool:
 			var lv0: Dictionary = levels[0] if levels.size() > 0 else {}
 			cost_gold = int(lv0.get("cost_gold", 0))
 			cost_wood = int(lv0.get("cost_wood", 0))
-		if cost_gold > 0:
-			GameManager.apply_gold_delta(cost_gold)
-		if cost_wood > 0:
-			GameManager.apply_wood_delta(cost_wood)
+		if cost_gold > 0 or cost_wood > 0:
+			var city_for_q: Dictionary = _city_states.get(city_id, {})
+			var refund_fid: String = str(city_for_q.get("current_faction_id", GameManager.get_player_faction()))
+			if cost_gold > 0:
+				GameManager.apply_faction_resource_delta(refund_fid, "gold", cost_gold)
+			if cost_wood > 0:
+				GameManager.apply_faction_resource_delta(refund_fid, "wood", cost_wood)
 	queue.remove_at(queue_index)
 	return true
 

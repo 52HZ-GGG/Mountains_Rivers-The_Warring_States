@@ -138,7 +138,7 @@ func _build_ui() -> void:
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.add_theme_font_size_override("font_size", 14)
 	_status_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.55, 1))
-	_status_label.text = "提示：右侧“可征兵”区域点击“征 1 队”即可征兵；建筑/征兵会立即刷新顶部资源栏。"
+	_status_label.text = "提示：右侧选择兵种征兵。全局兵源见顶栏「兵源」；消耗可服役池+资源，不扣城人口。"
 	_main_vbox.add_child(_status_label)
 
 	# 内容区：左右分栏
@@ -543,13 +543,15 @@ func _refresh_recruit_list() -> void:
 		return
 
 	var faction_id: String = str(city.get("current_faction_id", ""))
-	var pool: int = CityManager.get_conscription_pool(_city_id)
+	var avail: int = GameManager.get_available_conscription(faction_id)
+	var max_cons: int = GameManager.get_max_conscription(faction_id)
+	var active: int = GameManager.get_total_troops(faction_id)
 	var pool_label := Label.new()
 	pool_label.name = "RecruitPoolLabel"
-	pool_label.text = "征兵池：%s  现有兵力：%s  点击兵种右侧按钮征 1 队" % [
-		_format_pop(pool),
-		_format_pop(GameManager.get_total_troops(faction_id)),
+	pool_label.text = "征兵（全局）：可服役 %d/%d ｜ 已服役 %d\n详见顶栏「兵源」悬浮；此处仅选择兵种与花费" % [
+		avail, max_cons, active,
 	]
+	pool_label.tooltip_text = _conscription_progress_tooltip(_city_id)
 	pool_label.add_theme_font_size_override("font_size", 13)
 	pool_label.add_theme_color_override("font_color", Color(0.88, 0.84, 0.74, 1))
 	_recruit_list.add_child(pool_label)
@@ -600,10 +602,10 @@ func _refresh_recruit_list() -> void:
 		recruit_btn.disabled = not GameManager.is_player_faction(faction_id)
 		if recruit_btn.disabled:
 			recruit_btn.tooltip_text = "只有玩家城市可征兵"
-		elif pool <= 0:
-			recruit_btn.tooltip_text = "征兵池不足；仍可点击查看原因，结束回合后会随正式经营回合补充"
+		elif avail <= 0:
+			recruit_btn.tooltip_text = "全局可服役池不足（见顶栏「兵源」）；每回合按最大征召×10% 填充"
 		else:
-			recruit_btn.tooltip_text = "从本城征兵池征发 1 队 %s" % unit_name
+			recruit_btn.tooltip_text = "从全局可服役池征发 1 队 %s（扣池与资源，不扣城人口）" % unit_name
 		SkirmishTileTextures.update_button_disabled(recruit_btn)
 		recruit_btn.pressed.connect(_on_recruit_pressed.bind(unit_id))
 		row.add_child(recruit_btn)
@@ -893,6 +895,25 @@ func _format_pop(pop: int) -> String:
 	if pop >= 10000:
 		return "%.1f万" % (pop / 10000.0)
 	return str(pop)
+
+
+func _progress_bar_text(ratio: float, width: int = 12) -> String:
+	var r: float = clampf(ratio, 0.0, 1.0)
+	var filled: int = int(round(r * float(width)))
+	var s: String = "["
+	for i: int in range(width):
+		s += "█" if i < filled else "░"
+	return s + "]"
+
+
+func _conscription_progress_tooltip(_city_id: String) -> String:
+	var fid: String = GameManager.get_player_faction()
+	if fid == "":
+		fid = str(CityManager.get_city_state(_city_id).get("current_faction_id", ""))
+	var avail: int = GameManager.get_available_conscription(fid)
+	var mx: int = GameManager.get_max_conscription(fid)
+	var active: int = GameManager.get_total_troops(fid)
+	return "兵源为全局池（决策 #94）\n可服役 %d / 最大征召 %d（已服役 %d）\n详细进度与公式：请看顶栏「兵源」悬浮\n征兵消耗：池 + 兵种资源，不扣本城人口" % [avail, mx, active]
 
 
 func _reason_text(reason: String) -> String:
