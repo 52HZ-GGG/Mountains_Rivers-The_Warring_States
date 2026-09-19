@@ -213,6 +213,10 @@ func _draw_payload_cells() -> void:
 		var unit_tex: Texture2D = payload.get("unit_texture", null) as Texture2D
 		if unit_tex != null and unit_rect.size.x > 0.0 and unit_rect.size.y > 0.0:
 			draw_texture_rect(unit_tex, unit_rect, false)
+		elif str(payload.get("unit_caption", "")) != "":
+			# 贴图缺失时仍显示编制标记，便于排查大地图单位
+			var uc: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
+			draw_circle(uc, 5.0, Color(0.92, 0.78, 0.22, 0.85))
 		var building_rect: Rect2 = payload.get("building_rect", Rect2()) as Rect2
 		var building_tex: Texture2D = payload.get("building_texture", null) as Texture2D
 		if building_tex != null and building_rect.size.x > 0.0 and building_rect.size.y > 0.0:

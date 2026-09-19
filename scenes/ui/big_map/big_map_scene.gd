@@ -134,21 +134,32 @@ func set_end_turn_visible(is_visible: bool) -> void:
 
 
 func _set_end_turn_visible(is_visible: bool) -> void:
+	_ensure_persistent_end_btn()
 	if is_instance_valid(_end_turn_layer):
 		_end_turn_layer.visible = is_visible
+		_end_turn_layer.layer = 20
 	if is_instance_valid(_persistent_end_btn):
 		_persistent_end_btn.visible = is_visible
 
 
+func _ensure_persistent_end_btn() -> void:
+	if is_instance_valid(_persistent_end_btn) and is_instance_valid(_end_turn_layer):
+		return
+	_create_persistent_end_btn()
+
+
 func _create_persistent_end_btn() -> void:
+	if is_instance_valid(_end_turn_layer):
+		_end_turn_layer.queue_free()
 	_end_turn_layer = CanvasLayer.new()
-	_end_turn_layer.layer = 5
+	_end_turn_layer.layer = 20
 	add_child(_end_turn_layer)
 
 	_persistent_end_btn = Button.new()
+	_persistent_end_btn.name = "EndTurnBtn"
 	_persistent_end_btn.text = "结束回合"
 	SkirmishTileTextures.style_scene_button(_persistent_end_btn)
-	_persistent_end_btn.custom_minimum_size = Vector2(140, 44)
+	_persistent_end_btn.custom_minimum_size = Vector2(160, 48)
 	_persistent_end_btn.pressed.connect(_on_next_turn_pressed)
 
 	var margin := MarginContainer.new()
@@ -174,11 +185,23 @@ func _create_persistent_end_btn() -> void:
 	_culture_hud_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_culture_hud_label)
 
-	vbox.add_child(_persistent_end_btn)
+	var pad := MarginContainer.new()
+	pad.add_theme_constant_override("margin_left", 16)
+	pad.add_theme_constant_override("margin_right", 16)
+	pad.add_theme_constant_override("margin_bottom", 16)
+	pad.add_child(_persistent_end_btn)
+	vbox.add_child(pad)
 	_refresh_culture_hud()
-	SignalBus.turn_started.connect(_on_culture_hud_turn)
-	SignalBus.culture_mainstream_changed.connect(_on_culture_mainstream_changed)
-	SignalBus.city_occupied.connect(func(_c: String, _o: String, _n: String) -> void: _refresh_culture_hud())
+	if not SignalBus.turn_started.is_connected(_on_culture_hud_turn):
+		SignalBus.turn_started.connect(_on_culture_hud_turn)
+	if not SignalBus.culture_mainstream_changed.is_connected(_on_culture_mainstream_changed):
+		SignalBus.culture_mainstream_changed.connect(_on_culture_mainstream_changed)
+	if not SignalBus.city_occupied.is_connected(_on_city_occupied_hud):
+		SignalBus.city_occupied.connect(_on_city_occupied_hud)
+
+
+func _on_city_occupied_hud(_c: String, _o: String, _n: String) -> void:
+	_refresh_culture_hud()
 
 
 func _on_culture_hud_turn(_turn: int, _faction: String) -> void:
@@ -307,9 +330,9 @@ func _show_turn_info(status_text: String = "回合切换成功") -> void:
 func _on_next_turn_pressed() -> void:
 	if _is_processing_turn:
 		return
-
 	_is_processing_turn = true
-	_persistent_end_btn.disabled = true
+	if is_instance_valid(_persistent_end_btn):
+		_persistent_end_btn.disabled = true
 
 	if GameManager.get_current_phase() != GameManager.Phase.ACTION:
 		push_warning("[BigMapScene] 当前阶段 %s，无法结束回合" % GameManager.get_current_phase())
@@ -317,7 +340,6 @@ func _on_next_turn_pressed() -> void:
 		return
 
 	GameManager.run_ai_continuation()
-
 	_refresh_resource_bar()
 
 	if GameManager.get_current_phase() == GameManager.Phase.GAME_OVER:
@@ -345,11 +367,18 @@ func open_big_map() -> void:
 	_close_diplomacy()
 	_close_city_panel()
 	hub_visibility_requested.emit(false)
+	_ensure_persistent_end_btn()
 	_set_end_turn_visible(true)
 	_ensure_big_map()
 	_big_map_panel.open()
 	_last_big_map_city_focus_id = ""
 	_embed_resource_bar(_big_map_panel.get_resource_bar_slot())
+	# 大地图顶栏也放「结束回合」，避免只靠角落悬浮按钮
+	if _big_map_panel.has_node("MarginContainer/MainVBox/TitleBar/EndTurnBtn"):
+		var bar_btn: Button = _big_map_panel.get_node("MarginContainer/MainVBox/TitleBar/EndTurnBtn") as Button
+		if not bar_btn.pressed.is_connected(_on_next_turn_pressed):
+			bar_btn.pressed.connect(_on_next_turn_pressed)
+		bar_btn.visible = true
 
 
 ## 直接关闭大地图（演武等外部流程调用）。
@@ -377,6 +406,8 @@ func _ensure_big_map() -> void:
 	_big_map_panel.city_clicked.connect(_on_city_clicked)
 	_big_map_panel.map_closed.connect(_on_big_map_closed)
 	_big_map_panel.hub_action_requested.connect(_on_big_map_hub_action)
+	if _big_map_panel.has_signal("end_turn_requested"):
+		_big_map_panel.end_turn_requested.connect(_on_next_turn_pressed)
 
 
 ## 用户主动关大地图：回到控制中枢（结束回合隐藏 + 恢复 hub）。

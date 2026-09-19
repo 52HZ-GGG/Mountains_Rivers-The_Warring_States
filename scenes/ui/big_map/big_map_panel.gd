@@ -19,6 +19,7 @@ const _BuildingPlacementHighlight := preload("res://scripts/ui/building_placemen
 signal city_clicked(city_id: String)
 signal map_closed
 signal hub_action_requested(action: String)
+signal end_turn_requested
 signal building_placed(city_id: String, building_id: String, hex_q: int, hex_r: int)
 signal building_placement_cancelled
 
@@ -170,6 +171,7 @@ func _ready() -> void:
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubMinisterBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubSchoolBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/HubSaveBtn)
+	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/EndTurnBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/TitleBar/CloseBtn)
 	$MarginContainer/MainVBox/TitleBar/CloseBtn.pressed.connect(_on_close_pressed)
 	$MarginContainer/MainVBox/TitleBar/ZoomInBtn.pressed.connect(_on_zoom_in_pressed)
@@ -182,9 +184,15 @@ func _ready() -> void:
 	$MarginContainer/MainVBox/TitleBar/HubMinisterBtn.pressed.connect(func() -> void: hub_action_requested.emit("ministers"))
 	$MarginContainer/MainVBox/TitleBar/HubSchoolBtn.pressed.connect(func() -> void: hub_action_requested.emit("schools"))
 	$MarginContainer/MainVBox/TitleBar/HubSaveBtn.pressed.connect(func() -> void: hub_action_requested.emit("save"))
+	$MarginContainer/MainVBox/TitleBar/EndTurnBtn.pressed.connect(func() -> void: end_turn_requested.emit())
+	if not $MarginContainer/MainVBox/TitleBar/CloseBtn.pressed.is_connected(_on_close_pressed):
+		$MarginContainer/MainVBox/TitleBar/CloseBtn.pressed.connect(_on_close_pressed)
 	SignalBus.city_occupied.connect(_on_city_control_changed)
 	SignalBus.city_revolted.connect(_on_city_revolted)
 	SignalBus.capital_relocated.connect(_on_capital_relocated)
+	if StrategicMapManager != null and StrategicMapManager.has_signal("units_changed"):
+		if not StrategicMapManager.units_changed.is_connected(_on_strategic_units_changed):
+			StrategicMapManager.units_changed.connect(_on_strategic_units_changed)
 	_minimap.connect("navigate_requested", Callable(self, "_on_minimap_navigate_requested"))
 	var h_scroll: ScrollBar = _scroll.get_h_scroll_bar()
 	if h_scroll != null:
@@ -193,6 +201,12 @@ func _ready() -> void:
 	if v_scroll != null:
 		v_scroll.value_changed.connect(_on_scroll_value_changed)
 	_scroll.resized.connect(_on_scroll_view_resized)
+
+
+func _on_strategic_units_changed() -> void:
+	_overlay_dirty = true
+	if visible:
+		_refresh_overlay_display()
 
 
 func open() -> void:
@@ -751,9 +765,15 @@ func _write_overlay_payload(payload: Dictionary, cell_axial: Vector2i, selected_
 				b_tag += "+%d" % queue_count
 			caption = "%s\n%s" % [caption, b_tag]
 	if not unit.is_empty():
-		var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
-		var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
-		caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
+		var uid: String = str(unit.get("unit_type_id", ""))
+		var unit_tag: String = "%s×%s" % [
+			str(DataManager.get_unit_type(uid).get("name", uid)),
+			str(unit.get("count", 1)),
+		]
+		payload["unit_caption"] = unit_tag
+		# 有兵牌时不占用 caption，避免与立绘叠字
+	else:
+		payload["unit_caption"] = ""
 	if building_marks.has(cell_axial):
 		var letter: String = str((building_marks[cell_axial] as Dictionary).get("letter", ""))
 		if letter != "":
@@ -1054,19 +1074,41 @@ func _capital_rect(cell_pos: Vector2) -> Rect2:
 func _unit_texture(unit: Dictionary) -> Texture2D:
 	if unit.is_empty():
 		return null
-	return SkirmishTileTextures.unit_texture(str(unit.get("unit_type_id", "")))
+	var tid: String = str(unit.get("unit_type_id", unit.get("type", "")))
+	if tid.is_empty():
+		return null
+	# 与演武同一套动画 idle 帧（演武可显示 ⇒ 路径有效）
+	for base: String in _unit_art_base_candidates(tid):
+		for suffix: String in ["_idle_01.png", "_idle_1.png", ".png"]:
+			var path: String = base + suffix
+			if ResourceLoader.exists(path):
+				var tex: Texture2D = load(path) as Texture2D
+				if tex != null:
+					return tex
+	# 立绘表
+	return SkirmishTileTextures.unit_texture(tid)
+
+
+func _unit_art_base_candidates(unit_type_id: String) -> Array[String]:
+	# 演武 _unit_sprite_base_paths 同源：animations/base|faction + portraits
+	var out: Array[String] = [
+		"res://assets/units/animations/base/unit_%s/unit_%s" % [unit_type_id, unit_type_id],
+		"res://assets/units/portraits/unit_%s" % unit_type_id,
+	]
+	return out
+
+
+func _unit_rect(cell_pos: Vector2) -> Rect2:
+	# 兵牌放大；有图时不叠加兵种文字
+	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.68
+	var center: Vector2 = cell_pos + _cell_size * 0.5
+	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.45, size_px, size_px)
 
 
 func _building_rect(cell_pos: Vector2) -> Rect2:
 	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.55
 	var center: Vector2 = cell_pos + _cell_size * 0.5
 	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.35, size_px, size_px)
-
-
-func _unit_rect(cell_pos: Vector2) -> Rect2:
-	var size_px: float = minf(_cell_size.x, _cell_size.y) * 0.42
-	var center: Vector2 = cell_pos + _cell_size * 0.5
-	return Rect2(center.x - size_px * 0.5, center.y - size_px * 0.5, size_px, size_px)
 
 
 func _rebuild_minimap_data(map_size: Vector2i) -> void:
@@ -1228,16 +1270,17 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if was_dragging:
 			return
-		# 固定城池触发区：优先直接进内政，不依赖六角多边形命中
+		var hit_click: Variant = _axial_at_local_point(mb.position)
+		if hit_click is Vector2i:
+			var cell_click: Vector2i = hit_click as Vector2i
+			# 点击优先级与演武一致：格上有单位 → 单位交互；无单位且为城 → 打开城池
+			_on_hex_pressed(cell_click.x, cell_click.y)
+			return
+		# 兜底：城池热区（无六角命中时）
 		var city_id: String = _city_id_at_local_point(mb.position)
 		if city_id != "":
 			StrategicMapManager.clear_selection()
 			city_clicked.emit(city_id)
-			return
-		var hit_click: Variant = _axial_at_local_point(mb.position)
-		if hit_click is Vector2i:
-			var cell_click: Vector2i = hit_click as Vector2i
-			_on_hex_pressed(cell_click.x, cell_click.y)
 
 
 func _build_city_hit_rects() -> void:
@@ -1436,11 +1479,14 @@ func _on_hex_pressed(q: int, r: int) -> void:
 		StrategicMapManager.select_unit(str(unit_here.get("id", "")))
 		_refresh_overlay_partial()
 		return
+	# 格上无单位时才点城进内政（单位优先，避免城兵同格误开面板）
+	if unit_here.is_empty():
+		var city2: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
+		if not city2.is_empty():
+			city_clicked.emit(str(city2.get("id", "")))
+			return
 	StrategicMapManager.clear_selection()
 	_refresh_overlay_partial()
-	var city2: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
-	if not city2.is_empty():
-		city_clicked.emit(str(city2.get("id", "")))
 
 
 func _ensure_hover_card() -> void:

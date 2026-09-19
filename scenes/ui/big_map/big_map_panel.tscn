@@ -88,6 +88,10 @@ text = "学派"
 layout_mode = 2
 text = "存档"
 
+[node name="EndTurnBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
+layout_mode = 2
+text = "结束回合"
+
 [node name="CloseBtn" type="Button" parent="MarginContainer/MainVBox/TitleBar"]
 layout_mode = 2
 text = "关闭"
