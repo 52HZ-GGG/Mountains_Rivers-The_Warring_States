@@ -196,8 +196,8 @@
                              "en-US":  "Culture flip: %s mainstream → %s"
                          },
     "big_map.hover_hint":  {
-                               "zh-CN":  "左键拖动平移视角；悬停格子查看地形与城市。",
-                               "en-US":  "Left-drag to pan; hover a hex for terrain and city info."
+                               "zh-CN":  "悬停格子查看地形/城池/单位。",
+                               "en-US":  "Hover a hex for terrain, city and unit info."
                            },
     "big_map.click_city":  {
                                "zh-CN":  "点击城市格：打开城池管理",

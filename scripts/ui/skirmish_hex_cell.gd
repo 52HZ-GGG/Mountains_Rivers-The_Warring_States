@@ -9,6 +9,11 @@ const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 ## 拾取：_has_point 六边形内
 
 signal hex_clicked(q: int, r: int)
+signal hex_double_clicked(q: int, r: int)
+signal hex_right_clicked(q: int, r: int)
+
+const _DOUBLE_CLICK_MS: int = 320
+var _last_left_click_ms: int = 0
 
 const _OUTLINE_COLOR: Color = Color(0.28, 0.24, 0.20, 0.55)
 const _OUTLINE_WIDTH: float = 1.0
@@ -222,10 +227,20 @@ func _has_point(point: Vector2) -> bool:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
-			if _has_point(mb.position):
+		if not mb.pressed or not _has_point(mb.position):
+			return
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			var now_ms: int = Time.get_ticks_msec()
+			if now_ms - _last_left_click_ms <= _DOUBLE_CLICK_MS:
+				_last_left_click_ms = 0
+				hex_double_clicked.emit(cell_q, cell_r)
+			else:
+				_last_left_click_ms = now_ms
 				hex_clicked.emit(cell_q, cell_r)
-				accept_event()
+			accept_event()
+		elif mb.button_index == MOUSE_BUTTON_RIGHT:
+			hex_right_clicked.emit(cell_q, cell_r)
+			accept_event()
 
 
 func set_terrain_texture(tex: Texture2D) -> void:

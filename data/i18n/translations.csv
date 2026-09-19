@@ -54,7 +54,7 @@ big_map.city_broken,城破,City fallen
 hud.culture_progress,文化 %d%% / 目标 %d%%,Culture %d%% / Target %d%%
 hud.culture_progress_active,文化 %d%% / %d%% · 维持 %d/%d,Culture %d%% / %d%% · Hold %d/%d
 hud.culture_flip,文化倒戈：%s 主流变为 %s,Culture flip: %s mainstream → %s
-big_map.hover_hint,左键拖动平移视角；悬停格子查看地形与城市。,Left-drag to pan; hover a hex for terrain and city info.
+big_map.hover_hint,悬停格子查看地形/城池/单位。,Hover a hex for terrain, city and unit info.
 big_map.click_city,点击城市格：打开城池管理,Click city hex to manage
 big_map.impassable,不可通行,Impassable
 big_map.build_tag,建%d,B%d

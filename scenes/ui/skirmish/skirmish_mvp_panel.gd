@@ -15,6 +15,8 @@ const _HEX_BOARD_LAYOUT_VERSION: int = 12
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _ResourceBarScript: Script = preload("res://scenes/ui/resource_bar/resource_bar.gd")
 const _CityPanelScene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
+const _BuildingPlacementHighlight := preload("res://scripts/ui/building_placement_highlight.gd")
+const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 
 const _CLR_EMPTY_REACH: Color = Color(0.72, 1.0, 0.90)
 const _CLR_PLAYER_UNIT: Color = Color(0.88, 0.93, 1.0)
@@ -28,7 +30,6 @@ const _CLR_ENEMY_CITY: Color = Color(1.0, 0.9, 0.9)
 @onready var _log_view: RichTextLabel = %SkirmishLog
 @onready var _hint: Label = %HintLabel
 @onready var _hover_info: RichTextLabel = %HexHoverInfo
-@onready var _retreat_btn: Button = %RetreatBtn
 @onready var _season_label: Label = %SeasonLabel
 
 var _selected_unit_id: String = ""
@@ -39,7 +40,6 @@ var _panel_cfg: Dictionary = {}
 var _panel_season: String = "summer"
 var _unit_frames_cache: Dictionary = {}  # "unit_type_id:faction_id" -> SpriteFrames
 var _effect_frames_cache: Dictionary = {}  # effect_id -> SpriteFrames
-var _tutorial_city_btn: Button = null
 var _political_map_btn: Button = null
 var _skirmish_save_btn: Button = null
 var _skirmish_load_btn: Button = null
@@ -51,8 +51,11 @@ var _formula_detail_btn: Button = null
 var _formula_detail_panel: PanelContainer = null
 var _formal_city_panel: Panel = null
 var _political_mode: bool = false
+var _political_grid: Dictionary = {}
 var _placement_city_id: String = ""
 var _placement_building_id: String = ""
+## 演武盘面可见的建筑图标：战术格 axial -> building_id（点击落点 + 城格汇总）
+var _visual_building_marks: Dictionary = {}
 
 
 func _debug_log(message: String) -> void:
@@ -63,20 +66,17 @@ func _debug_log(message: String) -> void:
 func _ready() -> void:
 	visible = false
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/EndTurnBtn)
-	SkirmishTileTextures.style_scene_button(%StandbyBtn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/RestartBtn)
-	SkirmishTileTextures.style_scene_button(_retreat_btn)
 	SkirmishTileTextures.style_scene_button($MarginContainer/MainVBox/ButtonRow/CloseBtn)
 	_create_tutorial_formal_buttons()
 	$MarginContainer/MainVBox/ButtonRow/EndTurnBtn.pressed.connect(_on_end_turn_pressed)
-	%StandbyBtn.pressed.connect(_on_standby_pressed)
 	$MarginContainer/MainVBox/ButtonRow/RestartBtn.pressed.connect(_on_restart_pressed)
-	_retreat_btn.pressed.connect(_on_retreat_pressed)
 	$MarginContainer/MainVBox/ButtonRow/CloseBtn.pressed.connect(_on_close_pressed)
 	TacticalSkirmishManager.skirmish_ended.connect(_on_skirmish_ended_unified)
 	TacticalSkirmishManager.state_changed.connect(_refresh_display)
 	TacticalSkirmishManager.log_appended.connect(_on_mgr_log)
 	TacticalSkirmishManager.combat_effect_requested.connect(_play_combat_effect)
+	SignalBus.city_occupied.connect(_on_campaign_city_ownership_changed)
 
 
 func open_panel() -> void:
@@ -130,17 +130,6 @@ func close_panel() -> void:
 
 func _create_tutorial_formal_buttons() -> void:
 	var row: HBoxContainer = $MarginContainer/MainVBox/ButtonRow as HBoxContainer
-	_tutorial_city_btn = Button.new()
-	_tutorial_city_btn.name = "TutorialCityButton"
-	_tutorial_city_btn.text = "城市/征兵"
-	_tutorial_city_btn.tooltip_text = "打开正式咸阳城市面板，使用同一套经营与征兵逻辑"
-	_tutorial_city_btn.visible = false
-	_tutorial_city_btn.pressed.connect(_open_formal_capital_panel)
-	SkirmishTileTextures.style_scene_button(_tutorial_city_btn)
-	var insert_index: int = _retreat_btn.get_index() + 1
-	row.add_child(_tutorial_city_btn)
-	row.move_child(_tutorial_city_btn, insert_index)
-
 	_political_map_btn = Button.new()
 	_political_map_btn.name = "PoliticalBtn"
 	_political_map_btn.text = "政治地图：关"
@@ -172,10 +161,7 @@ func _create_tutorial_formal_buttons() -> void:
 
 
 func _update_tutorial_formal_ui() -> void:
-	var enabled: bool = DemoFlow.is_tutorial_enabled()
-	if _tutorial_city_btn != null:
-		_tutorial_city_btn.visible = enabled
-	if enabled:
+	if DemoFlow.is_tutorial_enabled():
 		_ensure_formal_resource_bar()
 	else:
 		_close_formal_overlays()
@@ -241,14 +227,8 @@ func _ensure_resource_hover_hint() -> void:
 	if _resource_hover_hint == null:
 		_resource_hover_hint = Label.new()
 		_resource_hover_hint.name = "ResourceHoverHint"
-		_resource_hover_hint.text = "小提示：鼠标悬浮在任意资源上，可查看作用、影响因素与计算详情。"
-		_resource_hover_hint.add_theme_font_size_override("font_size", 11)
-		_resource_hover_hint.add_theme_color_override("font_color", Color(0.72, 0.74, 0.68, 1))
-	var main_vbox: VBoxContainer = $MarginContainer/MainVBox as VBoxContainer
-	if _resource_hover_hint.get_parent() == null:
-		main_vbox.add_child(_resource_hover_hint)
-		main_vbox.move_child(_resource_hover_hint, 2)
-	_resource_hover_hint.visible = true
+		_resource_hover_hint.text = ""
+	_resource_hover_hint.visible = false
 
 
 func _ensure_resource_formula_panel() -> void:
@@ -381,8 +361,12 @@ func _open_formal_capital_panel() -> void:
 
 
 func _open_formal_city_panel(city_id: String) -> void:
-	if not DemoFlow.is_tutorial_enabled():
+	if city_id.is_empty() or CityManager.get_city_state(city_id).is_empty():
 		return
+	if not DemoFlow.is_tutorial_enabled():
+		var owner: String = str(CityManager.get_city_state(city_id).get("current_faction_id", ""))
+		if owner != GameManager.get_player_faction():
+			return
 	_close_formal_overlays()
 	_formal_city_panel = _CityPanelScene.instantiate() as Panel
 	_formal_city_panel.name = "FormalTutorialCityPanel"
@@ -396,7 +380,6 @@ func _open_formal_city_panel(city_id: String) -> void:
 	if _formal_city_panel.has_method("set_back_button_text"):
 		_formal_city_panel.set_back_button_text("返回演武")
 	_embed_formal_resource_bar(_formal_city_panel.get_resource_bar_slot())
-	_hint.text = "已打开正式城市面板。这里的建造、产出、人口与征兵和完整 Demo 使用同一套逻辑。"
 
 
 ## 演武=小号大地图：与主地图相同的放置模式
@@ -409,9 +392,8 @@ func _on_place_building_requested_in_skirmish(city_id: String, building_id: Stri
 	_formal_city_panel = null
 	_ensure_formal_resource_bar()
 	var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
-	_hint.text = "放置模式：点击绿色辖区格建造「%s」（右键取消）" % bname
-	_hover_info.text = _hint.text
 	_refresh_display()
+	_hover_info.text = _build_placement_hover_text()
 
 
 func _cancel_skirmish_building_placement() -> void:
@@ -419,23 +401,97 @@ func _cancel_skirmish_building_placement() -> void:
 		return
 	_placement_city_id = ""
 	_placement_building_id = ""
-	_hint.text = "已取消建筑放置。"
 	_refresh_display()
+	_hover_info.text = _default_hover_text()
+
+
+func _placement_highlight_map() -> Dictionary:
+	## 与大地图同一套 BuildingPlacementHighlight：先标战役辖区 axial；
+	## 战术板看不到的辖区，再以场景城格为中心画视觉环，保证演武放置可见。
+	var campaign: Dictionary = _BuildingPlacementHighlight.highlight_for_jurisdiction(
+		_placement_city_id, _placement_building_id
+	)
+	var out: Dictionary = campaign.duplicate()
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
+	var w: int = int(cfg.get("map_width", 0))
+	var h: int = int(cfg.get("map_height", 0))
+	if w <= 0 or h <= 0:
+		return out
+	var center: Vector2i = _tactical_city_cell_for(_placement_city_id)
+	if center == Vector2i(-9999, -9999):
+		return out
+	var free_check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id)
+	var has_free: bool = bool(free_check.get("allowed", false))
+	var off: Vector2i = _HexAxial.axial_to_offset_odd_r(center.x, center.y)
+	for nb: Vector2i in _HexAxial.offset_visual_neighbors(off.x, off.y):
+		if nb.x < 0 or nb.y < 0 or nb.x >= w or nb.y >= h:
+			continue
+		var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(nb.x, nb.y)
+		if out.has(axial):
+			continue
+		out[axial] = _BuildingPlacementHighlight.CLR_OK if has_free else _BuildingPlacementHighlight.CLR_BAD
+	return out
+
+
+func _tactical_city_cell_for(city_id: String) -> Vector2i:
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
+	var pc: Dictionary = cfg.get("player_city", {}) as Dictionary
+	var ec: Dictionary = cfg.get("enemy_city", {}) as Dictionary
+	if str(pc.get("city_id", "")) == city_id:
+		return TacticalSkirmishManager.get_player_city()
+	if str(ec.get("city_id", "")) == city_id:
+		return TacticalSkirmishManager.get_enemy_city()
+	if city_id != "" and not CityManager.get_city_state(city_id).is_empty():
+		var owner: String = str(CityManager.get_city_state(city_id).get("current_faction_id", ""))
+		if owner == TacticalSkirmishManager.get_player_faction():
+			return TacticalSkirmishManager.get_player_city()
+		if owner == TacticalSkirmishManager.get_enemy_faction():
+			return TacticalSkirmishManager.get_enemy_city()
+	return Vector2i(-9999, -9999)
 
 
 func _try_place_building_in_skirmish(axial: Vector2i) -> void:
 	if _placement_city_id == "" or _placement_building_id == "":
 		return
-	if CityManager.start_build(_placement_city_id, _placement_building_id, axial):
-		var cid: String = _placement_city_id
-		_placement_city_id = ""
-		_placement_building_id = ""
-		_hint.text = "已在 (%d,%d) 放置建筑，回合计完成建造。" % [axial.x, axial.y]
-		_refresh_display()
-		_open_formal_city_panel(cid)
-	else:
-		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, axial)
-		_hint.text = "无法放置：%s" % str(check.get("reason", ""))
+	var bid: String = _placement_building_id
+	# 1) 与大地图相同：点击战役辖区格直接落点
+	if CityManager.start_build(_placement_city_id, bid, axial):
+		_visual_building_marks[axial] = bid
+		_finish_skirmish_placement(axial)
+		return
+	# 2) 战术视觉环：映射到战役城池空闲辖区格（同一 CityManager API）
+	var auto: Dictionary = CityManager.can_build(_placement_city_id, bid)
+	if bool(auto.get("allowed", false)):
+		var place: Vector2i = Vector2i(int(auto.get("hex_q", -9999)), int(auto.get("hex_r", -9999)))
+		if place.x > -9000 and CityManager.start_build(_placement_city_id, bid, place):
+			# 图标画在玩家点击的战术格上（演武盘面可见）
+			_visual_building_marks[axial] = bid
+			_finish_skirmish_placement(place, axial)
+			return
+	var check: Dictionary = CityManager.can_build(_placement_city_id, bid, axial)
+	_hover_info.text = "无法放置：%s" % str(check.get("reason", "不在辖区"))
+
+
+func _finish_skirmish_placement(campaign_axial: Vector2i, visual_axial: Vector2i = Vector2i(-9999, -9999)) -> void:
+	var cid: String = _placement_city_id
+	_placement_city_id = ""
+	_placement_building_id = ""
+	if visual_axial.x > -9000:
+		# 已在 try_place 中写入 building_id
+		pass
+	_refresh_display()
+	var show_ax: Vector2i = visual_axial if visual_axial.x > -9000 else campaign_axial
+	_hover_info.text = "已放置建筑（战役辖区 %d,%d；盘面 %d,%d）" % [
+		campaign_axial.x, campaign_axial.y, show_ax.x, show_ax.y
+	]
+	_open_formal_city_panel(cid)
+
+
+func _build_placement_hover_text() -> String:
+	if _placement_city_id == "" or _placement_building_id == "":
+		return _default_hover_text()
+	var bname: String = str(DataManager.get_building(_placement_building_id).get("name", _placement_building_id))
+	return "放置模式：点击绿色格建造「%s」（右键取消）" % bname
 
 
 func _embed_formal_resource_bar(target_vbox: VBoxContainer) -> void:
@@ -473,72 +529,157 @@ func _on_formal_city_panel_return_to_skirmish() -> void:
 
 
 func _default_hover_text() -> String:
-	if DemoFlow.is_enabled() and TacticalSkirmishManager.is_active():
+	if TacticalSkirmishManager.is_active():
 		if DemoFlow.is_tutorial_enabled():
-			return "新手教程：本关聚焦战术演武与咸阳经营；城市、征兵、资源栏都复用正式组件。"
-		return "Demo 作战目标：用秦军攻城器械攻击洛邑城墙；城墙归零后，移动秦军进入洛邑城格即可获胜。鼠标悬停格子可看城墙 HP、单位与攻击预览。"
-	return "将鼠标移到格子上：显示地形效果、据点归属与单位信息。"
+			return "点城格经营；右键取消。"
+		if DemoFlow.is_enabled():
+			return "悬停看格；点城格进城。"
+	return "悬停格子查看信息。"
 
 
 func _initial_hint_text() -> String:
-	if DemoFlow.is_enabled() and TacticalSkirmishManager.is_active():
-		return _demo_skirmish_briefing()
-	var atk_hint: int = TacticalSkirmishManager.get_attack_move_cost()
-	return "点选己方单位：绿格可移动；攻击需额外移动力 %d。移动后若仍可攻击会保持选中，再点本单位可待命结束。" % atk_hint
+	return _demo_skirmish_briefing()
 
 
 func _demo_skirmish_briefing() -> String:
+	if not TacticalSkirmishManager.is_active():
+		return ""
 	var target_city_name: String = DemoFlow.get_target_city_name()
+	if target_city_name == "":
+		target_city_name = "敌城"
 	var enemy_city: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(enemy_city)
 	var wall_max: int = TacticalSkirmishManager.get_city_wall_max_hp(enemy_city)
-	if DemoFlow.is_tutorial_enabled():
-		return "新手教程：可用“城市/征兵”查看正式经营界面。结束战术回合也会同步推进经营回合；随后选择攻城器械攻击%s城墙（%d/%d），城墙归零后移动秦军进城。" % [
-			target_city_name,
-			wall_hp,
-			wall_max,
-		]
 	if wall_hp > 0:
-		return "Demo 作战简报：1. 选中秦军攻城器械或前排；2. 点击%s城墙削减 HP（当前 %d/%d）；3. 城墙归零后，移动秦军进入%s城格获胜。" % [
-			target_city_name,
-			wall_hp,
-			wall_max,
-			target_city_name,
-		]
+		return "Demo 作战简报：攻破%s城墙（%d/%d）后进城。" % [target_city_name, wall_hp, wall_max]
 	if wall_max > 0:
-		return "Demo 作战简报：%s城墙已破。现在选择秦军，移动进入%s城格即可获胜。" % [
-			target_city_name,
-			target_city_name,
-		]
-	return "Demo 作战简报：选中秦军，向%s推进；攻破城墙并进入城格即可获胜。" % target_city_name
+		return "Demo 作战简报：%s城墙已破，进城即可。" % target_city_name
+	if DemoFlow.is_enabled():
+		return "Demo 作战简报：向%s推进，破墙进城。" % target_city_name
+	return ""
 
 
 func _on_close_pressed() -> void:
 	close_panel()
 
 
+func _on_campaign_city_ownership_changed(_city_id: String, _old_faction: String, _new_faction: String) -> void:
+	if _political_mode:
+		_rebuild_political_grid()
+		if visible:
+			_refresh_display()
+
+
 func _on_political_toggle() -> void:
 	_political_mode = not _political_mode
 	if _political_map_btn != null:
 		_political_map_btn.text = "政治地图：开" if _political_mode else "政治地图：关"
-	_hint.text = "政治地图已%s：当前战术地图按势力归属染色，不跳转大地图。" % ("开启" if _political_mode else "关闭")
+	if _political_mode:
+		_rebuild_political_grid()
 	_refresh_display()
 
 
-func _on_retreat_pressed() -> void:
-	if not TacticalSkirmishManager.is_active():
+## 与大地图同一套 BigMapPoliticalControl 影响力填充（战术坐标 + 场景/战役城池）
+func _rebuild_political_grid() -> void:
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
+	var w: int = int(cfg.get("map_width", 0))
+	var h: int = int(cfg.get("map_height", 0))
+	if w <= 0 or h <= 0:
+		_political_grid = {}
 		return
-	if _selected_unit_id.is_empty():
-		_hint.text = "请先选中一个己方单位再撤退。"
+	var cities: Array = []
+	_append_political_city(cities, cfg.get("player_city", {}), TacticalSkirmishManager.get_player_faction())
+	_append_political_city(cities, cfg.get("enemy_city", {}), TacticalSkirmishManager.get_enemy_faction())
+	var terrain_rows: Array = []
+	for row: int in range(h):
+		var arr: Array = []
+		for col: int in range(w):
+			arr.append(TacticalSkirmishManager.terrain_at(_HexAxial.offset_odd_r_to_axial(col, row)))
+		terrain_rows.append(arr)
+	var rules: Dictionary = DataManager.get_big_map_political_control()
+	_political_grid = _BigMapPoliticalControl.build_resolved_control_grid(
+		cities,
+		[],
+		Vector2i(w, h),
+		rules,
+		terrain_rows
+	)
+
+
+func _append_political_city(cities: Array, ccfg: Variant, fallback_fid: String) -> void:
+	if not (ccfg is Dictionary):
 		return
-	var res: Dictionary = TacticalSkirmishManager.try_retreat(_selected_unit_id)
-	if bool(res.get("ok", false)):
-		_hint.text = "%s 已撤退。" % _selected_unit_id
-	else:
-		_hint.text = "撤退失败：%s" % str(res.get("reason", "未知原因"))
+	var d: Dictionary = ccfg as Dictionary
+	var city_id: String = str(d.get("city_id", ""))
+	var fid: String = fallback_fid
+	var level: int = int(d.get("level", 1))
+	var is_cap: bool = bool(d.get("is_capital", false))
+	var development: int = 0
+	if city_id != "" and not CityManager.get_city_state(city_id).is_empty():
+		var st: Dictionary = CityManager.get_city_state(city_id)
+		fid = str(st.get("current_faction_id", fallback_fid))
+		level = int(st.get("city_level", level))
+		is_cap = bool(st.get("is_capital", is_cap))
+		development = int(st.get("development", 0))
+	cities.append({
+		"hex_q": int(d.get("q", 0)),
+		"hex_r": int(d.get("r", 0)),
+		"current_faction_id": fid,
+		"city_level": level,
+		"is_capital": is_cap,
+		"development": development,
+	})
+
+
+func _do_standby_selected() -> void:
+	if _selected_unit_id == "":
+		return
+	TacticalSkirmishManager.finalize_player_unit_action(_selected_unit_id)
 	_selected_unit_id = ""
 	_reachable.clear()
 	_refresh_display()
+
+
+func _do_retreat_unit(unit_id: String) -> void:
+	if unit_id.is_empty():
+		return
+	var res: Dictionary = TacticalSkirmishManager.try_retreat(unit_id)
+	_selected_unit_id = ""
+	_reachable.clear()
+	_refresh_display()
+
+
+func _try_open_city_panel_at(cell: Vector2i) -> bool:
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
+	var matched: Dictionary = {}
+	for key: String in ["player_city", "enemy_city"]:
+		var ccfg: Dictionary = cfg.get(key, {}) as Dictionary
+		if ccfg.is_empty():
+			continue
+		var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(int(ccfg.get("q", -99)), int(ccfg.get("r", -99)))
+		if axial == cell:
+			matched = ccfg
+			break
+	if matched.is_empty():
+		return false
+	var city_id: String = str(matched.get("city_id", ""))
+	if city_id.is_empty() or CityManager.get_city_state(city_id).is_empty():
+		return false
+	var owner: String = str(CityManager.get_city_state(city_id).get("current_faction_id", ""))
+	if owner != GameManager.get_player_faction():
+		return false
+	_open_formal_city_panel(city_id)
+	return true
+
+
+func _on_hex_right_clicked(_q: int, _r: int) -> void:
+	if _placement_city_id != "":
+		_cancel_skirmish_building_placement()
+		return
+	if _selected_unit_id != "":
+		_selected_unit_id = ""
+		_reachable.clear()
+		_refresh_display()
 
 
 func _update_season_label() -> void:
@@ -640,17 +781,6 @@ func _advance_formal_turn_for_tutorial() -> void:
 	]
 
 
-func _on_standby_pressed() -> void:
-	if _selected_unit_id == "":
-		_hint.text = "请先选中一个单位。"
-		return
-	TacticalSkirmishManager.finalize_player_unit_action(_selected_unit_id)
-	_hint.text = "已待命（%s 本回合结束）。" % _selected_unit_id
-	_selected_unit_id = ""
-	_reachable.clear()
-	_refresh_display()
-
-
 func _ensure_hex_buttons() -> void:
 	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
 	var w: int = int(cfg.get("map_width", 7))
@@ -715,6 +845,8 @@ func _ensure_hex_buttons() -> void:
 			var aq: int = axial_pos.x
 			var ar: int = axial_pos.y
 			cell.hex_clicked.connect(_on_hex_pressed)
+			cell.hex_double_clicked.connect(_on_hex_double_clicked)
+			cell.hex_right_clicked.connect(_on_hex_right_clicked)
 			cell.mouse_entered.connect(func() -> void:
 				_on_hex_mouse_enter(aq, ar)
 			)
@@ -736,8 +868,8 @@ func _hex_play_area_avail_px() -> Vector2:
 	var sc: Control = $MarginContainer/MainVBox/Scroll as Control
 	var ss: Vector2 = sc.size
 	var from_vp: Vector2 = Vector2(
-		clampf(vp.x * 0.90 - 72.0, 560.0, 1680.0),
-		clampf(vp.y * 0.62 - 140.0, 380.0, 960.0)
+		clampf(vp.x * 0.96 - 36.0, 720.0, 2000.0),
+		clampf(vp.y * 0.86 - 40.0, 480.0, 1400.0)
 	)
 	if ss.x >= 100.0 and ss.y >= 100.0:
 		return Vector2(maxf(ss.x, from_vp.x), maxf(ss.y, from_vp.y))
@@ -789,7 +921,7 @@ func _compute_hex_radius_px(w: int, h: int, pad: float) -> float:
 		return _HEX_RADIUS_BASE_PX
 	var avail: Vector2 = _hex_play_area_avail_px()
 	var s: float = minf(avail.x / bb_unit.x, avail.y / bb_unit.y) * 0.99
-	s = clampf(s, 48.0, 144.0)
+	s = clampf(s, 64.0, 260.0)
 	return s
 
 
@@ -830,10 +962,32 @@ func _ensure_hex_map_canvas() -> void:
 
 
 func _on_hex_mouse_enter(q: int, r: int) -> void:
+	if _placement_city_id != "":
+		var cell: Vector2i = Vector2i(q, r)
+		var highlight: Dictionary = _placement_highlight_map()
+		var bname: String = str(DataManager.get_building(_placement_building_id).get("name", _placement_building_id))
+		if highlight.has(cell):
+			var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, cell)
+			if bool(check.get("allowed", false)):
+				_hover_info.text = "点击放置「%s」于战役辖区 (%d,%d)" % [bname, q, r]
+			else:
+				var auto: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id)
+				if bool(auto.get("allowed", false)):
+					_hover_info.text = "点击放置「%s」→ 战役辖区 (%d,%d)" % [
+						bname, int(auto.get("hex_q", q)), int(auto.get("hex_r", r))
+					]
+				else:
+					_hover_info.text = "(%d,%d) 不可放置：%s" % [q, r, str(check.get("reason", ""))]
+		else:
+			_hover_info.text = "(%d,%d) 不在放置范围" % [q, r]
+		return
 	_hover_info.text = _build_hover_text(Vector2i(q, r))
 
 
 func _on_hex_mouse_exit() -> void:
+	if _placement_city_id != "":
+		_hover_info.text = _build_placement_hover_text()
+		return
 	_hover_info.text = _default_hover_text()
 
 
@@ -857,6 +1011,14 @@ func _build_hover_text(cell: Vector2i) -> String:
 	var ec: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(cell)
 	var wall_max: int = TacticalSkirmishManager.get_city_wall_max_hp(cell)
+	if _political_mode:
+		if _political_grid.is_empty():
+			_rebuild_political_grid()
+		var pol_fid: String = str(_political_grid.get(cell, ""))
+		if pol_fid == "":
+			lines.append("政治归属：中立/缓冲")
+		else:
+			lines.append("政治归属：%s" % _faction_display_name(pol_fid))
 	if cell == pc or cell == ec:
 		var owner_str: String = "己方" if cell == pc else "敌方"
 		var city_line: String = "据点：%s城格" % owner_str
@@ -865,6 +1027,9 @@ func _build_hover_text(cell: Vector2i) -> String:
 				city_line += " ｜ 城墙 %d/%d" % [wall_hp, wall_max]
 			else:
 				city_line += " ｜ 城墙已破"
+		var binfo: Dictionary = _building_icon_info(cell)
+		if not binfo.is_empty():
+			city_line += " ｜ 建筑×%d（%s）" % [int(binfo.get("count", 1)), str(binfo.get("name", ""))]
 		lines.append(city_line)
 	elif wall_hp > 0:
 		lines.append("城墙：%d/%d" % [wall_hp, wall_max])
@@ -1009,16 +1174,25 @@ func _on_hex_pressed(q: int, r: int) -> void:
 	if not TacticalSkirmishManager.is_active():
 		return
 	var cell: Vector2i = Vector2i(q, r)
-	# 建筑放置模式（与大地图同逻辑）
 	if _placement_city_id != "":
 		_try_place_building_in_skirmish(cell)
 		return
 	var occ: Dictionary = _unit_at_cell(cell)
-	if _selected_unit_id == "" and DemoFlow.is_tutorial_enabled() and _is_tutorial_city_cell(cell):
-		_open_formal_capital_panel()
-		_hint.text = "已打开正式咸阳城市面板。关闭后可继续选择攻城器械攻击洛邑城墙。"
+	# 点己方单位：切换选中；再次点击已选中单位＝待命结束
+	if not occ.is_empty() and str(occ.get("faction_id", "")) == TacticalSkirmishManager.get_player_faction():
+		if bool(occ.get("acted", false)):
+			return
+		if str(occ["id"]) == _selected_unit_id:
+			_do_standby_selected()
+			return
+		_selected_unit_id = str(occ["id"])
+		_reachable = TacticalSkirmishManager.get_reachable_cells(_selected_unit_id)
+		_refresh_display()
 		return
-	# 已选中己方：优先判断攻击（点击敌军）
+	# 点城：打开己方城市面板（与大地图一致）
+	if _try_open_city_panel_at(cell):
+		return
+	# 已选中己方：优先攻击射程内敌军
 	if _selected_unit_id != "":
 		if not occ.is_empty() and str(occ.get("faction_id", "")) == TacticalSkirmishManager.get_enemy_faction():
 			var res: Dictionary = TacticalSkirmishManager.try_player_attack(_selected_unit_id, str(occ["id"]))
@@ -1027,24 +1201,7 @@ func _on_hex_pressed(q: int, r: int) -> void:
 				_reachable.clear()
 			_refresh_display()
 			return
-	# 点己方单位：再点同一单位＝待命结束；否则切换选中
-	if not occ.is_empty() and str(occ.get("faction_id", "")) == TacticalSkirmishManager.get_player_faction():
-		if bool(occ.get("acted", false)):
-			_hint.text = "该单位本回合已行动。"
-			return
-		if str(occ["id"]) == _selected_unit_id:
-			_selected_unit_id = ""
-			_reachable.clear()
-			_hint.text = "已取消选中。"
-			_refresh_display()
-			return
-		_selected_unit_id = str(occ["id"])
-		_reachable = TacticalSkirmishManager.get_reachable_cells(_selected_unit_id)
-		var ac: int = TacticalSkirmishManager.get_attack_move_cost()
-		_hint.text = "已选 %s：点绿格移动；点敌军攻击（需 %d 移动力）；点自身取消；点[待命]结束行动。" % [_selected_unit_id, ac]
-		_refresh_display()
-		return
-	# 已选中：可走空格移动；移动后若本回合未结束则保持选中
+	# 已选中：可走空格移动 / 攻城墙
 	if _selected_unit_id != "":
 		if occ.is_empty() and _reachable.has(cell):
 			var moving_id: String = _selected_unit_id
@@ -1052,46 +1209,32 @@ func _on_hex_pressed(q: int, r: int) -> void:
 			if bool(mv.get("ok", false)):
 				_selected_unit_id = moving_id
 				_reachable = TacticalSkirmishManager.get_reachable_cells(moving_id)
-				var ae: int = TacticalSkirmishManager.get_attack_move_cost()
-				var targets: Array = TacticalSkirmishManager.list_attack_targets(moving_id)
-				if not targets.is_empty():
-					_hint.text = "移动完成：可继续移动、点橙格攻击（需 %d 移动力）或点[待命]结束。" % ae
-				elif not _reachable.is_empty():
-					_hint.text = "移动完成：可继续移动或点[待命]结束。"
-				else:
-					_hint.text = "移动完成：无可行动项，点[待命]或[结束回合]。"
 			else:
 				_selected_unit_id = ""
 				_reachable.clear()
-		# 点击城市格：有城墙时尝试攻城
 		if _selected_unit_id != "" and occ.is_empty():
 			var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(cell)
 			if wall_hp > 0:
 				var atk_res: Dictionary = TacticalSkirmishManager.try_attack_city_wall(_selected_unit_id, cell)
 				if bool(atk_res.get("ok", false)):
-					_hint.text = "攻城！城墙受到 %d 伤害。" % int(atk_res["damage"])
 					_selected_unit_id = ""
 					_reachable.clear()
-				elif str(atk_res.get("reason", "")) == "out_of_range":
-					_hint.text = "城墙未破（%d HP），需移近后攻击。" % wall_hp
-				elif str(atk_res.get("reason", "")) == "insufficient_mp":
-					_hint.text = "移动力不足，无法攻城。"
-				elif str(atk_res.get("reason", "")) == "already_acted":
-					_hint.text = "该单位本回合已行动。"
-				else:
-					_hint.text = "城墙未破（%d HP），无法攻城。" % wall_hp
-			elif wall_hp == 0:
-				_hint.text = "城墙已破，可移动单位占领。"
 		_refresh_display()
 		return
+	# 未选中且非己方单位：清空选择（与大地图一致）
+	_selected_unit_id = ""
+	_reachable.clear()
+	_refresh_display()
 
 
-func _is_tutorial_city_cell(cell: Vector2i) -> bool:
-	if cell == TacticalSkirmishManager.get_player_city():
-		return true
-	if cell == TacticalSkirmishManager.get_enemy_city():
-		return true
-	return TacticalSkirmishManager.get_city_wall_hp(cell) >= 0
+func _on_hex_double_clicked(q: int, r: int) -> void:
+	if not TacticalSkirmishManager.is_active() or _placement_city_id != "":
+		return
+	var cell: Vector2i = Vector2i(q, r)
+	var occ: Dictionary = _unit_at_cell(cell)
+	if occ.is_empty() or str(occ.get("faction_id", "")) != TacticalSkirmishManager.get_player_faction():
+		return
+	_do_retreat_unit(str(occ.get("id", "")))
 
 
 func _unit_at_cell(cell: Vector2i) -> Dictionary:
@@ -1119,6 +1262,12 @@ func _refresh_display() -> void:
 		return
 	_update_tutorial_formal_ui()
 	_refresh_formal_resource_bar()
+	# 文案精简：空提示不占布局
+	if _hint != null:
+		_hint.visible = not _hint.text.is_empty()
+		if not _hint.visible:
+			_hint.custom_minimum_size = Vector2(0, 0)
+			_hint.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
 	var w: int = int(cfg.get("map_width", 7))
 	var h: int = int(cfg.get("map_height", 7))
@@ -1181,12 +1330,98 @@ func _refresh_display() -> void:
 			if cap != null:
 				cap.text = caption_text
 			_apply_capital_badge(hex_cell, cell_axial)
+			_apply_building_badge(hex_cell, cell_axial)
 			_apply_unit_overlay(hex_cell, uu)
 			col_var += 1
 		row_var += 1
 	var map_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapCanvas") as HexMapCanvas
 	if map_cv != null:
 		map_cv.queue_redraw()
+
+
+## 演武盘面建筑图标：点击落点优先 > 战役实体格 > 场景城池建筑汇总到城格
+func _building_icon_info(cell: Vector2i) -> Dictionary:
+	if _visual_building_marks.has(cell):
+		var marked: String = str(_visual_building_marks.get(cell, ""))
+		if marked != "":
+			var md: Dictionary = DataManager.get_building(marked)
+			return {
+				"building_id": marked,
+				"category": str(md.get("category", "")),
+				"name": str(md.get("name", marked)),
+				"count": 1,
+			}
+	var entry: Dictionary = CityManager.get_building_at_hex(cell)
+	if not entry.is_empty():
+		var bid0: String = str(entry.get("building_id", ""))
+		var bdata0: Dictionary = DataManager.get_building(bid0)
+		return {
+			"building_id": bid0,
+			"category": str(bdata0.get("category", "")),
+			"name": str(bdata0.get("name", bid0)),
+			"count": 1,
+		}
+	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
+	var city_id: String = ""
+	if cell == TacticalSkirmishManager.get_player_city():
+		city_id = str((cfg.get("player_city", {}) as Dictionary).get("city_id", ""))
+	elif cell == TacticalSkirmishManager.get_enemy_city():
+		city_id = str((cfg.get("enemy_city", {}) as Dictionary).get("city_id", ""))
+	if city_id.is_empty() or CityManager.get_city_state(city_id).is_empty():
+		return {}
+	var st: Dictionary = CityManager.get_city_state(city_id)
+	var buildings: Array = st.get("buildings", []) as Array
+	var queue: Array = st.get("build_queue", []) as Array
+	if buildings.is_empty() and queue.is_empty():
+		return {}
+	var first_bid: String = ""
+	if not buildings.is_empty():
+		first_bid = str((buildings[0] as Dictionary).get("building_id", ""))
+	elif not queue.is_empty():
+		first_bid = str((queue[0] as Dictionary).get("building_id", ""))
+	if first_bid.is_empty():
+		return {}
+	var bdata: Dictionary = DataManager.get_building(first_bid)
+	return {
+		"building_id": first_bid,
+		"category": str(bdata.get("category", "")),
+		"name": str(bdata.get("name", first_bid)),
+		"count": buildings.size() + queue.size(),
+	}
+
+
+func _apply_building_badge(hex_cell: Control, cell: Vector2i) -> void:
+	var info: Dictionary = _building_icon_info(cell)
+	var badge: TextureRect = hex_cell.get_node_or_null("BuildingBadge") as TextureRect
+	if info.is_empty():
+		if badge != null:
+			badge.visible = false
+		return
+	var tex: Texture2D = SkirmishTileTextures.building_texture(str(info.get("building_id", "")), str(info.get("category", "")))
+	if tex == null:
+		if badge != null:
+			badge.visible = false
+		return
+	if badge == null:
+		badge = TextureRect.new()
+		badge.name = "BuildingBadge"
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		badge.z_index = 3
+		hex_cell.add_child(badge)
+	badge.texture = tex
+	# 与 CapitalBadge 相同锚点体系：PRESET_CENTER + 从中心出发的 offset
+	var base: float = minf(hex_cell.custom_minimum_size.x, hex_cell.custom_minimum_size.y)
+	if hex_cell.size.x > 1.0:
+		base = minf(hex_cell.size.x, hex_cell.size.y)
+	var s: float = base * 0.22
+	badge.set_anchors_preset(Control.PRESET_CENTER)
+	badge.offset_left = s * 0.55
+	badge.offset_top = s * 0.65
+	badge.offset_right = s * 0.55 + s * 2.0
+	badge.offset_bottom = s * 0.65 + s * 2.0
+	badge.visible = true
 
 
 func _faction_short(fid: String) -> String:
@@ -1199,8 +1434,12 @@ func _faction_short(fid: String) -> String:
 			return fid
 
 
-## 半透明叠色（不乘到地形贴上），优先级：选中 > 可攻击 > 可走 > 空城 > 势力占位
+## 半透明叠色（不乘到地形贴上），优先级：放置高亮 > 政治 > 选中 > 可攻击 > 可走 > 空城 > 势力占位
 func _cell_tint_color(cell: Vector2i, uu: Dictionary) -> Color:
+	if _placement_city_id != "":
+		var place_map: Dictionary = _placement_highlight_map()
+		if place_map.has(cell):
+			return place_map[cell] as Color
 	if _political_mode:
 		return _political_tint_color(cell, uu)
 	if not uu.is_empty() and str(uu["id"]) == _selected_unit_id:
@@ -1223,35 +1462,25 @@ func _cell_tint_color(cell: Vector2i, uu: Dictionary) -> Color:
 	return Color(0, 0, 0, 0)
 
 
-func _political_tint_color(cell: Vector2i, uu: Dictionary) -> Color:
-	var fid: String = ""
-	if cell == TacticalSkirmishManager.get_player_city():
-		fid = TacticalSkirmishManager.get_player_faction()
-	elif cell == TacticalSkirmishManager.get_enemy_city():
-		fid = TacticalSkirmishManager.get_enemy_faction()
-	elif not uu.is_empty():
-		fid = str(uu.get("faction_id", ""))
-	else:
-		fid = _temporary_split_political_owner(cell)
+func _political_tint_color(cell: Vector2i, _uu: Dictionary) -> Color:
+	if _political_grid.is_empty():
+		_rebuild_political_grid()
+	var fid: String = str(_political_grid.get(cell, ""))
+	if fid == "":
+		# 城格兜底：与大地图 political tint 相同，用城池归属
+		if cell == TacticalSkirmishManager.get_player_city():
+			fid = TacticalSkirmishManager.get_player_faction()
+		elif cell == TacticalSkirmishManager.get_enemy_city():
+			fid = TacticalSkirmishManager.get_enemy_faction()
 	if fid == "":
 		return Color(0.42, 0.42, 0.42, 0.28)
 	var fdata: Dictionary = DataManager.get_faction(fid)
 	if fdata.is_empty():
 		return Color(0.42, 0.42, 0.42, 0.42)
+	var is_cap: bool = (cell == TacticalSkirmishManager.get_player_city()) or (cell == TacticalSkirmishManager.get_enemy_city())
 	var c: Color = Color.html(str(fdata.get("color", "#888888")))
-	c.a = 0.72
+	c.a = 0.85 if is_cap else 0.7
 	return c
-
-
-func _temporary_split_political_owner(cell: Vector2i) -> String:
-	var cfg: Dictionary = TacticalSkirmishManager.get_active_config()
-	var map_width: int = int(cfg.get("map_width", 0))
-	if map_width <= 0:
-		return ""
-	var offset: Vector2i = _HexAxial.axial_to_offset_odd_r(cell.x, cell.y)
-	if offset.x < int(ceil(float(map_width) * 0.5)):
-		return TacticalSkirmishManager.get_player_faction()
-	return TacticalSkirmishManager.get_enemy_faction()
 
 
 ## 秦/赵据点亮首都美术（叠在地形与描边之间，兵牌仍压在其上）

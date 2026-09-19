@@ -15,6 +15,7 @@ const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
 const _DRAG_THRESHOLD_PX: float = 6.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
+const _BuildingPlacementHighlight := preload("res://scripts/ui/building_placement_highlight.gd")
 signal city_clicked(city_id: String)
 signal map_closed
 signal hub_action_requested(action: String)
@@ -49,14 +50,103 @@ var _placement_flash_hex: Vector2i = Vector2i(-9999, -9999)
 var _placement_flash_until_ms: int = 0
 
 @onready var _hex_board: Control = %HexBoard
-@onready var _hover_info: Label = %HoverInfo
+@onready var _hover_info: RichTextLabel = %HoverInfo
 @onready var _scroll: ScrollContainer = $MarginContainer/MainVBox/Scroll as ScrollContainer
 @onready var _minimap: Control = $MiniMapPanel/Margin/MiniMapVBox/MiniMap as Control
+
+var _hover_card: PanelContainer = null
+var _hover_card_label: RichTextLabel = null
+var _hover_cell: Vector2i = Vector2i(-99999, -99999)
+var _last_hover_text: String = ""
+var _minimap_dirty: bool = true
+var _hover_info_bar: PanelContainer = null
+var _hover_info_bar_label: RichTextLabel = null
 
 
 func _debug_log(message: String) -> void:
 	if OS.has_feature("debug"):
 		print(message)
+
+
+func _process(_delta: float) -> void:
+	# 与演武一致的信息刷新目标：顶部 HoverInfo（原默认提示句位置）
+	if not visible or _hex_board == null:
+		return
+	set_process(true)
+	var local: Vector2 = _hex_board.get_local_mouse_position()
+	var hit: Variant = _axial_at_local_point(local)
+	_set_hover_display(hit, local)
+
+
+## 与演武 SkirmishHexCell 同一套矩形 odd-R 布局反算（不再用 axial cube 公式硬套）
+func _axial_at_local_point(point: Vector2) -> Variant:
+	var logical: Vector2 = point / maxf(_zoom_level, 0.001)
+	var p: Vector2 = logical - Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX) + _board_origin_shift
+	var r: float = _cell_radius_px
+	if r <= 0.01 or _cell_payload_by_axial.is_empty():
+		return null
+	var sqrt3: float = sqrt(3.0)
+	# 布局：cx=1.5R*col, cy=sqrt3*R*(row+0.5*(col&1))；cell 左上角 = center - (R, sqrt3R/2)
+	var col_est: int = int(round(p.x / (1.5 * r)))
+	var best: Variant = null
+	var best_d: float = INF
+	for dc: int in range(-2, 3):
+		var col: int = col_est + dc
+		if col < 0:
+			continue
+		var row_f: float = p.y / (sqrt3 * r) - 0.5 * float(col & 1)
+		var row_est: int = int(round(row_f))
+		for dr: int in range(-2, 3):
+			var row: int = row_est + dr
+			if row < 0:
+				continue
+			var axial: Vector2i = _HexAxial.offset_odd_r_to_axial(col, row)
+			if not _cell_payload_by_axial.has(axial):
+				continue
+			var poly: PackedVector2Array = (_cell_payload_by_axial[axial] as Dictionary).get("polygon", PackedVector2Array()) as PackedVector2Array
+			if poly.size() >= 3 and Geometry2D.is_point_in_polygon(logical, poly):
+				return axial
+			var c: Vector2 = Vector2.ZERO
+			for pt: Vector2 in poly:
+				c += pt
+			if poly.size() > 0:
+				c /= float(poly.size())
+				var d: float = c.distance_squared_to(logical)
+				if d < best_d:
+					best_d = d
+					best = axial
+	if best != null and best_d <= pow(r * 2.2, 2.0):
+		return best
+	return null
+
+
+func _hex_play_area_avail_px() -> Vector2:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var sc: Control = $MarginContainer/MainVBox/Scroll as Control
+	var ss: Vector2 = sc.size
+	# 面板尽量占满屏幕；格子保持“标准尺寸”可滚动，不把 100×70 硬缩进一屏
+	var from_vp: Vector2 = Vector2(
+		clampf(vp.x - 16.0, 800.0, 2560.0),
+		clampf(vp.y - 24.0, 500.0, 1600.0)
+	)
+	if ss.x >= 100.0 and ss.y >= 100.0:
+		return Vector2(maxf(ss.x, from_vp.x), maxf(ss.y, from_vp.y))
+	return from_vp
+
+
+func _compute_hex_radius_px(w: int, h: int, pad: float) -> float:
+	var bb_unit: Vector2 = _map_bbox_unit(w, h, pad, 1.0)
+	if bb_unit.x < 1.0 or bb_unit.y < 1.0:
+		return _HEX_RADIUS_BASE_PX
+	var avail: Vector2 = _hex_play_area_avail_px()
+	var s: float = minf(avail.x / bb_unit.x, avail.y / bb_unit.y) * 0.99
+	# 恢复标准格子尺寸（可横向/纵向滚动看全图），不要为塞进一屏把 hex 缩成 16px
+	s = clampf(s, 42.0, 96.0)
+	# 若整图 fit 后仍很小，用“一屏约 18 列”的标准尺度
+	var fit_all: float = s
+	var standard: float = avail.x / maxf(1.5 * float(maxi(w, 1)), 1.0)
+	standard = clampf(standard, 42.0, 96.0)
+	return maxf(fit_all, standard) if fit_all < 28.0 else standard
 
 
 func _ready() -> void:
@@ -97,11 +187,13 @@ func _ready() -> void:
 
 func open() -> void:
 	show()
+	set_process(true)
 	_build_terrain_lookup()
 	_build_city_lookup()
 	_build_political_control_grid()
 	_ensure_hex_buttons()
 	_ensure_board_backdrop()
+	_hide_static_hover_labels()
 	_terrain_layout_dirty = true
 	_overlay_dirty = true
 	_refresh_display()
@@ -110,6 +202,29 @@ func open() -> void:
 	_hex_refit_pending = true
 	call_deferred("_deferred_refit_hex_radius_if_needed")
 	call_deferred("_update_draw_cull_rect")
+	call_deferred("_hide_static_hover_labels")
+
+
+## 只保留跟随鼠标的悬浮方框；隐藏顶部/底部静态悬停文案
+func _hide_static_hover_labels() -> void:
+	if _hover_info != null and is_instance_valid(_hover_info):
+		_hover_info.visible = false
+		_hover_info.custom_minimum_size = Vector2(0, 0)
+	if _hover_info_bar != null and is_instance_valid(_hover_info_bar):
+		_hover_info_bar.visible = false
+		_hover_info_bar.queue_free()
+		_hover_info_bar = null
+		_hover_info_bar_label = null
+
+
+func _write_hover_text(text: String) -> void:
+	# 仅驱动悬浮方框
+	_ensure_hover_card()
+	if _hover_card_label != null and is_instance_valid(_hover_card_label):
+		_hover_card_label.text = text
+	if _hover_card != null and is_instance_valid(_hover_card):
+		_hover_card.visible = not text.is_empty()
+		_hover_card.reset_size()
 
 
 
@@ -124,7 +239,10 @@ func begin_building_placement(city_id: String, building_id: String) -> void:
 	_refresh_overlay_display()
 	focus_city(city_id)
 	var bname: String = str(DataManager.get_building(building_id).get("name", building_id))
-	_hover_info.text = "放置模式：点击绿色辖区格建造「%s」（右键取消）" % bname
+	_write_hover_text("放置模式：点击绿色辖区格建造「%s」（右键取消）" % bname)
+	if _hover_card != null and is_instance_valid(_hover_card):
+		_hover_card.visible = true
+		_position_hover_card(_hex_board.get_local_mouse_position())
 
 
 func cancel_building_placement() -> void:
@@ -134,7 +252,8 @@ func cancel_building_placement() -> void:
 	_placement_building_id = ""
 	_overlay_dirty = true
 	_refresh_overlay_display()
-	_hover_info.text = I18n.t("big_map.hover_hint")
+	if _hover_card != null and is_instance_valid(_hover_card):
+		_hover_card.visible = false
 	building_placement_cancelled.emit()
 
 
@@ -157,27 +276,14 @@ func _try_place_building_at(axial: Vector2i) -> void:
 			_refresh_overlay_display()
 		)
 		building_placed.emit(cid, bid, axial.x, axial.y)
-		_hover_info.text = "已在 (%d,%d) 放置建筑" % [axial.x, axial.y]
+		_write_hover_text("已在 (%d,%d) 放置建筑" % [axial.x, axial.y])
 	else:
 		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, axial)
-		_hover_info.text = "无法放置：%s" % str(check.get("reason", ""))
+		_write_hover_text("无法放置：%s" % str(check.get("reason", "")))
 
 
 func _placement_highlight_map() -> Dictionary:
-	var out: Dictionary = {}
-	if _placement_city_id == "":
-		return out
-	for cell: Vector2i in CityManager.get_jurisdiction_hexes(_placement_city_id):
-		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, cell)
-		if bool(check.get("allowed", false)):
-			out[cell] = Color(0.25, 0.95, 0.35, 0.55)
-		else:
-			var reason: String = str(check.get("reason", ""))
-			if reason == "HEX_OCCUPIED" or reason == "HEX_RESERVED":
-				out[cell] = Color(0.9, 0.55, 0.15, 0.5)
-			else:
-				out[cell] = Color(0.9, 0.2, 0.2, 0.4)
-	return out
+	return _BuildingPlacementHighlight.highlight_for_jurisdiction(_placement_city_id, _placement_building_id)
 
 
 func _building_category_color(category: String, disabled: bool) -> Color:
@@ -345,8 +451,12 @@ func _on_political_toggle() -> void:
 	_political_mode = not _political_mode
 	if _political_mode:
 		_culture_mode = false
+		_minimap_dirty = true
 		_refresh_runtime_political_control(false)
 	_sync_map_mode_buttons()
+	_update_political_legend()
+	_overlay_dirty = true
+	_refresh_overlay_display()
 	_update_political_legend()
 	_overlay_dirty = true
 	_refresh_overlay_display()
@@ -356,6 +466,7 @@ func _on_culture_toggle() -> void:
 	_culture_mode = not _culture_mode
 	if _culture_mode:
 		_political_mode = false
+		_minimap_dirty = true
 	_sync_map_mode_buttons()
 	_update_political_legend()
 	_overlay_dirty = true
@@ -418,14 +529,17 @@ func _refresh_runtime_political_control(refresh_view: bool = true) -> void:
 
 
 func _on_city_control_changed(_city_id: String, _old_faction: String, _new_faction: String) -> void:
+	_minimap_dirty = true
 	_refresh_runtime_political_control()
 
 
 func _on_city_revolted(_city_id: String, _old_faction: String) -> void:
+	_minimap_dirty = true
 	_refresh_runtime_political_control()
 
 
 func _on_capital_relocated(_faction_id: String, _new_capital_id: String) -> void:
+	_minimap_dirty = true
 	_refresh_runtime_political_control()
 
 
@@ -476,19 +590,6 @@ func _create_hex_input_overlay(board_size: Vector2) -> void:
 	_hex_board.add_child(overlay)
 
 
-func _hex_play_area_avail_px() -> Vector2:
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var sc: Control = $MarginContainer/MainVBox/Scroll as Control
-	var ss: Vector2 = sc.size
-	var from_vp: Vector2 = Vector2(
-		clampf(vp.x * 0.92 - 48.0, 560.0, 1920.0),
-		clampf(vp.y * 0.70 - 100.0 - _BOTTOM_ACTION_PAD_PX, 340.0, 980.0)
-	)
-	if ss.x >= 100.0 and ss.y >= 100.0:
-		return Vector2(maxf(ss.x, from_vp.x), maxf(ss.y, from_vp.y))
-	return from_vp
-
-
 func _deferred_refit_hex_radius_if_needed() -> void:
 	if not visible or not _hex_refit_pending:
 		return
@@ -527,16 +628,6 @@ func _map_bbox_unit(w: int, h: int, pad: float, radius: float) -> Vector2:
 	return Vector2(max_br_x - min_tl_x + pad * 2.0, max_br_y - min_tl_y + pad * 2.0)
 
 
-func _compute_hex_radius_px(w: int, h: int, pad: float) -> float:
-	var bb_unit: Vector2 = _map_bbox_unit(w, h, pad, 1.0)
-	if bb_unit.x < 1.0 or bb_unit.y < 1.0:
-		return _HEX_RADIUS_BASE_PX
-	var avail: Vector2 = _hex_play_area_avail_px()
-	var scale: float = minf(avail.x / bb_unit.x, avail.y / bb_unit.y) * 0.99
-	scale = clampf(scale, 60.0, 220.0)
-	return scale
-
-
 func _ensure_board_backdrop() -> void:
 	var bg: ColorRect = _hex_board.get_node_or_null("BoardBackdrop") as ColorRect
 	if bg == null:
@@ -558,6 +649,7 @@ func _ensure_board_backdrop() -> void:
 		legacy.free()
 	_ensure_hex_layer_canvas("HexMapTerrainCanvas", HexMapCanvas.LAYER_TERRAIN, -40)
 	_ensure_hex_layer_canvas("HexMapOverlayCanvas", HexMapCanvas.LAYER_OVERLAY, -30)
+	_hide_static_hover_labels()
 
 
 func _ensure_hex_layer_canvas(canvas_name: String, layers: int, z: int) -> void:
@@ -697,6 +789,7 @@ func _refresh_display() -> void:
 		_terrain_layout_dirty = false
 		_overlay_dirty = true
 		layout_rebuilt = true
+		_minimap_dirty = true
 	if _overlay_dirty:
 		_apply_overlay_to_terrain_payload()
 		_overlay_dirty = false
@@ -708,9 +801,13 @@ func _refresh_display() -> void:
 	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
 	if overlay_cv != null:
 		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
-	_rebuild_minimap_data(map_size)
+	# 小地图全量重建很贵（100×70），仅在布局/归属变化时做
+	if _minimap_dirty or layout_rebuilt:
+		_rebuild_minimap_data(map_size)
+		_minimap_dirty = false
 	_refresh_minimap_viewport()
 	call_deferred("_update_draw_cull_rect")
+	_ensure_hover_card()
 
 
 func _refresh_overlay_display() -> void:
@@ -724,8 +821,6 @@ func _refresh_overlay_display() -> void:
 	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
 	if overlay_cv != null:
 		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
-	var map_size: Vector2i = Vector2i(int(_terrain_cfg.get("map_width", 30)), int(_terrain_cfg.get("map_height", 20)))
-	_rebuild_minimap_data(map_size)
 	_refresh_minimap_viewport()
 	call_deferred("_update_draw_cull_rect")
 
@@ -986,10 +1081,23 @@ func _on_overlay_gui_input(event: InputEvent) -> void:
 				return
 		var hit_motion: Variant = _axial_at_local_point(motion.position)
 		if hit_motion is Vector2i:
-			var cell_motion: Vector2i = hit_motion as Vector2i
-			_on_hex_mouse_enter(cell_motion.x, cell_motion.y)
+			if _placement_city_id != "":
+				var cell: Vector2i = hit_motion as Vector2i
+				var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, cell)
+				var bname: String = str(DataManager.get_building(_placement_building_id).get("name", _placement_building_id))
+				var place_txt: String = ""
+				if bool(check.get("allowed", false)):
+					place_txt = "点击放置「%s」于 (%d,%d)" % [bname, cell.x, cell.y]
+				else:
+					place_txt = "(%d,%d) 不可放置：%s" % [cell.x, cell.y, str(check.get("reason", ""))]
+				_hover_cell = cell
+				_last_hover_text = place_txt
+				_write_hover_text(place_txt)
+				_position_hover_card(motion.position)
+			else:
+				_set_hover_display(hit_motion, motion.position)
 		else:
-			_on_hex_mouse_exit()
+			_set_hover_display(null, motion.position)
 	elif event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _placement_city_id != "":
@@ -1181,23 +1289,6 @@ func _nearest_axial_at_local_point(point: Vector2) -> Variant:
 	return best
 
 
-func _axial_at_local_point(point: Vector2) -> Variant:
-	var logical_point: Vector2 = point / maxf(_zoom_level, 0.001)
-	var center_local: Vector2 = logical_point - Vector2(_HEX_BOARD_PAD_PX, _HEX_BOARD_PAD_PX) + _board_origin_shift + _cell_size * 0.5
-	var candidate: Vector2i = _HexAxial.pixel_flat_top_to_axial(center_local, _cell_radius_px)
-	var candidates: Array[Vector2i] = [candidate]
-	for neighbor: Vector2i in _HexAxial.neighbors_hex(candidate):
-		candidates.append(neighbor)
-	for axial: Vector2i in candidates:
-		var payload: Dictionary = _cell_payload_by_axial.get(axial, {}) as Dictionary
-		if payload.is_empty():
-			continue
-		var polygon: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
-		if polygon.size() >= 3 and Geometry2D.is_point_in_polygon(logical_point, polygon):
-			return axial
-	return null
-
-
 func _on_hex_pressed(q: int, r: int) -> void:
 	var axial: Vector2i = Vector2i(q, r)
 	if _placement_city_id != "":
@@ -1240,16 +1331,79 @@ func _on_hex_pressed(q: int, r: int) -> void:
 		city_clicked.emit(str(city2.get("id", "")))
 
 
+func _ensure_hover_card() -> void:
+	if _hover_card != null and is_instance_valid(_hover_card):
+		return
+	_hover_card = PanelContainer.new()
+	_hover_card.name = "HoverCard"
+	_hover_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hover_card.z_index = 50
+	_hover_card.visible = false
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.09, 0.07, 0.92)
+	style.border_color = Color(0.72, 0.62, 0.35, 0.9)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 10.0
+	style.content_margin_right = 10.0
+	style.content_margin_top = 8.0
+	style.content_margin_bottom = 8.0
+	_hover_card.add_theme_stylebox_override("panel", style)
+	_hover_card_label = RichTextLabel.new()
+	_hover_card_label.bbcode_enabled = true
+	_hover_card_label.fit_content = true
+	_hover_card_label.scroll_active = false
+	_hover_card_label.custom_minimum_size = Vector2(320, 0)
+	_hover_card_label.add_theme_font_size_override("normal_font_size", 13)
+	_hover_card_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hover_card.add_child(_hover_card_label)
+	_hex_board.add_child(_hover_card)
+
+
+func _position_hover_card(local_pos: Vector2) -> void:
+	if _hover_card == null or not is_instance_valid(_hover_card):
+		return
+	var board_size: Vector2 = _hex_board.size
+	if board_size.x < 1.0:
+		board_size = _hex_board.custom_minimum_size
+	var card_size: Vector2 = _hover_card.size
+	if card_size.x < 10.0:
+		card_size = Vector2(340, 120)
+	var x: float = clampf(local_pos.x + 18.0, 4.0, maxf(board_size.x - card_size.x - 4.0, 4.0))
+	var y: float = clampf(local_pos.y + 18.0, 4.0, maxf(board_size.y - card_size.y - 4.0, 4.0))
+	_hover_card.position = Vector2(x, y)
+
+
+func _set_hover_display(cell: Variant, local_pos: Vector2) -> void:
+	_ensure_hover_card()
+	_hide_static_hover_labels()
+	if cell == null:
+		if _hover_cell != Vector2i(-99999, -99999):
+			_hover_cell = Vector2i(-99999, -99999)
+			_last_hover_text = ""
+		if _hover_card != null and is_instance_valid(_hover_card):
+			_hover_card.visible = false
+		return
+	var axial: Vector2i = cell as Vector2i
+	if axial == _hover_cell and _last_hover_text != "":
+		_position_hover_card(local_pos)
+		return
+	_hover_cell = axial
+	_last_hover_text = _build_hover_text(axial)
+	_write_hover_text(_last_hover_text)
+	_position_hover_card(local_pos)
+
+
 func _on_hex_mouse_enter(q: int, r: int) -> void:
 	if _placement_city_id != "":
 		var check: Dictionary = CityManager.can_build(_placement_city_id, _placement_building_id, Vector2i(q, r))
 		var bname: String = str(DataManager.get_building(_placement_building_id).get("name", _placement_building_id))
 		if bool(check.get("allowed", false)):
-			_hover_info.text = "点击放置「%s」于 (%d,%d)" % [bname, q, r]
+			_write_hover_text("点击放置「%s」于 (%d,%d)" % [bname, q, r])
 		else:
-			_hover_info.text = "(%d,%d) 不可放置：%s" % [q, r, str(check.get("reason", ""))]
+			_write_hover_text("(%d,%d) 不可放置：%s" % [q, r, str(check.get("reason", ""))])
 		return
-	_hover_info.text = _build_hover_text(Vector2i(q, r))
+	_write_hover_text(_build_hover_text(Vector2i(q, r)))
 
 
 func _on_overlay_mouse_exited() -> void:
@@ -1259,7 +1413,10 @@ func _on_overlay_mouse_exited() -> void:
 
 
 func _on_hex_mouse_exit() -> void:
-	_hover_info.text = I18n.t("big_map.hover_hint")
+	_hover_cell = Vector2i(-99999, -99999)
+	_last_hover_text = ""
+	if _hover_card != null and is_instance_valid(_hover_card):
+		_hover_card.visible = false
 
 
 func _build_hover_text(cell: Vector2i) -> String:
@@ -1269,13 +1426,23 @@ func _build_hover_text(cell: Vector2i) -> String:
 	var terrain_name: String = str(terrain_data.get("name", terrain_id))
 	var move_cost: Variant = terrain_data.get("move_cost", 1)
 	var move_text: String = I18n.t("big_map.impassable") if int(move_cost) < 0 else str(move_cost)
-	lines.append("地形：%s（%s）｜ 移耗：%s ｜ 攻×%.2f ｜ 守×%.2f" % [
+	var atk_m: float = float(terrain_data.get("atk_mod", 1.0))
+	var def_m: float = float(terrain_data.get("def_mod", 1.0))
+	var amb: float = float(terrain_data.get("ambush_chance", 0.0))
+	var amb_str: String = (" ｜ 伏击+%d%%" % int(round(amb * 100.0))) if amb > 0.001 else ""
+	lines.append("地形：%s（%s）｜ 移耗：%s ｜ 攻×%.2f ｜ 守×%.2f%s" % [
 		terrain_name,
 		terrain_id,
 		move_text,
-		float(terrain_data.get("atk_mod", 1.0)),
-		float(terrain_data.get("def_mod", 1.0))
+		atk_m,
+		def_m,
+		amb_str
 	])
+	var pol_fid: String = str(_political_control_grid.get(cell, ""))
+	if pol_fid == "":
+		lines.append("政治归属：中立/缓冲")
+	else:
+		lines.append("政治归属：%s" % _faction_display_name(pol_fid))
 	var city: Dictionary = _city_at_axial.get(cell, {}) as Dictionary
 	if not city.is_empty():
 		var city_id: String = str(city.get("id", ""))
@@ -1292,12 +1459,24 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var build_text: String = ""
 		if not built_names.is_empty():
 			build_text = " ｜ 建筑：%s" % "、".join(PackedStringArray(built_names))
-		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s" % [
+		var wall_hp: int = -1
+		if CityManager.has_method("get_wall_hp"):
+			wall_hp = int(CityManager.get_wall_hp(city_id))
+		var wall_text: String = ""
+		if wall_hp >= 0:
+			var wall_max: int = wall_hp
+			if CityManager.has_method("get_wall_max_hp"):
+				wall_max = int(CityManager.get_wall_max_hp(city_id))
+			elif wall_max <= 0:
+				wall_max = wall_hp
+			wall_text = " ｜ 墙 %d/%d" % [wall_hp, maxi(wall_max, wall_hp)]
+		lines.append("城市：%s%s ｜ 势力：%s ｜ 人口：%d ｜ 城防 HP：%d%s%s%s" % [
 			str(state.get("name", city.get("name", ""))),
 			cap_tag,
 			_faction_display_name(fid),
 			int(state.get("current_population", city.get("base_population", 0))),
 			int(state.get("current_hp", city.get("current_hp", 0))),
+			wall_text,
 			special_text,
 			build_text
 		])
@@ -1331,18 +1510,38 @@ func _build_hover_text(cell: Vector2i) -> String:
 	var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell)
 	if not unit.is_empty():
 		var u_type: Dictionary = DataManager.get_unit_type(str(unit.get("unit_type_id", "")))
-		lines.append("单位：%s ｜ 势力：%s ｜ HP %d/%d ｜ 移力 %d" % [
-			str(u_type.get("name", unit.get("unit_type_id", ""))),
+		var base_atk: int = int(u_type.get("attack", 0))
+		var base_def: int = int(u_type.get("defense", 0))
+		var rng: int = int(u_type.get("range", 1))
+		lines.append("[ %s · %s ]" % [
 			_faction_display_name(str(unit.get("faction_id", ""))),
+			str(u_type.get("name", unit.get("unit_type_id", "")))
+		])
+		lines.append("HP %d/%d ｜ 攻 %d ｜ 防 %d ｜ 射程 %d ｜ 移力 %d ｜ 兵员 %d" % [
 			int(unit.get("hp", 0)),
 			int(unit.get("max_hp", 0)),
+			base_atk,
+			base_def,
+			rng,
 			int(unit.get("mp", 0)),
+			int(unit.get("count", 1)),
 		])
+		if unit.has("morale"):
+			lines.append("士气 %d" % int(unit.get("morale", 0)))
 	var selected_id: String = StrategicMapManager.get_selected_unit_id()
 	if selected_id != "":
 		var reach: Dictionary = StrategicMapManager.get_reachable_cells(selected_id)
 		if reach.has(cell):
 			lines.append(I18n.t("big_map.reachable") % int(reach[cell]))
+		if not unit.is_empty() and str(unit.get("faction_id", "")) != GameManager.get_player_faction():
+			if StrategicMapManager.has_method("compute_attack_preview"):
+				var preview: Dictionary = StrategicMapManager.compute_attack_preview(selected_id, str(unit.get("id", "")))
+				if not preview.is_empty():
+					lines.append("── 预期伤害 %s~%s ｜ 反击预估 %s" % [
+						str(preview.get("expected_dmg_lo", preview.get("expected_dmg", "-"))),
+						str(preview.get("expected_dmg_hi", preview.get("expected_dmg", "-"))),
+						str(preview.get("counter_atk_dmg_lo", preview.get("counter_atk_dmg", "-"))),
+					])
 	return "\n".join(lines)
 
 

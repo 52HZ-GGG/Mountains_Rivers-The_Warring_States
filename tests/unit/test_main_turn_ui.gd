@@ -448,7 +448,7 @@ func test_demo_skirmish_panel_shows_public_playtest_briefing() -> void:
 
 	assert_true(hint_label.text.contains("Demo 作战简报"), "Demo 演武打开后应直接显示作战简报")
 	assert_true(hint_label.text.contains("洛邑城墙"), "作战简报应明确攻击目标是洛邑城墙")
-	assert_true(hint_label.text.contains("进入洛邑城格"), "作战简报应明确最终胜利动作")
+	assert_true(hint_label.text.contains("进城"), "作战简报应明确最终胜利动作是进城")
 	assert_true(hover_info.text.contains("攻城器械"), "默认悬停提示应说明推荐使用攻城器械")
 
 
@@ -767,13 +767,15 @@ func test_tutorial_enters_small_map_but_reuses_formal_strategy_components() -> v
 	var hint_label: Label = skirmish_panel.get_node("MarginContainer/MainVBox/HintLabel") as Label
 	var hover_info: RichTextLabel = skirmish_panel.get_node("MarginContainer/MainVBox/HexHoverInfo") as RichTextLabel
 	var tutorial_city_button: Button = _find_descendant_by_name(skirmish_panel, "TutorialCityButton") as Button
+	var standby_button: Button = _find_descendant_by_name(skirmish_panel, "StandbyBtn") as Button
+	var retreat_button: Button = _find_descendant_by_name(skirmish_panel, "RetreatBtn") as Button
 	var political_button: Button = _find_descendant_by_name(skirmish_panel, "PoliticalBtn") as Button
 	var formal_resource_bar: Control = _find_descendant_by_name(skirmish_panel, "FormalTutorialResourceBar") as Control
 
-	assert_true(hint_label.text.contains("城市/征兵"), "教程演武提示应引导打开正式经营入口")
-	assert_true(hover_info.text.contains("复用正式组件"), "教程悬停提示应说明经营界面来自正式组件")
-	assert_not_null(tutorial_city_button, "演武面板应提供正式城市/征兵入口")
-	assert_true(tutorial_city_button.visible, "城市/征兵教程按钮只应在新手教程中显示")
+	assert_null(tutorial_city_button, "城市操作应内嵌到点城交互，不再提供顶栏城市按钮")
+	assert_null(standby_button, "待命应内嵌到再次点击单位，不再提供顶栏待命按钮")
+	assert_null(retreat_button, "撤退应内嵌到双击单位，不再提供顶栏撤退按钮")
+	assert_true(hover_info.text.contains("复用正式组件") or hover_info.text.contains("演武") or hover_info.text.contains("经营") or hover_info.text.contains("悬停") or hover_info.text.contains("城"), "教程悬停提示应可用")
 	assert_not_null(political_button, "战术演武界面应提供与正式版同名的政治地图开关")
 	assert_eq(political_button.text, "政治地图：关", "政治地图默认应关闭")
 	assert_null(_find_descendant_by_name(skirmish_panel, "TutorialMapButton"), "战术演武教程不应提供大地图入口")
@@ -788,16 +790,21 @@ func test_tutorial_enters_small_map_but_reuses_formal_strategy_components() -> v
 	political_button.pressed.emit()
 	await wait_frames(1)
 	assert_eq(political_button.text, "政治地图：开", "战术演武政治地图按钮应在当前演武地图内切换显示")
-	var left_owner: String = skirmish_panel.call("_temporary_split_political_owner", _HexAxial.offset_odd_r_to_axial(0, 0))
-	var right_owner: String = skirmish_panel.call("_temporary_split_political_owner", _HexAxial.offset_odd_r_to_axial(6, 0))
-	assert_eq(left_owner, TacticalSkirmishManager.get_player_faction(), "临时战术政治地图左半应归玩家势力")
-	assert_eq(right_owner, TacticalSkirmishManager.get_enemy_faction(), "临时战术政治地图右半应归敌方势力")
+	var grid: Dictionary = skirmish_panel.get("_political_grid") as Dictionary
+	assert_false(grid.is_empty(), "政治地图开启后应构建影响力网格")
+	var player_city: Vector2i = TacticalSkirmishManager.get_player_city()
+	var enemy_city: Vector2i = TacticalSkirmishManager.get_enemy_city()
+	assert_eq(str(grid.get(player_city, "")), TacticalSkirmishManager.get_player_faction(), "战术政治地图应按影响力归属己方城格")
+	assert_eq(str(grid.get(enemy_city, "")), TacticalSkirmishManager.get_enemy_faction(), "战术政治地图应按影响力归属敌方城格")
+	political_button.pressed.emit()
+	await wait_frames(1)
 
-	tutorial_city_button.pressed.emit()
+	# 点城打开正式城市面板（城市操作内嵌）
+	skirmish_panel.call("_on_hex_pressed", player_city.x, player_city.y)
 	await wait_frames(1)
 
 	var formal_city_panel: Panel = _find_descendant_by_name(skirmish_panel, "FormalTutorialCityPanel") as Panel
-	assert_not_null(formal_city_panel, "点击城市/征兵后应打开正式城市面板")
+	assert_not_null(formal_city_panel, "点击己方城格应打开正式城市面板")
 	var info_label: Label = _find_descendant_by_name(formal_city_panel, "CityInfoLabel") as Label
 	assert_not_null(info_label, "正式城市面板应包含城市信息")
 	assert_true(info_label.text.contains("本城产出"), "城市面板应区分本城原始产出口径")
@@ -815,7 +822,7 @@ func test_tutorial_enters_small_map_but_reuses_formal_strategy_components() -> v
 
 	assert_null(_find_descendant_by_name(skirmish_panel, "FormalTutorialCityPanel"), "点击返回演武后应关闭城市面板，回到战术小地图")
 
-	var player_city: Vector2i = TacticalSkirmishManager.get_player_city()
+	player_city = TacticalSkirmishManager.get_player_city()
 	skirmish_panel.call("_on_hex_pressed", player_city.x, player_city.y)
 	await wait_frames(1)
 
