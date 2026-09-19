@@ -61,18 +61,28 @@ var _last_hover_text: String = ""
 var _minimap_dirty: bool = true
 var _hover_info_bar: PanelContainer = null
 var _hover_info_bar_label: RichTextLabel = null
+## 悬停节流
+var _hover_poll_accum: float = 0.0
+const _HOVER_POLL_SEC: float = 0.045
+## 覆盖层增量：axial → payload 引用 + 上次选中/可达
+var _payload_ref_by_axial: Dictionary = {}
+var _last_reachable: Dictionary = {}
+var _last_selected_unit_id: String = ""
+var _last_selected_cell: Vector2i = Vector2i(-99999, -99999)
 
 
-func _debug_log(message: String) -> void:
-	if OS.has_feature("debug"):
-		print(message)
-
-
-func _process(_delta: float) -> void:
-	# 与演武一致的信息刷新目标：顶部 HoverInfo（原默认提示句位置）
+func _process(delta: float) -> void:
 	if not visible or _hex_board == null:
 		return
-	set_process(true)
+	# 拖拽中不做悬停命中，降低卡顿
+	if _drag_active:
+		if _hover_card != null and is_instance_valid(_hover_card) and _hover_card.visible:
+			_hover_card.visible = false
+		return
+	_hover_poll_accum += delta
+	if _hover_poll_accum < _HOVER_POLL_SEC:
+		return
+	_hover_poll_accum = 0.0
 	var local: Vector2 = _hex_board.get_local_mouse_position()
 	var hit: Variant = _axial_at_local_point(local)
 	_set_hover_display(hit, local)
@@ -667,7 +677,14 @@ func _ensure_hex_layer_canvas(canvas_name: String, layers: int, z: int) -> void:
 		if cv.get_index() < backdrop_index:
 			_hex_board.move_child(cv, backdrop_index + 1)
 	cv.scale = Vector2(_zoom_level, _zoom_level)
+	if cv.has_method("set_spatial_meta"):
+		cv.set_spatial_meta(_cell_radius_px, _board_origin_shift, float(_HEX_BOARD_PAD_PX))
 	cv.queue_redraw()
+
+
+func _debug_log(message: String) -> void:
+	if OS.has_feature("debug"):
+		print(message)
 
 
 func _iter_map_cells() -> Array:
@@ -682,6 +699,8 @@ func _iter_map_cells() -> Array:
 			var cell_pos: Vector2 = _cell_top_left(cell_axial)
 			cells.append({
 				"axial": cell_axial,
+				"col": col,
+				"row": row,
 				"pos": cell_pos,
 				"polygon": _world_hex_polygon(cell_pos),
 				"caption_font_size": caption_font_size,
@@ -692,10 +711,11 @@ func _iter_map_cells() -> Array:
 func _build_terrain_payload_cells(layout_cells: Array) -> Array:
 	var payload_cells: Array = []
 	_cell_payload_by_axial.clear()
+	_payload_ref_by_axial.clear()
 	for entry: Dictionary in layout_cells:
 		var cell_axial: Vector2i = entry["axial"] as Vector2i
 		var cell_pos: Vector2 = entry["pos"] as Vector2
-		payload_cells.append({
+		var payload: Dictionary = {
 			"polygon": entry["polygon"],
 			"uvs": _world_hex_uvs(),
 			"texture": SkirmishTileTextures.terrain_texture(str(_terrain_at_axial.get(cell_axial, "plains"))),
@@ -708,11 +728,59 @@ func _build_terrain_payload_cells(layout_cells: Array) -> Array:
 			"capital_rect": Rect2(),
 			"unit_texture": null,
 			"unit_rect": Rect2(),
-		})
-		_cell_payload_by_axial[cell_axial] = {
-			"polygon": entry["polygon"],
+			"_axial": cell_axial,
+			"col": int(entry.get("col", 0)),
+			"row": int(entry.get("row", 0)),
 		}
+		payload_cells.append(payload)
+		_cell_payload_by_axial[cell_axial] = {"polygon": entry["polygon"]}
+		_payload_ref_by_axial[cell_axial] = payload
 	return payload_cells
+
+
+func _write_overlay_payload(payload: Dictionary, cell_axial: Vector2i, selected_id: String, reachable: Dictionary, placement_cells: Dictionary, building_marks: Dictionary) -> void:
+	var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
+	var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
+	var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
+	if not city.is_empty():
+		var built_count: int = (city.get("buildings", []) as Array).size()
+		var queue_count: int = (city.get("build_queue", []) as Array).size()
+		if built_count > 0 or queue_count > 0:
+			var b_tag: String = I18n.t("big_map.build_tag") % built_count
+			if queue_count > 0:
+				b_tag += "+%d" % queue_count
+			caption = "%s\n%s" % [caption, b_tag]
+	if not unit.is_empty():
+		var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
+		var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
+		caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
+	if building_marks.has(cell_axial):
+		var letter: String = str((building_marks[cell_axial] as Dictionary).get("letter", ""))
+		if letter != "":
+			caption = letter if caption.is_empty() else "%s\n%s" % [caption, letter]
+	var tint: Color = _cell_tint(cell_axial, city)
+	if building_marks.has(cell_axial):
+		tint = (building_marks[cell_axial] as Dictionary).get("color", tint) as Color
+	if reachable.has(cell_axial):
+		tint = Color(0.35, 0.75, 1.0, 0.35)
+	if placement_cells.has(cell_axial):
+		tint = placement_cells[cell_axial] as Color
+	if _placement_flash_hex == cell_axial and Time.get_ticks_msec() < _placement_flash_until_ms:
+		tint = Color(0.3, 1.0, 0.4, 0.7)
+	payload["tint"] = tint
+	payload["caption"] = caption
+	payload["capital_texture"] = _capital_texture(city)
+	payload["capital_rect"] = _capital_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+	payload["unit_texture"] = _unit_texture(unit)
+	payload["unit_rect"] = _unit_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+	if building_marks.has(cell_axial):
+		var bmark: Dictionary = building_marks[cell_axial] as Dictionary
+		payload["building_texture"] = SkirmishTileTextures.building_texture(
+			str(bmark.get("building_id", "")), str(bmark.get("category", "")))
+		payload["building_rect"] = _building_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+	else:
+		payload["building_texture"] = null
+		payload["building_rect"] = Rect2()
 
 
 func _apply_overlay_to_terrain_payload() -> void:
@@ -724,54 +792,90 @@ func _apply_overlay_to_terrain_payload() -> void:
 	var building_marks: Dictionary = _building_mark_map()
 	for i: int in range(_terrain_payload_cells.size()):
 		var payload: Dictionary = _terrain_payload_cells[i] as Dictionary
-		# 用 caption_center 反推 axial 不可靠；按顺序与 _iter_map_cells 一致
-		# 通过 polygon 中心匹配太慢，改为在 build 时缓存 axial
 		var cell_axial: Vector2i = payload.get("_axial", Vector2i(-99999, -99999)) as Vector2i
 		if cell_axial.x <= -99999:
 			continue
-		var city: Dictionary = _city_at_axial.get(cell_axial, {}) as Dictionary
-		var unit: Dictionary = StrategicMapManager.get_unit_at_axial(cell_axial)
-		var caption: String = str(city.get("name", "")) if not city.is_empty() else ""
-		if not city.is_empty():
-			var built_count: int = (city.get("buildings", []) as Array).size()
-			var queue_count: int = (city.get("build_queue", []) as Array).size()
-			if built_count > 0 or queue_count > 0:
-				var b_tag: String = I18n.t("big_map.build_tag") % built_count
-				if queue_count > 0:
-					b_tag += "+%d" % queue_count
-				caption = "%s\n%s" % [caption, b_tag]
-		if not unit.is_empty():
-			var unit_name: String = str(DataManager.get_unit_type(str(unit.get("unit_type_id", ""))).get("name", unit.get("unit_type_id", "")))
-			var unit_tag: String = "%s×%s" % [unit_name, str(unit.get("count", 1))]
-			caption = unit_tag if caption.is_empty() else "%s\n%s" % [caption, unit_tag]
-		if building_marks.has(cell_axial):
-			var letter: String = str((building_marks[cell_axial] as Dictionary).get("letter", ""))
-			if letter != "":
-				caption = letter if caption.is_empty() else "%s\n%s" % [caption, letter]
-		var tint: Color = _cell_tint(cell_axial, city)
-		if building_marks.has(cell_axial):
-			tint = (building_marks[cell_axial] as Dictionary).get("color", tint) as Color
-		if reachable.has(cell_axial):
-			tint = Color(0.35, 0.75, 1.0, 0.35)
-		if placement_cells.has(cell_axial):
-			tint = placement_cells[cell_axial] as Color
-		if _placement_flash_hex == cell_axial and Time.get_ticks_msec() < _placement_flash_until_ms:
-			tint = Color(0.3, 1.0, 0.4, 0.7)
-		payload["tint"] = tint
-		payload["caption"] = caption
-		payload["capital_texture"] = _capital_texture(city)
-		payload["capital_rect"] = _capital_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
-		payload["unit_texture"] = _unit_texture(unit)
-		payload["unit_rect"] = _unit_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
-		if building_marks.has(cell_axial):
-			var bmark: Dictionary = building_marks[cell_axial] as Dictionary
-			payload["building_texture"] = SkirmishTileTextures.building_texture(
-				str(bmark.get("building_id", "")), str(bmark.get("category", "")))
-			payload["building_rect"] = _building_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
-		else:
-			payload["building_texture"] = null
-			payload["building_rect"] = Rect2()
-		_terrain_payload_cells[i] = payload
+		_write_overlay_payload(payload, cell_axial, selected_id, reachable, placement_cells, building_marks)
+		_payload_ref_by_axial[cell_axial] = payload
+	_last_selected_unit_id = selected_id
+	_last_reachable = reachable
+	_last_selected_cell = Vector2i(-99999, -99999)
+	if selected_id != "":
+		var sel_unit: Dictionary = StrategicMapManager.get_unit(selected_id)
+		if not sel_unit.is_empty():
+			_last_selected_cell = Vector2i(int(sel_unit.get("q", 0)), int(sel_unit.get("r", 0)))
+
+
+## 仅刷新选中/可达相关格，避免点选时 O(全图) 写回
+func _refresh_overlay_partial() -> void:
+	if _terrain_payload_cells.is_empty():
+		_refresh_display()
+		return
+	var selected_id: String = StrategicMapManager.get_selected_unit_id()
+	var reachable: Dictionary = {}
+	if selected_id != "":
+		reachable = StrategicMapManager.get_reachable_cells(selected_id)
+	var dirty: Dictionary = {}
+	for c: Variant in _last_reachable.keys():
+		dirty[c] = true
+	for c: Variant in reachable.keys():
+		dirty[c] = true
+	if _last_selected_cell.x > -90000:
+		dirty[_last_selected_cell] = true
+	var new_sel_cell: Vector2i = Vector2i(-99999, -99999)
+	if selected_id != "":
+		var sel_unit: Dictionary = StrategicMapManager.get_unit(selected_id)
+		if not sel_unit.is_empty():
+			new_sel_cell = Vector2i(int(sel_unit.get("q", 0)), int(sel_unit.get("r", 0)))
+			dirty[new_sel_cell] = true
+	# 上次/本次单位所在格
+	if _last_selected_unit_id != "":
+		var old_u: Dictionary = StrategicMapManager.get_unit(_last_selected_unit_id)
+		if not old_u.is_empty():
+			dirty[Vector2i(int(old_u.get("q", 0)), int(old_u.get("r", 0)))] = true
+	if selected_id != "" and selected_id != _last_selected_unit_id:
+		var nu: Dictionary = StrategicMapManager.get_unit(selected_id)
+		if not nu.is_empty():
+			dirty[Vector2i(int(nu.get("q", 0)), int(nu.get("r", 0)))] = true
+	# 若有放置模式，放置环也要全量（格子少，直接全刷）
+	var placement_cells: Dictionary = _placement_highlight_map()
+	if not placement_cells.is_empty():
+		_apply_overlay_to_terrain_payload()
+		_push_overlay_canvas()
+		return
+	var building_marks: Dictionary = _building_mark_map()
+	for c: Variant in dirty.keys():
+		var axial: Vector2i = c as Vector2i
+		var payload: Variant = _payload_ref_by_axial.get(axial, null)
+		if payload == null:
+			continue
+		_write_overlay_payload(payload as Dictionary, axial, selected_id, reachable, placement_cells, building_marks)
+	_last_selected_unit_id = selected_id
+	_last_reachable = reachable
+	_last_selected_cell = new_sel_cell
+	_push_overlay_canvas(true)
+
+
+func _push_overlay_canvas(redraw_only: bool = false) -> void:
+	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
+	if overlay_cv == null:
+		return
+	if redraw_only:
+		overlay_cv.request_overlay_redraw()
+		return
+	overlay_cv.set_payload_cells(_terrain_payload_cells, _hex_board.custom_minimum_size)
+	_sync_canvas_spatial_meta()
+	_refresh_minimap_viewport()
+	call_deferred("_update_draw_cull_rect")
+
+
+func _sync_canvas_spatial_meta() -> void:
+	if _hex_board == null:
+		return
+	for canvas_name: String in ["HexMapTerrainCanvas", "HexMapOverlayCanvas"]:
+		var cv: HexMapCanvas = _hex_board.get_node_or_null(canvas_name) as HexMapCanvas
+		if cv != null and cv.has_method("set_spatial_meta"):
+			cv.set_spatial_meta(_cell_radius_px, _board_origin_shift, float(_HEX_BOARD_PAD_PX))
 
 
 func _refresh_display() -> void:
@@ -801,6 +905,7 @@ func _refresh_display() -> void:
 	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
 	if overlay_cv != null:
 		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
+	_sync_canvas_spatial_meta()
 	# 小地图全量重建很贵（100×70），仅在布局/归属变化时做
 	if _minimap_dirty or layout_rebuilt:
 		_rebuild_minimap_data(map_size)
@@ -808,6 +913,7 @@ func _refresh_display() -> void:
 	_refresh_minimap_viewport()
 	call_deferred("_update_draw_cull_rect")
 	_ensure_hover_card()
+	_hide_static_hover_labels()
 
 
 func _refresh_overlay_display() -> void:
@@ -817,12 +923,7 @@ func _refresh_overlay_display() -> void:
 		return
 	_apply_overlay_to_terrain_payload()
 	_overlay_dirty = false
-	var board_size: Vector2 = _hex_board.custom_minimum_size
-	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
-	if overlay_cv != null:
-		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
-	_refresh_minimap_viewport()
-	call_deferred("_update_draw_cull_rect")
+	_push_overlay_canvas()
 
 
 func _update_draw_cull_rect() -> void:
@@ -1302,30 +1403,25 @@ func _on_hex_pressed(q: int, r: int) -> void:
 		if not selected.is_empty() and str(selected.get("faction_id", "")) == GameManager.get_player_faction():
 			if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) != GameManager.get_player_faction():
 				StrategicMapManager.try_attack_unit(selected_id, str(unit_here.get("id", "")))
-				_overlay_dirty = true
-				_refresh_overlay_display()
+				_refresh_overlay_partial()
 				return
 			var city: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
 			if not city.is_empty() and str(city.get("current_faction_id", "")) != GameManager.get_player_faction():
 				StrategicMapManager.try_attack_city(selected_id, str(city.get("id", "")))
-				_overlay_dirty = true
 				_refresh_overlay_display()
 				return
 			var moved: Dictionary = StrategicMapManager.try_move_unit(selected_id, axial)
 			if bool(moved.get("ok", false)):
 				StrategicMapManager.clear_selection()
-				_overlay_dirty = true
-				_refresh_overlay_display()
+				_refresh_overlay_partial()
 				return
 	# 选中己方单位
 	if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) == GameManager.get_player_faction():
 		StrategicMapManager.select_unit(str(unit_here.get("id", "")))
-		_overlay_dirty = true
-		_refresh_overlay_display()
+		_refresh_overlay_partial()
 		return
 	StrategicMapManager.clear_selection()
-	_overlay_dirty = true
-	_refresh_overlay_display()
+	_refresh_overlay_partial()
 	var city2: Dictionary = _city_at_axial.get(axial, {}) as Dictionary
 	if not city2.is_empty():
 		city_clicked.emit(str(city2.get("id", "")))
@@ -1375,8 +1471,11 @@ func _position_hover_card(local_pos: Vector2) -> void:
 
 
 func _set_hover_display(cell: Variant, local_pos: Vector2) -> void:
+	if not visible or _hex_board == null:
+		return
 	_ensure_hover_card()
-	_hide_static_hover_labels()
+	if _hover_info != null and is_instance_valid(_hover_info) and _hover_info.visible:
+		_hide_static_hover_labels()
 	if cell == null:
 		if _hover_cell != Vector2i(-99999, -99999):
 			_hover_cell = Vector2i(-99999, -99999)

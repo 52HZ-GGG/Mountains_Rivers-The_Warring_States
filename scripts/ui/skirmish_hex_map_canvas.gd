@@ -12,6 +12,10 @@ const LAYER_TERRAIN: int = 1
 const LAYER_OVERLAY: int = 2
 const LAYER_ALL: int = LAYER_TERRAIN | LAYER_OVERLAY
 
+## 大地图 payload 是静态缓存：拖拽只改视口；_draw 用 cull 过滤。
+## 视口 col/row 窗口索引默认关闭（曾导致空图），保留实现供后续安全开启。
+const _USE_RC_WINDOW_INDEX: bool = false
+
 var _payload_cells: Array = []
 var _payload_board_size: Vector2 = Vector2.ZERO
 var _use_payload: bool = false
@@ -19,6 +23,12 @@ var _draw_layers: int = LAYER_ALL
 var _cull_rect: Rect2 = Rect2()
 var _cull_enabled: bool = false
 var _content_dirty: bool = true
+## 视口窗口索引：col/row → payload
+var _payload_by_rc: Dictionary = {}
+var _hex_radius: float = 0.0
+var _board_origin_shift: Vector2 = Vector2.ZERO
+var _board_pad: float = 0.0
+var _rc_index_ready: bool = false
 
 
 func _scale_poly_outward(poly: PackedVector2Array, cell_pos: Vector2, cell: SkirmishHexCell) -> PackedVector2Array:
@@ -69,8 +79,9 @@ func set_cull_enabled(enabled: bool) -> void:
 func set_cull_rect(rect: Rect2) -> void:
 	if not _cull_enabled:
 		return
-	# 放大一点，避免滚动时边缘闪烁
-	var padded: Rect2 = rect.grow(maxf(_payload_board_size.x, _payload_board_size.y) * 0.02 + 80.0)
+	# 边缘预留：不要按整图尺寸百分比撑得过大，否则窗口索引会退化成全图
+	var grow: float = clampf(maxf(_payload_board_size.x, _payload_board_size.y) * 0.01 + 40.0, 24.0, 96.0)
+	var padded: Rect2 = rect.grow(grow)
 	if _cull_rect == padded:
 		return
 	_cull_rect = padded
@@ -92,15 +103,128 @@ func set_payload_cells(cells: Array, board_size: Vector2) -> void:
 	_payload_board_size = board_size
 	_use_payload = true
 	_content_dirty = true
+	_rebuild_rc_index()
 	queue_redraw()
 
 
-func clear_payload_cells() -> void:
-	_payload_cells = []
-	_payload_board_size = Vector2.ZERO
-	_use_payload = false
+## 大地图矩形 odd-R 布局元数据，供视口窗口裁剪
+func set_spatial_meta(hex_radius: float, origin_shift: Vector2, pad: float) -> void:
+	_hex_radius = hex_radius
+	_board_origin_shift = origin_shift
+	_board_pad = pad
+	_rebuild_rc_index()
+	queue_redraw()
+
+
+func request_overlay_redraw() -> void:
 	_content_dirty = true
 	queue_redraw()
+
+
+func _rebuild_rc_index() -> void:
+	_payload_by_rc.clear()
+	_rc_index_ready = false
+	if _payload_cells.is_empty() or _hex_radius <= 0.01:
+		return
+	var has_rc: bool = false
+	for payload_v: Variant in _payload_cells:
+		if payload_v is not Dictionary:
+			continue
+		var payload: Dictionary = payload_v as Dictionary
+		if not payload.has("col") or not payload.has("row"):
+			continue
+		_payload_by_rc[Vector2i(int(payload["col"]), int(payload["row"]))] = payload
+		has_rc = true
+	_rc_index_ready = has_rc
+
+
+func _visible_payloads() -> Array:
+	# 静态 payload + cull：始终扫列表、用 polygon AABB 过滤（稳定）
+	if _USE_RC_WINDOW_INDEX and _rc_index_ready and _cull_enabled and _cull_rect.size != Vector2.ZERO and _hex_radius > 0.01:
+		var windowed: Array = _payloads_in_cull_window()
+		if not windowed.is_empty():
+			return windowed
+	return _payload_cells
+
+
+## cull 矩形（棋盘逻辑坐标）→ col/row 窗口，只取视口附近格
+func _payloads_in_cull_window() -> Array:
+	var r: float = _hex_radius
+	var sqrt3: float = sqrt(3.0)
+	var pad: float = _board_pad
+	var origin: Vector2 = _board_origin_shift
+	# 逻辑坐标 → 未 shift 的布局像素（与 offset_odd_r_flat_top_cell_top_left_rect 一致）
+	var p0: Vector2 = _cull_rect.position - Vector2(pad, pad) + origin
+	var p1: Vector2 = _cull_rect.end - Vector2(pad, pad) + origin
+	var col_min: int = int(floor(minf(p0.x, p1.x) / (1.5 * r))) - 2
+	var col_max: int = int(ceil(maxf(p0.x, p1.x) / (1.5 * r))) + 2
+	var y0: float = minf(p0.y, p1.y) / (sqrt3 * r)
+	var y1: float = maxf(p0.y, p1.y) / (sqrt3 * r)
+	var row_min: int = int(floor(y0 - 1.0)) - 2
+	var row_max: int = int(ceil(y1 + 1.0)) + 2
+	col_min = maxi(col_min, 0)
+	row_min = maxi(row_min, 0)
+	var out: Array = []
+	for col: int in range(col_min, col_max + 1):
+		for row: int in range(row_min, row_max + 1):
+			var payload: Variant = _payload_by_rc.get(Vector2i(col, row), null)
+			if payload != null:
+				out.append(payload)
+	if out.is_empty():
+		return _payload_cells
+	return out
+
+
+func _draw_payload_cells() -> void:
+	if _payload_board_size != Vector2.ZERO and size != _payload_board_size:
+		size = _payload_board_size
+	var font: Font = get_theme_default_font()
+	var font_size_default: int = get_theme_default_font_size()
+	var draw_terrain: bool = (_draw_layers & LAYER_TERRAIN) != 0
+	var draw_overlay: bool = (_draw_layers & LAYER_OVERLAY) != 0
+	var source: Array = _visible_payloads()
+	var use_window: bool = _USE_RC_WINDOW_INDEX and source != _payload_cells
+	for payload_v: Variant in source:
+		if payload_v is not Dictionary:
+			continue
+		var payload: Dictionary = payload_v as Dictionary
+		if not use_window and not _payload_visible(payload):
+			continue
+		var polygon: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
+		if polygon.size() < 3:
+			continue
+		if draw_terrain:
+			var tex: Texture2D = payload.get("texture", null) as Texture2D
+			var uvs: PackedVector2Array = payload.get("uvs", PackedVector2Array()) as PackedVector2Array
+			if tex != null and polygon.size() == uvs.size():
+				draw_polygon(polygon, _white_vertex_colors(polygon.size()), uvs, tex)
+			else:
+				draw_colored_polygon(polygon, payload.get("fallback_color", SkirmishHexCell.fallback_terrain_color()) as Color)
+		if not draw_overlay:
+			continue
+		var tint: Color = payload.get("tint", Color(0, 0, 0, 0)) as Color
+		if tint.a > 0.001:
+			draw_colored_polygon(polygon, tint)
+		var capital_rect: Rect2 = payload.get("capital_rect", Rect2()) as Rect2
+		var capital_tex: Texture2D = payload.get("capital_texture", null) as Texture2D
+		if capital_tex != null and capital_rect.size.x > 0.0 and capital_rect.size.y > 0.0:
+			draw_texture_rect(capital_tex, capital_rect, false)
+		var unit_rect: Rect2 = payload.get("unit_rect", Rect2()) as Rect2
+		var unit_tex: Texture2D = payload.get("unit_texture", null) as Texture2D
+		if unit_tex != null and unit_rect.size.x > 0.0 and unit_rect.size.y > 0.0:
+			draw_texture_rect(unit_tex, unit_rect, false)
+		var building_rect: Rect2 = payload.get("building_rect", Rect2()) as Rect2
+		var building_tex: Texture2D = payload.get("building_texture", null) as Texture2D
+		if building_tex != null and building_rect.size.x > 0.0 and building_rect.size.y > 0.0:
+			draw_texture_rect(building_tex, building_rect, false)
+		var caption_text: String = str(payload.get("caption", ""))
+		if caption_text.is_empty() or font == null:
+			continue
+		var font_size: int = int(payload.get("caption_font_size", font_size_default))
+		var caption_center: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
+		_draw_multiline_centered_caption(font, font_size, caption_center, caption_text)
+	# payload 模式必须保持 _use_payload=true；绘制完成后不要 queue_redraw，避免每帧死循环重绘
+	_content_dirty = false
 
 
 func _poly_aabb(poly: PackedVector2Array) -> Rect2:
@@ -168,52 +292,14 @@ func _draw() -> void:
 		draw_colored_polygon(bp2, tc)
 
 
-func _draw_payload_cells() -> void:
-	if _payload_board_size != Vector2.ZERO and size != _payload_board_size:
-		size = _payload_board_size
-	var font: Font = get_theme_default_font()
-	var font_size_default: int = get_theme_default_font_size()
-	var draw_terrain: bool = (_draw_layers & LAYER_TERRAIN) != 0
-	var draw_overlay: bool = (_draw_layers & LAYER_OVERLAY) != 0
-	for payload_v: Variant in _payload_cells:
-		if payload_v is not Dictionary:
-			continue
-		var payload: Dictionary = payload_v as Dictionary
-		if not _payload_visible(payload):
-			continue
-		var polygon: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
-		if polygon.size() < 3:
-			continue
-		if draw_terrain:
-			var tex: Texture2D = payload.get("texture", null) as Texture2D
-			var uvs: PackedVector2Array = payload.get("uvs", PackedVector2Array()) as PackedVector2Array
-			if tex != null and polygon.size() == uvs.size():
-				draw_polygon(polygon, _white_vertex_colors(polygon.size()), uvs, tex)
-			else:
-				draw_colored_polygon(polygon, payload.get("fallback_color", SkirmishHexCell.fallback_terrain_color()) as Color)
-		if not draw_overlay:
-			continue
-		var tint: Color = payload.get("tint", Color(0, 0, 0, 0)) as Color
-		if tint.a > 0.001:
-			draw_colored_polygon(polygon, tint)
-		var capital_rect: Rect2 = payload.get("capital_rect", Rect2()) as Rect2
-		var capital_tex: Texture2D = payload.get("capital_texture", null) as Texture2D
-		if capital_tex != null and capital_rect.size.x > 0.0 and capital_rect.size.y > 0.0:
-			draw_texture_rect(capital_tex, capital_rect, false)
-		var unit_rect: Rect2 = payload.get("unit_rect", Rect2()) as Rect2
-		var unit_tex: Texture2D = payload.get("unit_texture", null) as Texture2D
-		if unit_tex != null and unit_rect.size.x > 0.0 and unit_rect.size.y > 0.0:
-			draw_texture_rect(unit_tex, unit_rect, false)
-		var building_rect: Rect2 = payload.get("building_rect", Rect2()) as Rect2
-		var building_tex: Texture2D = payload.get("building_texture", null) as Texture2D
-		if building_tex != null and building_rect.size.x > 0.0 and building_rect.size.y > 0.0:
-			draw_texture_rect(building_tex, building_rect, false)
-		var caption_text: String = str(payload.get("caption", ""))
-		if caption_text.is_empty() or font == null:
-			continue
-		var font_size: int = int(payload.get("caption_font_size", font_size_default))
-		var caption_center: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
-		_draw_multiline_centered_caption(font, font_size, caption_center, caption_text)
+func clear_payload_cells() -> void:
+	_payload_cells = []
+	_payload_board_size = Vector2.ZERO
+	_use_payload = false
+	_payload_by_rc.clear()
+	_rc_index_ready = false
+	_content_dirty = true
+	queue_redraw()
 
 
 func _draw_multiline_centered_caption(font: Font, font_size: int, center: Vector2, text: String) -> void:
