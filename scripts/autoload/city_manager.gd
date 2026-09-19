@@ -712,6 +712,7 @@ func _append_physical_building(city: Dictionary, building_id: String, level: int
 		"hex_q": axial.x,
 		"hex_r": axial.y,
 		"disabled": false,
+		"owner": str(city.get("current_faction_id", city.get("faction_id", ""))),
 	}
 	if _building_has_structure_hp(building_id):
 		var hp: int = _building_structure_hp_at_level(building_id, level)
@@ -767,7 +768,53 @@ func damage_building_at_hex(axial: Vector2i, damage: int) -> Dictionary:
 		"remaining_hp": new_hp,
 		"city_id": city_id,
 		"building_id": str(entry.get("building_id", "")),
+		"owner": str(entry.get("owner", city.get("current_faction_id", ""))),
 	}
+
+
+## 防御建筑格独立占领：结构破且无驻军时改建筑 owner，城主不变
+func try_capture_building_at_hex(axial: Vector2i, new_owner: String, has_garrison: bool = false) -> Dictionary:
+	var meta: Variant = _building_at_hex.get(_hex_key(axial), null)
+	if meta == null or not (meta is Dictionary):
+		return {"ok": false, "reason": "NO_BUILDING"}
+	var city_id: String = str((meta as Dictionary).get("city_id", ""))
+	var bid: String = str((meta as Dictionary).get("building_id", ""))
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return {"ok": false, "reason": "NO_CITY"}
+	var entry: Dictionary = _find_building_entry(city, bid, axial)
+	if entry.is_empty():
+		return {"ok": false, "reason": "NO_ENTRY"}
+	if int(entry.get("structure_hp", 1)) > 0:
+		return {"ok": false, "reason": "STRUCTURE_STANDING"}
+	if has_garrison:
+		return {"ok": false, "reason": "GARRISON_PRESENT"}
+	var old_owner: String = str(entry.get("owner", city.get("current_faction_id", "")))
+	if old_owner == new_owner:
+		return {"ok": true, "unchanged": true}
+	var max_hp: int = int(entry.get("max_structure_hp", 0))
+	var ratio_v: Variant = DataManager.get_balance_param("city_combat.capture_restore_ratio")
+	var ratio: float = float(ratio_v) if ratio_v != null else 0.3
+	entry["owner"] = new_owner
+	entry["structure_hp"] = maxi(1, int(float(maxi(max_hp, 1)) * ratio))
+	entry["disabled"] = false
+	if SignalBus.has_signal("building_occupied"):
+		SignalBus.building_occupied.emit(axial, city_id, bid, old_owner, new_owner)
+	return {"ok": true, "city_id": city_id, "building_id": bid, "owner": new_owner, "old_owner": old_owner}
+
+
+func get_building_owner_at_hex(axial: Vector2i) -> String:
+	var meta: Variant = _building_at_hex.get(_hex_key(axial), null)
+	if meta == null or not (meta is Dictionary):
+		return ""
+	var city_id: String = str((meta as Dictionary).get("city_id", ""))
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return ""
+	var entry: Dictionary = _find_building_entry(city, str((meta as Dictionary).get("building_id", "")), axial)
+	if entry.is_empty():
+		return ""
+	return str(entry.get("owner", city.get("current_faction_id", "")))
 
 
 func get_city_wall_defense_bonus(city_id: String) -> float:
@@ -783,6 +830,8 @@ func get_city_wall_defense_bonus(city_id: String) -> float:
 		if str(e.get("building_id", "")) != "wall":
 			continue
 		if bool(e.get("disabled", false)):
+			continue
+		if e.has("owner") and str(e["owner"]) != str(city.get("current_faction_id", "")):
 			continue
 		var level: int = int(e.get("level", 1))
 		var bonus: float = 0.0
@@ -1177,6 +1226,12 @@ func change_ownership(city_id: String, new_faction_id: String) -> bool:
 
 	city["current_faction_id"] = new_faction_id
 	(city["build_queue"] as Array).clear()
+	# 狖立占领（推荐策略1）：城易主时建筑 owner 不自动变更，需再攻占
+	# 仅为缺省 owner 的旧档补字段
+	for entry: Variant in city.get("buildings", []):
+		var e: Dictionary = entry as Dictionary
+		if not e.has("owner"):
+			e["owner"] = str(city.get("faction_id", old_faction_id))
 	_move_city_in_faction_index(city, old_faction_id, new_faction_id)
 	MinisterManager.handle_city_lost(city_id, old_faction_id, new_faction_id)
 
@@ -1367,6 +1422,8 @@ func _pick_ai_capital_city(available: Array, weight: Variant) -> String:
 ## 每回合调用。递减建造队列、自动完成建造、推进人口增长，返回本回合事件摘要。
 func process_turn(faction_id: String) -> Dictionary:
 	var events: Dictionary = {"buildings_completed": [], "upgrades_completed": []}
+	if PassManager != null and PassManager.has_method("process_turn_recovery"):
+		PassManager.process_turn_recovery()
 	var cities: Array = get_faction_city_states(faction_id)
 	for city in cities:
 		var city_id: String = str(city["id"])

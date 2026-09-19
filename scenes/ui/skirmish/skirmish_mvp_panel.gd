@@ -363,9 +363,12 @@ func _open_formal_capital_panel() -> void:
 func _open_formal_city_panel(city_id: String) -> void:
 	if city_id.is_empty() or CityManager.get_city_state(city_id).is_empty():
 		return
+	var owner_check: String = str(CityManager.get_city_state(city_id).get("current_faction_id", ""))
+	var player_check: String = TacticalSkirmishManager.get_player_faction()
+	if player_check == "":
+		player_check = GameManager.get_player_faction()
 	if not DemoFlow.is_tutorial_enabled():
-		var owner: String = str(CityManager.get_city_state(city_id).get("current_faction_id", ""))
-		if owner != GameManager.get_player_faction():
+		if owner_check != player_check and owner_check != GameManager.get_player_faction():
 			return
 	_close_formal_overlays()
 	_formal_city_panel = _CityPanelScene.instantiate() as Panel
@@ -551,9 +554,9 @@ func _demo_skirmish_briefing() -> String:
 	var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(enemy_city)
 	var wall_max: int = TacticalSkirmishManager.get_city_wall_max_hp(enemy_city)
 	if wall_hp > 0:
-		return "Demo 作战简报：攻破%s城墙（%d/%d）后进城。" % [target_city_name, wall_hp, wall_max]
+		return "Demo 作战简报：将%s城市 HP 打到 0（%d/%d）后进驻占领。" % [target_city_name, wall_hp, wall_max]
 	if wall_max > 0:
-		return "Demo 作战简报：%s城墙已破，进城即可。" % target_city_name
+		return "Demo 作战简报：%s城市 HP=0，直接进驻即可占领。" % target_city_name
 	if DemoFlow.is_enabled():
 		return "Demo 作战简报：向%s推进，破墙进城。" % target_city_name
 	return ""
@@ -666,7 +669,10 @@ func _try_open_city_panel_at(cell: Vector2i) -> bool:
 	if city_id.is_empty() or CityManager.get_city_state(city_id).is_empty():
 		return false
 	var owner: String = str(CityManager.get_city_state(city_id).get("current_faction_id", ""))
-	if owner != GameManager.get_player_faction():
+	var player: String = TacticalSkirmishManager.get_player_faction()
+	if player == "":
+		player = GameManager.get_player_faction()
+	if owner != player and owner != GameManager.get_player_faction():
 		return false
 	_open_formal_city_panel(city_id)
 	return true
@@ -1024,15 +1030,22 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var city_line: String = "据点：%s城格" % owner_str
 		if wall_hp >= 0:
 			if wall_hp > 0:
-				city_line += " ｜ 城墙 %d/%d" % [wall_hp, wall_max]
+				city_line += " ｜ 城市 HP %d/%d" % [wall_hp, wall_max]
 			else:
-				city_line += " ｜ 城墙已破"
+				city_line += " ｜ 城市 HP=0（可进驻占领）"
 		var binfo: Dictionary = _building_icon_info(cell)
 		if not binfo.is_empty():
 			city_line += " ｜ 建筑×%d（%s）" % [int(binfo.get("count", 1)), str(binfo.get("name", ""))]
 		lines.append(city_line)
 	elif wall_hp > 0:
 		lines.append("城墙：%d/%d" % [wall_hp, wall_max])
+	var cell_pass_hp: int = TacticalSkirmishManager.get_pass_hp(cell)
+	if cell_pass_hp >= 0:
+		var cell_pass_owner: String = TacticalSkirmishManager.get_pass_owner(cell)
+		lines.append("关隘：%s ｜ 结构 %d ｜ 规则与大地图相同（破结构后进驻可占）" % [
+			_faction_display_name(cell_pass_owner) if cell_pass_owner != "" else "中立",
+			cell_pass_hp,
+		])
 	# 单位信息
 	var uu: Dictionary = _unit_at_cell(cell)
 	if not uu.is_empty():
@@ -1201,18 +1214,33 @@ func _on_hex_pressed(q: int, r: int) -> void:
 				_reachable.clear()
 			_refresh_display()
 			return
-	# 已选中：可走空格移动 / 攻城墙
+	# 已选中己方：攻击敌关隘 / 城墙 / 可走格移动（与大地图同一套占领规则）
 	if _selected_unit_id != "":
-		if occ.is_empty() and _reachable.has(cell):
-			var moving_id: String = _selected_unit_id
-			var mv: Dictionary = TacticalSkirmishManager.try_move_unit(moving_id, cell)
-			if bool(mv.get("ok", false)):
-				_selected_unit_id = moving_id
-				_reachable = TacticalSkirmishManager.get_reachable_cells(moving_id)
-			else:
-				_selected_unit_id = ""
-				_reachable.clear()
-		if _selected_unit_id != "" and occ.is_empty():
+		if occ.is_empty():
+			var pass_hp: int = TacticalSkirmishManager.get_pass_hp(cell)
+			if pass_hp >= 0:
+				var powner: String = TacticalSkirmishManager.get_pass_owner(cell)
+				if powner != TacticalSkirmishManager.get_player_faction() and pass_hp > 0:
+					var atk_pass: Dictionary = TacticalSkirmishManager.try_attack_pass(_selected_unit_id, cell)
+					if bool(atk_pass.get("ok", false)):
+						if bool(atk_pass.get("destroyed", false)):
+							_selected_unit_id = ""
+							_reachable.clear()
+						else:
+							_reachable = TacticalSkirmishManager.get_reachable_cells(_selected_unit_id)
+					_refresh_display()
+					return
+			if _reachable.has(cell):
+				var moving_id: String = _selected_unit_id
+				var mv: Dictionary = TacticalSkirmishManager.try_move_unit(moving_id, cell)
+				if bool(mv.get("ok", false)):
+					_selected_unit_id = moving_id
+					_reachable = TacticalSkirmishManager.get_reachable_cells(moving_id)
+				else:
+					_selected_unit_id = ""
+					_reachable.clear()
+				_refresh_display()
+				return
 			var wall_hp: int = TacticalSkirmishManager.get_city_wall_hp(cell)
 			if wall_hp > 0:
 				var atk_res: Dictionary = TacticalSkirmishManager.try_attack_city_wall(_selected_unit_id, cell)
@@ -1303,21 +1331,26 @@ func _refresh_display() -> void:
 				var wh: int = TacticalSkirmishManager.get_city_wall_hp(cell_axial)
 				var wm: int = TacticalSkirmishManager.get_city_wall_max_hp(cell_axial)
 				if wh > 0:
-					tag = "秦城\n城墙 %d/%d" % [wh, wm]
+					tag = "秦城\nHP %d/%d" % [wh, wm]
 				else:
-					tag = "秦城（城墙已破）"
+					tag = "秦城（HP=0）"
 			elif cell_axial == TacticalSkirmishManager.get_enemy_city():
-				var wh: int = TacticalSkirmishManager.get_city_wall_hp(cell_axial)
-				var wm: int = TacticalSkirmishManager.get_city_wall_max_hp(cell_axial)
-				var enemy_city_name: String = DemoFlow.get_target_city_name() if DemoFlow.is_enabled() else "赵城"
-				if wh > 0:
-					tag = "%s\n城墙 %d/%d" % [enemy_city_name, wh, wm]
+				var enemy_city_name: String = DemoFlow.get_target_city_name() if DemoFlow.is_enabled() else "敌城"
+				var eh: int = TacticalSkirmishManager.get_city_wall_hp(cell_axial)
+				var em: int = TacticalSkirmishManager.get_city_wall_max_hp(cell_axial)
+				if eh > 0:
+					tag = "%s\nHP %d/%d" % [enemy_city_name, eh, em]
 				else:
-					tag = "%s（城墙已破）" % enemy_city_name
+					tag = "%s（HP=0）" % enemy_city_name
 			# 关隘 HP 显示
 			var pass_hp: int = TacticalSkirmishManager.get_pass_hp(cell_axial)
 			if pass_hp >= 0:
-				tag = "关隘 HP:%d" % pass_hp
+				var powner: String = TacticalSkirmishManager.get_pass_owner(cell_axial)
+				var pname: String = "关隘"
+				if powner != "":
+					tag = "%s %s\nHP %d" % [pname, _faction_display_name(powner), pass_hp]
+				else:
+					tag = "%s\nHP %d" % [pname, pass_hp]
 			var line2: String = ""
 			if not uu.is_empty():
 				var fn: String = _faction_short(str(uu["faction_id"]))

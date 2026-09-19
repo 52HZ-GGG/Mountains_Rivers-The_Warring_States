@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "description": "大地图关隘开局归属（策划定稿）。axial 为 odd-R 偏移转轴向后的坐标；offset_col/row 为 big_map_terrain 列行。",
+  "design_rule": "关隘开局必须有归属（七国或 zhou）；被占领后由 PassManager 持久化，直到再次易主。满 HP 不可直接占领，须破结构。",
+  "passes": [
+    {
+      "axial_q": 31,
+      "axial_r": 8,
+      "offset_col": 35,
+      "offset_row": 8,
+      "owner": "zhao",
+      "name": "雁门关",
+      "nearest_city_id": "yanmen",
+      "nearest_city_name": "雁门",
+      "note": "赵北边门户，开局归赵"
+    },
+    {
+      "axial_q": 32,
+      "axial_r": 8,
+      "offset_col": 36,
+      "offset_row": 8,
+      "owner": "zhao",
+      "name": "代郡关",
+      "nearest_city_id": "daijun",
+      "nearest_city_name": "代郡",
+      "note": "赵代地要冲，开局归赵"
+    },
+    {
+      "axial_q": 56,
+      "axial_r": 8,
+      "offset_col": 60,
+      "offset_row": 8,
+      "owner": "yan",
+      "name": "蓟北关",
+      "nearest_city_id": "ji",
+      "nearest_city_name": "蓟",
+      "note": "燕都北隘，开局归燕"
+    },
+    {
+      "axial_q": 57,
+      "axial_r": 8,
+      "offset_col": 61,
+      "offset_row": 8,
+      "owner": "yan",
+      "name": "蓟东关",
+      "nearest_city_id": "ji",
+      "nearest_city_name": "蓟",
+      "note": "燕蓟东侧关隘，开局归燕"
+    },
+    {
+      "axial_q": 24,
+      "axial_r": 22,
+      "offset_col": 35,
+      "offset_row": 22,
+      "owner": "zhao",
+      "name": "晋阳西关",
+      "nearest_city_id": "jinyang",
+      "nearest_city_name": "晋阳",
+      "note": "赵晋阳西侧，开局归赵"
+    },
+    {
+      "axial_q": 25,
+      "axial_r": 22,
+      "offset_col": 36,
+      "offset_row": 22,
+      "owner": "zhao",
+      "name": "晋阳东关",
+      "nearest_city_id": "jinyang",
+      "nearest_city_name": "晋阳",
+      "note": "赵晋阳东侧，开局归赵"
+    },
+    {
+      "axial_q": 0,
+      "axial_r": 25,
+      "offset_col": 12,
+      "offset_row": 25,
+      "owner": "qin",
+      "name": "陇西关",
+      "nearest_city_id": "longxi",
+      "nearest_city_name": "陇西",
+      "note": "秦陇西通道，开局归秦"
+    },
+    {
+      "axial_q": 1,
+      "axial_r": 25,
+      "offset_col": 13,
+      "offset_row": 25,
+      "owner": "qin",
+      "name": "陇西东关",
+      "nearest_city_id": "longxi",
+      "nearest_city_name": "陇西",
+      "note": "秦陇西东侧，开局归秦"
+    },
+    {
+      "axial_q": 9,
+      "axial_r": 43,
+      "offset_col": 30,
+      "offset_row": 43,
+      "owner": "qin",
+      "name": "栎阳关",
+      "nearest_city_id": "yueyang",
+      "nearest_city_name": "栎阳",
+      "note": "秦关中门户，开局归秦"
+    },
+    {
+      "axial_q": 10,
+      "axial_r": 43,
+      "offset_col": 31,
+      "offset_row": 43,
+      "owner": "qin",
+      "name": "函谷关",
+      "nearest_city_id": "yueyang",
+      "nearest_city_name": "栎阳",
+      "note": "秦东出要隘（历史名关），开局归秦"
+    },
+    {
+      "axial_q": 11,
+      "axial_r": 43,
+      "offset_col": 32,
+      "offset_row": 43,
+      "owner": "zhao",
+      "name": "洛邑西关",
+      "nearest_city_id": "luoyi",
+      "nearest_city_name": "洛邑",
+      "note": "测试用：归赵（原周王畿，便于演武/大地图验证关隘攻防）"
+    },
+    {
+      "axial_q": 12,
+      "axial_r": 43,
+      "offset_col": 33,
+      "offset_row": 43,
+      "owner": "zhou",
+      "name": "洛邑东关",
+      "nearest_city_id": "luoyi",
+      "nearest_city_name": "洛邑",
+      "note": "周王畿东侧，开局归周"
+    },
+    {
+      "axial_q": -11,
+      "axial_r": 50,
+      "offset_col": 14,
+      "offset_row": 50,
+      "owner": "qin",
+      "name": "陈仓关",
+      "nearest_city_id": "chencang",
+      "nearest_city_name": "陈仓",
+      "note": "秦陈仓道，开局归秦"
+    },
+    {
+      "axial_q": -10,
+      "axial_r": 50,
+      "offset_col": 15,
+      "offset_row": 50,
+      "owner": "qin",
+      "name": "陈仓南关",
+      "nearest_city_id": "chencang",
+      "nearest_city_name": "陈仓",
+      "note": "秦陈仓南侧，开局归秦"
+    },
+    {
+      "axial_q": 3,
+      "axial_r": 50,
+      "offset_col": 28,
+      "offset_row": 50,
+      "owner": "qin",
+      "name": "南郑关",
+      "nearest_city_id": "nanzheng",
+      "nearest_city_name": "南郑",
+      "note": "秦汉中通道，开局归秦"
+    },
+    {
+      "axial_q": 4,
+      "axial_r": 50,
+      "offset_col": 29,
+      "offset_row": 50,
+      "owner": "qin",
+      "name": "南郑东关",
+      "nearest_city_id": "nanzheng",
+      "nearest_city_name": "南郑",
+      "note": "秦南郑东侧，开局归秦"
+    },
+    {
+      "axial_q": -9,
+      "axial_r": 55,
+      "offset_col": 18,
+      "offset_row": 55,
+      "owner": "qin",
+      "name": "蜀道北关",
+      "nearest_city_id": "shujun",
+      "nearest_city_name": "蜀郡",
+      "note": "秦蜀道北隘，开局归秦"
+    },
+    {
+      "axial_q": -8,
+      "axial_r": 55,
+      "offset_col": 19,
+      "offset_row": 55,
+      "owner": "qin",
+      "name": "蜀道南关",
+      "nearest_city_id": "shujun",
+      "nearest_city_name": "蜀郡",
+      "note": "秦蜀道南隘，开局归秦"
+    }
+  ]
+}

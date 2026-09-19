@@ -27,10 +27,9 @@ func test_city_wall_hp_matches_config() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var city: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	var hp: int = TacticalSkirmishManager.get_city_wall_hp(city)
-	# 城墙 HP 来自 buildings.json → wall Lv1 structure_hp（战斗系统.md §7.4）
-	var wall: Dictionary = DataManager.get_building("wall")
-	var structure_hp: int = int(((wall.get("levels", []) as Array)[0] as Dictionary).get("effects", {}).get("structure_hp", 150))
-	assert_eq(hp, structure_hp, "城墙 HP 应为 wall.structure_hp=%d（实际 %d）" % [structure_hp, hp])
+	# 战斗系统.md：城市一份 HP = city_levels + 首都加成
+	var expected: int = int(DataManager.get_balance_param("city_levels.3.hp")) + int(DataManager.get_balance_param("city_levels.capital_bonus.hp"))
+	assert_eq(hp, expected, "城市 HP 应为 city_levels+首都=%d（实际 %d）" % [expected, hp])
 
 
 func test_city_body_hp_independent_from_wall() -> void:
@@ -38,8 +37,8 @@ func test_city_body_hp_independent_from_wall() -> void:
 	var city: Vector2i = TacticalSkirmishManager.get_enemy_city()
 	var body: int = TacticalSkirmishManager.get_city_body_hp(city)
 	var expected: int = int(DataManager.get_balance_param("city_levels.3.hp")) + int(DataManager.get_balance_param("city_levels.capital_bonus.hp"))
-	assert_eq(body, expected, "城市本体 HP 应为 city_levels.hp+首都加成=%d（实际 %d）" % [expected, body])
-	assert_true(body != TacticalSkirmishManager.get_city_wall_hp(city), "本体 HP 应与城墙 HP 独立")
+	assert_eq(body, expected, "城市 HP 应为 city_levels.hp+首都加成=%d（实际 %d）" % [expected, body])
+	assert_eq(body, TacticalSkirmishManager.get_city_wall_hp(city), "城市只有一份 HP，墙/体 API 同值")
 
 
 func test_city_level_stored() -> void:

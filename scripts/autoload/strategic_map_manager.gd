@@ -181,17 +181,32 @@ func _apply_move(unit: Dictionary, dest_axial: Vector2i, cost: int) -> Dictionar
 	var city_id: String = _city_id_at_offset(offset.x, offset.y)
 	if city_id != "":
 		_try_capture_city_if_clear(str(unit["faction_id"]), city_id)
+	# 关隘：结构破且无驻军时进驻易主（统一占领规则）
+	if PassManager != null and PassManager.has_pass(dest_axial):
+		_try_capture_pass_if_clear(str(unit["faction_id"]), dest_axial)
 	unit_moved.emit(unit_id, from, dest_axial)
 	units_changed.emit()
 	return {"ok": true}
 
 
-## 敌军踏上无血量建筑格 → 立即标记失效（可通行建筑，决策 #124）
+func _try_capture_pass_if_clear(faction_id: String, axial: Vector2i) -> void:
+	if PassManager == null:
+		return
+	if not PassManager.has_pass(axial):
+		return
+	if PassManager.get_pass_hp(axial) > 0:
+		return
+	PassManager.try_capture_pass(axial, faction_id)
+
+
+## 敌军踏上无血量建筑格 → 独立占领（防御建筑）或标记失效
 func _apply_building_occupation(unit: Dictionary, axial: Vector2i) -> void:
 	var b: Dictionary = CityManager.get_building_at_hex(axial)
 	if b.is_empty():
 		return
+	var fid: String = str(unit["faction_id"])
 	if CityManager.is_defense_building_hex(axial):
+		CityManager.try_capture_building_at_hex(axial, fid, false)
 		return
 	var city_id: String = str(b.get("city_id", ""))
 	if city_id == "":
@@ -199,7 +214,7 @@ func _apply_building_occupation(unit: Dictionary, axial: Vector2i) -> void:
 	var city: Dictionary = CityManager.get_city_state(city_id)
 	if city.is_empty():
 		return
-	if str(city.get("current_faction_id", "")) == str(unit["faction_id"]):
+	if str(city.get("current_faction_id", "")) == fid:
 		return
 	CityManager.disable_building_at_hex(axial)
 
@@ -261,7 +276,7 @@ func try_attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	return {"ok": true, "damage": dmg, "counter_damage": counter_dmg}
 
 
-## 攻击辖区格上的防御建筑（墙/塔/瓮城，§7.4）
+## 攻击辖区格上的防御建筑（墙/塔/瓮城）— 共享 SiegeResolver
 func try_attack_building(attacker_id: String, target_axial: Vector2i) -> Dictionary:
 	var attacker: Dictionary = _get_unit_ref(attacker_id)
 	if attacker.is_empty():
@@ -278,34 +293,48 @@ func try_attack_building(attacker_id: String, target_axial: Vector2i) -> Diction
 	var range: int = int(a_type.get("range", 1))
 	if HexLib.hex_distance_hex(a_pos, target_axial) > range:
 		return {"ok": false, "reason": "OUT_OF_RANGE"}
-	# 攻城器械对结构 ×3
-	var siege_mult: float = 1.0
-	if str(a_type.get("special", "")) == "siege_bonus" or str(a_type.get("category", "")) == "siege":
-		siege_mult = float(DataManager.get_balance_param("city_combat.siege_damage_multiplier"))
-	var atk: float = float(a_type.get("attack", 10))
-	var tech_atk: float = TechSystem.get_attack_modifier(str(a_type.get("category", "")))
-	if tech_atk != 0.0:
-		atk *= (1.0 + tech_atk)
-	var school_atk: float = SchoolManager.get_effect_float(str(attacker["faction_id"]), "attack_bonus")
-	if school_atk != 0.0:
-		atk *= (1.0 + school_atk)
-	var struct_def: float = 5.0
-	# 墙/塔结构防御从 buildings.json levels 推断（默认 5）
-	var raw_dmg: float = maxf(atk * siege_mult * 20.0 / (20.0 + struct_def), 1.0)
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.randomize()
-	var dmg: int = maxi(1, int(floor(raw_dmg * rng.randf_range(0.9, 1.1))))
-	var result: Dictionary = CityManager.damage_building_at_hex(target_axial, dmg)
+	var siege_result: Dictionary = SiegeLib.compute_fortification_attack(attacker, target_axial)
+	if not bool(siege_result.get("ok", false)):
+		return siege_result
 	attacker["acted"] = true
 	attacker["mp"] = 0
 	units_changed.emit()
 	return {
 		"ok": true,
-		"damage": dmg,
-		"destroyed": bool(result.get("destroyed", false)),
-		"remaining_hp": int(result.get("remaining_hp", 0)),
-		"building_id": str(result.get("building_id", b.get("building_id", ""))),
+		"damage": int(siege_result.get("damage", 0)),
+		"destroyed": bool(siege_result.get("destroyed", false)),
+		"remaining_hp": int(siege_result.get("remaining_hp", 0)),
+		"building_id": str(siege_result.get("building_id", b.get("building_id", ""))),
 	}
+
+
+## 攻击关隘结构（共享 SiegeResolver，含地形修正）
+func try_attack_pass(unit_id: String, pass_axial: Vector2i) -> Dictionary:
+	var unit: Dictionary = _get_unit_ref(unit_id)
+	if unit.is_empty():
+		return {"ok": false, "reason": "NO_UNIT"}
+	if PassManager == null or not PassManager.has_pass(pass_axial):
+		return {"ok": false, "reason": "NO_PASS"}
+	if bool(unit.get("acted", false)):
+		return {"ok": false, "reason": "ALREADY_ACTED"}
+	var owner: String = PassManager.get_pass_owner(pass_axial)
+	var fid: String = str(unit["faction_id"])
+	if owner == fid:
+		return {"ok": false, "reason": "OWN_PASS"}
+	# 有归属且非中立/己方时需宣战
+	if owner != "" and owner != "neutral":
+		if not DiplomacySystem.are_at_war(fid, owner):
+			return {"ok": false, "reason": "NOT_AT_WAR"}
+	var u_pos: Vector2i = Vector2i(int(unit["q"]), int(unit["r"]))
+	var a_type: Dictionary = DataManager.get_unit_type(str(unit["unit_type_id"]))
+	var range: int = int(a_type.get("range", 1))
+	if HexLib.hex_distance_hex(u_pos, pass_axial) > range:
+		return {"ok": false, "reason": "OUT_OF_RANGE"}
+	var siege_result: Dictionary = SiegeLib.compute_pass_attack(unit, pass_axial)
+	unit["acted"] = true
+	unit["mp"] = 0
+	units_changed.emit()
+	return siege_result
 
 
 ## 近战反击：远程主动攻击不触发；远程被近战攻击时用 melee_attack（§2.4/§5.5）

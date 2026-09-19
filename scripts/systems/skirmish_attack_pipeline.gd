@@ -123,9 +123,11 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 	var naval_atk_mod: float = m._calc_naval_combat_mod(str(a["unit_type_id"]), str(d["unit_type_id"]), atk_cell, def_cell)
 	var naval_def_mod: float = m._calc_naval_defense_mod(str(d["unit_type_id"]), def_cell, str(a["unit_type_id"]))
 	var stranded_mod: float = m._get_stranded_attack_mod(a)
-	dmg = maxi(1, int(float(dmg) * naval_atk_mod * naval_def_mod * stranded_mod * m.get_demo_attack_multiplier()))
+	var cheat_mult: float = m.get_demo_attack_multiplier()
+	dmg = maxi(1, int(float(dmg) * naval_atk_mod * naval_def_mod * stranded_mod * cheat_mult))
 	var effective_atk_v: Variant = dmg_info.get("effective_atk", null)
 	var eff_atk: float = float(effective_atk_v) if effective_atk_v != null else float(DataManager.get_unit_type(str(a["unit_type_id"])).get("attack", 10))
+	eff_atk *= cheat_mult
 	if pass_has_structure:
 		m._damage_pass_structure(def_cell, str(a["unit_type_id"]), eff_atk)
 	# 城防伤害分流（WallCombatRules，与大地图 SiegeResolver 一致）
@@ -249,38 +251,39 @@ func execute_city_wall_attack(attacker_id: String, cell: Vector2i) -> Dictionary
 	if bool(a.get("acted", false)):
 		return {"ok": false, "reason": "already_acted"}
 	if not m._city_wall_hp.has(cell):
-		return {"ok": false, "reason": "no_wall"}
-	var wall_left: int = int(m._city_wall_hp[cell])
+		return {"ok": false, "reason": "no_city"}
+	var city_left: int = int(m._city_wall_hp[cell])
+	if city_left <= 0:
+		return {"ok": false, "reason": "city_already_breached"}
 	var atk_cost: int = m.get_attack_move_cost()
 	if int(a.get("mp_remaining", 0)) < atk_cost:
 		return {"ok": false, "reason": "insufficient_mp"}
 	var ac: Vector2i = Vector2i(int(a["q"]), int(a["r"]))
 	var ug: Dictionary = DataManager.get_unit_type(str(a["unit_type_id"]))
 	var base_range: int = int(ug.get("range", 1))
+	var dist: int = HexLib.hex_distance_hex(ac, cell)
 	var off_a: Vector2i = HexLib.axial_to_offset_odd_r(ac.x, ac.y)
 	var off_c: Vector2i = HexLib.axial_to_offset_odd_r(cell.x, cell.y)
-	var dist: int = HexLib.hex_distance_hex(ac, cell)
 	var eff_range: int = MoveLib.effective_range(off_a, off_c, base_range)
 	if dist < 1 or dist > eff_range:
 		return {"ok": false, "reason": "out_of_range"}
 	var eff_atk: float = float(ug.get("attack", 10))
 	eff_atk *= m.get_demo_attack_multiplier()
 	var city_lv: int = int(m._city_level.get(cell, 3))
-	# 统一规范 §7：与大地图 SiegeResolver 共用 WallCombatRules
-	if wall_left > 0:
-		var wall_dmg: int = WallLib.direct_wall_or_city_damage(eff_atk, str(a["unit_type_id"]), city_lv, wall_left)
-		m._damage_city_wall(cell, wall_dmg)
-		m._append_log("%s 攻击城墙，造成 %d 伤害" % [attacker_id, wall_dmg])
-	else:
-		var body_dmg: int = WallLib.direct_wall_or_city_damage(eff_atk, str(a["unit_type_id"]), city_lv, 0)
-		m._damage_city_body(cell, body_dmg)
-		m._append_log("%s 攻击城市本体，造成 %d 伤害" % [attacker_id, body_dmg])
+	# 城市只有一份 HP；建筑墙只影响伤害结算，不单独挡进驻
+	var dmg: int = WallLib.direct_wall_or_city_damage(eff_atk, str(a["unit_type_id"]), city_lv, city_left)
+	m._damage_city_wall(cell, dmg)
+	m._append_log("%s 攻击城市，造成 %d 伤害（城市 HP %d→%d）" % [
+		attacker_id, dmg, city_left, int(m._city_wall_hp.get(cell, 0))
+	])
 	m._city_attacked[cell] = true
 	a["mp_remaining"] = int(a.get("mp_remaining", 0)) - atk_cost
 	a["acted"] = true
+	if m.has_method("_recheck_city_capture_at"):
+		m._recheck_city_capture_at(cell)
 	m.state_changed.emit()
 	m.combat_effect_requested.emit("fx_siege", cell, ac)
-	return {"ok": true, "damage": 1}
+	return {"ok": true, "damage": dmg}
 
 
 func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dictionary:

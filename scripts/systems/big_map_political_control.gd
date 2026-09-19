@@ -170,7 +170,14 @@ static func _influence_scores_for_axial(
 
 
 static func _pass_controlling_faction(cities: Array, pass_axial: Vector2i) -> String:
-	# 简化：最近城的归属视为关隘控制方
+	# 权威：PassManager（passes.json 初始 + 占领后持久）
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if tree != null and tree.root != null:
+		var pm: Node = tree.root.get_node_or_null("PassManager")
+		if pm != null and pm.has_method("has_pass") and pm.has_method("get_pass_owner"):
+			if bool(pm.call("has_pass", pass_axial)):
+				return str(pm.call("get_pass_owner", pass_axial))
+	# 无 PassManager 时退回最近城（仅调试）
 	var best_f: String = ""
 	var best_d: int = 999999
 	for city_v: Variant in cities:

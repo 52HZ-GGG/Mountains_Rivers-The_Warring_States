@@ -1401,6 +1401,22 @@ func _on_hex_pressed(q: int, r: int) -> void:
 	if selected_id != "":
 		var selected: Dictionary = StrategicMapManager.get_unit(selected_id)
 		if not selected.is_empty() and str(selected.get("faction_id", "")) == GameManager.get_player_faction():
+			# 攻击关隘结构
+			if PassManager != null and PassManager.has_pass(axial):
+				var powner: String = PassManager.get_pass_owner(axial)
+				if powner != str(selected.get("faction_id", "")) and PassManager.get_pass_hp(axial) > 0:
+					var atk_pass: Dictionary = StrategicMapManager.try_attack_pass(selected_id, axial)
+					if bool(atk_pass.get("ok", false)):
+						_refresh_overlay_display()
+						return
+			# 攻击敌方防御建筑格
+			if CityManager.is_defense_building_hex(axial):
+				var b_owner: String = CityManager.get_building_owner_at_hex(axial)
+				if b_owner != str(selected.get("faction_id", "")) and not CityManager.is_hex_passable_for_units(axial):
+					var atk_b: Dictionary = StrategicMapManager.try_attack_building(selected_id, axial)
+					if bool(atk_b.get("ok", false)):
+						_refresh_overlay_display()
+						return
 			if not unit_here.is_empty() and str(unit_here.get("faction_id", "")) != GameManager.get_player_faction():
 				StrategicMapManager.try_attack_unit(selected_id, str(unit_here.get("id", "")))
 				_refresh_overlay_partial()

@@ -8,6 +8,7 @@ const HexLib := preload("res://scripts/systems/hex_axial.gd")
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
+const CarrierLib := preload("res://scripts/systems/defense_carrier_rules.gd")
 
 
 static func is_siege_unit(unit_type_id: String) -> bool:
@@ -16,6 +17,64 @@ static func is_siege_unit(unit_type_id: String) -> bool:
 
 static func siege_multiplier(unit_type_id: String) -> float:
 	return WallLib.siege_multiplier(unit_type_id)
+
+
+## 关隘结构攻城（共享：地形×0.5 + 器械倍率 + COEFF 模型）
+static func compute_pass_attack(attacker_unit: Dictionary, pass_axial: Vector2i) -> Dictionary:
+	var unit_type_id: String = str(attacker_unit.get("unit_type_id", ""))
+	var a_type: Dictionary = DataManager.get_unit_type(unit_type_id)
+	var faction_id: String = str(attacker_unit.get("faction_id", ""))
+	var skills: Array = attacker_unit.get("skills", []) if attacker_unit.get("skills") is Array else []
+	var atk_ctx: Dictionary = CtxLib.build_attack_ctx(faction_id, unit_type_id, skills)
+	var base_atk: float = float(a_type.get("attack", 10))
+	var tech_atk: float = float(atk_ctx.get("tech_atk", 0.0))
+	var school_atk: float = float(atk_ctx.get("school_atk", 0.0))
+	var faction_atk: float = float(atk_ctx.get("faction_atk", 0.0))
+	var minister_pct: float = float(atk_ctx.get("minister_bravery_pct", 0.0))
+	base_atk *= (1.0 + tech_atk + school_atk + faction_atk + minister_pct)
+	base_atk += float(atk_ctx.get("unit_ability_bonus", 0.0))
+	var dmg: int = CarrierLib.pass_structure_damage(base_atk, unit_type_id)
+	var res: Dictionary = PassManager.damage_pass(pass_axial, dmg)
+	return {
+		"ok": bool(res.get("ok", false)),
+		"damage": dmg,
+		"hp": int(res.get("hp", -1)),
+		"destroyed": bool(res.get("destroyed", false)),
+		"owner": PassManager.get_pass_owner(pass_axial),
+	}
+
+
+## 防御建筑结构攻城（buildings.json struct_def + 可选地形）
+static func compute_fortification_attack(attacker_unit: Dictionary, target_axial: Vector2i) -> Dictionary:
+	var unit_type_id: String = str(attacker_unit.get("unit_type_id", ""))
+	var a_type: Dictionary = DataManager.get_unit_type(unit_type_id)
+	var faction_id: String = str(attacker_unit.get("faction_id", ""))
+	var skills: Array = attacker_unit.get("skills", []) if attacker_unit.get("skills") is Array else []
+	var atk_ctx: Dictionary = CtxLib.build_attack_ctx(faction_id, unit_type_id, skills)
+	var base_atk: float = float(a_type.get("attack", 10))
+	var tech_atk2: float = float(atk_ctx.get("tech_atk", 0.0))
+	var school_atk2: float = float(atk_ctx.get("school_atk", 0.0))
+	var faction_atk2: float = float(atk_ctx.get("faction_atk", 0.0))
+	var minister_pct2: float = float(atk_ctx.get("minister_bravery_pct", 0.0))
+	base_atk *= (1.0 + tech_atk2 + school_atk2 + faction_atk2 + minister_pct2)
+	base_atk += float(atk_ctx.get("unit_ability_bonus", 0.0))
+	var b: Dictionary = CityManager.get_building_at_hex(target_axial)
+	if b.is_empty():
+		return {"ok": false, "reason": "NOT_DEFENSE_BUILDING"}
+	var bid: String = str(b.get("building_id", ""))
+	var level: int = int(b.get("level", 1))
+	var off: Vector2i = HexLib.axial_to_offset_odd_r(target_axial.x, target_axial.y)
+	var terrain_id: String = CityManager.get_big_map_terrain_id(off.x, off.y)
+	var dmg: int = CarrierLib.building_structure_damage(base_atk, unit_type_id, bid, level, terrain_id)
+	var result: Dictionary = CityManager.damage_building_at_hex(target_axial, dmg)
+	return {
+		"ok": true,
+		"damage": dmg,
+		"destroyed": bool(result.get("destroyed", false)),
+		"remaining_hp": int(result.get("remaining_hp", 0)),
+		"building_id": bid,
+		"owner": str(result.get("owner", "")),
+	}
 
 
 ## 计算对城池的总伤害（含 ctx 与器械倍率），并拆分到城墙/城体

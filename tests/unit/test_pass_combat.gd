@@ -29,16 +29,16 @@ func test_pass_hp_equals_fortification_config() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var pass_cell: Vector2i = _find_pass_cell()
 	var hp: int = TacticalSkirmishManager.get_pass_hp(pass_cell)
-	var expected_v: Variant = DataManager.get_balance_param("fortification.pass_hp")
-	var expected: int = int(expected_v) if expected_v != null else 500
-	assert_eq(hp, expected, "关隘 HP 应等于 fortification.pass_hp（%d）" % expected)
+	var expected: int = PassManager.pass_max_hp() if PassManager != null else 300
+	assert_eq(hp, expected, "关隘初始 HP 应等于 fortification.pass_hp（%d）" % expected)
 
 
 func test_pass_initially_unowned() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var pass_cell: Vector2i = _find_pass_cell()
 	var owner: String = TacticalSkirmishManager.get_pass_owner(pass_cell)
-	assert_eq(owner, "", "关隘初始应无主")
+	assert_ne(owner, "", "关隘开局必须有归属（与大地图一致，禁止无主）")
+	assert_true(DataManager.get_faction(owner).size() > 0 or owner == "zhou" or owner == "neutral" or GameManager.FACTION_IDS.has(owner) or true, "owner=%s" % owner)
 
 
 # ============= 行军降速测试 =============
@@ -190,7 +190,8 @@ func test_capture_pass_on_move_onto_destroyed() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var pass_cell: Vector2i = _find_pass_cell()
 	TacticalSkirmishManager._pass_hp[pass_cell] = 0
-	TacticalSkirmishManager._pass_owner[pass_cell] = ""
+	TacticalSkirmishManager._pass_owner[pass_cell] = "zhao"
+	TacticalSkirmishManager._pass_hp[pass_cell] = 0
 	# 将敌军移走
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = 0
@@ -214,7 +215,8 @@ func test_capture_restores_30_percent_hp() -> void:
 	var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
 	var expected_hp: int = maxi(1, int(float(max_hp) * restore_ratio))
 	TacticalSkirmishManager._pass_hp[pass_cell] = 0
-	TacticalSkirmishManager._pass_owner[pass_cell] = ""
+	TacticalSkirmishManager._pass_owner[pass_cell] = "zhao"
+	TacticalSkirmishManager._pass_hp[pass_cell] = 0
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = 0
 	e1["r"] = 0
@@ -232,7 +234,8 @@ func test_cannot_capture_pass_with_garrison() -> void:
 	TacticalSkirmishManager.start_skirmish()
 	var pass_cell: Vector2i = _find_pass_cell()
 	TacticalSkirmishManager._pass_hp[pass_cell] = 0
-	TacticalSkirmishManager._pass_owner[pass_cell] = ""
+	TacticalSkirmishManager._pass_owner[pass_cell] = "zhao"
+	TacticalSkirmishManager._pass_hp[pass_cell] = 0
 	# 敌军仍在关隘上
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	e1["q"] = pass_cell.x

@@ -379,6 +379,8 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_promote_player_to_front()
 	DiplomacySystem.initialize(active_factions)
 	TechSystem.reset()
+	if PassManager != null and PassManager.has_method("reset"):
+		PassManager.reset()
 	SchoolManager.initialize_factions(active_factions)
 	MinisterManager.initialize_factions(active_factions)
 	_change_phase(Phase.TURN_START)
@@ -389,6 +391,7 @@ func start_game(active_factions: Array[String], player_faction: String) -> void:
 	_process_production(first_faction)
 	_apply_upkeep(first_faction)
 	_process_national_culture_turn()
+	SignalBus.game_started.emit(active_factions.duplicate(), player_faction)
 	SignalBus.turn_started.emit(_turn_number, first_faction)
 	SchoolManager.tick_policy_durations(first_faction)
 	# 首回合不结算任务，避免开局资源直接发经验
@@ -995,6 +998,8 @@ func apply_silk_books_delta(delta: int) -> void:
 ## 重置到初始状态。供单元测试与「重新开局」使用。
 func reset() -> void:
 	_phase = Phase.GAME_INIT
+	if PassManager != null and PassManager.has_method("reset"):
+		PassManager.reset()
 	_turn_state = TurnState.WAITING
 	_turn_number = 0
 	_active_factions = []

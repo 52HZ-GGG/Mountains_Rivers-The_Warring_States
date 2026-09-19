@@ -66,6 +66,15 @@ signal tech_available(tech_id: String)
 ## 城市归属变更时发出。new_faction 已成为 current_faction_id
 signal city_occupied(city_id: String, old_faction: String, new_faction: String)
 
+## 关隘易主（key 为 axial "q,r"）
+signal pass_occupied(pass_key: String, old_faction: String, new_faction: String)
+
+## 防御建筑格独立占领
+signal building_occupied(axial: Vector2i, city_id: String, building_id: String, old_faction: String, new_faction: String)
+
+## 一局游戏开始（开局初始化关隘等）
+signal game_started(factions: Array, player_faction: String)
+
 ## faction 失去自己的首都时发出（占领触发）。等待迁都决策
 signal capital_lost(faction_id: String, lost_city_id: String)
 

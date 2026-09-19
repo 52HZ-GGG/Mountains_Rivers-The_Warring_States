@@ -268,7 +268,7 @@ func reset_skirmish() -> void:
 	_city_level.clear()
 	_city_attacked.clear()
 	_city_tower_hp.clear()
-	_demo_attack_multiplier = 1.0
+	# Demo 作弊倍率跨重置保留，便于测试；需要关掉时再 set_demo_attack_multiplier(1)
 	state_changed.emit()
 
 
@@ -705,16 +705,12 @@ func list_attack_targets(attacker_id: String) -> Array[String]:
 func check_victory() -> String:
 	if not _skirmish_active:
 		return ""
-	var _vc_debug: bool = false
+	# 战斗系统.md：城市一份 HP；HP=0 且我方在敌城格上即胜利
 	for u: Dictionary in _units:
 		var c: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 		if str(u["faction_id"]) == _player_faction and c == _enemy_city:
-			# 城墙未摧毁时不能获胜
 			if _city_wall_hp.has(c) and int(_city_wall_hp[c]) > 0:
 				continue
-			if _city_body_hp.has(c) and int(_city_body_hp[c]) > 0:
-				continue
-			# 关隘阻断：敌方关隘仍有驻军时不能获胜
 			if _enemy_pass_blocks(_player_faction):
 				return ""
 			return _player_faction
@@ -722,8 +718,6 @@ func check_victory() -> String:
 		var c2: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 		if str(u["faction_id"]) == _enemy_faction and c2 == _player_city:
 			if _city_wall_hp.has(c2) and int(_city_wall_hp[c2]) > 0:
-				continue
-			if _city_body_hp.has(c2) and int(_city_body_hp[c2]) > 0:
 				continue
 			if _enemy_pass_blocks(_enemy_faction):
 				return ""
@@ -840,18 +834,102 @@ func _build_tiles() -> void:
 			var cell_axial: Vector2i = HexLib.offset_odd_r_to_axial(col_o, row_o)
 			_tiles[cell_axial] = str(row[col_o])
 			_all_cells.append(cell_axial)
-			# 初始化关隘 HP/owner
+			# 初始化关隘 HP/owner（与大地图同一规则：必须有归属）
 			var tid: String = str(row[col_o])
 			if tid == "pass":
 				var tdata: Dictionary = DataManager.get_terrain(tid)
 				var struct_hp_v: Variant = tdata.get("structure_hp", null)
-				var max_hp: int = int(struct_hp_v) if struct_hp_v != null else 500
+				var max_hp: int = int(struct_hp_v) if struct_hp_v != null else 300
+				if PassManager != null:
+					max_hp = PassManager.pass_max_hp()
 				_pass_hp[cell_axial] = max_hp
-				_pass_owner[cell_axial] = ""
+				var owner: String = _resolve_skirmish_pass_owner(cell_axial)
+				if PassManager != null and PassManager.has_pass(cell_axial):
+					var camp_hp: int = PassManager.get_pass_hp(cell_axial)
+					if camp_hp >= 0:
+						_pass_hp[cell_axial] = camp_hp
+				_pass_owner[cell_axial] = owner
 				_pass_attacked[cell_axial] = false
 	# 初始化城防数据
 	_init_city_data(_player_city, _cfg.get("player_city", {}))
 	_init_city_data(_enemy_city, _cfg.get("enemy_city", {}))
+
+
+## 演武关隘开局归属：场景配置 > 战役 PassManager > 最近战役城
+func _resolve_skirmish_pass_owner(cell_axial: Vector2i) -> String:
+	# 1) 场景显式配置（便于测试/剧本）
+	var pass_owners: Array = _cfg.get("pass_owners", []) as Array
+	var off: Vector2i = HexLib.axial_to_offset_odd_r(cell_axial.x, cell_axial.y)
+	for item: Variant in pass_owners:
+		if not (item is Dictionary):
+			continue
+		var d: Dictionary = item as Dictionary
+		var oc: int = int(d.get("col", d.get("offset_col", -999)))
+		var orow: int = int(d.get("row", d.get("offset_row", -999)))
+		var aq: int = int(d.get("axial_q", -99999))
+		var ar: int = int(d.get("axial_r", -99999))
+		var match_cell: bool = (oc == off.x and orow == off.y) or (aq == cell_axial.x and ar == cell_axial.y)
+		if match_cell:
+			return str(d.get("owner", ""))
+	# 2) 战役 PassManager 同 axial
+	if PassManager != null and PassManager.has_pass(cell_axial):
+		return PassManager.get_pass_owner(cell_axial)
+	# 3) 战术图最近城的战役城主
+	var d_pc: int = HexLib.hex_distance_hex(cell_axial, _player_city)
+	var d_ec: int = HexLib.hex_distance_hex(cell_axial, _enemy_city)
+	var use_player: bool = d_pc <= d_ec
+	var city_cfg: Dictionary = _cfg.get("player_city" if use_player else "enemy_city", {}) as Dictionary
+	var city_id: String = str(city_cfg.get("city_id", ""))
+	if city_id != "" and CityManager != null:
+		var st: Dictionary = CityManager.get_city_state(city_id)
+		if not st.is_empty():
+			var owner: String = str(st.get("current_faction_id", ""))
+			if owner != "":
+				return owner
+	return _player_faction if use_player else _enemy_faction
+
+
+## 演武攻关隘结构（规则与大地图一致：共享结构伤 + 地形修正；满 HP 不可占领）
+func try_attack_pass(attacker_id: String, cell: Vector2i) -> Dictionary:
+	var u: Dictionary = get_unit_by_id(attacker_id)
+	if u.is_empty():
+		return {"ok": false, "reason": "no_unit"}
+	if not _pass_hp.has(cell):
+		return {"ok": false, "reason": "no_pass"}
+	if bool(u.get("acted", false)):
+		return {"ok": false, "reason": "already_acted"}
+	var owner: String = str(_pass_owner.get(cell, ""))
+	var fid: String = str(u["faction_id"])
+	if owner == fid:
+		return {"ok": false, "reason": "own_pass"}
+	if int(_pass_hp[cell]) <= 0:
+		return {"ok": false, "reason": "already_breached"}
+	var apos: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
+	var dist: int = HexLib.hex_distance_hex(apos, cell)
+	var ug: Dictionary = DataManager.get_unit_type(str(u["unit_type_id"]))
+	var rng: int = int(ug.get("range", 1))
+	if dist < 1 or dist > rng:
+		return {"ok": false, "reason": "out_of_range"}
+	var Carrier := preload("res://scripts/systems/defense_carrier_rules.gd")
+	var base_atk: float = float(ug.get("attack", 10))
+	base_atk *= get_demo_attack_multiplier()
+	var school: float = SchoolManager.get_effect_float(fid, "attack_bonus") if SchoolManager != null else 0.0
+	base_atk *= (1.0 + school)
+	var dmg: int = Carrier.pass_structure_damage(base_atk, str(u["unit_type_id"]))
+	var old_hp: int = int(_pass_hp[cell])
+	_pass_hp[cell] = maxi(0, old_hp - dmg)
+	_pass_attacked[cell] = true
+	u["acted"] = true
+	set_unit_mp(u, 0)
+	_append_log("%s 攻击关隘，结构伤 %d（%d → %d）" % [attacker_id, dmg, old_hp, int(_pass_hp[cell])])
+	state_changed.emit()
+	return {
+		"ok": true,
+		"damage": dmg,
+		"hp": int(_pass_hp[cell]),
+		"destroyed": int(_pass_hp[cell]) <= 0,
+		"owner": str(_pass_owner.get(cell, "")),
+	}
 
 
 func _spawn_units() -> void:
@@ -1324,7 +1402,12 @@ func _dijkstra_reachable(origin: Vector2i, mp_budget: int, unit_type_id: String,
 		var occ: String = _occupant_id_at(axial)
 		return occ != "" and occ != moving_unit_id
 	var wall_block := func(axial: Vector2i) -> bool:
-		return _city_wall_hp.has(axial) and int(_city_wall_hp[axial]) > 0
+		# 战斗系统.md：城市只有一份 HP；HP>0 不可进驻；HP=0 可进城并占领（同关隘）
+		if axial == _player_city:
+			return false
+		if _city_wall_hp.has(axial) and int(_city_wall_hp[axial]) > 0:
+			return true
+		return false
 	var terrain_provider := func(col: int, row: int) -> String:
 		var ax: Vector2i = HexLib.offset_odd_r_to_axial(col, row)
 		return terrain_at(ax)
@@ -1726,11 +1809,10 @@ func get_city_wall_max_hp(cell: Vector2i) -> int:
 
 
 func can_capture_city(cell: Vector2i, faction_id: String, unit_id: String = "") -> bool:
+	## 战斗系统.md：城市只有一份 HP；HP≤0 且无敌驻军，我方进驻即占领（与关隘同规则）
 	if not _city_wall_hp.has(cell):
 		return false
 	if int(_city_wall_hp[cell]) > 0:
-		return false
-	if int(_city_body_hp.get(cell, 0)) > 0:
 		return false
 	for other: Dictionary in _units:
 		if unit_id != "" and str(other["id"]) == unit_id:
@@ -1740,6 +1822,36 @@ func can_capture_city(cell: Vector2i, faction_id: String, unit_id: String = "") 
 	return true
 
 
+## 城体/城墙变化后：检查是否已有己方单位站在城格上并满足占领条件
+## （此前只在「移动进城」时判定，城 HP 被打空时站在城里的单位不会触发占领）
+func _recheck_city_capture_at(cell: Vector2i) -> void:
+	if not _city_wall_hp.has(cell):
+		return
+	for u: Dictionary in _units:
+		if Vector2i(int(u["q"]), int(u["r"])) != cell:
+			continue
+		_check_enter_city(u)
+		return
+
+
+func _damage_city_wall(cell: Vector2i, wall_dmg: int) -> void:
+	if not _city_wall_hp.has(cell):
+		return
+	var old_hp: int = int(_city_wall_hp[cell])
+	var new_hp: int = maxi(0, old_hp - wall_dmg)
+	# 城市只有一份 HP：墙/体字典同步，避免显示与进驻判定不一致
+	_city_wall_hp[cell] = new_hp
+	if _city_body_hp.has(cell):
+		_city_body_hp[cell] = new_hp
+	_append_log("城市 HP 受到 %d 伤害（%d → %d）" % [wall_dmg, old_hp, new_hp])
+	_recheck_city_capture_at(cell)
+
+
+func _damage_city_body(cell: Vector2i, body_dmg: int) -> void:
+	# 统一为城市一份 HP
+	_damage_city_wall(cell, body_dmg)
+
+
 ## 城市本体 HP（城墙击破后的主要目标）
 func get_city_body_hp(cell: Vector2i) -> int:
 	return int(_city_body_hp.get(cell, -1))
@@ -1747,14 +1859,6 @@ func get_city_body_hp(cell: Vector2i) -> int:
 
 func get_city_body_max_hp(cell: Vector2i) -> int:
 	return int(_city_body_max_hp.get(cell, 0))
-
-
-func _damage_city_body(cell: Vector2i, dmg: int) -> void:
-	if not _city_body_hp.has(cell):
-		return
-	var old_hp: int = int(_city_body_hp[cell])
-	_city_body_hp[cell] = maxi(0, old_hp - dmg)
-	_append_log("城市本体受到 %d 伤害（%d → %d）" % [dmg, old_hp, int(_city_body_hp[cell])])
 
 
 ## 获取城市等级；无城市返回 0
@@ -1788,30 +1892,20 @@ func _is_siege_unit(unit_type_id: String) -> bool:
 	return str(udata.get("category", "")) == "siege"
 
 
-## 对关隘造成结构伤害（攻城器械 × siege_damage_multiplier）
+## 对关隘造成结构伤害（共享规则，含地形×0.5）
 func _damage_pass_structure(cell: Vector2i, attacker_type_id: String, effective_atk: float) -> void:
 	if not _pass_hp.has(cell):
 		return
-	var struct_def_v: Variant = DataManager.get_balance_param("fortification.pass_struct_def")
-	var pass_struct_def: float = float(struct_def_v) if struct_def_v != null else 10.0
-	var mult_v: Variant = DataManager.get_balance_param("fortification.siege_damage_multiplier")
-	var siege_mult: float = float(mult_v) if mult_v != null else 3.0
-	var dmg_mult: float = siege_mult if _is_siege_unit(attacker_type_id) else 1.0
-	var coeff: float = 20.0
-	var struct_dmg: int = maxi(1, int(effective_atk * dmg_mult * coeff / (coeff + pass_struct_def)))
+	var Carrier := preload("res://scripts/systems/defense_carrier_rules.gd")
+	var struct_dmg: int = Carrier.pass_structure_damage(effective_atk, attacker_type_id)
 	var old_hp: int = int(_pass_hp[cell])
 	_pass_hp[cell] = maxi(0, old_hp - struct_dmg)
 	_pass_attacked[cell] = true
 	_append_log("关隘受到 %d 结构伤害（%d → %d）" % [struct_dmg, old_hp, int(_pass_hp[cell])])
 
 
-## 对城墙造成伤害（攻城器械已在外层乘算）
-func _damage_city_wall(cell: Vector2i, wall_dmg: int) -> void:
-	if not _city_wall_hp.has(cell):
-		return
-	var old_hp: int = int(_city_wall_hp[cell])
-	_city_wall_hp[cell] = maxi(0, old_hp - wall_dmg)
-	_append_log("城墙受到 %d 伤害（%d → %d）" % [wall_dmg, old_hp, int(_city_wall_hp[cell])])
+## 对城墙造成伤害（攻城器械已在外层乘算）→ 结构变化后重检占领
+# （实现见文件前部 _damage_city_wall）
 
 
 ## 关隘自然恢复：回合开始时未被攻击的关隘恢复 5% 最大 HP
@@ -1908,10 +2002,8 @@ func _process_arrow_towers() -> void:
 			break
 
 
-## 初始化单个城市的城防数据
-## 城墙 HP：优先建筑列表 wall.structure_hp，否则 buildings.json wall 等级
-## 城市本体 HP：balance_params city_levels.hp，与城墙独立
-## 建筑效果：场景 buildings / city_id（读 CityManager）/ 按城级默认（统一规范：经营建筑效果进演武）
+## 初始化城市：战斗系统.md —— 城市只有一份 HP（city_levels + 首都加成）
+## 墙/塔建筑只提供战斗防御加成，不再单独作为第二条 HP 挡进驻
 func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 	var level: int = int(city_cfg.get("level", 3))
 	level = clampi(level, 1, 5)
@@ -1920,32 +2012,24 @@ func _init_city_data(cell: Vector2i, city_cfg: Dictionary) -> void:
 	var level_data: Dictionary = {}
 	if levels_data is Dictionary:
 		level_data = (levels_data as Dictionary).get(str(level), {})
-	var body_max_hp: int = int(level_data.get("hp", 300))
+	var city_max_hp: int = int(level_data.get("hp", 300))
 	if is_capital:
 		var bonus_v: Variant = DataManager.get_balance_param("city_levels.capital_bonus.hp")
-		body_max_hp += int(bonus_v) if bonus_v != null else 500
-	# 建筑列表（经营效果进演武）
+		city_max_hp += int(bonus_v) if bonus_v != null else 500
 	var buildings: Array = BuildingFxLib.resolve_city_buildings(city_cfg)
 	_city_buildings[cell] = buildings
-	# 墙城：建筑 wall.structure_hp 之和；无墙条目时回退 wall_level 配置
-	var wall_from_b: int = BuildingFxLib.wall_structure_hp_from_buildings(buildings)
-	var wall_max_hp: int = wall_from_b
-	if wall_max_hp <= 0:
-		var wall_level: int = int(city_cfg.get("wall_level", 1))
-		wall_max_hp = _resolve_wall_structure_hp(wall_level)
-	_city_wall_hp[cell] = wall_max_hp
-	_city_wall_max_hp[cell] = wall_max_hp
-	_city_body_hp[cell] = body_max_hp
-	_city_body_max_hp[cell] = body_max_hp
+	# 一份城市 HP（API 名 get_city_wall_hp 沿用，语义=城市 HP）
+	_city_wall_hp[cell] = city_max_hp
+	_city_wall_max_hp[cell] = city_max_hp
+	_city_body_hp[cell] = city_max_hp
+	_city_body_max_hp[cell] = city_max_hp
 	_city_level[cell] = level
 	_city_attacked[cell] = false
-	# 箭塔：建筑 arrow_tower，或城级≥4 兜底
 	var tower_from_b: float = BuildingFxLib.tower_attack_from_buildings(buildings)
 	if tower_from_b > 0.0:
 		_city_tower_hp[cell] = int(tower_from_b) * 10
 	elif level >= 4:
-		var tower_base: int = 150 + 100 * (level - 3)
-		_city_tower_hp[cell] = tower_base
+		_city_tower_hp[cell] = 150 + 100 * (level - 3)
 	else:
 		_city_tower_hp[cell] = 0
 
@@ -1967,20 +2051,40 @@ func _resolve_wall_structure_hp(wall_level: int) -> int:
 func _check_enter_city(u: Dictionary) -> void:
 	var c: Vector2i = Vector2i(int(u["q"]), int(u["r"]))
 	var fid: String = str(u["faction_id"])
-	# 城市占领：城墙 HP ≤ 0 且无敌方驻军时易主
+	# 城市占领（战斗系统.md）：城市 HP=0 且无敌驻军，我方进驻 → 占领
 	if can_capture_city(c, fid, str(u["id"])):
-		var old_wall_hp: int = int(_city_wall_hp[c])
 		var max_hp: int = int(_city_wall_max_hp[c])
 		var restore_v: Variant = DataManager.get_balance_param("city_combat.capture_restore_ratio")
 		var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
-		_city_wall_hp[c] = maxi(1, int(float(max_hp) * restore_ratio))
-		if _city_body_max_hp.has(c):
-			_city_body_hp[c] = int(_city_body_max_hp[c])
+		var restored: int = maxi(1, int(float(max_hp) * restore_ratio))
+		_city_wall_hp[c] = restored
+		_city_body_hp[c] = restored
 		_city_attacked[c] = false
-		_append_log("%s 占领城市 (%d,%d)！城墙 HP 恢复至 %d" % [fid, c.x, c.y, int(_city_wall_hp[c])])
+		var captured_city_id: String = ""
+		var ccfg: Dictionary = {}
+		if c == _enemy_city:
+			ccfg = _cfg.get("enemy_city", {}) as Dictionary
+		elif c == _player_city:
+			ccfg = _cfg.get("player_city", {}) as Dictionary
+		captured_city_id = str(ccfg.get("city_id", ""))
+		if not captured_city_id.is_empty() and CityManager != null:
+			var before: String = str(CityManager.get_city_state(captured_city_id).get("current_faction_id", ""))
+			if before != fid:
+				if CityManager.change_ownership(captured_city_id, fid):
+					_append_log("战役写回：%s 归属 %s → %s（可经营）" % [captured_city_id, before, fid])
+					if SaveManager != null and SaveManager.has_method("save_to_slot"):
+						SaveManager.save_to_slot(SaveManager.AUTO_SLOT)
+		_append_log("%s 占领城市 (%d,%d)！（城 HP=0 且无敌驻军）" % [fid, c.x, c.y])
 	elif c == _enemy_city or c == _player_city:
-		_append_log("%s 占据城格 (%d,%d)" % [fid, c.x, c.y])
-	# 关隘占领：HP ≤ 0 且无驻守敌军时易主
+		var wall_left: int = int(_city_wall_hp.get(c, -1))
+		var body_left: int = int(_city_body_hp.get(c, -1))
+		if wall_left > 0:
+			_append_log("%s 未能占领：城墙仍有 %d HP" % [fid, wall_left])
+		elif body_left > 0:
+			_append_log("%s 在城格上，城体仍有 %d HP（正常流程下城 HP≤0 才可进驻）" % [fid, body_left])
+		else:
+			_append_log("%s 占据城格 (%d,%d)" % [fid, c.x, c.y])
+	# 关隘占领：HP ≤ 0 且无驻守敌军时易主 → 写回战役 PassManager
 	if _pass_hp.has(c) and int(_pass_hp[c]) <= 0:
 		var occ_id: String = _occupant_id_at(c)
 		if occ_id == str(u["id"]) or occ_id == "":
@@ -1990,9 +2094,16 @@ func _check_enter_city(u: Dictionary) -> void:
 				var restore_v: Variant = DataManager.get_balance_param("city_combat.capture_restore_ratio")
 				var restore_ratio: float = float(restore_v) if restore_v != null else 0.3
 				var max_hp: int = _get_pass_max_hp()
+				if PassManager != null:
+					max_hp = PassManager.pass_max_hp()
 				_pass_hp[c] = maxi(1, int(float(max_hp) * restore_ratio))
 				_pass_owner[c] = new_owner
 				_pass_attacked[c] = false
+				if PassManager != null and PassManager.has_pass(c):
+					PassManager.try_capture_pass(c, new_owner)
+					var camp_hp: int = PassManager.get_pass_hp(c)
+					if camp_hp > 0:
+						_pass_hp[c] = camp_hp
 				_append_log("%s 占领关隘 (%d,%d)！HP 恢复至 %d" % [new_owner, c.x, c.y, int(_pass_hp[c])])
 
 
