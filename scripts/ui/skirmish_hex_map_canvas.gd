@@ -29,6 +29,9 @@ var _hex_radius: float = 0.0
 var _board_origin_shift: Vector2 = Vector2.ZERO
 var _board_pad: float = 0.0
 var _rc_index_ready: bool = false
+## 大地图地形层烘焙：非空时直接画整张纹理，取代逐格 draw_polygon（缩放只处理一张图）
+var _baked_texture: Texture2D
+var _baked_draw_size: Vector2 = Vector2.ZERO
 
 
 func _scale_poly_outward(poly: PackedVector2Array, cell_pos: Vector2, cell: SkirmishHexCell) -> PackedVector2Array:
@@ -198,6 +201,7 @@ func _draw_payload_cells() -> void:
 			var uvs: PackedVector2Array = payload.get("uvs", PackedVector2Array()) as PackedVector2Array
 			if tex != null and polygon.size() == uvs.size():
 				draw_polygon(polygon, _white_vertex_colors(polygon.size()), uvs, tex)
+				_draw_terrain_edge_blends(polygon, uvs, payload.get("edge_blends", []) as Array)
 			else:
 				draw_colored_polygon(polygon, payload.get("fallback_color", SkirmishHexCell.fallback_terrain_color()) as Color)
 		if not draw_overlay:
@@ -231,6 +235,39 @@ func _draw_payload_cells() -> void:
 	_content_dirty = false
 
 
+func _draw_terrain_edge_blends(polygon: PackedVector2Array, uvs: PackedVector2Array, blends: Array) -> void:
+	if blends.is_empty() or polygon.size() != 6 or uvs.size() != 6:
+		return
+	var center: Vector2 = Vector2.ZERO
+	var uv_center: Vector2 = Vector2.ZERO
+	for i: int in range(6):
+		center += polygon[i]
+		uv_center += uvs[i]
+	center /= 6.0
+	uv_center /= 6.0
+	for blend_v: Variant in blends:
+		var blend: Dictionary = blend_v as Dictionary
+		var texture: Texture2D = blend.get("texture", null) as Texture2D
+		if texture == null:
+			continue
+		var side: int = int(blend.get("side", 0))
+		var alpha: float = float(blend.get("alpha", 0.5))
+		var next_side: int = (side + 1) % 6
+		var points := PackedVector2Array([
+			polygon[side], polygon[next_side],
+			polygon[next_side].lerp(center, 0.22), polygon[side].lerp(center, 0.22),
+		])
+		var edge_uvs := PackedVector2Array([
+			uvs[side], uvs[next_side],
+			uvs[next_side].lerp(uv_center, 0.22), uvs[side].lerp(uv_center, 0.22),
+		])
+		var colors := PackedColorArray([
+			Color(1, 1, 1, alpha), Color(1, 1, 1, alpha),
+			Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.0),
+		])
+		draw_polygon(points, colors, edge_uvs, texture)
+
+
 func _poly_aabb(poly: PackedVector2Array) -> Rect2:
 	if poly.is_empty():
 		return Rect2()
@@ -245,18 +282,24 @@ func _poly_aabb(poly: PackedVector2Array) -> Rect2:
 func _payload_visible(payload: Dictionary) -> bool:
 	if not _cull_enabled or _cull_rect.size == Vector2.ZERO:
 		return true
-	var poly: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
-	if poly.size() < 3:
-		return false
-	var aabb: Rect2 = _poly_aabb(poly)
-	var caption_center: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
-	if caption_center != Vector2.ZERO:
-		aabb = aabb.expand(caption_center)
-	return aabb.intersects(_cull_rect)
+	# 缓存 AABB：polygon 与 caption_center 在 payload 构建后固定不变，滚动时无需每帧重扫 6 顶点
+	if not payload.has("_aabb"):
+		var poly: PackedVector2Array = payload.get("polygon", PackedVector2Array()) as PackedVector2Array
+		if poly.size() < 3:
+			return false
+		var aabb: Rect2 = _poly_aabb(poly)
+		var caption_center: Vector2 = payload.get("caption_center", Vector2.ZERO) as Vector2
+		if caption_center != Vector2.ZERO:
+			aabb = aabb.expand(caption_center)
+		payload["_aabb"] = aabb
+	return (payload["_aabb"] as Rect2).intersects(_cull_rect)
 
 
 func _draw() -> void:
 	_content_dirty = false
+	if _baked_texture != null:
+		draw_texture_rect(_baked_texture, Rect2(Vector2.ZERO, _baked_draw_size), false)
+		return
 	if _use_payload:
 		_draw_payload_cells()
 		return
@@ -302,6 +345,21 @@ func clear_payload_cells() -> void:
 	_use_payload = false
 	_payload_by_rc.clear()
 	_rc_index_ready = false
+	_content_dirty = true
+	queue_redraw()
+
+
+## 设置烘焙纹理后，_draw 直接绘制整张纹理（地形层静态化）；传 null 则回退逐格绘制
+func set_baked_texture(tex: Texture2D, draw_size: Vector2) -> void:
+	_baked_texture = tex
+	_baked_draw_size = draw_size
+	_content_dirty = true
+	queue_redraw()
+
+
+func clear_baked_texture() -> void:
+	_baked_texture = null
+	_baked_draw_size = Vector2.ZERO
 	_content_dirty = true
 	queue_redraw()
 

@@ -18,7 +18,7 @@ var _last_left_click_ms: int = 0
 const _OUTLINE_COLOR: Color = Color(0.28, 0.24, 0.20, 0.55)
 const _OUTLINE_WIDTH: float = 1.0
 const _FALLBACK_TERRAIN: Color = Color(0.42, 0.52, 0.36, 1.0)
-const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
+const _TERRAIN_UV_CROP: Rect2 = Rect2(0.10, 0.10, 0.80, 0.80)
 
 
 static func fallback_terrain_color() -> Color:

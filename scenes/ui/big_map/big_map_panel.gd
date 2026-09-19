@@ -11,7 +11,7 @@ const _ZOOM_MIN: float = 0.5
 const _ZOOM_MAX: float = 3.0
 const _BOTTOM_ACTION_PAD_PX: float = 86.0
 const _HEX_FILL_BLEED_PX: float = 2.6
-const _TERRAIN_UV_CROP: Rect2 = Rect2(0.04, 0.09, 0.92, 0.83)
+const _TERRAIN_UV_CROP: Rect2 = Rect2(0.10, 0.10, 0.80, 0.80)
 const _DRAG_THRESHOLD_PX: float = 6.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
@@ -49,6 +49,12 @@ var _placement_city_id: String = ""
 var _placement_building_id: String = ""
 var _placement_flash_hex: Vector2i = Vector2i(-9999, -9999)
 var _placement_flash_until_ms: int = 0
+## 地形层烘焙：把 7000 格地形烘成单张纹理，缩放/滚动只处理一张图；失败自动回退逐格绘制
+const _TERRAIN_BAKE_MAX_DIM: int = 8192
+var _terrain_bake_viewport: SubViewport
+var _terrain_bake_canvas: HexMapCanvas
+var _terrain_bake_texture: Texture2D
+var _terrain_bake_draw_size: Vector2 = Vector2.ZERO
 
 @onready var _hex_board: Control = %HexBoard
 @onready var _hover_info: RichTextLabel = %HoverInfo
@@ -152,11 +158,11 @@ func _compute_hex_radius_px(w: int, h: int, pad: float) -> float:
 	var avail: Vector2 = _hex_play_area_avail_px()
 	var s: float = minf(avail.x / bb_unit.x, avail.y / bb_unit.y) * 0.99
 	# 恢复标准格子尺寸（可横向/纵向滚动看全图），不要为塞进一屏把 hex 缩成 16px
-	s = clampf(s, 42.0, 96.0)
-	# 若整图 fit 后仍很小，用“一屏约 18 列”的标准尺度
+	s = clampf(s, 100.0, 192.0)
+	# 标准比例下保持半径至少 100px（原 50px 的两倍），通过滚动查看整图。
 	var fit_all: float = s
 	var standard: float = avail.x / maxf(1.5 * float(maxi(w, 1)), 1.0)
-	standard = clampf(standard, 42.0, 96.0)
+	standard = clampf(standard, 100.0, 192.0)
 	return maxf(fit_all, standard) if fit_all < 28.0 else standard
 
 
@@ -359,7 +365,112 @@ func focus_city(city_id: String) -> void:
 func close() -> void:
 	if _placement_city_id != "":
 		cancel_building_placement()
+	_release_terrain_bake()
 	queue_free()
+
+
+## —— 地形层烘焙：7000 格地形 → 单张纹理，缩放/滚动只处理一张图 ——
+
+func _ensure_terrain_bake() -> void:
+	if _terrain_payload_cells.is_empty() or _board_base_size.x <= 1.0 or _board_base_size.y <= 1.0:
+		return
+	var board_size: Vector2 = _board_base_size
+	# 标准格放大后整图超过单张纹理上限；直接裁剪绘制可见格，避免降采样发糊。
+	if maxf(board_size.x, board_size.y) > float(_TERRAIN_BAKE_MAX_DIM):
+		_release_terrain_bake()
+		var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
+		if terrain_cv != null:
+			terrain_cv.clear_baked_texture()
+		return
+	# 降采样到最长边 ≤ _TERRAIN_BAKE_MAX_DIM，避免超大纹理（内存 / GL 上限）
+	var max_side: float = maxf(board_size.x, board_size.y)
+	var scale_factor: float = 1.0
+	if max_side > float(_TERRAIN_BAKE_MAX_DIM):
+		scale_factor = float(_TERRAIN_BAKE_MAX_DIM) / max_side
+	var bake_size: Vector2i = Vector2i(
+		maxi(1, int(ceil(board_size.x * scale_factor))),
+		maxi(1, int(ceil(board_size.y * scale_factor)))
+	)
+	if _terrain_bake_viewport == null:
+		_terrain_bake_viewport = SubViewport.new()
+		_terrain_bake_viewport.name = "TerrainBakeViewport"
+		_terrain_bake_viewport.transparent_bg = true
+		_terrain_bake_viewport.disable_3d = true
+		_terrain_bake_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		add_child(_terrain_bake_viewport)
+	_terrain_bake_viewport.size = bake_size
+	_ensure_bake_backdrop()
+	if _terrain_bake_canvas == null:
+		_terrain_bake_canvas = HexMapCanvas.new()
+		_terrain_bake_canvas.name = "TerrainBakeCanvas"
+		_terrain_bake_viewport.add_child(_terrain_bake_canvas)
+	# 覆盖 HexMapCanvas._ready 的 FULL_RECT，避免被 SubViewport 尺寸拉扯
+	_terrain_bake_canvas.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_terrain_bake_canvas.size = board_size
+	_terrain_bake_canvas.set_draw_layers(HexMapCanvas.LAYER_TERRAIN)
+	_terrain_bake_canvas.set_cull_enabled(false)
+	_terrain_bake_canvas.scale = Vector2(scale_factor, scale_factor)
+	_terrain_bake_canvas.set_payload_cells(_terrain_payload_cells, board_size)
+	_terrain_bake_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	_read_terrain_bake_async()
+
+
+## 底色兜底：让烘焙纹理始终非透明；即便地形未画上，也显示底色而非空白
+func _ensure_bake_backdrop() -> void:
+	if _terrain_bake_viewport == null:
+		return
+	var bg: ColorRect = _terrain_bake_viewport.get_node_or_null("BakeBackdrop") as ColorRect
+	if bg == null:
+		bg = ColorRect.new()
+		bg.name = "BakeBackdrop"
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.z_index = -100
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_terrain_bake_viewport.add_child(bg)
+		_terrain_bake_viewport.move_child(bg, 0)
+	bg.color = Color(0.50, 0.55, 0.45, 1.0)
+
+
+func _read_terrain_bake_async() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if _terrain_bake_viewport == null or not is_instance_valid(_terrain_bake_viewport):
+		return
+	var vp_tex: ViewportTexture = _terrain_bake_viewport.get_texture()
+	if vp_tex == null:
+		return
+	# 读回成普通 Image 并生成 mipmap：摆脱 ViewportTexture 对渲染目标的依赖，缩小时采样稳定
+	var img: Image = vp_tex.get_image()
+	var baked_ok: bool = img != null and img.get_width() > 0 and img.get_height() > 0
+	if baked_ok:
+		img.generate_mipmaps()
+		_terrain_bake_texture = ImageTexture.create_from_image(img)
+	else:
+		_terrain_bake_texture = vp_tex
+	_terrain_bake_draw_size = _board_base_size
+	_apply_terrain_bake_texture()
+	# 仅在成功读回成独立纹理后释放烘焙 viewport（否则 ViewportTexture 仍需其渲染目标）
+	if baked_ok and _terrain_bake_viewport != null and is_instance_valid(_terrain_bake_viewport):
+		_terrain_bake_viewport.queue_free()
+		_terrain_bake_viewport = null
+		_terrain_bake_canvas = null
+
+
+func _apply_terrain_bake_texture() -> void:
+	if _hex_board == null or _terrain_bake_texture == null:
+		return
+	var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
+	if terrain_cv != null:
+		terrain_cv.set_baked_texture(_terrain_bake_texture, _terrain_bake_draw_size)
+
+
+func _release_terrain_bake() -> void:
+	if _terrain_bake_viewport != null and is_instance_valid(_terrain_bake_viewport):
+		_terrain_bake_viewport.queue_free()
+	_terrain_bake_viewport = null
+	_terrain_bake_canvas = null
+	_terrain_bake_texture = null
+	_terrain_bake_draw_size = Vector2.ZERO
 
 
 func get_resource_bar_slot() -> VBoxContainer:
@@ -684,7 +795,8 @@ func _ensure_hex_layer_canvas(canvas_name: String, layers: int, z: int) -> void:
 		_hex_board.add_child(cv)
 	cv.z_index = z
 	cv.set_draw_layers(layers)
-	cv.set_cull_enabled(true)
+	# 地形层是纯静态内容：关闭视口裁剪，布局/地形变更时全量绘制一次，之后滚动/缩放不再触发重绘
+	cv.set_cull_enabled((layers & HexMapCanvas.LAYER_OVERLAY) != 0)
 	var backdrop: Node = _hex_board.get_node_or_null("BoardBackdrop")
 	if backdrop != null:
 		var backdrop_index: int = backdrop.get_index()
@@ -729,11 +841,15 @@ func _build_terrain_payload_cells(layout_cells: Array) -> Array:
 	for entry: Dictionary in layout_cells:
 		var cell_axial: Vector2i = entry["axial"] as Vector2i
 		var cell_pos: Vector2 = entry["pos"] as Vector2
+		var col: int = int(entry.get("col", 0))
+		var row: int = int(entry.get("row", 0))
+		var terrain_id: String = str(_terrain_at_axial.get(cell_axial, "plains"))
 		var payload: Dictionary = {
 			"polygon": entry["polygon"],
 			"uvs": _world_hex_uvs(),
-			"texture": SkirmishTileTextures.terrain_texture(str(_terrain_at_axial.get(cell_axial, "plains"))),
-			"fallback_color": SkirmishTileTextures.terrain_fallback_color(str(_terrain_at_axial.get(cell_axial, "plains"))),
+			"texture": SkirmishTileTextures.terrain_variant_texture(terrain_id, col, row),
+			"fallback_color": SkirmishTileTextures.terrain_fallback_color(terrain_id),
+			"edge_blends": _terrain_edge_blends(terrain_id, col, row),
 			"tint": Color(0, 0, 0, 0),
 			"caption": "",
 			"caption_center": cell_pos + _cell_size * 0.5,
@@ -743,8 +859,8 @@ func _build_terrain_payload_cells(layout_cells: Array) -> Array:
 			"unit_texture": null,
 			"unit_rect": Rect2(),
 			"_axial": cell_axial,
-			"col": int(entry.get("col", 0)),
-			"row": int(entry.get("row", 0)),
+			"col": col,
+			"row": row,
 		}
 		payload_cells.append(payload)
 		_cell_payload_by_axial[cell_axial] = {"polygon": entry["polygon"]}
@@ -921,7 +1037,10 @@ func _refresh_display() -> void:
 	if layout_rebuilt:
 		var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
 		if terrain_cv != null:
+			terrain_cv.set_cull_enabled(maxf(_board_base_size.x, _board_base_size.y) > float(_TERRAIN_BAKE_MAX_DIM))
 			terrain_cv.set_payload_cells(_terrain_payload_cells, board_size)
+		# 布局重建后启动地形烘焙（异步，完成前 terrain_cv 仍逐格绘制，不会空白）
+		_ensure_terrain_bake()
 	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
 	if overlay_cv != null:
 		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
@@ -990,6 +1109,33 @@ func _world_hex_polygon(cell_pos: Vector2) -> PackedVector2Array:
 			bleed_point += dir * (_HEX_FILL_BLEED_PX / dir_len)
 		out.append(cell_pos + bleed_point)
 	return out
+
+
+func _terrain_edge_blends(terrain_id: String, col: int, row: int) -> Array:
+	var blends: Array = []
+	for side: int in range(6):
+		var neighbor: Vector2i = _terrain_neighbor_offset(col, row, side)
+		var neighbor_axial: Vector2i = _HexAxial.offset_odd_r_to_axial(neighbor.x, neighbor.y)
+		var neighbor_id: String = str(_terrain_at_axial.get(neighbor_axial, ""))
+		var alpha: float = SkirmishTileTextures.terrain_edge_blend_alpha(terrain_id, neighbor_id)
+		if alpha > 0.0:
+			blends.append({
+				"side": side,
+				"alpha": alpha,
+				"texture": SkirmishTileTextures.terrain_variant_texture(neighbor_id, neighbor.x, neighbor.y),
+			})
+	return blends
+
+
+func _terrain_neighbor_offset(col: int, row: int, side: int) -> Vector2i:
+	var even: bool = col % 2 == 0
+	match side:
+		0: return Vector2i(col + 1, row if even else row + 1)
+		1: return Vector2i(col, row + 1)
+		2: return Vector2i(col - 1, row if even else row + 1)
+		3: return Vector2i(col - 1, row - 1 if even else row)
+		4: return Vector2i(col, row - 1)
+		_: return Vector2i(col + 1, row - 1 if even else row)
 
 
 func _world_hex_uvs() -> PackedVector2Array:

@@ -12,10 +12,25 @@ const _TERRAIN_PATHS: Dictionary = {
 	"pass": "res://assets/terrain/tile_pass_01.png",
 	"ford": "res://assets/terrain/tile_ford_01.png",
 	"desert": "res://assets/terrain/tile_desert_01.png",
-	"tundra": "",
+	"tundra": "res://assets/terrain/tile_tundra_01.png",
 	"deep_ocean": "res://assets/terrain/tile_deepsea_01.png",
 	"shallow_ocean": "res://assets/terrain/tile_shallowsea_01.png",
 }
+
+## 地形 ID 保持不变，仅由格子坐标选择视觉样式。
+const _TERRAIN_VARIANT_PATHS: Dictionary = {
+	"plains": ["res://assets/terrain/tile_plain_01.png", "res://assets/terrain/tile_plain_02.png", "res://assets/terrain/tile_plain_03.png"],
+	"forest": ["res://assets/terrain/tile_forest_01.png", "res://assets/terrain/tile_forest_02.png", "res://assets/terrain/tile_forest_03.png"],
+	"mountain": ["res://assets/terrain/tile_mountain_01.png", "res://assets/terrain/tile_mountain_02.png", "res://assets/terrain/tile_mountain_03.png"],
+	"marsh": ["res://assets/terrain/tile_marsh_01.png", "res://assets/terrain/tile_marsh_02.png", "res://assets/terrain/tile_marsh_03.png"],
+	"desert": ["res://assets/terrain/tile_desert_01.png", "res://assets/terrain/tile_desert_02.png", "res://assets/terrain/tile_desert_03.png"],
+	"tundra": ["res://assets/terrain/tile_tundra_01.png", "res://assets/terrain/tile_tundra_02.png", "res://assets/terrain/tile_tundra_03.png"],
+	"pass": ["res://assets/terrain/tile_pass_01.png", "res://assets/terrain/tile_pass_02.png"],
+	"shallow_ocean": ["res://assets/terrain/tile_shallowsea_01.png", "res://assets/terrain/tile_shallowsea_02.png"],
+	"deep_ocean": ["res://assets/terrain/tile_deepsea_01.png", "res://assets/terrain/tile_deepsea_02.png"],
+}
+
+const _LAND_TERRAINS: Array[String] = ["plains", "forest", "mountain", "marsh", "desert", "tundra", "pass"]
 
 const _TERRAIN_FALLBACK_COLORS: Dictionary = {
 	"plains": Color(0.60, 0.69, 0.46, 1.0),
@@ -159,6 +174,49 @@ static func terrain_texture(terrain_id: String) -> Texture2D:
 	if path.is_empty():
 		return null
 	return _load_cached(path)
+
+
+static func terrain_variant_count(terrain_id: String) -> int:
+	if _TERRAIN_VARIANT_PATHS.has(terrain_id):
+		return (_TERRAIN_VARIANT_PATHS[terrain_id] as Array).size()
+	return 1
+
+
+## 边缘混合按地貌关系分级；海岸只做轻微渗色，避免海水或植被覆盖整格。
+static func terrain_edge_blend_alpha(terrain_id: String, neighbor_id: String) -> float:
+	if terrain_id == neighbor_id:
+		return 0.0
+	if terrain_id in _LAND_TERRAINS and neighbor_id in _LAND_TERRAINS:
+		return 0.5
+	if terrain_id in ["shallow_ocean", "deep_ocean"] and neighbor_id in ["shallow_ocean", "deep_ocean"]:
+		return 0.5
+	if (terrain_id in _LAND_TERRAINS and neighbor_id == "shallow_ocean") or (terrain_id == "shallow_ocean" and neighbor_id in _LAND_TERRAINS):
+		return 0.25
+	return 0.0
+
+
+static func terrain_variant_index(terrain_id: String, col: int, row: int) -> int:
+	var count: int = terrain_variant_count(terrain_id)
+	if count <= 1:
+		return 0
+	var mixed: int = (col * 73856093) ^ (row * 19349663) ^ ((col * row + 17) * 83492791)
+	mixed = mixed ^ (mixed >> 13)
+	return (mixed & 0x7FFFFFFF) % count
+
+
+static func terrain_variant_path(terrain_id: String, index: int) -> String:
+	if _TERRAIN_VARIANT_PATHS.has(terrain_id):
+		var paths: Array = _TERRAIN_VARIANT_PATHS[terrain_id] as Array
+		return str(paths[clampi(index, 0, paths.size() - 1)])
+	return str(_TERRAIN_PATHS.get(terrain_id, _TERRAIN_PATHS["plains"]))
+
+
+static func terrain_variant_texture(terrain_id: String, col: int, row: int) -> Texture2D:
+	return terrain_texture_by_variant(terrain_id, terrain_variant_index(terrain_id, col, row))
+
+
+static func terrain_texture_by_variant(terrain_id: String, index: int) -> Texture2D:
+	return _load_cached(terrain_variant_path(terrain_id, index))
 
 
 static func terrain_fallback_color(terrain_id: String) -> Color:

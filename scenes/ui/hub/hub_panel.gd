@@ -17,6 +17,7 @@ signal hub_visibility_changed(visible: bool)
 signal demo_objective_update_requested
 
 const EVENT_TEST_SCENE := preload("res://scenes/ui/event_test/event_test_panel.tscn")
+const TERRAIN_PREVIEW_SCENE := preload("res://scenes/ui/hub/terrain_preview.tscn")
 
 var _framework_hub_root: Control = null
 var _framework_hub_scroll: ScrollContainer = null
@@ -29,6 +30,7 @@ var _framework_placeholder_body: RichTextLabel = null
 var _framework_placeholder_actions: HBoxContainer = null
 var _framework_placeholder_scroll: ScrollContainer = null
 var _event_test_panel: Control = null
+var _terrain_preview: Control = null
 
 
 func _ready() -> void:
@@ -295,7 +297,7 @@ func _create_framework_placeholder() -> void:
 
 func _framework_modules() -> Array[Dictionary]:
 	return [
-		{"id": "terrain_25d", "title": "2.5D 地形测试", "status": "测试场景", "summary": "查看新六边形地形素材的接入与排列效果。"},
+		{"id": "terrain_preview", "title": "2D 地形测试", "status": "九类正式素材", "summary": "查看正式地形原图与混合六角格排列效果。"},
 		{"id": "big_map", "title": "大地图", "status": "已接入", "summary": "查看战国版图、城池与势力控制。"},
 		{"id": "city", "title": "城市内政", "status": "已接入", "summary": "打开玩家首都，测试建筑、人口、征兵与产出。"},
 		{"id": "military", "title": "军事 / 战役", "status": "已接入", "summary": "Demo 模式进入洛邑攻城；普通模式进入演武场景选择。"},
@@ -384,10 +386,24 @@ func _on_framework_module_pressed(module_id: String) -> void:
 			_show_save_load_panel()
 		"settings":
 			_show_settings_panel()
-		"terrain_25d":
-			StartupFlow.goto_terrain_25d_test_from_hub()
+		"terrain_preview":
+			_open_terrain_preview()
 		_:
 			_show_framework_placeholder(_framework_module_title(module_id), _framework_placeholder_text(module_id))
+
+
+func _open_terrain_preview() -> void:
+	if is_instance_valid(_terrain_preview):
+		return
+	_terrain_preview = TERRAIN_PREVIEW_SCENE.instantiate() as Control
+	add_child(_terrain_preview)
+	_terrain_preview.closed.connect(_close_terrain_preview)
+
+
+func _close_terrain_preview() -> void:
+	if is_instance_valid(_terrain_preview):
+		_terrain_preview.queue_free()
+	_terrain_preview = null
 
 
 ## 事件测试面板：实例化面板挂到 hub 顶层，打开即显示；关闭时释放实例
