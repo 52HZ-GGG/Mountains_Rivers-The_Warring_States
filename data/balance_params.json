@@ -636,7 +636,17 @@
     "cost_resources_enabled": true,
     "cost_gold_fallback": true,
     "knowledge_card_unlock_on_research": true,
-    "malus_display_warning": true
+    "malus_display_warning": true,
+    "ai_research_interval_turns": 3,
+    "northern_border_cities": [
+      "daijun",
+      "yunzhong",
+      "yanmen",
+      "shanggu",
+      "yuyang",
+      "liaoxi",
+      "liaoyang"
+    ]
   },
   "development": {
     "base_per_level": 10,
@@ -759,7 +769,7 @@
     "acquisition": {
       "building_interval_turns": 8,
       "battle_win_chance": 0.15,
-      "diplomacy_action_chance": 0.20,
+      "diplomacy_action_chance": 0.2,
       "base_probabilities": {
         "common": 0.6,
         "rare": 0.3,
@@ -1247,7 +1257,7 @@
       }
     },
     "siege": {
-      "evaluation_chance_base": 0.10,
+      "evaluation_chance_base": 0.1,
       "aggression_chance_per_point": 0.08,
       "min_troop_ratio_to_siege": 1.5,
       "max_target_city_level_diff": 2,
@@ -1265,7 +1275,12 @@
   },
   "ai_economy": {
     "budget_cities_per_turn": 2,
-    "build_preference": ["farm", "market", "lumbermill", "barracks"],
+    "build_preference": [
+      "farm",
+      "market",
+      "lumbermill",
+      "barracks"
+    ],
     "low_population_threshold": 5,
     "max_upgrade_level": 3
   },

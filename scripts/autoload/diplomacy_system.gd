@@ -417,6 +417,7 @@ func get_prisoners(faction_id: String) -> Array[String]:
 
 
 func get_intelligence_points(observer: String, target: String) -> int:
+	var _tech_vis: int = TechEffects.vision_bonus(observer) if is_instance_valid(TechEffects) else 0
 	if observer == "" or target == "":
 		return 0
 	if DataManager.get_faction(observer).get("is_passive", false) or DataManager.get_faction(target).get("is_passive", false):
@@ -1438,6 +1439,8 @@ func _settle_trade_routes() -> void:
 			income_a = int(base_income * (1.0 + rep_bonus))
 		if get_reputation(b) >= rep_threshold:
 			income_b = int(base_income * (1.0 + rep_bonus))
+		income_a = int(round(float(income_a) * (1.0 + TechEffects.trade_bonus(a))))
+		income_b = int(round(float(income_b) * (1.0 + TechEffects.trade_bonus(b))))
 		GameManager.apply_faction_resource_delta(a, "gold", income_a)
 		GameManager.apply_faction_resource_delta(b, "gold", income_b)
 

@@ -26,6 +26,7 @@ var _cooldowns: Dictionary = {}  # event_id -> remaining_cooldown_turns
 var _chain_states: Dictionary = {}  # chain_id -> { "current_index": int }
 var _triggered_categories: Dictionary = {}  # category -> true（本回合已触发的类型）
 var _muted: bool = false
+var _pending_tech_events: Dictionary = {}  # event_id -> tech_id
 var _recent_events: Array[Dictionary] = []
 var _pending_variant_settle: Dictionary = {}  # event_id -> 已抽档字典（待玩家确认后结算）
 
@@ -34,6 +35,8 @@ func _ready() -> void:
 	_events = DataManager.get_all_events()
 	SignalBus.turn_started.connect(_on_turn_started)
 	SignalBus.turn_ended.connect(_on_turn_ended)
+	if SignalBus.has_signal("tech_research_event"):
+		SignalBus.tech_research_event.connect(_on_tech_research_event)
 
 
 func _on_turn_started(turn_number: int, faction_id: String) -> void:
@@ -408,7 +411,27 @@ func resolve_variant_event(event_id: String) -> bool:
 	return true
 
 
+
+func _on_tech_research_event(event_id: String, tech_id: String) -> void:
+	var evt: Dictionary = DataManager.get_tech_research_event(event_id)
+	if evt.is_empty():
+		return
+	_pending_tech_events[event_id] = tech_id
+	if _muted:
+		return
+	var ui: Dictionary = evt.duplicate(true)
+	ui["tech_research_event"] = true
+	ui["tech_id"] = tech_id
+	SignalBus.event_triggered.emit(ui)
+
 func resolve_event_choice(event_id: String, choice_id: String) -> bool:
+	if _pending_tech_events.has(event_id):
+		var tr: Dictionary = TechSystem.resolve_research_event(choice_id)
+		if bool(tr.get("success", false)):
+			_pending_tech_events.erase(event_id)
+			SignalBus.event_resolved.emit(event_id, choice_id)
+			return true
+		return false
 	var evt: Dictionary = DataManager.get_event(event_id)
 	if evt.is_empty():
 		push_warning("EventManager: 未找到事件 %s" % event_id)

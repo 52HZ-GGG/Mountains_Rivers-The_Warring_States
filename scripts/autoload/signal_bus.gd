@@ -59,6 +59,7 @@ signal negotiation_rejected(proposer: String, target: String)
 signal tech_research_started(tech_id: String)
 signal tech_research_completed(tech_id: String)
 signal tech_research_cancelled(tech_id: String)
+signal tech_research_event(event_id: String, tech_id: String)
 signal tech_available(tech_id: String)
 
 # ============= 城市占领系统（子任务 4） =============

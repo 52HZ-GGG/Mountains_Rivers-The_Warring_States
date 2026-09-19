@@ -361,7 +361,7 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 		atk_buff += passive_bonus
 		atk_details.append("技能 +%d%%" % int(passive_bonus * 100.0))
 	# 科技
-	var tech_atk: float = TechSystem.get_attack_modifier(atk_category)
+	var tech_atk: float = TechEffects.attack_modifier(atk_fid, atk_category)
 	if absf(tech_atk) > 0.001:
 		atk_buff += tech_atk
 		atk_details.append("科技 %+.0f%%" % (tech_atk * 100.0))
@@ -391,7 +391,7 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			def_buff += shortage_def_offset
 			def_details.append("断粮 %+.0f%%" % (shortage_def_offset * 100.0))
 		# 科技
-		var tech_def: float = TechSystem.get_defense_modifier(def_category)
+		var tech_def: float = TechEffects.defense_modifier(def_fid, def_category)
 		if absf(tech_def) > 0.001:
 			def_buff += tech_def
 			def_details.append("科技 %+.0f%%" % (tech_def * 100.0))
@@ -516,7 +516,7 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			if c_pass > 0.0:
 				c_atk_buff += c_pass
 				counter_details.append("技能 +%d%%" % int(c_pass * 100.0))
-			var c_tech: float = TechSystem.get_attack_modifier(str(c_def_type.get("category", "")))
+			var c_tech: float = TechEffects.attack_modifier(def_fid, str(c_def_type.get("category", "")))
 			if absf(c_tech) > 0.001:
 				c_atk_buff += c_tech
 				counter_details.append("科技 %+.0f%%" % (c_tech * 100.0))
@@ -536,7 +536,7 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			var c_td_off: float = float(c_tdata2.get("def_mod", 1.0)) - 1.0
 			if absf(c_td_off) > 0.001:
 				c_def_buff += c_td_off
-			var c_tech_d: float = TechSystem.get_defense_modifier(atk_category)
+			var c_tech_d: float = TechEffects.defense_modifier(atk_fid, atk_category)
 			if absf(c_tech_d) > 0.001:
 				c_def_buff += c_tech_d
 			var c_sch_d: Dictionary = m._get_school_combat_bonus(atk_fid)

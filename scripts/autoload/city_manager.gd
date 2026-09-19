@@ -292,6 +292,7 @@ func get_city_defense(city_id: String) -> int:
 		var effects: Dictionary = blevels[level - 1].get("effects", {})
 		if effects.has("defense_bonus"):
 			building_bonus += float(effects["defense_bonus"])
+	building_bonus += TechEffects.city_defense_bonus(owner)
 	var base_total: int = int(base_def * (1.0 + building_bonus))
 	# 驻军加成
 	var garrison_count: int = int(city.get("garrison", 0))
@@ -1781,7 +1782,7 @@ func _get_culture_decay_rate(owner: String, radiation_input: float) -> float:
 func _get_culture_production_bonus(owner: String, city: Dictionary) -> float:
 	var bonus: float = 0.0
 	bonus += SchoolManager.get_effect_float(owner, "culture_spread_rate")
-	bonus += TechSystem.get_culture_bonus()
+	bonus += TechEffects.culture_bonus(owner)
 	bonus += WonderManager.get_effect_float(owner, "culture_production_national")
 	bonus += _get_school_culture_effect(owner, "culture_production_bonus")
 	if str(city.get("special_resource", "")) == "culture":
@@ -2254,7 +2255,7 @@ func _apply_special_resource_modifier(prod: Dictionary, special_resource: String
 func _add_recruitable_unit(units: Array[String], unit_id: String) -> void:
 	if units.has(unit_id):
 		return
-	if _unit_requires_tech(unit_id) and not TechSystem.is_unit_unlocked(unit_id):
+	if _unit_requires_tech(unit_id) and not TechEffects.unit_unlocked(faction_id if faction_id != "" else GameManager.get_player_faction(), unit_id):
 		return
 	units.append(unit_id)
 

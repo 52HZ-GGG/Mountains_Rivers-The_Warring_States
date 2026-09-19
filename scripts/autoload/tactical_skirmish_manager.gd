@@ -1311,7 +1311,7 @@ func _process_healing(faction_id: String) -> void:
 	var heal_to_full: bool = bool(params.get("max_heal_to_full", true))
 	var no_heal_broken: bool = bool(params.get("no_heal_when_morale_broken", true))
 	var break_threshold: int = int(DataManager.get_balance_param("unit_morale.morale_break_threshold")) if DataManager.get_balance_param("unit_morale.morale_break_threshold") != null else 20
-	var tech_bonus: float = TechSystem.get_healing_bonus()
+	var tech_bonus: float = TechEffects.healing_bonus(faction_id if faction_id != "" else GameManager.get_player_faction())
 
 	for u: Dictionary in _units:
 		if str(u["faction_id"]) != faction_id:

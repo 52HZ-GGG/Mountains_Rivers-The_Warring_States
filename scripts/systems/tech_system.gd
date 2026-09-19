@@ -1,63 +1,33 @@
 extends Node
 
-## 科技研究系统
+## 科技研究状态机（TechSystem）
 ##
-## 管理科技研究状态、前置判定、特殊条件判定、效果应用。
-## 阶段2增补：54个科技的完整研究流程。
+## 只负责：研究进度、前置/互斥/资源门、AI 研究登记、协同激活标记、存档。
+## 效果数值一律写入 TechEffects（门面）；解锁条件一律走 TechUnlockContext。
+## 本节点不查询 CityManager 的城防/人口，也不被城防/经营公式直接调用。
 
-# ============= 状态存储 =============
+const TechUnlockBindings := preload("res://scripts/systems/tech_unlock_bindings.gd")
+
+# ============= 研究状态 =============
 
 var _researched_techs: Dictionary = {}   # {tech_id: true}
 var _available_techs: Dictionary = {}    # {tech_id: true}
 var _researching_tech: String = ""
-var _research_progress: int = 0          # 已研究回合数
-var _research_cost_turns: int = 1        # 当前科技需要的回合数
+var _research_progress: int = 0
+var _research_cost_turns: int = 1
+var _ai_researched_techs: Dictionary = {}  # {faction_id: {tech_id: true}}
+var _active_synergies: Dictionary = {}
+var _unlocked_knowledge_cards: Dictionary = {}
+var _pending_research_event: Dictionary = {}
+var _research_event_cooldown: int = 0
+var _mastery_levels: Dictionary = {}  # {tech_id: int} 研究后的精通等级（0=仅基础效果）
 
-# 效果修正器（其他系统查询用）
-var _attack_modifiers: Dictionary = {}       # {target: float}
-var _defense_modifiers: Dictionary = {}      # {target: float}
-var _resource_modifiers: Dictionary = {}     # {resource: float}
-var _unlocked_units: Array = []
-var _terrain_traversal: Dictionary = {}      # {terrain: bool}
-var _city_defense_bonus: float = 0.0
-var _siege_bonus: float = 0.0
-var _movement_bonus: int = 0
-var _vision_bonus: int = 0
-var _morale_bonus: int = 0
-var _security_bonus: float = 0.0
-var _culture_bonus: float = 0.0
-var _healing_bonus: float = 0.0
-var _event_chance_bonus: float = 0.0
-var _research_speed_modifier: float = 0.0
-var _trade_bonus: float = 0.0
-var _garrison_bonus: float = 0.0
-var _wall_durability_bonus: float = 0.0
-var _border_defense_bonus: Dictionary = {}   # {region: float}
-var _diplomacy_bonus: float = 0.0
-var _recruit_cost_reduction: Dictionary = {} # {target: float}
-var _disaster_resist_bonus: float = 0.0
-var _action_speed_bonus: float = 0.0
-
-# 新增效果类型（阶段7补全）
-var _corruption_reduction: float = 0.0     # 腐败减少百分比
-var _zoc_range_bonus: int = 0              # ZOC范围加成
-var _zoc_cost_immunity: bool = false       # 免疫ZOC移动力消耗
-var _trade_route_capacity_bonus: int = 0   # 商路上限加成
-var _trade_route_exchange_bonus: float = 0.0  # 商路资源交换比例加成
-var _opinion_bonus: int = 0                # 外交好感加成
-var _reputation_bonus: int = 0             # 外交声望加成
-
-# 负面效果状态（阶段7补全 malus_effects）
-var _stability_penalty: float = 0.0        # 安定度惩罚（绝对值）
-var _corruption_increase: float = 0.0      # 腐败增加（绝对值）
-var _population_growth_modifier: float = 0.0  # 人口增长修正
-var _upkeep_increase: float = 0.0          # 维护费增加
-
-# ============= 生命周期 =============
 
 func _ready() -> void:
 	print("[TechSystem] 启动")
 	SignalBus.turn_started.connect(_on_turn_started)
+	# 组合根：注册解锁条件校验器（唯一允许绑定业务系统的位置）
+	TechUnlockBindings.bind_all()
 
 
 func _on_turn_started(_turn_number: int, faction_id: String) -> void:
@@ -66,7 +36,7 @@ func _on_turn_started(_turn_number: int, faction_id: String) -> void:
 		_progress_research()
 
 
-# ============= 公共查询 =============
+# ============= 研究状态查询 =============
 
 func is_researched(tech_id: String) -> bool:
 	return _researched_techs.has(tech_id)
@@ -102,23 +72,151 @@ func get_researched_techs() -> Array:
 	return result
 
 
+func get_ai_researched_techs(faction_id: String) -> Dictionary:
+	return _ai_researched_techs.get(faction_id, {})
+
+
+func get_active_synergies() -> Array:
+	var result: Array = []
+	for synergy in DataManager.get_tech_synergies():
+		if _active_synergies.has(str(synergy.get("id", ""))):
+			result.append(synergy)
+	return result
+
+
+func is_knowledge_card_unlocked(tech_id: String) -> bool:
+	return _unlocked_knowledge_cards.has(tech_id) or is_researched(tech_id)
+
+
+func get_pending_research_event() -> Dictionary:
+	return _pending_research_event
+
+
+func get_mastery_level(tech_id: String) -> int:
+	return int(_mastery_levels.get(tech_id, 0))
+
+
+func get_mastery_config(tech_id: String) -> Dictionary:
+	return DataManager.get_tech(tech_id).get("mastery", {})
+
+
+func can_upgrade_mastery(tech_id: String) -> Dictionary:
+	var result := {"can_upgrade": false, "reason": "", "cost": {}, "next_increment": 0.0}
+	if not bool(DataManager.get_balance_param("tech.mastery_enabled")):
+		result.reason = "精通系统未启用"
+		return result
+	if not is_researched(tech_id):
+		result.reason = "科技未研究"
+		return result
+	var mastery: Dictionary = get_mastery_config(tech_id)
+	if mastery.is_empty():
+		result.reason = "该科技无精通"
+		return result
+	var level: int = get_mastery_level(tech_id)
+	var max_level: int = int(mastery.get("max_level", 0))
+	if level >= max_level:
+		result.reason = "已达精通上限"
+		return result
+	# 全局精通等级上限
+	var global_max: int = int(DataManager.get_balance_param("tech.mastery_max_global_level_sum"))
+	var total: int = 0
+	for tid in _mastery_levels:
+		total += int(_mastery_levels[tid])
+	if global_max > 0 and total >= global_max:
+		result.reason = "全局精通等级已达上限"
+		return result
+	var costs: Array = mastery.get("upgrade_cost", [])
+	if level >= costs.size():
+		result.reason = "精通成本配置缺失"
+		return result
+	var cost: Dictionary = costs[level]
+	result.cost = cost
+	var increments: Array = mastery.get("increment_per_level", [])
+	result.next_increment = float(increments[level]) if level < increments.size() else 0.0
+	var fid: String = _player_faction()
+	for res in cost:
+		if GameManager.get_faction_resource(fid, str(res)) < int(cost[res]):
+			result.reason = "资源不足"
+			return result
+	result.can_upgrade = true
+	return result
+
+
+func upgrade_mastery(tech_id: String) -> Dictionary:
+	var check := can_upgrade_mastery(tech_id)
+	if not check.can_upgrade:
+		return {"success": false, "reason": str(check.get("reason", "不可升级精通"))}
+	var mastery: Dictionary = get_mastery_config(tech_id)
+	var level: int = get_mastery_level(tech_id)
+	var costs: Array = mastery.get("upgrade_cost", [])
+	var cost: Dictionary = costs[level]
+	var fid: String = _player_faction()
+	for res in cost:
+		GameManager.apply_faction_resource_delta(fid, str(res), -int(cost[res]))
+	var increments: Array = mastery.get("increment_per_level", [])
+	var inc: float = float(increments[level]) if level < increments.size() else 0.0
+	var effect_type: String = str(mastery.get("effect_type", "attack_bonus"))
+	var effect_target: String = str(mastery.get("effect_target", "all"))
+	TechEffects.accumulate_effect(fid, {
+		"type": effect_type,
+		"target": effect_target,
+		"resource": effect_target if effect_type == "resource_bonus" else "",
+		"value": inc,
+	})
+	_mastery_levels[tech_id] = level + 1
+	TechEffects.effects_changed.emit(fid)
+	return {"success": true, "level": level + 1, "increment": inc}
+
+
+func _replay_mastery_increments(faction_id: String, tech_id: String, levels: int) -> void:
+	if levels <= 0:
+		return
+	var mastery: Dictionary = get_mastery_config(tech_id)
+	if mastery.is_empty():
+		return
+	var increments: Array = mastery.get("increment_per_level", [])
+	var effect_type: String = str(mastery.get("effect_type", "attack_bonus"))
+	var effect_target: String = str(mastery.get("effect_target", "all"))
+	for i in mini(levels, increments.size()):
+		TechEffects.accumulate_effect(faction_id, {
+			"type": effect_type,
+			"target": effect_target,
+			"resource": effect_target if effect_type == "resource_bonus" else "",
+			"value": float(increments[i]),
+		})
+
+
+func _player_faction() -> String:
+	return GameManager.get_player_faction()
+
+
 func can_research(tech_id: String) -> Dictionary:
-	var result := {"can_research": true, "missing_prereqs": [], "missing_conditions": [], "missing_resources": {}}
+	var result := {
+		"can_research": true,
+		"missing_prereqs": [],
+		"missing_conditions": [],
+		"missing_resources": {},
+		"locked_by_mutual_exclusion": "",
+		"locked_by_mutual_group": "",
+	}
 	var tech: Dictionary = DataManager.get_tech(tech_id)
-	if tech.is_empty():
+	if tech.is_empty() or is_researched(tech_id):
 		result.can_research = false
 		return result
-	if is_researched(tech_id):
-		result.can_research = false
-		return result
-	# 检查前置
 	for prereq in tech.get("prerequisites", []):
 		if not is_researched(prereq):
 			result.missing_prereqs.append(prereq)
 			result.can_research = false
-	# 检查特殊条件
-	if not _check_special_conditions(tech_id):
-		result.missing_conditions = tech.get("special_conditions", [])
+	if _is_mutually_excluded(tech_id):
+		result.can_research = false
+		result.locked_by_mutual_group = DataManager.get_tech_mutual_exclusion_group(tech_id)
+		for peer in DataManager.get_tech_mutual_exclusion_members(str(result.locked_by_mutual_group)):
+			if peer != tech_id and is_researched(peer):
+				result.locked_by_mutual_exclusion = peer
+				break
+	var fid: String = _player_faction()
+	if not TechUnlockContext.check_tech(fid, tech):
+		result.missing_conditions = TechUnlockContext.missing_conditions(fid, tech)
 		result.can_research = false
 	if bool(DataManager.get_balance_param("tech.cost_resources_enabled")):
 		var missing_resources: Dictionary = _get_missing_cost_resources(tech)
@@ -128,78 +226,115 @@ func can_research(tech_id: String) -> Dictionary:
 	return result
 
 
-# ============= 研究操作 =============
-
 func start_research(tech_id: String) -> Dictionary:
 	if _researching_tech != "":
 		return {"success": false, "reason": "已有科技正在研究: %s" % _researching_tech}
 	var check := can_research(tech_id)
 	if not check.can_research:
+		var excluded_peer: String = str(check.get("locked_by_mutual_exclusion", ""))
+		if excluded_peer != "":
+			var peer_name: String = str(DataManager.get_tech(excluded_peer).get("name", excluded_peer))
+			return {"success": false, "reason": "与已研究的「%s」互斥" % peer_name, "locked_by_mutual_exclusion": excluded_peer}
 		if not (check.missing_resources as Dictionary).is_empty():
 			return {"success": false, "reason": "研究资源不足", "missing_resources": check.missing_resources}
 		return {"success": false, "reason": "前置条件不满足"}
 	var tech: Dictionary = DataManager.get_tech(tech_id)
 	if bool(DataManager.get_balance_param("tech.cost_resources_enabled")):
 		_consume_cost_resources(tech)
-	_research_cost_turns = estimate_research_turns(tech_id)
+	var base_turns: int = maxi(1, ceili(float(tech.get("cost_gold", 100)) / 100.0))
+	var speed_mod: float = 1.0 + TechEffects.research_speed_modifier(_player_faction())
+	if speed_mod < 0.1:
+		speed_mod = 0.1
+	_research_cost_turns = maxi(1, ceili(float(base_turns) / speed_mod))
 	_researching_tech = tech_id
 	_research_progress = 0
+	_try_trigger_research_event(tech)
 	SignalBus.tech_research_started.emit(tech_id)
 	return {"success": true}
 
 
-## 估算研究某科技所需的回合数（向上取整，最少 1 回合）。
-## 公式：金币成本 / 100 ÷ 研究速度修正。与 start_research 保持一致，
-## 供 UI 预览调用，避免场景层复制公式造成规则漂移。
-func estimate_research_turns(tech_id: String) -> int:
-	var tech: Dictionary = DataManager.get_tech(tech_id)
-	if tech.is_empty():
-		return 0
-	var base_turns: int = maxi(1, ceili(float(tech.get("cost_gold", 100)) / 100.0))
-	var speed_mod: float = 1.0 + _research_speed_modifier
-	return maxi(1, ceili(float(base_turns) / speed_mod))
-
-
 func cancel_research() -> void:
 	var old_tech := _researching_tech
-	_researching_tech = ""
-	_research_progress = 0
-	if old_tech != "":
-		SignalBus.tech_research_cancelled.emit(old_tech)
-
-
-func _progress_research() -> void:
-	if _researching_tech == "":
+	if old_tech == "":
 		return
-	_research_progress += 1
-	if _research_progress >= _research_cost_turns:
-		_complete_research()
-
-
-func _complete_research() -> void:
-	var tech_id := _researching_tech
-	_researched_techs[tech_id] = true
-	_apply_tech_effects(tech_id)
+	# 退还已扣资源（互斥/条件在开始时已校验，取消不产生科技效果）
+	_refund_cost_resources(DataManager.get_tech(old_tech))
 	_researching_tech = ""
 	_research_progress = 0
+	_pending_research_event = {}
 	_update_available_techs()
-	SignalBus.tech_research_completed.emit(tech_id)
-	print("[TechSystem] 科技研究完成: %s" % tech_id)
+	SignalBus.tech_research_cancelled.emit(old_tech)
 
 
-# ============= AI研究 =============
+func _refund_cost_resources(tech: Dictionary) -> void:
+	if tech.is_empty():
+		return
+	var fid: String = _player_faction()
+	var cost_resources: Dictionary = tech.get("cost_resources", {})
+	if not cost_resources.is_empty():
+		for resource in cost_resources:
+			var required: int = int(cost_resources.get(resource, 0))
+			if required > 0:
+				GameManager.apply_faction_resource_delta(fid, str(resource), required)
+		return
+	if bool(DataManager.get_balance_param("tech.cost_gold_fallback")):
+		var required_gold: int = int(tech.get("cost_gold", 0))
+		if required_gold > 0:
+			GameManager.apply_faction_resource_delta(fid, "gold", required_gold)
+
+
+func resolve_research_event(option_id: String) -> Dictionary:
+	if _pending_research_event.is_empty() or _researching_tech == "":
+		return {"success": false, "reason": "无待处理研究事件"}
+	for opt in _pending_research_event.get("options", []):
+		if str(opt.get("id", "")) != option_id:
+			continue
+		var cost: Dictionary = opt.get("cost", {})
+		var fid: String = _player_faction()
+		for res in cost:
+			if GameManager.get_faction_resource(fid, str(res)) < int(cost[res]):
+				return {"success": false, "reason": "资源不足，无法选择该选项"}
+		for res in cost:
+			GameManager.apply_faction_resource_delta(fid, str(res), -int(cost[res]))
+		var outcomes: Dictionary = opt.get("outcomes", {})
+		var gold_delta: int = int(outcomes.get("gold_delta", 0))
+		if gold_delta != 0:
+			GameManager.apply_faction_resource_delta(fid, "gold", gold_delta)
+		var progress_bonus: float = float(outcomes.get("tech_progress_bonus", 0.0))
+		var progress_penalty: float = float(outcomes.get("tech_progress_penalty", 0.0))
+		if progress_bonus != 0.0:
+			_research_progress = maxi(0, _research_progress + int(round(progress_bonus * float(_research_cost_turns))))
+		if progress_penalty != 0.0:
+			_research_progress = maxi(0, _research_progress + int(round(progress_penalty * float(_research_cost_turns))))
+		var morale_delta: int = int(outcomes.get("morale_delta", 0))
+		if morale_delta != 0:
+			GameManager.apply_morale_delta(morale_delta)
+		_pending_research_event = {}
+		if _research_progress >= _research_cost_turns:
+			_complete_research()
+		return {"success": true}
+	return {"success": false, "reason": "无效选项"}
+
+
+# ============= AI 研究（只登记 + 写入 TechEffects） =============
 
 func start_ai_research(faction_id: String, tech_id: String) -> void:
-	# AI直接完成研究（简化处理）
-	# 后续可改为异步研究
 	if not _can_ai_research(faction_id, tech_id):
 		return
-	_ai_researched_techs[faction_id] = _ai_researched_techs.get(faction_id, {})
+	if not _ai_researched_techs.has(faction_id):
+		_ai_researched_techs[faction_id] = {}
+	var tech: Dictionary = DataManager.get_tech(tech_id)
+	var group_id: String = DataManager.get_tech_mutual_exclusion_group(tech_id)
+	if group_id != "":
+		for peer in DataManager.get_tech_mutual_exclusion_members(group_id):
+			if peer != tech_id and (_ai_researched_techs[faction_id] as Dictionary).has(peer):
+				return
+	# AI 也走解锁门面（城控/声望等），避免纸面科技绕过条件
+	if not TechUnlockContext.check_tech(faction_id, tech):
+		return
 	_ai_researched_techs[faction_id][tech_id] = true
+	TechEffects.apply_tech(faction_id, tech)
 	print("[TechSystem] AI %s 研究完成: %s" % [faction_id, tech_id])
-
-
-var _ai_researched_techs: Dictionary = {}  # {faction_id: {tech_id: true}}
 
 
 func _can_ai_research(faction_id: String, tech_id: String) -> bool:
@@ -215,392 +350,134 @@ func _can_ai_research(faction_id: String, tech_id: String) -> bool:
 	return true
 
 
-func get_ai_researched_techs(faction_id: String) -> Dictionary:
-	return _ai_researched_techs.get(faction_id, {})
+# ============= 内部研究流程 =============
+
+func _progress_research() -> void:
+	if _researching_tech == "":
+		return
+	_research_progress += 1
+	if _research_event_cooldown > 0:
+		_research_event_cooldown -= 1
+	if _research_progress >= _research_cost_turns:
+		_complete_research()
 
 
-# ============= 内部逻辑 =============
+func _complete_research() -> void:
+	var tech_id := _researching_tech
+	var tech: Dictionary = DataManager.get_tech(tech_id)
+	_researched_techs[tech_id] = true
+	TechEffects.apply_tech(_player_faction(), tech)
+	if bool(DataManager.get_balance_param("tech.knowledge_card_unlock_on_research")):
+		if not DataManager.get_tech_knowledge_card(tech_id).is_empty():
+			_unlocked_knowledge_cards[tech_id] = true
+	_researching_tech = ""
+	_research_progress = 0
+	_pending_research_event = {}
+	_apply_all_synergies()
+	_update_available_techs()
+	SignalBus.tech_research_completed.emit(tech_id)
+	print("[TechSystem] 科技研究完成: %s" % tech_id)
+
 
 func _update_available_techs() -> void:
+	var was_available: Dictionary = _available_techs.duplicate()
 	_available_techs.clear()
 	for tech in DataManager.get_all_techs():
 		var tech_id: String = tech["id"]
-		if is_researched(tech_id):
+		if is_researched(tech_id) or tech_id == _researching_tech:
 			continue
-		if tech_id == _researching_tech:
-			continue
-		var check := can_research(tech_id)
-		if check.can_research:
+		if can_research(tech_id).can_research:
 			_available_techs[tech_id] = true
-			SignalBus.tech_available.emit(tech_id)
-
-
-func _check_special_conditions(tech_id: String) -> bool:
-	var tech: Dictionary = DataManager.get_tech(tech_id)
-	for condition in tech.get("special_conditions", []):
-		var cond_type: String = condition.get("type", "")
-		match cond_type:
-			"city_control":
-				var city_id: String = condition.get("city_id", "")
-				# 检查玩家是否控制该城市（需要CityManager）
-				if not _is_city_controlled(city_id):
-					return false
-			"reputation":
-				var req_val: int = condition.get("value", 0)
-				if DiplomacySystem.get_reputation(GameManager._player_faction) < req_val:
-					return false
-			"building":
-				var building_id: String = condition.get("building_id", "")
-				if not _has_building(building_id):
-					return false
-			"region_control":
-				var region: String = condition.get("region", "")
-				var min_cities: int = condition.get("min_cities", 1)
-				if not _control_region(region, min_cities):
-					return false
-			"fame":
-				# 预留：历史名人系统
-				pass
-	if tech.has("requires_wonder"):
-		var wonder_id: String = str(tech.get("requires_wonder", ""))
-		if wonder_id != "" and not WonderManager.has_wonder(GameManager.get_player_faction(), wonder_id):
-			return false
-	return true
+			if not was_available.has(tech_id):
+				SignalBus.tech_available.emit(tech_id)
 
 
 func _get_missing_cost_resources(tech: Dictionary) -> Dictionary:
 	var missing: Dictionary = {}
 	var cost_resources: Dictionary = tech.get("cost_resources", {})
+	var fid: String = _player_faction()
 	for resource in cost_resources:
 		var required: int = int(cost_resources.get(resource, 0))
 		if required <= 0:
 			continue
-		var available: int = GameManager.get_faction_resource(GameManager.get_player_faction(), str(resource))
-		if available < required:
-			missing[resource] = required - available
+		if GameManager.get_faction_resource(fid, str(resource)) < required:
+			missing[resource] = required - GameManager.get_faction_resource(fid, str(resource))
+	if cost_resources.is_empty() and bool(DataManager.get_balance_param("tech.cost_gold_fallback")):
+		var required_gold: int = int(tech.get("cost_gold", 0))
+		if required_gold > 0 and GameManager.get_faction_resource(fid, "gold") < required_gold:
+			missing["gold"] = required_gold - GameManager.get_faction_resource(fid, "gold")
 	return missing
 
 
 func _consume_cost_resources(tech: Dictionary) -> void:
+	var fid: String = _player_faction()
 	var cost_resources: Dictionary = tech.get("cost_resources", {})
-	var faction_id: String = GameManager.get_player_faction()
-	for resource in cost_resources:
-		var required: int = int(cost_resources.get(resource, 0))
-		if required <= 0:
-			continue
-		GameManager.apply_faction_resource_delta(faction_id, str(resource), -required)
+	if not cost_resources.is_empty():
+		for resource in cost_resources:
+			var required: int = int(cost_resources.get(resource, 0))
+			if required > 0:
+				GameManager.apply_faction_resource_delta(fid, str(resource), -required)
+		return
+	if bool(DataManager.get_balance_param("tech.cost_gold_fallback")):
+		var required_gold: int = int(tech.get("cost_gold", 0))
+		if required_gold > 0:
+			GameManager.apply_faction_resource_delta(fid, "gold", -required_gold)
 
 
-func _is_city_controlled(city_id: String) -> bool:
-	var city: Dictionary = CityManager.get_city_state(city_id)
-	if city.is_empty():
+func _is_mutually_excluded(tech_id: String) -> bool:
+	if not bool(DataManager.get_balance_param("tech.mutual_exclusion_hard_lock")):
 		return false
-	return str(city.get("current_faction_id", "")) == GameManager.get_player_faction()
-
-
-func _has_building(building_id: String) -> bool:
-	for city in CityManager.get_faction_city_states(GameManager.get_player_faction()):
-		for building in city.get("buildings", []):
-			if str((building as Dictionary).get("building_id", "")) == building_id:
-				return true
+	var group_id: String = DataManager.get_tech_mutual_exclusion_group(tech_id)
+	if group_id == "":
+		return false
+	for peer in DataManager.get_tech_mutual_exclusion_members(group_id):
+		if peer != tech_id and is_researched(peer):
+			return true
 	return false
 
 
-func _control_region(region: String, min_cities: int) -> bool:
-	if min_cities <= 0:
-		return true
-	var count: int = 0
-	for city in CityManager.get_faction_city_states(GameManager.get_player_faction()):
-		if region == "northern_border":
-			var q: int = int(city.get("hex_q", 0))
-			var r: int = int(city.get("hex_r", 0))
-			if q >= 55 or r <= 15:
-				count += 1
-		elif str(city.get("region", "")) == region:
-			count += 1
-	return count >= min_cities
-
-
-func _apply_tech_effects(tech_id: String) -> void:
-	var tech: Dictionary = DataManager.get_tech(tech_id)
-	var effects = tech.get("effects", {})
-
-	# 支持数组和字典两种格式
-	var effect_list: Array = []
-	if effects is Array:
-		effect_list = effects
-	elif effects is Dictionary:
-		effect_list = [effects]
-
-	# 应用所有正面效果
-	for effect in effect_list:
-		_apply_single_effect(effect)
-
-	# 应用负面效果（malus_effects）
-	for malus in tech.get("malus_effects", []):
-		_apply_single_malus(malus)
-
-
-func _apply_single_effect(effect: Dictionary) -> void:
-	var effect_type: String = effect.get("type", "")
-
-	match effect_type:
-		"attack_bonus":
-			var target: String = effect.get("target", "all")
-			_attack_modifiers[target] = _attack_modifiers.get(target, 0.0) + effect.get("value", 0.0)
-		"defense_bonus":
-			var target: String = effect.get("target", "all")
-			_defense_modifiers[target] = _defense_modifiers.get(target, 0.0) + effect.get("value", 0.0)
-		"unlock_unit":
-			var unit_id: String = effect.get("unit_id", "")
-			if unit_id != "" and not _unlocked_units.has(unit_id):
-				_unlocked_units.append(unit_id)
-		"resource_bonus":
-			var resource: String = effect.get("resource", "")
-			_resource_modifiers[resource] = _resource_modifiers.get(resource, 0.0) + effect.get("value", 0.0)
-		"resource_bonus_malus":
-			var bonus_res: String = effect.get("bonus_resource", "")
-			var malus_res: String = effect.get("malus_resource", "")
-			_resource_modifiers[bonus_res] = _resource_modifiers.get(bonus_res, 0.0) + effect.get("bonus_value", 0.0)
-			_resource_modifiers[malus_res] = _resource_modifiers.get(malus_res, 0.0) + effect.get("malus_value", 0.0)
-		"resource_bonus_multi":
-			var resources: Dictionary = effect.get("resources", {})
-			for res in resources:
-				_resource_modifiers[res] = _resource_modifiers.get(res, 0.0) + resources[res]
-		"city_defense_bonus":
-			_city_defense_bonus += effect.get("value", 0.0)
-		"siege_bonus":
-			_siege_bonus += effect.get("value", 0.0)
-		"terrain_traversal":
-			var terrain: String = effect.get("terrain", "")
-			_terrain_traversal[terrain] = effect.get("value", false)
-		"movement_bonus":
-			_movement_bonus += effect.get("value", 0)
-		"vision_bonus":
-			_vision_bonus += effect.get("value", 0)
-		"morale_bonus":
-			_morale_bonus += effect.get("value", 0)
-		"morale_opinion_bonus":
-			_morale_bonus += effect.get("morale_value", 0)
-			_opinion_bonus += int(effect.get("opinion_value", 0))
-		"security_bonus":
-			_security_bonus += effect.get("value", 0.0)
-		"security_morale_bonus":
-			_security_bonus += effect.get("security_value", 0.0)
-			_morale_bonus += effect.get("morale_value", 0)
-		"culture_bonus":
-			_culture_bonus += effect.get("value", 0.0)
-		"healing_bonus":
-			_healing_bonus += effect.get("value", 0.0)
-		"event_chance_bonus":
-			_event_chance_bonus += effect.get("value", 0.0)
-		"research_speed_bonus":
-			_research_speed_modifier += effect.get("value", 0.0)
-		"trade_bonus":
-			_trade_bonus += effect.get("value", 0.0)
-		"garrison_bonus":
-			_garrison_bonus += effect.get("value", 0.0)
-		"wall_durability_bonus":
-			_wall_durability_bonus += effect.get("value", 0.0)
-		"border_defense_bonus":
-			var region: String = effect.get("region", "")
-			_border_defense_bonus[region] = _border_defense_bonus.get(region, 0.0) + effect.get("value", 0.0)
-		"morale_reputation_bonus":
-			_morale_bonus += effect.get("morale_value", 0)
-			_reputation_bonus += int(effect.get("reputation_value", 0))
-		"morale_culture_bonus":
-			_morale_bonus += effect.get("morale_value", 0)
-			_culture_bonus += effect.get("culture_value", 0.0)
-		"diplomacy_bonus":
-			_diplomacy_bonus += effect.get("value", 0.0)
-		"recruit_cost_reduction":
-			var target: String = effect.get("target", "")
-			_recruit_cost_reduction[target] = _recruit_cost_reduction.get(target, 0.0) + effect.get("value", 0.0)
-		"disaster_resist":
-			_disaster_resist_bonus += effect.get("value", 0.0)
-		"corruption_reduction":
-			_corruption_reduction += effect.get("value", 0.0)
-		"zoc_range_bonus":
-			_zoc_range_bonus += int(effect.get("value", 0))
-		"zoc_cost_immunity":
-			_zoc_cost_immunity = bool(effect.get("value", true))
-		"trade_route_capacity":
-			_trade_route_capacity_bonus += int(effect.get("value", 0))
-		"trade_route_exchange_bonus":
-			_trade_route_exchange_bonus += effect.get("value", 0.0)
-
-	# 处理附加效果字段（如水利工程的 disaster_resist 作为次要效果）
-	if effect.has("disaster_resist") and effect_type != "disaster_resist":
-		_disaster_resist_bonus += effect.get("disaster_resist", 0.0)
-
-
-func _apply_single_malus(malus: Dictionary) -> void:
-	var malus_type: String = malus.get("type", "")
-
-	match malus_type:
-		"morale_penalty":
-			_morale_bonus += int(malus.get("value", 0))
-		"stability_penalty":
-			_stability_penalty += float(malus.get("value", 0))
-		"recruit_cost_increase":
-			var increase: float = malus.get("value", 0.0)
-			_recruit_cost_reduction["all"] = _recruit_cost_reduction.get("all", 0.0) - increase
-		"diplomacy_penalty":
-			_diplomacy_bonus += float(malus.get("value", 0))
-		"corruption_increase":
-			_corruption_increase += float(malus.get("value", 0))
-		"resource_penalty":
-			var resource: String = malus.get("resource", "")
-			_resource_modifiers[resource] = _resource_modifiers.get(resource, 0.0) + malus.get("value", 0.0)
-		"attack_bonus":
-			_attack_modifiers["all"] = _attack_modifiers.get("all", 0.0) + malus.get("value", 0.0)
-		"security_bonus":
-			_security_bonus += malus.get("value", 0.0)
-		"trade_bonus":
-			_trade_bonus += malus.get("value", 0.0)
-		"population_growth_penalty":
-			_population_growth_modifier += float(malus.get("value", 0))
-		"upkeep_increase":
-			_upkeep_increase += float(malus.get("value", 0))
-
-
-# ============= 效果查询接口（供其他系统调用） =============
-
-func get_attack_modifier(target: String) -> float:
-	return _attack_modifiers.get(target, 0.0) + _attack_modifiers.get("all", 0.0)
-
-
-func get_defense_modifier(target: String) -> float:
-	return _defense_modifiers.get(target, 0.0) + _defense_modifiers.get("all", 0.0)
-
-
-func get_resource_modifier(resource: String) -> float:
-	return _resource_modifiers.get(resource, 0.0)
-
-
-func is_unit_unlocked(unit_id: String) -> bool:
-	return _unlocked_units.has(unit_id)
-
-
-func can_traverse_terrain(terrain: String) -> bool:
-	return _terrain_traversal.get(terrain, false)
-
-
-func get_city_defense_bonus() -> float:
-	return _city_defense_bonus
-
-
-func get_siege_bonus() -> float:
-	return _siege_bonus
-
-
-func get_movement_bonus() -> int:
-	return _movement_bonus
-
-
-func get_vision_bonus() -> int:
-	return _vision_bonus
-
-
-func get_morale_bonus() -> int:
-	return _morale_bonus
-
-
-func get_security_bonus() -> float:
-	return _security_bonus
-
-
-func get_culture_bonus() -> float:
-	return _culture_bonus
-
-
-func get_healing_bonus() -> float:
-	return _healing_bonus
-
-
-func get_event_chance_bonus() -> float:
-	return _event_chance_bonus
-
-
-func get_trade_bonus() -> float:
-	return _trade_bonus
-
-
-func get_garrison_bonus() -> float:
-	return _garrison_bonus
-
-
-func get_wall_durability_bonus() -> float:
-	return _wall_durability_bonus
-
-
-func get_border_defense_bonus(region: String) -> float:
-	return _border_defense_bonus.get(region, 0.0)
-
-
-func get_diplomacy_bonus() -> float:
-	return _diplomacy_bonus
-
-
-func get_recruit_cost_reduction(target: String) -> float:
-	return _recruit_cost_reduction.get(target, 0.0)
-
-
-func get_disaster_resist_bonus() -> float:
-	return _disaster_resist_bonus
-
-
-func get_faction_action_speed_bonus(_faction_id: String) -> float:
-	return _action_speed_bonus
-
-
-# ============= 阶段7新增查询接口 =============
-
-func get_corruption_reduction() -> float:
-	return _corruption_reduction
-
-
-func get_corruption_increase() -> float:
-	return _corruption_increase
-
-
-func get_zoc_range_bonus() -> int:
-	return _zoc_range_bonus
-
-
-func has_zoc_cost_immunity() -> bool:
-	return _zoc_cost_immunity
-
-
-func get_trade_route_capacity_bonus() -> int:
-	return _trade_route_capacity_bonus
-
-
-func get_trade_route_exchange_bonus() -> float:
-	return _trade_route_exchange_bonus
-
-
-func get_opinion_bonus() -> int:
-	return _opinion_bonus
-
-
-func get_reputation_bonus() -> int:
-	return _reputation_bonus
-
-
-func get_stability_penalty() -> float:
-	return _stability_penalty
-
-
-func get_population_growth_modifier() -> float:
-	return _population_growth_modifier
-
-
-func get_upkeep_increase() -> float:
-	return _upkeep_increase
-
-
-# ============= 重置 =============
+func _try_trigger_research_event(tech: Dictionary) -> void:
+	_pending_research_event = {}
+	if _research_event_cooldown > 0:
+		return
+	var event_ids: Array = tech.get("research_events", [])
+	if event_ids.is_empty():
+		return
+	var base_chance: float = float(DataManager.get_balance_param("tech.research_event_base_chance"))
+	base_chance += TechEffects.event_chance_bonus(_player_faction())
+	if randf() > clampf(base_chance, 0.0, 0.95):
+		return
+	var picked: String = str(event_ids[randi() % event_ids.size()])
+	var event_data: Dictionary = DataManager.get_tech_research_event(picked)
+	if event_data.is_empty():
+		return
+	_pending_research_event = event_data
+	_research_event_cooldown = int(DataManager.get_balance_param("tech.research_event_cooldown_turns"))
+	SignalBus.tech_research_event.emit(picked, str(tech.get("id", "")))
+
+
+func _apply_all_synergies() -> void:
+	var fid: String = _player_faction()
+	for synergy in DataManager.get_tech_synergies():
+		var sid: String = str(synergy.get("id", ""))
+		if sid == "" or _active_synergies.has(sid):
+			continue
+		var all_ready: bool = true
+		for req in synergy.get("required_techs", []):
+			if not is_researched(str(req)):
+				all_ready = false
+				break
+		if not all_ready:
+			continue
+		_active_synergies[sid] = true
+		for effect in synergy.get("effects", []):
+			TechEffects.accumulate_effect(fid, effect)
+	if not _active_synergies.is_empty():
+		TechEffects.effects_changed.emit(fid)
+		_update_available_techs()
+
+
+# ============= 存档 =============
 
 func reset() -> void:
 	_researched_techs.clear()
@@ -608,40 +485,13 @@ func reset() -> void:
 	_researching_tech = ""
 	_research_progress = 0
 	_research_cost_turns = 1
-	_attack_modifiers.clear()
-	_defense_modifiers.clear()
-	_resource_modifiers.clear()
-	_unlocked_units.clear()
-	_terrain_traversal.clear()
-	_city_defense_bonus = 0.0
-	_siege_bonus = 0.0
-	_movement_bonus = 0
-	_vision_bonus = 0
-	_morale_bonus = 0
-	_security_bonus = 0.0
-	_culture_bonus = 0.0
-	_healing_bonus = 0.0
-	_event_chance_bonus = 0.0
-	_research_speed_modifier = 0.0
-	_trade_bonus = 0.0
-	_garrison_bonus = 0.0
-	_wall_durability_bonus = 0.0
-	_border_defense_bonus.clear()
-	_diplomacy_bonus = 0.0
-	_recruit_cost_reduction.clear()
-	_disaster_resist_bonus = 0.0
-	_action_speed_bonus = 0.0
-	# 阶段7新增
-	_corruption_reduction = 0.0
-	_zoc_range_bonus = 0
-	_zoc_cost_immunity = false
-	_trade_route_capacity_bonus = 0
-	_trade_route_exchange_bonus = 0.0
-	_opinion_bonus = 0
-	_reputation_bonus = 0
-	_stability_penalty = 0.0
-	_corruption_increase = 0.0
-	_population_growth_modifier = 0.0
+	_ai_researched_techs.clear()
+	_active_synergies.clear()
+	_unlocked_knowledge_cards.clear()
+	_pending_research_event = {}
+	_research_event_cooldown = 0
+	_mastery_levels.clear()
+	TechEffects.clear_tech_buckets()
 
 
 func get_save_data() -> Dictionary:
@@ -651,6 +501,9 @@ func get_save_data() -> Dictionary:
 		"research_progress": _research_progress,
 		"research_cost_turns": _research_cost_turns,
 		"ai_researched_techs": _ai_researched_techs.duplicate(true),
+		"active_synergies": _active_synergies.duplicate(true),
+		"unlocked_knowledge_cards": _unlocked_knowledge_cards.duplicate(true),
+		"mastery_levels": _mastery_levels.duplicate(true),
 	}
 
 
@@ -666,8 +519,35 @@ func load_save_data(data: Dictionary) -> void:
 	var ai: Variant = data.get("ai_researched_techs", {})
 	if ai is Dictionary:
 		_ai_researched_techs = (ai as Dictionary).duplicate(true)
-	# 重放玩家已研究科技效果
+	var syn: Variant = data.get("active_synergies", {})
+	if syn is Dictionary:
+		_active_synergies = (syn as Dictionary).duplicate(true)
+	var cards: Variant = data.get("unlocked_knowledge_cards", {})
+	if cards is Dictionary:
+		_unlocked_knowledge_cards = (cards as Dictionary).duplicate(true)
+	var mastery: Variant = data.get("mastery_levels", {})
+	if mastery is Dictionary:
+		_mastery_levels = (mastery as Dictionary).duplicate(true)
+	var fid: String = _player_faction()
 	for tech_id in _researched_techs:
-		_apply_tech_effects(str(tech_id))
+		TechEffects.apply_tech(fid, DataManager.get_tech(str(tech_id)))
+		if not DataManager.get_tech_knowledge_card(str(tech_id)).is_empty():
+			_unlocked_knowledge_cards[str(tech_id)] = true
+	# 重放精通增量
+	for tech_id in _mastery_levels:
+		_replay_mastery_increments(fid, str(tech_id), int(_mastery_levels[tech_id]))
+	for faction_id in _ai_researched_techs:
+		var faction_techs: Variant = _ai_researched_techs[faction_id]
+		if not (faction_techs is Dictionary):
+			continue
+		for tech_id in faction_techs:
+			TechEffects.apply_tech(str(faction_id), DataManager.get_tech(str(tech_id)))
+	if _active_synergies.is_empty():
+		_apply_all_synergies()
+	else:
+		for synergy in DataManager.get_tech_synergies():
+			var sid: String = str(synergy.get("id", ""))
+			if _active_synergies.has(sid):
+				for effect in synergy.get("effects", []):
+					TechEffects.accumulate_effect(fid, effect)
 	_update_available_techs()
-

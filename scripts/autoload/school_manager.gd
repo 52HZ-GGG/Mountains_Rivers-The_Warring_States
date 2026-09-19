@@ -60,6 +60,8 @@ func initialize_factions(active_factions: Array[String]) -> void:
 			"completed_quests": [],
 			"transition_turns": 0,
 		}
+	for fid in active_factions:
+		_sync_faction_runtime_modifiers(fid)
 
 
 func get_save_data() -> Dictionary:
@@ -191,6 +193,7 @@ func activate_policy(faction_id: String, policy_id: String, target_faction_id: S
 		DiplomacySystem.change_opinion(target_faction_id, faction_id, relation_delta)
 	if duration_turns > 0 or effect_data.has("all_output_bonus") or effect_data.has("research_speed_bonus") or effect_data.has("recruit_efficiency") or effect_data.has("build_cost_reduction") or effect_data.has("trade_bonus") or effect_data.has("food_consumption_reduction") or effect_data.has("alliance_cost_multiplier") or effect_data.has("diplomacy_opinion_multiplier") or effect_data.has("fire_attack_bonus") or effect_data.has("wall_hp_bonus") or effect_data.has("special_unit_recruit"):
 		_add_or_replace_policy(state, policy_id, duration_turns)
+		_sync_faction_runtime_modifiers(faction_id)
 		SignalBus.school_policy_activated.emit(get_current_school(faction_id), policy_id)
 	return {"success": true}
 
@@ -461,3 +464,11 @@ func _add_or_replace_policy(state: Dictionary, policy_id: String, duration_turns
 			return
 	policies.append({"policy_id": policy_id, "turns_remaining": duration_turns})
 	state["active_policies"] = policies
+
+
+func _sync_faction_runtime_modifiers(faction_id: String) -> void:
+	if faction_id == "" or not is_instance_valid(TechEffects):
+		return
+	TechEffects.set_runtime_bonus(faction_id, "research_speed_modifier", get_effect_float(faction_id, "research_speed_bonus"))
+	TechEffects.set_runtime_bonus(faction_id, "trade_bonus", get_effect_float(faction_id, "trade_bonus"))
+
