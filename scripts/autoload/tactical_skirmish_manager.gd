@@ -1828,6 +1828,27 @@ func get_pass_owner(cell: Vector2i) -> String:
 	return str(_pass_owner.get(cell, ""))
 
 
+## 演武盘面上全部关隘格（轴向），供政治图/图例与大地图算法同步
+func list_pass_cells() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for cell in _pass_owner.keys():
+		out.append(cell as Vector2i)
+	return out
+
+
+## 关隘归属列表 [{axial_q, axial_r, owner}]，坐标为演武盘面轴向
+func get_pass_ownership_list() -> Array:
+	var out: Array = []
+	for cell in _pass_owner.keys():
+		var c: Vector2i = cell as Vector2i
+		out.append({
+			"axial_q": c.x,
+			"axial_r": c.y,
+			"owner": str(_pass_owner.get(c, "")),
+		})
+	return out
+
+
 ## 判断单位是否为攻城器械（category == "siege" 或 special == "siege_bonus"）
 func _is_siege_unit(unit_type_id: String) -> bool:
 	var udata: Dictionary = DataManager.get_unit_type(unit_type_id)

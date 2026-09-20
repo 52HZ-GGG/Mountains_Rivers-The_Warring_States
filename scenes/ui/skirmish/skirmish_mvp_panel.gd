@@ -601,13 +601,23 @@ func _rebuild_political_grid() -> void:
 			arr.append(TacticalSkirmishManager.terrain_at(_HexAxial.offset_odd_r_to_axial(col, row)))
 		terrain_rows.append(arr)
 	var rules: Dictionary = DataManager.get_big_map_political_control()
+	# 与大地图同一算法 + 同一关隘源（PassManager），保证演武/大地图政治口径一致
 	_political_grid = _BigMapPoliticalControl.build_resolved_control_grid(
 		cities,
 		[],
 		Vector2i(w, h),
 		rules,
-		terrain_rows
+		terrain_rows,
+		_collect_skirmish_political_passes(w, h)
 	)
+
+
+func _collect_skirmish_political_passes(_map_w: int, _map_h: int) -> Array:
+	# 必须用演武盘面关隘状态（TSM._pass_owner），不能用战役 PassManager 全图坐标：
+	# 演武小图 col/row 与大地图 axial 不是同一坐标系。
+	if TacticalSkirmishManager == null:
+		return []
+	return TacticalSkirmishManager.get_pass_ownership_list()
 
 
 func _append_political_city(cities: Array, ccfg: Variant, fallback_fid: String) -> void:
@@ -625,6 +635,9 @@ func _append_political_city(cities: Array, ccfg: Variant, fallback_fid: String) 
 		level = int(st.get("city_level", level))
 		is_cap = bool(st.get("is_capital", is_cap))
 		development = int(st.get("development", 0))
+	else:
+		# 场景未挂战役城：用城级粗估，保证演武政治图仍可计算
+		development = level * 10 + 5
 	cities.append({
 		"hex_q": int(d.get("q", 0)),
 		"hex_r": int(d.get("r", 0)),
@@ -1043,9 +1056,14 @@ func _build_hover_text(cell: Vector2i) -> String:
 	var cell_pass_hp: int = TacticalSkirmishManager.get_pass_hp(cell)
 	if cell_pass_hp >= 0:
 		var cell_pass_owner: String = TacticalSkirmishManager.get_pass_owner(cell)
-		lines.append("关隘：%s ｜ 结构 %d ｜ 规则与大地图相同（破结构后进驻可占）" % [
-			_faction_display_name(cell_pass_owner) if cell_pass_owner != "" else "中立",
+		var pol: String = ""
+		if _political_mode and not _political_grid.is_empty():
+			pol = str(_political_grid.get(cell, cell_pass_owner))
+		var owner_shown: String = cell_pass_owner if pol.is_empty() else pol
+		lines.append("关隘：%s ｜ 结构 %d ｜ 政治归属 %s ｜ 规则与大地图相同" % [
+			_faction_display_name(owner_shown) if owner_shown != "" else "中立",
 			cell_pass_hp,
+			_faction_display_name(pol if pol != "" else cell_pass_owner) if (pol != "" or cell_pass_owner != "") else "中立",
 		])
 	# 单位信息
 	var uu: Dictionary = _unit_at_cell(cell)
@@ -1501,7 +1519,12 @@ func _political_tint_color(cell: Vector2i, _uu: Dictionary) -> Color:
 		_rebuild_political_grid()
 	var fid: String = str(_political_grid.get(cell, ""))
 	if fid == "":
-		# 城格兜底：与大地图 political tint 相同，用城池归属
+		# 关隘格兜底：直接读演武关隘归属（与大地图 lock_self 同口径）
+		var pass_owner: String = TacticalSkirmishManager.get_pass_owner(cell)
+		if pass_owner != "":
+			fid = pass_owner
+	if fid == "":
+		# 城格兜底
 		if cell == TacticalSkirmishManager.get_player_city():
 			fid = TacticalSkirmishManager.get_player_faction()
 		elif cell == TacticalSkirmishManager.get_enemy_city():
@@ -1512,8 +1535,14 @@ func _political_tint_color(cell: Vector2i, _uu: Dictionary) -> Color:
 	if fdata.is_empty():
 		return Color(0.42, 0.42, 0.42, 0.42)
 	var is_cap: bool = (cell == TacticalSkirmishManager.get_player_city()) or (cell == TacticalSkirmishManager.get_enemy_city())
+	var is_pass: bool = TacticalSkirmishManager.get_pass_hp(cell) >= 0
 	var c: Color = Color.html(str(fdata.get("color", "#888888")))
-	c.a = 0.85 if is_cap else 0.7
+	if is_cap:
+		c.a = 0.85
+	elif is_pass:
+		c.a = 0.8
+	else:
+		c.a = 0.7
 	return c
 
 

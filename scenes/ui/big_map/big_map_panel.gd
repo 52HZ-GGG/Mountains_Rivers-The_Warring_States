@@ -57,6 +57,11 @@ var _terrain_bake_viewport: SubViewport
 var _terrain_bake_canvas: HexMapCanvas
 var _terrain_bake_texture: Texture2D
 var _terrain_bake_draw_size: Vector2 = Vector2.ZERO
+## 政治/文化层独立烘焙：叠在地形之上、单位层之下；全图一张纹理，拖拽不重绘
+const _POLITICAL_BAKE_MAX_DIM: int = 8192
+var _pol_bake_viewport: SubViewport
+var _pol_bake_canvas: HexMapCanvas
+var _pol_bake_texture: Texture2D
 
 @onready var _hex_board: Control = %HexBoard
 @onready var _hover_info: RichTextLabel = %HoverInfo
@@ -228,15 +233,25 @@ func open() -> void:
 	_ensure_hex_buttons()
 	_ensure_board_backdrop()
 	_hide_static_hover_labels()
+	_political_mode = false
+	_culture_mode = false
+	_sync_map_mode_buttons()
+	_release_political_bake()
+	var pol_hide: HexMapCanvas = _hex_board.get_node_or_null("HexMapPoliticalCanvas") as HexMapCanvas if _hex_board != null else null
+	if pol_hide != null:
+		pol_hide.visible = false
+		pol_hide.clear_baked_texture()
 	_terrain_layout_dirty = true
 	_overlay_dirty = true
 	_refresh_display()
+	_force_terrain_payload_draw()
 	_build_city_hit_rects()
 	_refresh_minimap_viewport()
 	_hex_refit_pending = true
 	call_deferred("_deferred_refit_hex_radius_if_needed")
 	call_deferred("_update_draw_cull_rect")
 	call_deferred("_hide_static_hover_labels")
+	call_deferred("_force_terrain_payload_draw")
 
 
 ## 只保留跟随鼠标的悬浮方框；隐藏顶部/底部静态悬停文案
@@ -370,6 +385,7 @@ func close() -> void:
 	if _placement_city_id != "":
 		cancel_building_placement()
 	_release_terrain_bake()
+	_release_political_bake()
 	queue_free()
 
 
@@ -443,29 +459,75 @@ func _read_terrain_bake_async() -> void:
 	var vp_tex: ViewportTexture = _terrain_bake_viewport.get_texture()
 	if vp_tex == null:
 		return
-	# 读回成普通 Image 并生成 mipmap：摆脱 ViewportTexture 对渲染目标的依赖，缩小时采样稳定
 	var img: Image = vp_tex.get_image()
-	var baked_ok: bool = img != null and img.get_width() > 0 and img.get_height() > 0
+	var baked_ok: bool = img != null and img.get_width() > 0 and img.get_height() > 0 \
+		and _image_has_visible_pixels(img) and not _image_is_near_uniform(img)
 	if baked_ok:
 		img.generate_mipmaps()
 		_terrain_bake_texture = ImageTexture.create_from_image(img)
+		_terrain_bake_draw_size = _board_base_size
+		_apply_terrain_bake_texture()
+		if _terrain_bake_viewport != null and is_instance_valid(_terrain_bake_viewport):
+			_terrain_bake_viewport.queue_free()
+			_terrain_bake_viewport = null
+			_terrain_bake_canvas = null
 	else:
-		_terrain_bake_texture = vp_tex
-	_terrain_bake_draw_size = _board_base_size
-	_apply_terrain_bake_texture()
-	# 仅在成功读回成独立纹理后释放烘焙 viewport（否则 ViewportTexture 仍需其渲染目标）
-	if baked_ok and _terrain_bake_viewport != null and is_instance_valid(_terrain_bake_viewport):
-		_terrain_bake_viewport.queue_free()
-		_terrain_bake_viewport = null
-		_terrain_bake_canvas = null
+		# 烘焙结果无效（空图/近乎单色）：必须退回逐格地形，否则整图变灰
+		_terrain_bake_texture = null
+		_terrain_bake_draw_size = Vector2.ZERO
+		_force_terrain_payload_draw()
+		if _terrain_bake_viewport != null and is_instance_valid(_terrain_bake_viewport):
+			_terrain_bake_viewport.queue_free()
+			_terrain_bake_viewport = null
+			_terrain_bake_canvas = null
+
+
+func _force_terrain_payload_draw() -> void:
+	if _hex_board == null:
+		return
+	var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
+	if terrain_cv == null:
+		return
+	terrain_cv.visible = true
+	terrain_cv.z_index = -40
+	terrain_cv.clear_baked_texture()
+	if not _terrain_payload_cells.is_empty():
+		terrain_cv.set_payload_cells(_terrain_payload_cells, _board_base_size)
+	terrain_cv.queue_redraw()
+
+
+func _image_is_near_uniform(img: Image) -> bool:
+	if img == null:
+		return true
+	var w: int = img.get_width()
+	var h: int = img.get_height()
+	if w <= 2 or h <= 2:
+		return true
+	var c0: Color = img.get_pixel(w / 2, h / 2)
+	var step_x: int = maxi(1, w / 8)
+	var step_y: int = maxi(1, h / 8)
+	var y: int = 0
+	while y < h:
+		var x: int = 0
+		while x < w:
+			var c: Color = img.get_pixel(x, y)
+			if absf(c.r - c0.r) + absf(c.g - c0.g) + absf(c.b - c0.b) + absf(c.a - c0.a) > 0.12:
+				return false
+			x += step_x
+		y += step_y
+	return true
 
 
 func _apply_terrain_bake_texture() -> void:
 	if _hex_board == null or _terrain_bake_texture == null:
 		return
+	if _terrain_bake_draw_size.x <= 1.0 or _terrain_bake_draw_size.y <= 1.0:
+		return
 	var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
 	if terrain_cv != null:
+		terrain_cv.visible = true
 		terrain_cv.set_baked_texture(_terrain_bake_texture, _terrain_bake_draw_size)
+		terrain_cv.queue_redraw()
 
 
 func _release_terrain_bake() -> void:
@@ -549,15 +611,20 @@ func _apply_zoom(new_zoom: float, anchor_in_view: Vector2) -> void:
 	)
 	_scroll.scroll_horizontal = int(round(clampf(target_scroll.x, 0.0, max_scroll.x)))
 	_scroll.scroll_vertical = int(round(clampf(target_scroll.y, 0.0, max_scroll.y)))
+	if not (_political_mode or _culture_mode):
+		call_deferred("_update_draw_cull_rect")
 	_refresh_minimap_viewport()
 
 func _apply_board_zoom_transform() -> void:
 	if _hex_board == null or _board_base_size == Vector2.ZERO:
 		return
 	_hex_board.custom_minimum_size = _board_base_size * _zoom_level
-	for canvas_name: String in ["HexMapTerrainCanvas", "HexMapOverlayCanvas", "HexMapCanvas"]:
+	for canvas_name: String in ["HexMapTerrainCanvas", "HexMapPoliticalCanvas", "HexMapOverlayCanvas", "HexMapCanvas"]:
 		var map_canvas: HexMapCanvas = _hex_board.get_node_or_null(canvas_name) as HexMapCanvas
 		if map_canvas != null:
+			if _board_base_size.x > 1.0:
+				map_canvas.size = _board_base_size
+				map_canvas.custom_minimum_size = _board_base_size
 			map_canvas.scale = Vector2(_zoom_level, _zoom_level)
 			map_canvas.position = Vector2.ZERO
 	var overlay: Control = _hex_board.get_node_or_null("HexInputOverlay") as Control
@@ -615,16 +682,19 @@ func _on_culture_toggle() -> void:
 	culture_mode_changed.emit(_culture_mode)
 
 
-## 政治/文化地图：保持 overlay 视口裁剪（与普通大地图一致），避免全图每帧重绘卡顿
+## 单位 overlay 始终 cull；政治/文化用独立烘焙层（全图一张纹理）
 func _apply_overlay_cull_policy() -> void:
 	if _hex_board == null:
 		return
 	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
-	if overlay_cv == null:
-		return
-	overlay_cv.set_cull_enabled(true)
+	if overlay_cv != null:
+		overlay_cv.clear_baked_texture()
+		overlay_cv.set_cull_enabled(true)
+	_ensure_political_bake()
+	if overlay_cv != null:
+		_apply_overlay_to_terrain_payload()
+		overlay_cv.request_overlay_redraw()
 	call_deferred("_update_draw_cull_rect")
-	overlay_cv.request_overlay_redraw()
 
 
 func is_culture_mode() -> bool:
@@ -831,8 +901,173 @@ func _ensure_board_backdrop() -> void:
 	if legacy != null:
 		legacy.free()
 	_ensure_hex_layer_canvas("HexMapTerrainCanvas", HexMapCanvas.LAYER_TERRAIN, -40)
+	_ensure_political_layer_canvas()
 	_ensure_hex_layer_canvas("HexMapOverlayCanvas", HexMapCanvas.LAYER_OVERLAY, -30)
 	_hide_static_hover_labels()
+
+
+func _ensure_political_layer_canvas() -> HexMapCanvas:
+	var cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapPoliticalCanvas") as HexMapCanvas
+	if cv == null:
+		cv = HexMapCanvas.new()
+		cv.name = "HexMapPoliticalCanvas"
+		_hex_board.add_child(cv)
+	cv.z_index = -35
+	cv.set_draw_layers(HexMapCanvas.LAYER_OVERLAY)
+	cv.set_cull_enabled(false)
+	cv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cv.clip_contents = false
+	# 逻辑尺寸对齐棋盘，避免地图边缘被控件矩形裁掉
+	cv.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	if _board_base_size.x > 1.0 and _board_base_size.y > 1.0:
+		cv.size = _board_base_size
+		cv.custom_minimum_size = _board_base_size
+	cv.scale = Vector2(_zoom_level, _zoom_level)
+	cv.position = Vector2.ZERO
+	cv.visible = _political_mode or _culture_mode
+	return cv
+
+
+## 政治/文化：全图色层烘焙成单张纹理（透明底），叠在地形上、不挡单位层
+func _ensure_political_bake() -> void:
+	if _hex_board == null:
+		return
+	var pol_cv: HexMapCanvas = _ensure_political_layer_canvas()
+	if not (_political_mode or _culture_mode):
+		pol_cv.visible = false
+		pol_cv.clear_baked_texture()
+		pol_cv.queue_redraw()
+		_release_political_bake()
+		return
+	pol_cv.visible = true
+	if _terrain_payload_cells.is_empty() or _board_base_size.x <= 1.0:
+		return
+	# 注意：不能先走 _apply_overlay_to_terrain_payload → _cell_tint，
+	# 政治模式下单位层 tint 为透明，会导致烘焙出全空纹理。
+	var board_size: Vector2 = _board_base_size
+	var bake_cells: Array = _political_bake_payload_cells()
+	var max_side: float = maxf(board_size.x, board_size.y)
+	var scale_factor: float = 1.0
+	if max_side > float(_POLITICAL_BAKE_MAX_DIM):
+		scale_factor = float(_POLITICAL_BAKE_MAX_DIM) / max_side
+	var bake_size: Vector2i = Vector2i(
+		maxi(1, int(ceil(board_size.x * scale_factor))),
+		maxi(1, int(ceil(board_size.y * scale_factor)))
+	)
+	if _pol_bake_viewport == null:
+		_pol_bake_viewport = SubViewport.new()
+		_pol_bake_viewport.name = "PoliticalBakeViewport"
+		_pol_bake_viewport.transparent_bg = true
+		_pol_bake_viewport.disable_3d = true
+		_pol_bake_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		add_child(_pol_bake_viewport)
+	_pol_bake_viewport.size = bake_size
+	var old_bg: Node = _pol_bake_viewport.get_node_or_null("BakeBackdrop")
+	if old_bg != null:
+		old_bg.queue_free()
+	if _pol_bake_canvas == null:
+		_pol_bake_canvas = HexMapCanvas.new()
+		_pol_bake_canvas.name = "PoliticalBakeCanvas"
+		_pol_bake_viewport.add_child(_pol_bake_canvas)
+	_pol_bake_canvas.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_pol_bake_canvas.size = board_size
+	_pol_bake_canvas.set_draw_layers(HexMapCanvas.LAYER_OVERLAY)
+	_pol_bake_canvas.set_cull_enabled(false)
+	_pol_bake_canvas.scale = Vector2(scale_factor, scale_factor)
+	_pol_bake_canvas.set_payload_cells(bake_cells, board_size)
+	_pol_bake_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	# 烘焙前先让政治画布直接带 payload 绘制（兜底：烘焙读回失败时仍有颜色）
+	pol_cv.set_payload_cells(bake_cells, board_size)
+	pol_cv.clear_baked_texture()
+	pol_cv.queue_redraw()
+	_read_political_bake_async(board_size)
+
+
+func _political_bake_payload_cells() -> Array:
+	var out: Array = []
+	for p: Variant in _terrain_payload_cells:
+		if not (p is Dictionary):
+			continue
+		var src: Dictionary = p as Dictionary
+		var cp: Dictionary = src.duplicate(true)
+		var cell_axial: Vector2i = src.get("_axial", Vector2i(-99999, -99999)) as Vector2i
+		var city: Dictionary = {}
+		if cell_axial.x > -99999:
+			city = _city_at_axial.get(cell_axial, {}) as Dictionary
+		# 政治/文化色必须在此写入（单位层 _cell_tint 在专题图下是透明的）
+		if _political_mode:
+			cp["tint"] = _political_tint(cell_axial, city)
+		elif _culture_mode:
+			cp["tint"] = _culture_tint(cell_axial, city)
+		else:
+			cp["tint"] = Color(0, 0, 0, 0)
+		cp["unit_texture"] = null
+		cp["unit_caption"] = ""
+		cp["building_texture"] = null
+		cp["capital_texture"] = null
+		cp["caption"] = ""
+		cp["edge_blends"] = []
+		out.append(cp)
+	return out
+
+
+func _read_political_bake_async(board_size: Vector2) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if _pol_bake_viewport == null or not is_instance_valid(_pol_bake_viewport):
+		return
+	var vp_tex: ViewportTexture = _pol_bake_viewport.get_texture()
+	if vp_tex == null:
+		return
+	var img: Image = vp_tex.get_image()
+	var baked_ok: bool = img != null and img.get_width() > 0 and img.get_height() > 0 and _image_has_visible_pixels(img)
+	var pol_cv: HexMapCanvas = _ensure_political_layer_canvas()
+	if baked_ok:
+		img.generate_mipmaps()
+		_pol_bake_texture = ImageTexture.create_from_image(img)
+		pol_cv.set_baked_texture(_pol_bake_texture, board_size)
+		pol_cv.size = board_size
+		pol_cv.custom_minimum_size = board_size
+		if _pol_bake_viewport != null and is_instance_valid(_pol_bake_viewport):
+			_pol_bake_viewport.queue_free()
+			_pol_bake_viewport = null
+			_pol_bake_canvas = null
+	else:
+		# 烘焙结果全透明/失败：回退为政治画布逐格 tint（无 cull）
+		_pol_bake_texture = null
+		pol_cv.clear_baked_texture()
+		pol_cv.set_payload_cells(_political_bake_payload_cells(), board_size)
+		pol_cv.size = board_size
+		pol_cv.custom_minimum_size = board_size
+	pol_cv.queue_redraw()
+
+
+func _image_has_visible_pixels(img: Image) -> bool:
+	if img == null:
+		return false
+	var w: int = img.get_width()
+	var h: int = img.get_height()
+	if w <= 0 or h <= 0:
+		return false
+	var step_x: int = maxi(1, w / 16)
+	var step_y: int = maxi(1, h / 16)
+	var y: int = 0
+	while y < h:
+		var x: int = 0
+		while x < w:
+			if img.get_pixel(x, y).a > 0.04:
+				return true
+			x += step_x
+		y += step_y
+	return false
+
+
+func _release_political_bake() -> void:
+	if _pol_bake_viewport != null and is_instance_valid(_pol_bake_viewport):
+		_pol_bake_viewport.queue_free()
+	_pol_bake_viewport = null
+	_pol_bake_canvas = null
+	_pol_bake_texture = null
 
 
 func _ensure_hex_layer_canvas(canvas_name: String, layers: int, z: int) -> void:
@@ -843,14 +1078,20 @@ func _ensure_hex_layer_canvas(canvas_name: String, layers: int, z: int) -> void:
 		_hex_board.add_child(cv)
 	cv.z_index = z
 	cv.set_draw_layers(layers)
-	# 地形层是纯静态内容：关闭视口裁剪，布局/地形变更时全量绘制一次，之后滚动/缩放不再触发重绘
+	cv.clip_contents = false
+	# 地形层是纯静态内容：关闭视口裁剪；overlay 默认开 cull
 	cv.set_cull_enabled((layers & HexMapCanvas.LAYER_OVERLAY) != 0)
 	var backdrop: Node = _hex_board.get_node_or_null("BoardBackdrop")
 	if backdrop != null:
 		var backdrop_index: int = backdrop.get_index()
 		if cv.get_index() < backdrop_index:
 			_hex_board.move_child(cv, backdrop_index + 1)
+	cv.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	if _board_base_size.x > 1.0 and _board_base_size.y > 1.0:
+		cv.size = _board_base_size
+		cv.custom_minimum_size = _board_base_size
 	cv.scale = Vector2(_zoom_level, _zoom_level)
+	cv.position = Vector2.ZERO
 	if cv.has_method("set_spatial_meta"):
 		cv.set_spatial_meta(_cell_radius_px, _board_origin_shift, float(_HEX_BOARD_PAD_PX))
 	cv.queue_redraw()
@@ -1047,7 +1288,10 @@ func _push_overlay_canvas(redraw_only: bool = false) -> void:
 	if redraw_only:
 		overlay_cv.request_overlay_redraw()
 		return
-	overlay_cv.set_payload_cells(_terrain_payload_cells, _hex_board.custom_minimum_size)
+	var logical_size: Vector2 = _board_base_size
+	if logical_size.x <= 1.0:
+		logical_size = _hex_board.custom_minimum_size
+	overlay_cv.set_payload_cells(_terrain_payload_cells, logical_size)
 	_sync_canvas_spatial_meta()
 	_refresh_minimap_viewport()
 	call_deferred("_update_draw_cull_rect")
@@ -1081,18 +1325,34 @@ func _refresh_display() -> void:
 	if _overlay_dirty:
 		_apply_overlay_to_terrain_payload()
 		_overlay_dirty = false
-	var board_size: Vector2 = _hex_board.custom_minimum_size
+	# payload 逻辑坐标必须用 _board_base_size，不能用 zoom 后的 custom_minimum_size
+	var board_size: Vector2 = _board_base_size
+	if board_size.x <= 1.0 or board_size.y <= 1.0:
+		board_size = _hex_board.custom_minimum_size
 	if layout_rebuilt:
 		var terrain_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapTerrainCanvas") as HexMapCanvas
 		if terrain_cv != null:
-			terrain_cv.set_cull_enabled(maxf(_board_base_size.x, _board_base_size.y) > float(_TERRAIN_BAKE_MAX_DIM))
+			terrain_cv.visible = true
+			terrain_cv.z_index = -40
+			terrain_cv.clear_baked_texture()
+			terrain_cv.set_cull_enabled(maxf(board_size.x, board_size.y) > float(_TERRAIN_BAKE_MAX_DIM))
 			terrain_cv.set_payload_cells(_terrain_payload_cells, board_size)
-		# 布局重建后启动地形烘焙（异步，完成前 terrain_cv 仍逐格绘制，不会空白）
+			terrain_cv.queue_redraw()
+		# 布局重建后启动地形烘焙（异步；失败自动回退逐格）
 		_ensure_terrain_bake()
 	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
 	if overlay_cv != null:
 		overlay_cv.set_payload_cells(_terrain_payload_cells, board_size)
 	_sync_canvas_spatial_meta()
+	# 政治/文化层：关闭模式时必须隐藏，避免残留灰层盖住地形
+	var pol_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapPoliticalCanvas") as HexMapCanvas
+	if pol_cv != null:
+		if _political_mode or _culture_mode:
+			_ensure_political_bake()
+		else:
+			pol_cv.visible = false
+			pol_cv.clear_baked_texture()
+			pol_cv.queue_redraw()
 	# 小地图全量重建很贵（100×70），仅在布局/归属变化时做
 	if _minimap_dirty or layout_rebuilt:
 		_rebuild_minimap_data(map_size)
@@ -1199,10 +1459,9 @@ func _world_hex_uvs() -> PackedVector2Array:
 
 
 func _cell_tint(cell: Vector2i, city: Dictionary) -> Color:
-	if _political_mode:
-		return _political_tint(cell, city)
-	if _culture_mode:
-		return _culture_tint(cell, city)
+	# 政治/文化色由独立烘焙层绘制，单位 overlay 不再叠一层，避免盖住地形且双倍透明度
+	if _political_mode or _culture_mode:
+		return Color(0, 0, 0, 0)
 	if city.is_empty():
 		return Color(0, 0, 0, 0)
 	var fid: String = str(city.get("current_faction_id", city.get("faction_id", "neutral")))
@@ -1224,7 +1483,7 @@ func _culture_tint(_cell: Vector2i, city: Dictionary) -> Color:
 	if fdata.is_empty():
 		return Color(0.45, 0.45, 0.45, 0.25)
 	var color: Color = Color.html(str(fdata.get("color", "#888888")))
-	color.a = 0.78 if mismatch else 0.48
+	color.a = 0.52 if mismatch else 0.38
 	return color
 
 
@@ -1234,10 +1493,11 @@ func _political_tint(cell: Vector2i, city: Dictionary) -> Color:
 		fid = str(city.get("current_faction_id", city.get("faction_id", "neutral")))
 	var is_capital: bool = not city.is_empty() and bool(city.get("is_capital", false))
 	var fdata: Dictionary = DataManager.get_faction(fid) if fid != "neutral" else {}
+	# 半透明：保证地形可辨；中立/缓冲也要可见，避免“边界像没开政治图”
 	if fdata.is_empty():
-		return Color(0.42, 0.42, 0.42, 0.62)
+		return Color(0.55, 0.55, 0.55, 0.40)
 	var color: Color = Color.html(str(fdata.get("color", "#888888")))
-	color.a = 0.85 if is_capital else 0.7
+	color.a = 0.62 if is_capital else 0.48
 	return color
 
 
@@ -1593,7 +1853,7 @@ func _pan_by(delta: Vector2) -> void:
 	_scroll.scroll_vertical = int(clampf(float(_scroll.scroll_vertical) + delta.y, 0.0, max_y))
 	if Vector2i(_scroll.scroll_horizontal, _scroll.scroll_vertical) == before:
 		return
-	# 仅更新视口裁剪矩形；不要整层 request_overlay_redraw / 频繁刷小地图
+	# 单位层：更新 cull；政治烘焙层无需重绘
 	call_deferred("_update_draw_cull_rect")
 
 
@@ -1602,7 +1862,6 @@ func _end_drag() -> void:
 	if _drag_active:
 		_drag_active = false
 		_set_map_cursor(Control.CURSOR_ARROW)
-		# 拖拽结束后再刷新一次小地图视口框（拖拽过程中不刷，避免卡顿）
 		_refresh_minimap_viewport()
 		call_deferred("_update_draw_cull_rect")
 
@@ -1616,7 +1875,6 @@ func _set_map_cursor(shape: Control.CursorShape) -> void:
 
 
 func _on_scroll_value_changed(_value: float) -> void:
-	_refresh_minimap_viewport()
 	call_deferred("_update_draw_cull_rect")
 
 

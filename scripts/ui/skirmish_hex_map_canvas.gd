@@ -292,12 +292,22 @@ func _payload_visible(payload: Dictionary) -> bool:
 		if caption_center != Vector2.ZERO:
 			aabb = aabb.expand(caption_center)
 		payload["_aabb"] = aabb
-	return (payload["_aabb"] as Rect2).intersects(_cull_rect)
+	var aabb2: Rect2 = payload["_aabb"] as Rect2
+	# cull 矩形完全在棋盘外时不要滤空
+	if _payload_board_size != Vector2.ZERO:
+		var board: Rect2 = Rect2(Vector2.ZERO, _payload_board_size)
+		if not board.intersects(_cull_rect):
+			return true
+	return aabb2.intersects(_cull_rect)
 
 
 func _draw() -> void:
 	_content_dirty = false
-	if _baked_texture != null:
+	# 烘焙纹理必须有有效绘制尺寸，否则退回 payload，避免整层空白/灰底
+	if _baked_texture != null and _baked_draw_size.x > 1.0 and _baked_draw_size.y > 1.0:
+		# 控件尺寸对齐烘焙逻辑尺寸，否则地图边缘会被裁切掉
+		if size != _baked_draw_size:
+			size = _baked_draw_size
 		draw_texture_rect(_baked_texture, Rect2(Vector2.ZERO, _baked_draw_size), false)
 		return
 	if _use_payload:
@@ -353,6 +363,12 @@ func clear_payload_cells() -> void:
 func set_baked_texture(tex: Texture2D, draw_size: Vector2) -> void:
 	_baked_texture = tex
 	_baked_draw_size = draw_size
+	if draw_size.x > 1.0 and draw_size.y > 1.0:
+		# 与 payload 绘制一致：控件逻辑尺寸 = 棋盘尺寸，避免边缘裁切
+		if size != draw_size:
+			size = draw_size
+		if custom_minimum_size != draw_size:
+			custom_minimum_size = draw_size
 	_content_dirty = true
 	queue_redraw()
 
