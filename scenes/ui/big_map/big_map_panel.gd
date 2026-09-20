@@ -1549,7 +1549,11 @@ func _unit_texture(unit: Dictionary) -> Texture2D:
 	var tid: String = str(unit.get("unit_type_id", unit.get("type", "")))
 	if tid.is_empty():
 		return null
-	# 与演武同一套动画 idle 帧（演武可显示 ⇒ 路径有效）
+	var fid: String = str(unit.get("faction_id", ""))
+	# 与演武统一：优先 ai_art（ArtCatalog），再旧动画帧/portraits
+	var art_tex: Texture2D = SkirmishTileTextures.unit_texture(tid, fid)
+	if art_tex != null:
+		return art_tex
 	for base: String in _unit_art_base_candidates(tid):
 		for suffix: String in ["_idle_01.png", "_idle_1.png", ".png"]:
 			var path: String = base + suffix
@@ -1557,8 +1561,7 @@ func _unit_texture(unit: Dictionary) -> Texture2D:
 				var tex: Texture2D = load(path) as Texture2D
 				if tex != null:
 					return tex
-	# 立绘表
-	return SkirmishTileTextures.unit_texture(tid, str(unit.get("faction_id", "")))
+	return null
 
 
 func _unit_art_base_candidates(unit_type_id: String) -> Array[String]:

@@ -1,22 +1,22 @@
 extends Node
 
 ## 美术音频播放门面：优先 assets/audio/**，文件不存在则静默失败。
-## 不依赖具体 UI；任何节点 ArtAudio.play("ui_click") 即可。
+## ArtCatalog 为静态工具类，直接调用，勿用 has_method / is_instance_valid。
 
 var _bgm: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_index: int = 0
 const _SFX_POOL: int = 6
 var _muted: bool = false
+const _ArtCatalogScript := preload("res://scripts/ui/art_catalog.gd")
 
 
 func _ready() -> void:
-	if Engine.has_singleton("SignalBus") or true:
-		var sb := get_node_or_null("/root/SignalBus")
-		if sb != null and sb.has_signal("turn_started"):
-			sb.turn_started.connect(_on_turn_started)
-		if sb != null and sb.has_signal("game_over"):
-			sb.game_over.connect(_on_game_over)
+	var sb := get_node_or_null("/root/SignalBus")
+	if sb != null and sb.has_signal("turn_started"):
+		sb.turn_started.connect(_on_turn_started)
+	if sb != null and sb.has_signal("game_over"):
+		sb.game_over.connect(_on_game_over)
 	_bgm = AudioStreamPlayer.new()
 	_bgm.name = "ArtBgmPlayer"
 	_bgm.bus = "Master"
@@ -31,24 +31,21 @@ func _ready() -> void:
 
 func set_muted(muted: bool) -> void:
 	_muted = muted
-	if muted:
+	if muted and is_instance_valid(_bgm):
 		_bgm.stop()
 		for p in _sfx_players:
-			p.stop()
+			if is_instance_valid(p):
+				p.stop()
 
 
 func play_sfx(key: String, volume_db: float = 0.0) -> void:
-	if _muted or not is_instance_valid(ArtCatalog):
+	if _muted or _sfx_players.is_empty():
 		return
-	var path := ""
-	if ArtCatalog.has_method("sfx_path"):
-		path = str(ArtCatalog.sfx_path(key))
+	var path: String = str(_ArtCatalogScript.sfx_path(key))
 	if path.is_empty() or not ResourceLoader.exists(path):
 		return
 	var stream: AudioStream = load(path)
 	if stream == null:
-		return
-	if _sfx_players.is_empty():
 		return
 	var player: AudioStreamPlayer = _sfx_players[_sfx_index]
 	_sfx_index = (_sfx_index + 1) % _sfx_players.size()
@@ -63,13 +60,13 @@ func play(key: String, volume_db: float = 0.0) -> void:
 
 
 func play_bgm(kind: String = "main", volume_db: float = -6.0) -> void:
-	if _muted or not is_instance_valid(ArtCatalog):
+	if _muted or not is_instance_valid(_bgm):
 		return
-	var path := ""
+	var path: String = ""
 	if kind == "battle":
-		path = str(ArtCatalog.battle_bgm_path()) if ArtCatalog.has_method("battle_bgm_path") else ""
+		path = str(_ArtCatalogScript.battle_bgm_path())
 	else:
-		path = str(ArtCatalog.bgm_path())
+		path = str(_ArtCatalogScript.bgm_path())
 	if path.is_empty() or not ResourceLoader.exists(path):
 		return
 	var stream: AudioStream = load(path)

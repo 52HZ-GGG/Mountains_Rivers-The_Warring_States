@@ -2,13 +2,12 @@ extends RefCounted
 class_name ArtUiSkin
 
 ## UI 场景皮肤：把 ai_art 面板底图/按钮样式打到任意 Control。
-## 场景 _ready 里调用 ArtUiSkin.apply_panel(self, "tech") 等。
+
+const _ArtCatalogScript := preload("res://scripts/ui/art_catalog.gd")
 
 
 static func _tex(panel_key: String) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		return ArtCatalog.panel_texture(panel_key)
-	return null
+	return _ArtCatalogScript.panel_texture(panel_key)
 
 
 static func apply_panel(control: Control, panel_key: String) -> void:

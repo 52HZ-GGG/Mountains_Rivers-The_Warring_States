@@ -16,8 +16,8 @@ var _effect_label: Label
 
 
 func _ready() -> void:
-	if ClassDB.class_exists("ArtUiSkin"):
-		ArtUiSkin.apply_full_skin(self, "event")
+	const _ArtUiSkin := preload("res://scripts/ui/art_ui_skin.gd")
+	_ArtUiSkin.apply_full_skin(self, "event")
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
 	_build_ui()

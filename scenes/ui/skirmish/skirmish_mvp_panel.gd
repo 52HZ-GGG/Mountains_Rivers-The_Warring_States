@@ -1601,10 +1601,19 @@ func _apply_unit_overlay(btn: Control, uu: Dictionary) -> void:
 		anim_sprite.name = "UnitSprite"
 		anim_sprite.z_index = 4
 		btn.add_child(anim_sprite)
-	# 加载 SpriteFrames
+	# 加载 SpriteFrames：与大地图统一，优先 ai_art 静态 idle，再旧动画帧
 	var unit_type_id: String = str(uu.get("unit_type_id", ""))
 	var faction_id: String = str(uu.get("faction_id", "base"))
 	var sf: SpriteFrames = _get_or_create_unit_frames(unit_type_id, faction_id)
+	if sf == null:
+		var fallback_tex: Texture2D = SkirmishTileTextures.unit_texture(unit_type_id, faction_id)
+		if fallback_tex != null:
+			sf = SpriteFrames.new()
+			sf.remove_animation("default")
+			sf.add_animation("idle")
+			sf.set_animation_loop("idle", true)
+			sf.add_frame("idle", fallback_tex)
+			_unit_frames_cache["%s:%s" % [unit_type_id, faction_id]] = sf
 	if sf != null:
 		anim_sprite.sprite_frames = sf
 		if sf.has_animation("idle") and anim_sprite.animation != "idle":
@@ -1612,20 +1621,10 @@ func _apply_unit_overlay(btn: Control, uu: Dictionary) -> void:
 		if sf.has_animation("idle") and not anim_sprite.is_playing():
 			anim_sprite.play("idle")
 	else:
-		var fallback_tex: Texture2D = SkirmishTileTextures.unit_texture(unit_type_id)
-		if fallback_tex == null:
-			anim_sprite.visible = false
-			if unit_shadow != null:
-				unit_shadow.visible = false
-			return
-		sf = SpriteFrames.new()
-		sf.remove_animation("default")
-		sf.add_animation("idle")
-		sf.set_animation_loop("idle", true)
-		sf.add_frame("idle", fallback_tex)
-		anim_sprite.sprite_frames = sf
-		anim_sprite.animation = "idle"
-		anim_sprite.play("idle")
+		anim_sprite.visible = false
+		if unit_shadow != null:
+			unit_shadow.visible = false
+		return
 	# AnimatedSprite2D 是 Node2D，必须用 position/scale 控制，不能按 Control offset 拉伸。
 	var cell_size: Vector2 = btn.custom_minimum_size
 	if cell_size.x <= 1.0 or cell_size.y <= 1.0:
@@ -1675,6 +1674,16 @@ func _get_or_create_unit_frames(unit_type_id: String, faction_id: String) -> Spr
 	var key: String = "%s:%s" % [unit_type_id, faction_id]
 	if _unit_frames_cache.has(key):
 		return _unit_frames_cache[key]
+	# 统一资源管线：ai_art idle 优先（与大地图一致），无则回退旧 sprites 动画
+	var art_tex: Texture2D = SkirmishTileTextures.unit_texture(unit_type_id, faction_id)
+	if art_tex != null:
+		var art_sf: SpriteFrames = SpriteFrames.new()
+		art_sf.remove_animation("default")
+		art_sf.add_animation("idle")
+		art_sf.set_animation_loop("idle", true)
+		art_sf.add_frame("idle", art_tex)
+		_unit_frames_cache[key] = art_sf
+		return art_sf
 	var sf: SpriteFrames = _load_unit_sprite_frames(unit_type_id, faction_id)
 	if sf != null:
 		_unit_frames_cache[key] = sf

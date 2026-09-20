@@ -17,8 +17,8 @@ var _detail_panel: VBoxContainer
 var _selected_tech: String = ""
 
 func _ready() -> void:
-	if ClassDB.class_exists("ArtUiSkin"):
-		ArtUiSkin.apply_full_skin(self, "tech")
+	const _ArtUiSkin := preload("res://scripts/ui/art_ui_skin.gd")
+	_ArtUiSkin.apply_full_skin(self, "tech")
 	_build_ui()
 	SignalBus.tech_research_completed.connect(_on_tech_completed)
 	SignalBus.tech_research_started.connect(_on_tech_started)

@@ -516,6 +516,13 @@ func _ensure_city_layer() -> void:
 
 
 func _on_city_clicked(city_id: String) -> void:
+	# 信号回调内不要立刻 free 大地图面板（当前正在其 _input 中），否则会卡死/无法进城
+	call_deferred("_open_city_panel_deferred", city_id)
+
+
+func _open_city_panel_deferred(city_id: String) -> void:
+	if city_id.is_empty():
+		return
 	if DemoFlow.is_enabled() and city_id == DemoFlow.get_target_city_id():
 		DemoFlow.mark_step_completed(DemoFlow.STEP_INSPECT_LUOYI)
 		if DemoFlow.is_step_completed(DemoFlow.STEP_CAPTURE_LUOYI):

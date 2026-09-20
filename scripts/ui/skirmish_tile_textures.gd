@@ -1,7 +1,10 @@
-﻿extends RefCounted
+extends RefCounted
 class_name SkirmishTileTextures
 
-## 战术演武：地形 / 兵种贴图路径（占位美术），运行时缓存 Texture2D。
+## 战术演武 / 大地图：地形 / 兵种贴图路径（占位美术），运行时缓存 Texture2D。
+## 优先 ArtCatalog（ai_art），禁止用 ClassDB.class_exists 检测脚本 class_name。
+
+const _ArtCatalogScript := preload("res://scripts/ui/art_catalog.gd")
 
 const _TERRAIN_PATHS: Dictionary = {
 	"plains": "res://assets/terrain/tile_plain_01.png",
@@ -157,10 +160,9 @@ const _BUILDING_PATHS: Dictionary = {
 
 static func building_texture(building_id: String, category: String = "") -> Texture2D:
 	# 优先 ai_art/map_buildings 六边形俯视瓦片
-	if ClassDB.class_exists("ArtCatalog"):
-		var art_tex: Texture2D = ArtCatalog.map_building_texture(building_id, category)
-		if art_tex != null:
-			return art_tex
+	var art_tex: Texture2D = _ArtCatalogScript.map_building_texture(building_id, category)
+	if art_tex != null:
+		return art_tex
 	var path: String = str(_BUILDING_PATHS.get(building_id, ""))
 	if path.is_empty():
 		match category:
@@ -179,18 +181,15 @@ static func building_texture(building_id: String, category: String = "") -> Text
 
 ## 大地图资源点（特产）瓦片
 static func map_resource_texture(special_resource: String) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		var art_tex: Texture2D = ArtCatalog.map_resource_texture(special_resource)
-		if art_tex != null:
-			return art_tex
+	var art_tex: Texture2D = _ArtCatalogScript.map_resource_texture(special_resource)
+	if art_tex != null:
+		return art_tex
 	return null
 
 
 static func terrain_texture(terrain_id: String, season: String = "") -> Texture2D:
 	var season_use: String = season if season != "" else _season_hint
-	var art_tex: Texture2D = null
-	if ClassDB.class_exists("ArtCatalog"):
-		art_tex = ArtCatalog.terrain_texture(terrain_id, season_use)
+	var art_tex: Texture2D = _ArtCatalogScript.terrain_texture(terrain_id, season_use)
 	if art_tex != null:
 		return art_tex
 	var path: String = str(_TERRAIN_PATHS.get(terrain_id, ""))
@@ -241,8 +240,8 @@ static func terrain_variant_texture(terrain_id: String, col: int, row: int) -> T
 
 
 static func terrain_texture_by_variant(terrain_id: String, index: int) -> Texture2D:
-	if index == 0 and ClassDB.class_exists("ArtCatalog"):
-		var art_tex: Texture2D = ArtCatalog.terrain_texture(terrain_id, _season_hint)
+	if index == 0:
+		var art_tex: Texture2D = _ArtCatalogScript.terrain_texture(terrain_id, _season_hint)
 		if art_tex != null:
 			return art_tex
 	return _load_cached(terrain_variant_path(terrain_id, index))
@@ -255,10 +254,9 @@ static func terrain_fallback_color(terrain_id: String) -> Color:
 
 
 static func capital_texture(faction_id: String) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		var art_tex: Texture2D = ArtCatalog.city_texture("", faction_id, true)
-		if art_tex != null:
-			return art_tex
+	var art_tex: Texture2D = _ArtCatalogScript.city_texture("", faction_id, true)
+	if art_tex != null:
+		return art_tex
 	var path: String = str(_CAPITAL_PATHS.get(faction_id, ""))
 	if path.is_empty():
 		return null
@@ -266,27 +264,25 @@ static func capital_texture(faction_id: String) -> Texture2D:
 
 
 static func city_art_texture(city_id: String, faction_id: String = "", is_capital: bool = false) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		var art_tex: Texture2D = ArtCatalog.city_texture(city_id, faction_id, is_capital)
-		if art_tex != null:
-			return art_tex
+	var art_tex: Texture2D = _ArtCatalogScript.city_texture(city_id, faction_id, is_capital)
+	if art_tex != null:
+		return art_tex
 	if is_capital:
 		return capital_texture(faction_id)
 	return null
 
 
 static func event_texture(event_id: String, category: String) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		for key: String in _EVENT_ID_PATHS:
-			if event_id.containsn(key):
-				var ai_tex: Texture2D = ArtCatalog.event_texture("event_%s.png" % key)
-				if ai_tex != null:
-					return ai_tex
-		var cat_path: String = str(_EVENT_CATEGORY_PATHS.get(category, ""))
-		if cat_path != "":
-			var ai_cat: Texture2D = ArtCatalog.event_texture(cat_path.get_file())
-			if ai_cat != null:
-				return ai_cat
+	for key: String in _EVENT_ID_PATHS:
+		if event_id.containsn(key):
+			var ai_tex: Texture2D = _ArtCatalogScript.event_texture("event_%s.png" % key)
+			if ai_tex != null:
+				return ai_tex
+	var cat_path: String = str(_EVENT_CATEGORY_PATHS.get(category, ""))
+	if cat_path != "":
+		var ai_cat: Texture2D = _ArtCatalogScript.event_texture(cat_path.get_file())
+		if ai_cat != null:
+			return ai_cat
 	for key: String in _EVENT_ID_PATHS:
 		if event_id.containsn(key):
 			return _load_cached(str(_EVENT_ID_PATHS[key]))
@@ -297,10 +293,10 @@ static func event_texture(event_id: String, category: String) -> Texture2D:
 
 
 static func unit_texture(unit_type_id: String, faction_id: String = "") -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		var art_tex: Texture2D = ArtCatalog.unit_idle_texture(unit_type_id, faction_id)
-		if art_tex != null:
-			return art_tex
+	# 与大地图同一优先级：ai_art → 旧 portraits
+	var art_tex: Texture2D = _ArtCatalogScript.unit_idle_texture(unit_type_id, faction_id)
+	if art_tex != null:
+		return art_tex
 	var path: String = str(_UNIT_PATHS.get(unit_type_id, _UNIT_PATHS.get("infantry", "")))
 	if path.is_empty():
 		return null
@@ -324,25 +320,23 @@ const _PANEL_PATHS: Dictionary = {
 }
 
 static func panel_texture(panel_name: String) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		var ai_key: String = panel_name
-		match panel_name:
-			"event_popup":
-				ai_key = "event"
-			"save_load":
-				ai_key = "save"
-		var art_tex: Texture2D = ArtCatalog.panel_texture(ai_key)
+	var ai_key: String = panel_name
+	match panel_name:
+		"event_popup":
+			ai_key = "event"
+		"save_load":
+			ai_key = "save"
+	var art_tex: Texture2D = _ArtCatalogScript.panel_texture(ai_key)
+	if art_tex != null:
+		return art_tex
+	if panel_name in ["victory", "defeat", "new_game", "unit_info"]:
+		art_tex = _ArtCatalogScript.panel_texture(panel_name)
 		if art_tex != null:
 			return art_tex
-		if panel_name in ["victory", "defeat", "new_game", "unit_info"]:
-			# ai_art/ui/panels/panel_*.png
-			art_tex = ArtCatalog.panel_texture(panel_name)
+		if panel_name in ["victory", "defeat"]:
+			art_tex = _ArtCatalogScript.event_texture(panel_name + ".png")
 			if art_tex != null:
 				return art_tex
-			if panel_name in ["victory", "defeat"]:
-				art_tex = ArtCatalog.event_texture(panel_name + ".png")
-				if art_tex != null:
-					return art_tex
 	var path: String = str(_PANEL_PATHS.get(panel_name, ""))
 	if path.is_empty():
 		return null
@@ -353,16 +347,15 @@ static func panel_texture(panel_name: String) -> Texture2D:
 const _ICON_BASE_PATH: String = "res://assets/ui/icons/"
 
 static func icon_texture(icon_name: String) -> Texture2D:
-	if ClassDB.class_exists("ArtCatalog"):
-		var key: String = icon_name
-		if key.begins_with("icon_"):
-			key = key.substr(5)
-		var art_tex: Texture2D = ArtCatalog.icon_texture(key)
-		if art_tex != null:
-			return art_tex
-		art_tex = ArtCatalog.icon_texture(icon_name)
-		if art_tex != null:
-			return art_tex
+	var key: String = icon_name
+	if key.begins_with("icon_"):
+		key = key.substr(5)
+	var art_tex: Texture2D = _ArtCatalogScript.icon_texture(key)
+	if art_tex != null:
+		return art_tex
+	art_tex = _ArtCatalogScript.icon_texture(icon_name)
+	if art_tex != null:
+		return art_tex
 	var path: String = _ICON_BASE_PATH + icon_name + ".png"
 	return _load_cached(path)
 

@@ -34,8 +34,8 @@ var _terrain_preview: Control = null
 
 
 func _ready() -> void:
-	if ClassDB.class_exists("ArtUiSkin"):
-		ArtUiSkin.apply_full_skin(self, "school")
+	const _ArtUiSkin := preload("res://scripts/ui/art_ui_skin.gd")
+	_ArtUiSkin.apply_full_skin(self, "school")
 	_build_ui()
 	_create_framework_placeholder()
 
@@ -573,8 +573,8 @@ func _show_intelligence_panel() -> void:
 
 
 func _show_schools_panel() -> void:
-	if ClassDB.class_exists("ArtUiSkin"):
-		ArtUiSkin.apply_full_skin(self, "school")
+	const _ArtUiSkin := preload("res://scripts/ui/art_ui_skin.gd")
+	_ArtUiSkin.apply_full_skin(self, "school")
 	if not is_instance_valid(_framework_placeholder_layer):
 		return
 	_framework_placeholder_title.text = I18n.t("school.overview_title")
