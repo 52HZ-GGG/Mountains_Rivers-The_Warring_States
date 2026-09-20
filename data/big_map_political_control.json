@@ -1,6 +1,6 @@
 {
-	"schema_version": "2.0",
-	"description": "大地图政治疆域；mode=influence 为影响力+填洞，mode=voronoi 为旧最近城推导",
+	"schema_version": "2.1",
+	"description": "大地图政治疆域；mode=influence 为影响力+填洞；城格锁定城主；中立城为源不可吸收；关隘为弱影响力源",
 	"map_width": 100,
 	"map_height": 70,
 	"mode": "influence",
@@ -9,19 +9,32 @@
 		"per_level": 4,
 		"capital_bonus": 15,
 		"development_divisor": 10,
-		"neutral_multiplier": 0.5
+		"neutral_multiplier": 0.45
 	},
 	"radius": {
 		"base": 3,
 		"per_level": 1,
 		"capital_bonus": 1,
-		"neutral": 2
+		"neutral": 3
 	},
 	"ownership_threshold": 8,
 	"dominance_ratio": 1.25,
 	"frontier_min_score": 4,
 	"hole_fill_neighbor_count": 5,
 	"hole_fill_rounds": 3,
+	"city_cell_lock": true,
+	"core_boost": 1.35,
+	"neutral_city_protected": true,
+	"pass": {
+		"as_source": true,
+		"power": 7,
+		"radius": 2,
+		"owner_multiplier": 1.6,
+		"enemy_multiplier": 0.5,
+		"lock_self": true,
+		"neutral_multiplier": 0.35,
+		"adjacent_owner_bonus": 0.2
+	},
 	"terrain_influence": {
 		"plains": 1.0,
 		"forest": 0.85,
@@ -31,14 +44,12 @@
 		"mountain": 0.35,
 		"desert": 0.5,
 		"tundra": 0.5,
-		"shallow_ocean": 0.3,
+		"deepsea": 0.0,
+		"shallowsea": 0.3,
 		"deep_ocean": 0.0,
+		"shallow_ocean": 0.3,
 		"pass": 1.0,
 		"ford": 0.9
-	},
-	"pass": {
-		"owner_multiplier": 1.6,
-		"enemy_multiplier": 0.5
 	},
 	"bordering": {
 		"max_hex_distance": 1

@@ -70,6 +70,8 @@ func _ready() -> void:
 		SignalBus.city_revolted.connect(_on_runtime_city_revolted)
 	if not SignalBus.capital_relocated.is_connected(_on_runtime_capital_relocated):
 		SignalBus.capital_relocated.connect(_on_runtime_capital_relocated)
+	if SignalBus.has_signal("pass_occupied") and not SignalBus.pass_occupied.is_connected(_on_pass_control_changed):
+		SignalBus.pass_occupied.connect(_on_pass_control_changed)
 	assert(validate_data(), "DataManager: 数据校验失败，启动中止")
 
 
@@ -726,12 +728,26 @@ func _validate_big_map_data() -> bool:
 func _ensure_big_map_control_cache() -> void:
 	if _big_map_control_cache_ready:
 		return
+	var passes: Array = []
+	if PassManager != null and PassManager.has_method("get_all_passes"):
+		var all: Dictionary = PassManager.get_all_passes()
+		for k in all:
+			var entry: Dictionary = all[k] as Dictionary
+			var parts: PackedStringArray = str(k).split(",")
+			if parts.size() < 2:
+				continue
+			passes.append({
+				"axial_q": int(parts[0]),
+				"axial_r": int(parts[1]),
+				"owner": str(entry.get("owner", "neutral")),
+			})
 	_big_map_control_grid_cache = BigMapPoliticalControl.build_resolved_control_grid(
 		CityManager.get_all_city_states(),
 		get_big_map_control_overrides(),
 		get_big_map_size(),
 		get_big_map_political_control(),
-		get_big_map_rows()
+		get_big_map_rows(),
+		passes
 	)
 	_big_map_control_cache_ready = true
 
@@ -739,6 +755,10 @@ func _ensure_big_map_control_cache() -> void:
 func _invalidate_big_map_control_cache() -> void:
 	_big_map_control_cache_ready = false
 	_big_map_control_grid_cache.clear()
+
+
+func _on_pass_control_changed(_pass_key: String, _old_faction: String, _new_faction: String) -> void:
+	_invalidate_big_map_control_cache()
 
 
 func _on_runtime_city_control_changed(_city_id: String, _old_faction: String, _new_faction: String) -> void:
