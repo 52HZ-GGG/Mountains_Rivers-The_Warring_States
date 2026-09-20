@@ -19,6 +19,7 @@ const _BuildingPlacementHighlight := preload("res://scripts/ui/building_placemen
 const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
 signal city_clicked(city_id: String)
 signal map_closed
+signal culture_mode_changed(enabled: bool)
 signal hub_action_requested(action: String)
 signal end_turn_requested
 signal building_placed(city_id: String, building_id: String, hex_q: int, hex_r: int)
@@ -585,6 +586,7 @@ func _rebuild_hex_grid() -> void:
 
 func _on_political_toggle() -> void:
 	_political_mode = not _political_mode
+	var culture_was_on: bool = _culture_mode
 	if _political_mode:
 		_culture_mode = false
 		_minimap_dirty = true
@@ -593,9 +595,8 @@ func _on_political_toggle() -> void:
 	_update_political_legend()
 	_overlay_dirty = true
 	_refresh_overlay_display()
-	_update_political_legend()
-	_overlay_dirty = true
-	_refresh_overlay_display()
+	if culture_was_on and not _culture_mode:
+		culture_mode_changed.emit(false)
 
 
 func _on_culture_toggle() -> void:
@@ -607,6 +608,11 @@ func _on_culture_toggle() -> void:
 	_update_political_legend()
 	_overlay_dirty = true
 	_refresh_overlay_display()
+	culture_mode_changed.emit(_culture_mode)
+
+
+func is_culture_mode() -> bool:
+	return _culture_mode
 
 
 func _sync_map_mode_buttons() -> void:
@@ -1337,6 +1343,7 @@ func _update_political_legend() -> void:
 		hint.add_theme_font_size_override("font_size", 11)
 		hint.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.9))
 		legend.add_child(hint)
+		_append_culture_victory_progress(legend)
 	for faction_id: String in GameManager.FACTION_IDS:
 		var fdata: Dictionary = DataManager.get_faction(faction_id)
 		if fdata.is_empty():
@@ -1356,6 +1363,63 @@ func _update_political_legend() -> void:
 		label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
 		row.add_child(label)
 		legend.add_child(row)
+
+
+## 文化地图打开时，在图例中显示玩家文化胜利目标进度（不在结束回合旁常驻）
+func _append_culture_victory_progress(legend: VBoxContainer) -> void:
+	var player: String = GameManager.get_player_faction()
+	if player.is_empty():
+		return
+	var ratio: float = CityManager.get_culture_coverage_ratio(player)
+	var cfg: Dictionary = DataManager.get_balance_param("victory.cultural")
+	var target: float = float(cfg.get("city_ratio", 0.7))
+	var maintain: int = int(cfg.get("maintain_turns", 10))
+	var held: int = GameManager.get_cultural_victory_hold_turns(player)
+	var pct: int = int(round(ratio * 100.0))
+	var target_pct: int = int(round(target * 100.0))
+	var active: bool = ratio >= target
+
+	var sep := HSeparator.new()
+	legend.add_child(sep)
+
+	var victory_title := Label.new()
+	victory_title.text = "文化胜利目标"
+	victory_title.add_theme_font_size_override("font_size", 13)
+	victory_title.add_theme_color_override("font_color", Color(0.78, 0.66, 0.31, 1.0))
+	legend.add_child(victory_title)
+
+	var bar := ProgressBar.new()
+	bar.custom_minimum_size = Vector2(160, 14)
+	bar.min_value = 0.0
+	bar.max_value = 100.0
+	bar.value = float(pct)
+	bar.show_percentage = false
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	legend.add_child(bar)
+
+	# 目标刻度提示条
+	var target_bar := ProgressBar.new()
+	target_bar.custom_minimum_size = Vector2(160, 4)
+	target_bar.min_value = 0.0
+	target_bar.max_value = 100.0
+	target_bar.value = float(target_pct)
+	target_bar.show_percentage = false
+	target_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	target_bar.modulate = Color(1, 1, 1, 0.35)
+	legend.add_child(target_bar)
+
+	var detail := Label.new()
+	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail.add_theme_font_size_override("font_size", 12)
+	if active:
+		detail.text = I18n.t("hud.culture_progress_active") % [pct, target_pct, held, maintain]
+		detail.add_theme_color_override("font_color", Color(0.55, 0.92, 0.55, 1.0))
+		bar.modulate = Color(0.55, 0.92, 0.55, 1.0)
+	else:
+		detail.text = I18n.t("hud.culture_progress") % [pct, target_pct]
+		detail.add_theme_color_override("font_color", Color(0.88, 0.84, 0.74, 1.0))
+		bar.modulate = Color(0.78, 0.66, 0.31, 0.95)
+	legend.add_child(detail)
 
 
 func _on_overlay_gui_input(event: InputEvent) -> void:

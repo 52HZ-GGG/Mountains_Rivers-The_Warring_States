@@ -183,6 +183,8 @@ func _create_persistent_end_btn() -> void:
 	_culture_hud_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72, 0.95))
 	_culture_hud_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_culture_hud_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# 文化胜利进度：默认隐藏；仅在大地图打开「文化地图」时显示
+	_culture_hud_label.visible = false
 	vbox.add_child(_culture_hud_label)
 
 	var pad := MarginContainer.new()
@@ -211,6 +213,14 @@ func _on_culture_hud_turn(_turn: int, _faction: String) -> void:
 func _refresh_culture_hud() -> void:
 	if not is_instance_valid(_culture_hud_label):
 		return
+	# 仅在文化地图模式下显示；其余时候不挂在结束回合上方
+	var culture_open: bool = false
+	if is_instance_valid(_big_map_panel) and _big_map_panel.has_method("is_culture_mode"):
+		culture_open = bool(_big_map_panel.is_culture_mode())
+	_culture_hud_label.visible = culture_open
+	if not culture_open:
+		_culture_hud_label.text = ""
+		return
 	var player: String = _resolve_player_faction_id()
 	if player.is_empty():
 		_culture_hud_label.text = ""
@@ -228,6 +238,12 @@ func _refresh_culture_hud() -> void:
 	else:
 		_culture_hud_label.text = I18n.t("hud.culture_progress") % [pct, target_pct]
 		_culture_hud_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72, 0.95))
+
+
+func _on_culture_mode_changed(enabled: bool) -> void:
+	if is_instance_valid(_culture_hud_label):
+		_culture_hud_label.visible = enabled
+	_refresh_culture_hud()
 
 
 func _on_culture_mainstream_changed(city_id: String, old_faction: String, new_faction: String) -> void:
@@ -406,6 +422,8 @@ func _ensure_big_map() -> void:
 	_big_map_panel.city_clicked.connect(_on_city_clicked)
 	_big_map_panel.map_closed.connect(_on_big_map_closed)
 	_big_map_panel.hub_action_requested.connect(_on_big_map_hub_action)
+	if _big_map_panel.has_signal("culture_mode_changed"):
+		_big_map_panel.culture_mode_changed.connect(_on_culture_mode_changed)
 	if _big_map_panel.has_signal("end_turn_requested"):
 		_big_map_panel.end_turn_requested.connect(_on_next_turn_pressed)
 
