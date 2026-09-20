@@ -1,0 +1,44 @@
+{
+  "campaign_id": "hezong_lianheng",
+  "name": "合纵连横",
+  "subtitle": "战役模式",
+  "description": "战国纵横，一关一役。新手教程作为第一关入门；后续关卡将陆续开放。",
+  "levels": [
+    {
+      "id": "level_01_tutorial",
+      "index": 1,
+      "name": "第一关 · 新手教程",
+      "subtitle": "经营与洛邑攻城",
+      "desc": "学习经营准备、征兵与回合推进，\n攻占洛邑完成入门战役。",
+      "difficulty": "★",
+      "duration": "10~15 分钟",
+      "launch_mode": "demo",
+      "locked": false,
+      "tag": "推荐新手"
+    },
+    {
+      "id": "level_02_placeholder",
+      "index": 2,
+      "name": "第二关 · 敬请期待",
+      "subtitle": "历史战役",
+      "desc": "更多纵横战役制作中。",
+      "difficulty": "★★★",
+      "duration": "—",
+      "launch_mode": "",
+      "locked": true,
+      "tag": "暂未开放"
+    },
+    {
+      "id": "level_03_placeholder",
+      "index": 3,
+      "name": "第三关 · 敬请期待",
+      "subtitle": "历史战役",
+      "desc": "更多纵横战役制作中。",
+      "difficulty": "★★★★",
+      "duration": "—",
+      "launch_mode": "",
+      "locked": true,
+      "tag": "暂未开放"
+    }
+  ]
+}

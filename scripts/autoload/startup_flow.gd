@@ -11,6 +11,8 @@ const MODE_DEMO: String = "demo"
 const MODE_FULL_DEMO: String = "full_demo"
 const MODE_STRATEGY_HUB: String = "strategy_hub"
 const MODE_TEST_MENU: String = "test_menu"
+const MODE_STORY: String = "story"
+const CAMPAIGN_LEVEL_SELECT_SCENE: String = "res://scenes/ui/splash/campaign_level_select.tscn"
 const TRACE_PATH: String = "user://startup_trace.log"
 
 # 模式分流目标场景（main.tscn 已退役，不再作为任何模式的游戏入口）
@@ -34,6 +36,7 @@ var _game_start_pending: bool = false
 # 启动配置
 @export var splash_scene: String = "res://scenes/ui/splash/splash_screen.tscn"
 @export var mode_select_scene: String = "res://scenes/ui/splash/mode_select.tscn"
+@export var campaign_level_select_scene: String = CAMPAIGN_LEVEL_SELECT_SCENE
 @export var faction_select_scene: String = "res://scenes/ui/splash/faction_select.tscn"
 @export var loading_scene: String = "res://scenes/ui/splash/loading_screen.tscn"
 # 【已废弃】main.tscn 退役后不再作为游戏入口；保留 @export 仅避免改动旧配置。模式分流见 _scene_for_mode()。
@@ -214,7 +217,11 @@ func on_mode_selected(mode_id: String) -> void:
 		goto_faction_select()
 		return
 	if mode_id == MODE_DEMO:
+		# 保留内部直达（命令行/测试）；主菜单教程入口已并入战役关卡
 		start_demo_game_direct(mode_id)
+		return
+	if mode_id == MODE_STORY:
+		goto_campaign_level_select()
 		return
 	if mode_id == MODE_STRATEGY_HUB:
 		goto_strategy_hub()
@@ -223,6 +230,39 @@ func on_mode_selected(mode_id: String) -> void:
 		goto_test_menu()
 		return
 	goto_faction_select()
+
+
+## 进入合纵连横战役关卡选择
+func goto_campaign_level_select() -> void:
+	trace("goto_campaign_level_select")
+	_game_start_pending = false
+	is_startup_flow_active = true
+	selected_mode = MODE_STORY
+	DemoFlow.set_enabled(false)
+	DemoFlow.set_full_demo_enabled(false)
+	DemoFlow.set_tutorial_enabled(false)
+	_current_step = "campaign_level_select"
+	flow_changed.emit(_current_step)
+	_request_scene_change(campaign_level_select_scene)
+	call_deferred("_nudge_window_to_front")
+
+
+## 战役关卡选择确认后启动对应关卡
+func on_campaign_level_selected(level_id: String) -> void:
+	trace("on_campaign_level_selected level=%s" % level_id)
+	CampaignFlow.set_selected_level_id(level_id)
+	var launch_mode: String = CampaignFlow.resolve_launch_mode(level_id)
+	if launch_mode == "":
+		trace("on_campaign_level_selected blocked locked/empty level=%s" % level_id)
+		return
+	selected_mode = launch_mode
+	if launch_mode == MODE_DEMO:
+		# 第一关：复用原新手教程流程
+		DemoFlow.set_tutorial_enabled(true)
+		start_demo_game_direct(MODE_DEMO)
+		return
+	# 未来关卡 launch_mode 可映射到其它入口
+	on_mode_selected(launch_mode)
 
 ## 势力选择完成后调用
 func on_faction_selected(faction_id: String) -> void:
@@ -399,8 +439,8 @@ func _handle_direct_launch_args() -> bool:
 	return true
 
 ## 按模式返回游戏入口场景（main.tscn 已退役；各模式直达独立场景）。
-## strategy_hub / test_menu → 战略中枢；full_demo → 大地图；demo → 演武；
-## 其余模式（classic/quick/story/sandbox 等未来模式）默认落地大地图。
+## strategy_hub / test_menu → 战略中枢；full_demo → 大地图；demo/战役第一关 → 演武；
+## 其余模式（classic/quick/story 后续关卡/sandbox 等）默认落地大地图。
 func _scene_for_mode(mode_id: String) -> String:
 	match mode_id:
 		MODE_STRATEGY_HUB, MODE_TEST_MENU:
@@ -409,6 +449,9 @@ func _scene_for_mode(mode_id: String) -> String:
 			return BIG_MAP_SCENE
 		MODE_DEMO:
 			return SKIRMISH_SCENE
+		MODE_STORY:
+			# 战役关卡选择界面（非对局场景）；具体关卡由 on_campaign_level_selected 分流
+			return campaign_level_select_scene
 		_:
 			return BIG_MAP_SCENE
 

@@ -45,7 +45,9 @@ func _framework_demo_mode_name() -> String:
 	if DemoFlow.is_full_demo_enabled():
 		return "完整试玩"
 	if DemoFlow.is_tutorial_enabled():
-		return "新手教程"
+		return "战役 · 新手教程"
+	if StartupFlow.selected_mode == StartupFlow.MODE_STORY:
+		return "合纵连横 · 战役"
 	return "战斗演武"
 
 

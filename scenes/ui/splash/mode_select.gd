@@ -6,7 +6,7 @@ signal mode_selected(mode_id: String)
 
 const ANNOUNCEMENT_POPUP_SCENE: PackedScene = preload("res://scenes/ui/splash/announcement_popup.tscn")
 const MODE_SELECT_ANNOUNCEMENT_TITLE: String = "公开试玩说明"
-const MODE_SELECT_ANNOUNCEMENT_BODY: String = "《山河策》当前试玩已集成城市经营、大地图行军、政治疆域、征兵与战术演武等核心链路。\n\n目前版本仍处于持续制作阶段，部分数值、美术占位与后续系统仍会继续打磨，但正式试玩与新手教程都已经可以完整上手。\n\n游玩流程：\n正式试玩：选择模式 -> 选择国家 -> 进入大地图 -> 经营城池、推进回合、出征作战。\n新手教程：直接进入教学战场，学习经营、征兵、攻城与占领。\n战略中枢：作为系统总览入口，便于快速查看当前框架内容。"
+const MODE_SELECT_ANNOUNCEMENT_BODY: String = "《山河策》当前试玩已集成城市经营、大地图行军、政治疆域、征兵与战术演武等核心链路。\n\n目前版本仍处于持续制作阶段，部分数值、美术占位与后续系统仍会继续打磨。\n\n游玩流程：\n正式试玩：选择模式 -> 选择国家 -> 进入大地图 -> 经营城池、推进回合、出征作战。\n合纵连横（战役）：进入关卡选择；当前开放第一关·新手教程，学习经营、征兵、攻城与占领。\n战略中枢：作为系统总览入口，便于快速查看当前框架内容。\n\n说明：原独立「新手教程」入口已并入合纵连横战役第一关。"
 
 @onready var title_label: Label = $TitleLabel
 @onready var cards_container: GridContainer = $CardsContainer
@@ -15,9 +15,8 @@ const MODE_SELECT_ANNOUNCEMENT_BODY: String = "《山河策》当前试玩已集
 
 const MODES := [
 	{"id": "full_demo", "name": "正式试玩", "subtitle": "选国开局 + 大地图", "desc": "选择任一战国势力\n直接进入正式大地图", "turns": "15~25 分钟", "diff": "★★★", "tag": "推荐", "locked": false},
-	{"id": "demo", "name": "新手教程", "subtitle": "经营 + 军事教学", "desc": "学习经营准备\n再进入洛邑战斗", "turns": "10~15 分钟", "diff": "★", "tag": "推荐新手", "locked": false},
+	{"id": "story", "name": "合纵连横", "subtitle": "战役模式", "desc": "关卡战役入口\n第一关·新手教程", "turns": "按关卡", "diff": "★~★★★★", "tag": "战役", "locked": false},
 	{"id": "strategy_hub", "name": "战略中枢", "subtitle": "系统总览入口", "desc": "进入控制中枢\n查看各系统入口", "turns": "自由体验", "diff": "★", "tag": "功能入口", "locked": false},
-	{"id": "story", "name": "合纵连横", "subtitle": "剧情模式", "desc": "历史战役重现\n后续开放", "turns": "~20 回合", "diff": "★★★★", "tag": "暂未开放", "locked": true},
 ]
 
 var _selected_mode: String = ""
@@ -52,7 +51,7 @@ func _ready() -> void:
 	SkirmishTileTextures.update_button_disabled(next_btn)
 	_create_hint_label()
 	_create_cards()
-	_select_mode(StartupFlow.MODE_FULL_DEMO)
+	_select_mode(StartupFlow.MODE_STORY)
 	_show_mode_select_announcement()
 	grab_focus()
 	_debug_log("[ModeSelect] _ready 完成, back_btn=%s next_btn=%s" % [str(back_btn), str(next_btn)])
@@ -176,12 +175,12 @@ func _build_card(mode: Dictionary) -> PanelContainer:
 func _select_mode(mode_id: String) -> void:
 	_selected_mode = mode_id
 	next_btn.disabled = false
-	next_btn.text = "开始完整试玩" if mode_id == StartupFlow.MODE_FULL_DEMO else "开始新手教程" if mode_id == StartupFlow.MODE_DEMO else "下一步"
+	next_btn.text = "开始完整试玩" if mode_id == StartupFlow.MODE_FULL_DEMO else "进入战役" if mode_id == StartupFlow.MODE_STORY else "下一步"
 	if is_instance_valid(_hint_label):
 		if mode_id == StartupFlow.MODE_FULL_DEMO:
 			_hint_label.text = "正式试玩会先进入势力选择；选定国家后直接进入大地图，并定位到该国首都。"
-		elif mode_id == StartupFlow.MODE_DEMO:
-			_hint_label.text = "新手教程会直接进入洛邑演武，在战场中教学城市经营、征兵、回合推进和攻城。"
+		elif mode_id == StartupFlow.MODE_STORY:
+			_hint_label.text = "合纵连横为战役模式。进入后选择关卡；当前可玩第一关·新手教程（原独立教程入口已并入此处）。"
 		elif mode_id == StartupFlow.MODE_STRATEGY_HUB:
 			_hint_label.text = "战略中枢保留为独立入口，用于查看系统入口、资源状态和框架功能。"
 		else:
@@ -208,7 +207,7 @@ func _select_mode(mode_id: String) -> void:
 
 func _show_locked_mode_hint(mode_name: String) -> void:
 	if is_instance_valid(_hint_label):
-		_hint_label.text = "%s 暂未开放。当前可选：新手教程，或完整试玩 Demo。" % mode_name
+		_hint_label.text = "%s 暂未开放。当前可选：合纵连横战役、正式试玩，或战略中枢。" % mode_name
 
 
 func _on_next() -> void:
