@@ -197,6 +197,8 @@ func _ready() -> void:
 		$MarginContainer/MainVBox/TitleBar/CloseBtn.pressed.connect(_on_close_pressed)
 	SignalBus.city_occupied.connect(_on_city_control_changed)
 	SignalBus.city_revolted.connect(_on_city_revolted)
+	if SignalBus.has_signal("pass_occupied") and not SignalBus.pass_occupied.is_connected(_on_pass_ownership_changed):
+		SignalBus.pass_occupied.connect(_on_pass_ownership_changed)
 	SignalBus.capital_relocated.connect(_on_capital_relocated)
 	if StrategicMapManager != null and StrategicMapManager.has_signal("units_changed"):
 		if not StrategicMapManager.units_changed.is_connected(_on_strategic_units_changed):
@@ -595,6 +597,7 @@ func _on_political_toggle() -> void:
 	_update_political_legend()
 	_overlay_dirty = true
 	_refresh_overlay_display()
+	_apply_overlay_cull_policy()
 	if culture_was_on and not _culture_mode:
 		culture_mode_changed.emit(false)
 
@@ -608,7 +611,20 @@ func _on_culture_toggle() -> void:
 	_update_political_legend()
 	_overlay_dirty = true
 	_refresh_overlay_display()
+	_apply_overlay_cull_policy()
 	culture_mode_changed.emit(_culture_mode)
+
+
+## 政治/文化地图：保持 overlay 视口裁剪（与普通大地图一致），避免全图每帧重绘卡顿
+func _apply_overlay_cull_policy() -> void:
+	if _hex_board == null:
+		return
+	var overlay_cv: HexMapCanvas = _hex_board.get_node_or_null("HexMapOverlayCanvas") as HexMapCanvas
+	if overlay_cv == null:
+		return
+	overlay_cv.set_cull_enabled(true)
+	call_deferred("_update_draw_cull_rect")
+	overlay_cv.request_overlay_redraw()
 
 
 func is_culture_mode() -> bool:
@@ -657,8 +673,28 @@ func _build_political_control_grid() -> void:
 		DataManager.get_big_map_control_overrides(),
 		DataManager.get_big_map_size(),
 		DataManager.get_big_map_political_control(),
-		DataManager.get_big_map_rows()
+		DataManager.get_big_map_rows(),
+		_collect_political_passes()
 	)
+
+
+func _collect_political_passes() -> Array:
+	if PassManager == null:
+		return []
+	var all: Dictionary = PassManager.get_all_passes()
+	var out: Array = []
+	for k in all:
+		var entry: Dictionary = all[k] as Dictionary
+		var parts: PackedStringArray = str(k).split(",")
+		if parts.size() < 2:
+			continue
+		out.append({
+			"axial_q": int(parts[0]),
+			"axial_r": int(parts[1]),
+			"owner": str(entry.get("owner", "neutral")),
+			"name": str(entry.get("name", "")),
+		})
+	return out
 
 
 func _refresh_runtime_political_control(refresh_view: bool = true) -> void:
@@ -671,6 +707,11 @@ func _refresh_runtime_political_control(refresh_view: bool = true) -> void:
 
 
 func _on_city_control_changed(_city_id: String, _old_faction: String, _new_faction: String) -> void:
+	_minimap_dirty = true
+	_refresh_runtime_political_control()
+
+
+func _on_pass_ownership_changed(_pass_key: String, _old_faction: String, _new_faction: String) -> void:
 	_minimap_dirty = true
 	_refresh_runtime_political_control()
 
@@ -1547,8 +1588,13 @@ func _pan_by(delta: Vector2) -> void:
 	var view_size: Vector2 = _scroll.size
 	var max_x: float = maxf(board_size.x - view_size.x, 0.0)
 	var max_y: float = maxf(board_size.y - view_size.y, 0.0)
+	var before: Vector2i = Vector2i(_scroll.scroll_horizontal, _scroll.scroll_vertical)
 	_scroll.scroll_horizontal = int(clampf(float(_scroll.scroll_horizontal) + delta.x, 0.0, max_x))
 	_scroll.scroll_vertical = int(clampf(float(_scroll.scroll_vertical) + delta.y, 0.0, max_y))
+	if Vector2i(_scroll.scroll_horizontal, _scroll.scroll_vertical) == before:
+		return
+	# 仅更新视口裁剪矩形；不要整层 request_overlay_redraw / 频繁刷小地图
+	call_deferred("_update_draw_cull_rect")
 
 
 func _end_drag() -> void:
@@ -1556,6 +1602,9 @@ func _end_drag() -> void:
 	if _drag_active:
 		_drag_active = false
 		_set_map_cursor(Control.CURSOR_ARROW)
+		# 拖拽结束后再刷新一次小地图视口框（拖拽过程中不刷，避免卡顿）
+		_refresh_minimap_viewport()
+		call_deferred("_update_draw_cull_rect")
 
 
 func _set_map_cursor(shape: Control.CursorShape) -> void:

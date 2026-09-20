@@ -132,6 +132,39 @@ static func neighbors_hex(cell: Vector2i) -> Array[Vector2i]:
 	return out
 
 
+## 轴向格 → 地图视觉邻格（奇数列下移布局）的轴向坐标。
+## 与 CityManager.get_jurisdiction_hexes / 建筑放置同一套拓扑，禁止用 neighbors_hex 代替。
+static func visual_neighbor_axials(axial: Vector2i) -> Array[Vector2i]:
+	var off: Vector2i = axial_to_offset_odd_r(axial.x, axial.y)
+	var out: Array[Vector2i] = []
+	for nb: Vector2i in offset_visual_neighbors(off.x, off.y):
+		out.append(offset_odd_r_to_axial(nb.x, nb.y))
+	return out
+
+
+## 视觉布局下的六角距离（odd-Q 偏移 → cube），与大地图绘制邻接一致
+static func visual_distance_offset(col_a: int, row_a: int, col_b: int, row_b: int) -> int:
+	var a: Vector3i = _visual_cube(col_a, row_a)
+	var b: Vector3i = _visual_cube(col_b, row_b)
+	var dq: int = absi(a.x - b.x)
+	var dr: int = absi(a.y - b.y)
+	var ds: int = absi(a.z - b.z)
+	return maxi(dq, maxi(dr, ds))
+
+
+static func visual_distance_axial(q_a: int, r_a: int, q_b: int, r_b: int) -> int:
+	var oa: Vector2i = axial_to_offset_odd_r(q_a, r_a)
+	var ob: Vector2i = axial_to_offset_odd_r(q_b, r_b)
+	return visual_distance_offset(oa.x, oa.y, ob.x, ob.y)
+
+
+static func _visual_cube(col: int, row: int) -> Vector3i:
+	# odd-Q：q=col，r=row-(col-(col&1))/2
+	var q: int = col
+	var r: int = row - int((col - (col & 1)) / 2)
+	return Vector3i(q, r, -q - r)
+
+
 ## 轴向矩形范围：给定 q,r 边界内所有轴向坐标（与策划案小节地图填充方式一致）
 static func iter_rect(q_min: int, q_max: int, r_min: int, r_max: int) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
