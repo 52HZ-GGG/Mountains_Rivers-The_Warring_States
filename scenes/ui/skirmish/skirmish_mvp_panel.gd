@@ -13,6 +13,7 @@ const _HEX_BOARD_PAD_PX: float = 8.0
 const _HEX_BOARD_LAYOUT_VERSION: int = 12
 
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
+const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
 const _ResourceBarScript: Script = preload("res://scenes/ui/resource_bar/resource_bar.gd")
 const _CityPanelScene: PackedScene = preload("res://scenes/ui/city_panel/city_panel.tscn")
 const _BuildingPlacementHighlight := preload("res://scripts/ui/building_placement_highlight.gd")
@@ -1070,7 +1071,7 @@ func _build_hover_text(cell: Vector2i) -> String:
 		var burn_val: int = TacticalSkirmishManager.get_unit_burn(uid)
 		var supplied: bool = TacticalSkirmishManager.get_unit_supply(uid)
 		var status_parts: PackedStringArray = []
-		status_parts.append("士气 %d" % morale_val)
+		status_parts.append(UnitMoraleRules.format_morale_info(morale_val))
 		if not supplied:
 			status_parts.append("[color=red]断粮[/color]")
 		if burn_val > 0:

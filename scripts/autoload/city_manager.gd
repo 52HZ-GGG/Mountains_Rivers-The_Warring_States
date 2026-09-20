@@ -227,9 +227,10 @@ func get_recruitable_units(city_id: String) -> Array[String]:
 	if city.is_empty():
 		return []
 	var city_level: int = int(city.get("city_level", 1))
+	var owner_for_tech: String = str(city.get("current_faction_id", city.get("faction_id", GameManager.get_player_faction())))
 	var units: Array[String] = []
 	for unit_id: String in CITY_LEVEL_RECRUIT_UNLOCKS.get(city_level, []):
-		_add_recruitable_unit(units, unit_id)
+		_add_recruitable_unit(units, unit_id, owner_for_tech)
 	for building in city.get("buildings", []):
 		var b: Dictionary = building as Dictionary
 		var bdata: Dictionary = DataManager.get_building(str(b.get("building_id", "")))
@@ -244,7 +245,7 @@ func get_recruitable_units(city_id: String) -> Array[String]:
 			if not str(key).begins_with("unlock_"):
 				continue
 			for unit_id in effects[key]:
-				_add_recruitable_unit(units, str(unit_id))
+				_add_recruitable_unit(units, str(unit_id), owner_for_tech)
 	return units
 
 
@@ -292,7 +293,8 @@ func get_city_defense(city_id: String) -> int:
 		var effects: Dictionary = blevels[level - 1].get("effects", {})
 		if effects.has("defense_bonus"):
 			building_bonus += float(effects["defense_bonus"])
-	building_bonus += TechEffects.city_defense_bonus(owner)
+	var owner_fid: String = str(city.get("current_faction_id", city.get("faction_id", "")))
+	building_bonus += TechEffects.city_defense_bonus(owner_fid)
 	var base_total: int = int(base_def * (1.0 + building_bonus))
 	# 驻军加成
 	var garrison_count: int = int(city.get("garrison", 0))
@@ -2252,10 +2254,11 @@ func _apply_special_resource_modifier(prod: Dictionary, special_resource: String
 			prod[special_resource] = int(sr_data.get("city_base_production", 0))
 
 
-func _add_recruitable_unit(units: Array[String], unit_id: String) -> void:
+func _add_recruitable_unit(units: Array[String], unit_id: String, faction_id: String = "") -> void:
 	if units.has(unit_id):
 		return
-	if _unit_requires_tech(unit_id) and not TechEffects.unit_unlocked(faction_id if faction_id != "" else GameManager.get_player_faction(), unit_id):
+	var tech_faction: String = faction_id if faction_id != "" else GameManager.get_player_faction()
+	if _unit_requires_tech(unit_id) and not TechEffects.unit_unlocked(tech_faction, unit_id):
 		return
 	units.append(unit_id)
 

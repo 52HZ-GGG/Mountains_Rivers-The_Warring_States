@@ -255,7 +255,7 @@ func get_food_consumption_reduction(faction_id: String) -> float:
 	return maxf(total, 0.0)
 
 
-func get_recruit_efficiency(faction_id: String, city_id: String = "") -> float:
+func get_recruit_efficiency(faction_id: String, city_id: String = "", unit_category: String = "") -> float:
 	var total: float = _get_school_effect_float(faction_id, "recruit_efficiency")
 	total += TechEffects.recruit_cost_reduction(faction_id, unit_category if unit_category != "" else "all")
 	var city: Dictionary = CityManager.get_city_state(city_id) if city_id != "" else {}
@@ -589,14 +589,14 @@ func _process_production(faction_id: String) -> void:
 
 func _build_production_total(faction_id: String) -> Dictionary:
 	var total: Dictionary = CityManager.get_faction_total_production(faction_id)
-	_apply_resource_modifier(total, "food")
-	_apply_resource_modifier(total, "gold")
-	_apply_resource_modifier(total, "wood")
-	_apply_resource_modifier(total, "horse")
-	_apply_resource_modifier(total, "refined_iron")
-	_apply_resource_modifier(total, "craftsmen")
-	_apply_resource_modifier(total, "building_materials")
-	_apply_resource_modifier(total, "silk_books")
+	_apply_resource_modifier(total, "food", faction_id)
+	_apply_resource_modifier(total, "gold", faction_id)
+	_apply_resource_modifier(total, "wood", faction_id)
+	_apply_resource_modifier(total, "horse", faction_id)
+	_apply_resource_modifier(total, "refined_iron", faction_id)
+	_apply_resource_modifier(total, "craftsmen", faction_id)
+	_apply_resource_modifier(total, "building_materials", faction_id)
+	_apply_resource_modifier(total, "silk_books", faction_id)
 	_apply_wonder_resource_modifier(total, faction_id, "food", "food_production_national")
 	_apply_wonder_resource_modifier(total, faction_id, "gold", "gold_production_national")
 	_apply_wonder_resource_modifier(total, faction_id, "wood", "wood_production_national")
@@ -987,7 +987,7 @@ func _get_recruit_resource_reserve(faction_id: String) -> Dictionary:
 
 
 func _pay_unit_cost(faction_id: String, city_id: String, unit_data: Dictionary, count: int) -> void:
-	var cost_mod: float = 1.0 - get_recruit_efficiency(faction_id, city_id)
+	var cost_mod: float = 1.0 - get_recruit_efficiency(faction_id, city_id, str(unit_data.get("category", "")))
 	apply_faction_resource_delta(faction_id, "gold", -int(round(int(unit_data.get("cost_gold", 0)) * count * cost_mod)))
 	apply_faction_resource_delta(faction_id, "food", -int(round(int(unit_data.get("cost_food", 0)) * count * cost_mod)))
 	apply_faction_resource_delta(faction_id, "wood", -int(round(int(unit_data.get("cost_wood", 0)) * count * cost_mod)))
@@ -1482,10 +1482,11 @@ func _get_total_building_upkeep(faction_id: String) -> int:
 	return int(round(total * (1.0 - reduction)))
 
 
-func _apply_resource_modifier(total: Dictionary, resource: String) -> void:
+func _apply_resource_modifier(total: Dictionary, resource: String, faction_id: String = "") -> void:
 	if not total.has(resource):
 		return
-	var modifier: float = TechEffects.resource_modifier(faction_id if faction_id != "" else _player_faction, resource)
+	var tech_faction: String = faction_id if faction_id != "" else _player_faction
+	var modifier: float = TechEffects.resource_modifier(tech_faction, resource)
 	if absf(modifier) <= 0.001:
 		return
 	total[resource] = int(round(int(total.get(resource, 0)) * (1.0 + modifier)))

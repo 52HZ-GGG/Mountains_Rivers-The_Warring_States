@@ -16,6 +16,7 @@ const _DRAG_THRESHOLD_PX: float = 6.0
 const _HexAxial := preload("res://scripts/systems/hex_axial.gd")
 const _BigMapPoliticalControl := preload("res://scripts/systems/big_map_political_control.gd")
 const _BuildingPlacementHighlight := preload("res://scripts/ui/building_placement_highlight.gd")
+const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
 signal city_clicked(city_id: String)
 signal map_closed
 signal hub_action_requested(action: String)
@@ -1833,8 +1834,10 @@ func _build_hover_text(cell: Vector2i) -> String:
 			int(unit.get("mp", 0)),
 			int(unit.get("count", 1)),
 		])
-		if unit.has("morale"):
-			lines.append("士气 %d" % int(unit.get("morale", 0)))
+		var morale_val: int = int(unit.get("morale", UnitMoraleRules.base_morale()))
+		lines.append(UnitMoraleRules.format_morale_info(morale_val))
+		if UnitMoraleRules.is_broken(morale_val):
+			lines.append("[color=#e07070]溃退风险：崩溃态禁止治疗，回合损HP[/color]")
 	var selected_id: String = StrategicMapManager.get_selected_unit_id()
 	if selected_id != "":
 		var reach: Dictionary = StrategicMapManager.get_reachable_cells(selected_id)

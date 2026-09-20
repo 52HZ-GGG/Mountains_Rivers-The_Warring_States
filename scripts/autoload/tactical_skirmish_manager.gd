@@ -176,6 +176,8 @@ func get_current_season() -> String:
 	return _current_season
 
 
+const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
+
 func get_unit_morale(unit_id: String) -> int:
 	var u: Dictionary = get_unit_by_id(unit_id)
 	if u.is_empty():
@@ -418,36 +420,13 @@ func process_morale_for_test() -> void:
 		var burn_dmg: int = int(u_burn.get("burn_damage", 0))
 		u_burn["hp"] = int(u_burn["hp"]) - burn_dmg
 		u_burn["burn_turns"] = burn_turns - 1
-	var morale_params: Dictionary = {}
-	var bp: Variant = DataManager.get_balance_param("unit_morale")
-	if bp is Dictionary:
-		morale_params = bp
-	var recovery_turn: int = int(morale_params.get("morale_recovery_per_turn", 3))
-	var recovery_city: int = int(morale_params.get("morale_recovery_in_city", 8))
-	var natural_cap: int = int(morale_params.get("natural_recovery_cap", 100))
-	var break_threshold: int = int(morale_params.get("morale_break_threshold", 20))
-	var broken_hp_ratio: float = float(morale_params.get("broken_hp_loss_per_turn", 0.2))
-	var broken_speed_mod: float = float(morale_params.get("broken_speed_mod", 0.5))
-
 	for u: Dictionary in _units:
-		var current_morale: int = int(u.get("morale", 100))
-		# 先按崩溃态扣血，再自然恢复士气，最后治疗（崩溃态禁止治疗）
-		if current_morale < break_threshold:
-			var max_hp: int = int(u.get("max_hp", 100))
-			var hp_loss: int = int(float(max_hp) * broken_hp_ratio)
-			u["hp"] = maxi(1, int(u.get("hp", max_hp)) - hp_loss)
-		if current_morale < natural_cap:
-			var recovery: int = recovery_city if _is_in_own_city(u) else recovery_turn
-			u["morale"] = mini(current_morale + recovery, natural_cap)
-		if int(u.get("morale", 100)) > natural_cap:
-			u["morale"] = int(u.get("morale", 100)) - 1
-		if int(u.get("morale", 100)) < break_threshold:
-			var base_speed: int = int(u.get("max_mp", u.get("speed", 3)))
-			set_unit_mp(u, maxi(1, int(float(base_speed) * broken_speed_mod)))
+		UnitMoraleRules.process_turn_morale(u, _is_in_own_city(u))
+		set_unit_mp(u, UnitMoraleRules.effective_mp(u))
 	# 溃退处理
 	var rout_units: Array[Dictionary] = []
 	for u2: Dictionary in _units:
-		if int(u2.get("morale", 100)) < break_threshold:
+		if UnitMoraleRules.is_broken(int(u2.get("morale", 100))):
 			rout_units.append(u2)
 	for ru: Dictionary in rout_units:
 		if ru in _units:
@@ -468,50 +447,19 @@ func begin_player_phase() -> void:
 	_process_pass_recovery()
 	# 城墙自然恢复
 	_process_city_recovery()
-	var morale_params: Dictionary = {}
-	var bp: Variant = DataManager.get_balance_param("unit_morale")
-	if bp is Dictionary:
-		morale_params = bp
-	var recovery_turn: int = int(morale_params.get("morale_recovery_per_turn", 3))
-	var recovery_city: int = int(morale_params.get("morale_recovery_in_city", 8))
-	var natural_cap: int = int(morale_params.get("natural_recovery_cap", 100))
-	var break_threshold: int = int(morale_params.get("morale_break_threshold", 20))
-	var broken_hp_ratio: float = float(morale_params.get("broken_hp_loss_per_turn", 0.2))
-	var broken_speed_mod: float = float(morale_params.get("broken_speed_mod", 0.5))
-
+	# 单位士气：全军统一结算（与大地图 / UnitMoraleRules 同口径）
+	# 行动重置仅玩家方；AI 行动标记由 AI 回合自行管理
 	for u: Dictionary in _units:
+		UnitMoraleRules.process_turn_morale(u, _is_in_own_city(u))
 		if str(u["faction_id"]) == _player_faction:
-			var current_morale: int = int(u.get("morale", 100))
-
-			# 士气恢复：城中 +8，野外 +3，上限 natural_recovery_cap
-			if current_morale < natural_cap:
-				var recovery: int = recovery_city if _is_in_own_city(u) else recovery_turn
-				u["morale"] = mini(current_morale + recovery, natural_cap)
-
-			# 高士气衰减（> natural_cap 回到 natural_cap）
-			if int(u.get("morale", 100)) > natural_cap:
-				u["morale"] = int(u.get("morale", 100)) - 1
-
-			# 崩溃态 HP 损失
-			if int(u.get("morale", 100)) < break_threshold:
-				var max_hp: int = int(u.get("max_hp", 100))
-				var hp_loss: int = int(float(max_hp) * broken_hp_ratio)
-				u["hp"] = maxi(1, int(u.get("hp", max_hp)) - hp_loss)
-
-			# 速度计算：崩溃态速度衰减
-			var base_speed: int = int(u.get("max_mp", u.get("speed", 3)))
-			var effective_speed: int = base_speed
-			if int(u.get("morale", 100)) < break_threshold:
-				effective_speed = maxi(1, int(float(base_speed) * broken_speed_mod))
-
 			u["acted"] = false
-			set_unit_mp(u, effective_speed)
+			set_unit_mp(u, UnitMoraleRules.effective_mp(u))
 			u["attacks_this_turn"] = 0
 
 	# 溃退处理：崩溃态单位自动移向友方城市（收集后处理，避免迭代时修改 _units）
 	var rout_units: Array[Dictionary] = []
 	for u2: Dictionary in _units:
-		if str(u2["faction_id"]) == _player_faction and int(u2.get("morale", 100)) < break_threshold:
+		if UnitMoraleRules.is_broken(int(u2.get("morale", 100))):
 			rout_units.append(u2)
 	for ru: Dictionary in rout_units:
 		if ru in _units:
@@ -1472,9 +1420,7 @@ func _remove_unit(uid: String) -> void:
 
 
 func _apply_morale_delta(unit: Dictionary, delta: int) -> void:
-	var max_morale_v: Variant = DataManager.get_balance_param("unit_morale.max_morale")
-	var max_morale: int = int(max_morale_v) if max_morale_v != null else 130
-	unit["morale"] = clampi(int(unit.get("morale", 100)) + delta, 0, max_morale)
+	UnitMoraleRules.apply_morale_delta(unit, delta)
 
 
 func _apply_faction_morale(faction_id: String, exclude_id: String, delta: int) -> void:

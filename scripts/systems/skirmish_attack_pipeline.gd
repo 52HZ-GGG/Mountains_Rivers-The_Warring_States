@@ -11,6 +11,7 @@ const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 const WallLib := preload("res://scripts/systems/wall_combat_rules.gd")
 const MoveLib := preload("res://scripts/systems/movement_reach.gd")
 const BuildingFxLib := preload("res://scripts/systems/building_combat_effects.gd")
+const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
 
 var m: Node
 
@@ -209,21 +210,21 @@ func execute_player_attack(attacker_id: String, defender_id: String) -> Dictiona
 		var dead_faction: String = str(d["faction_id"])
 		m._remove_unit(defender_id)
 		m._append_log("%s 被歼灭" % defender_id)
-		# 士气事件：击杀+15，友军击杀+5，敌方阵亡-5
-		var self_kill_v: Variant = DataManager.get_balance_param("unit_morale.morale_gain_on_self_kill")
-		var ally_kill_v: Variant = DataManager.get_balance_param("unit_morale.morale_gain_on_ally_kill")
-		var ally_death_v: Variant = DataManager.get_balance_param("unit_morale.morale_loss_on_ally_death")
-		m._apply_morale_delta(a, int(self_kill_v) if self_kill_v != null else 15)
-		m._apply_faction_morale(str(a["faction_id"]), attacker_id, int(ally_kill_v) if ally_kill_v != null else 5)
-		m._apply_faction_morale(dead_faction, "", int(ally_death_v) if ally_death_v != null else -5)
+		# 士气事件（战斗系统.md §6.2）：击杀者亲自+友军叠加，同阵营+友军击杀，敌方-友军阵亡
+		var self_gain: int = UnitMoraleRules.param_int("morale_gain_on_self_kill", 10)
+		var ally_gain: int = UnitMoraleRules.param_int("morale_gain_on_ally_kill", 5)
+		var ally_loss: int = -absi(UnitMoraleRules.param_int("morale_loss_on_ally_death", 5))
+		m._apply_morale_delta(a, self_gain + ally_gain)
+		m._apply_faction_morale(str(a["faction_id"]), attacker_id, ally_gain)
+		m._apply_faction_morale(dead_faction, "", ally_loss)
 		m._apply_combat_on_kill(a)
 	# 攻击方被反击击杀
 	if int(a["hp"]) <= 0:
 		var atk_dead_faction: String = str(a["faction_id"])
 		m._remove_unit(attacker_id)
 		m._append_log("%s 被反击歼灭" % attacker_id)
-		var ally_death_v2: Variant = DataManager.get_balance_param("unit_morale.morale_loss_on_ally_death")
-		m._apply_faction_morale(atk_dead_faction, "", int(ally_death_v2) if ally_death_v2 != null else -5)
+		var ally_loss_atk: int = -absi(UnitMoraleRules.param_int("morale_loss_on_ally_death", 5))
+		m._apply_faction_morale(atk_dead_faction, "", ally_loss_atk)
 	m.state_changed.emit()
 	# 发射战斗特效信号
 	var effect_id: String = "fx_slash"
@@ -331,12 +332,8 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 	if absf(t_atk_offset) > 0.001:
 		atk_buff += t_atk_offset
 		atk_details.append("地形 %+.0f%%" % (t_atk_offset * 100.0))
-	# 士气
-	var morale_atk_off: float = 0.0
-	if atk_morale >= 130:
-		morale_atk_off = 0.1
-	elif atk_morale < 50:
-		morale_atk_off = -0.1
+	# 士气（读 balance_params，与 UnitMoraleRules / CombatResolver 同口径）
+	var morale_atk_off: float = UnitMoraleRules.morale_atk_offset(atk_morale)
 	if absf(morale_atk_off) > 0.001:
 		atk_buff += morale_atk_off
 		atk_details.append("士气 %+.0f%%" % (morale_atk_off * 100.0))
@@ -373,7 +370,7 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 		atk_details.append("学派 %+.0f%%" % (school_atk * 100.0))
 
 	var effective_atk: float = float(base_atk) * atk_buff
-	if atk_morale < 20:
+	if UnitMoraleRules.is_broken(atk_morale):
 		effective_atk *= 0.5
 		atk_details.append("崩溃 ×0.5")
 
@@ -423,11 +420,11 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			def_buff += bdef2
 			def_details.append("城防 +%d%%" % int(bdef2 * 100.0))
 		# 士气防御崩溃
-		if def_morale < 20:
+		if UnitMoraleRules.is_broken(def_morale):
 			def_details.append("崩溃 ×0.5")
 
 	var effective_def: float = float(base_def) * def_buff
-	if def_morale < 20:
+	if UnitMoraleRules.is_broken(def_morale):
 		effective_def *= 0.5
 
 	# --- 克制 ---
@@ -506,9 +503,7 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			if absf(c_t_off) > 0.001:
 				c_atk_buff += c_t_off
 				counter_details.append("地形 %+.0f%%" % (c_t_off * 100.0))
-			var c_mor_off: float = 0.0
-			if def_morale >= 130: c_mor_off = 0.1
-			elif def_morale < 50: c_mor_off = -0.1
+			var c_mor_off: float = UnitMoraleRules.morale_atk_offset(def_morale)
 			if absf(c_mor_off) > 0.001:
 				c_atk_buff += c_mor_off
 				counter_details.append("士气 %+.0f%%" % (c_mor_off * 100.0))
@@ -526,8 +521,8 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 				c_atk_buff += c_sch_atk
 				counter_details.append("学派 %+.0f%%" % (c_sch_atk * 100.0))
 			var c_eff_atk: float = float(c_base_atk) * c_atk_buff
-			if def_morale < 20:
-				c_eff_atk *= 0.5
+			if UnitMoraleRules.is_broken(def_morale):
+				c_eff_atk *= UnitMoraleRules.param_float("broken_atk_mod", 0.5)
 				counter_details.append("崩溃 ×0.5")
 			# 被反击方（攻击方）防御
 			var c_atk_def: float = float(DataManager.get_unit_type(atk_type_id2).get("defense", 10))
@@ -544,8 +539,8 @@ func compute_preview(attacker_id: String, defender_id_or_cell: Variant) -> Dicti
 			if absf(c_sch_def) > 0.001:
 				c_def_buff += c_sch_def
 			var c_eff_def: float = c_atk_def * c_def_buff
-			if atk_morale < 20:
-				c_eff_def *= 0.5
+			if UnitMoraleRules.is_broken(atk_morale):
+				c_eff_def *= UnitMoraleRules.param_float("broken_def_mod", 0.5)
 			var c_counter_mult: float = m._combat_resolver.compute_counter_multiplier(def_type_id2, atk_type_id2)
 			var c_raw: float = maxf(c_eff_atk * c_counter_mult - c_eff_def, 1.0)
 			var c_naval: float = m._calc_naval_combat_mod(def_type_id2, atk_type_id2, def_cell, atk_cell)

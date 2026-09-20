@@ -160,6 +160,7 @@ func test_move_after_attack_integration() -> void:
 	var p1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	p1["skills"] = [{"id": "hit_and_run", "type": "move_after_attack", "attack_move_cost": 2, "per_turn_limit": 1}]
+	p1["mp"] = 6
 	p1["mp_remaining"] = 6
 	e1["q"] = int(p1["q"]) + 1
 	e1["r"] = int(p1["r"])
@@ -189,6 +190,7 @@ func test_move_after_attack_acted_when_mp_zero() -> void:
 	var p1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
 	var e1: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_e1")
 	p1["skills"] = [{"id": "hit_and_run", "type": "move_after_attack", "attack_move_cost": 2, "per_turn_limit": 1}]
+	p1["mp"] = 2
 	p1["mp_remaining"] = 2
 	e1["q"] = int(p1["q"]) + 1
 	e1["r"] = int(p1["r"])

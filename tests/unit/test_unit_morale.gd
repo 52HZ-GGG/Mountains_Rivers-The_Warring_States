@@ -5,6 +5,7 @@ extends GutTest
 
 const CombatLib := preload("res://scripts/systems/combat_resolver.gd")
 const HexLib := preload("res://scripts/systems/hex_axial.gd")
+const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
 
 # ============= 纯函数测试（combat_resolver） =============
 
@@ -91,7 +92,10 @@ func test_kill_increases_attacker_morale() -> void:
 	var morale_before: int = int(p1.get("morale", 100))
 	TacticalSkirmishManager.try_player_attack("mvp_p1", "mvp_e1")
 	var p1_after: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
-	assert_eq(int(p1_after.get("morale", 0)), morale_before + 15, "击杀后攻击者士气应 +15")
+	# 战斗系统.md §6.2：亲自击杀 +10 与友军击杀 +5 叠加，击杀者共 +15
+	var expected_gain: int = UnitMoraleRules.param_int("morale_gain_on_self_kill", 10) \
+		+ UnitMoraleRules.param_int("morale_gain_on_ally_kill", 5)
+	assert_eq(int(p1_after.get("morale", 0)), morale_before + expected_gain, "击杀后攻击者士气应 +15（亲自+友军叠加）")
 
 
 func test_ally_kill_boosts_faction_morale() -> void:
@@ -106,7 +110,8 @@ func test_ally_kill_boosts_faction_morale() -> void:
 	var p2_morale_before: int = int(p2.get("morale", 100))
 	TacticalSkirmishManager.try_player_attack("mvp_p1", "mvp_e1")
 	var p2_after: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p2")
-	assert_eq(int(p2_after.get("morale", 0)), p2_morale_before + 5, "友军击杀后 p2 士气应 +5")
+	var ally_gain: int = UnitMoraleRules.param_int("morale_gain_on_ally_kill", 5)
+	assert_eq(int(p2_after.get("morale", 0)), p2_morale_before + ally_gain, "友军击杀后 p2 士气应 +5")
 
 
 func test_morale_recovery_per_turn() -> void:
@@ -150,10 +155,11 @@ func test_broken_morale_loses_hp() -> void:
 	p1["morale"] = 15
 	var max_hp: int = int(p1.get("max_hp", 100))
 	p1["hp"] = max_hp
-	var expected_hp: int = max_hp - int(float(max_hp) * 0.2)
+	var ratio: float = UnitMoraleRules.param_float("broken_hp_loss_per_turn", 0.15)
+	var expected_hp: int = max_hp - int(round(float(max_hp) * ratio))
 	TacticalSkirmishManager.process_morale_for_test()
 	var p1_after: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
-	assert_eq(int(p1_after.get("hp", 0)), expected_hp, "崩溃态每回合 HP -20%")
+	assert_eq(int(p1_after.get("hp", 0)), expected_hp, "崩溃态每回合按 broken_hp_loss_per_turn 扣 maxHP")
 
 
 func test_broken_morale_reduces_speed() -> void:
@@ -165,3 +171,27 @@ func test_broken_morale_reduces_speed() -> void:
 	TacticalSkirmishManager.process_morale_for_test()
 	var p1_after: Dictionary = TacticalSkirmishManager.get_unit_by_id("mvp_p1")
 	assert_eq(int(p1_after.get("mp_remaining", 0)), expected_speed, "崩溃态速度 ×0.5")
+
+
+func test_format_morale_info_includes_tier() -> void:
+	assert_true(UnitMoraleRules.format_morale_info(15).contains("崩溃"), "低士气应标注崩溃")
+	assert_true(UnitMoraleRules.format_morale_info(35).contains("低士气"), "35 应标注低士气")
+	assert_true(UnitMoraleRules.format_morale_info(85).contains("正常"), "85 应标注正常")
+	assert_true(UnitMoraleRules.format_morale_info(130).contains("高士气"), "130 应标注高士气")
+	assert_true(UnitMoraleRules.format_morale_info(15).contains("士气 15"), "应包含士气数值")
+
+
+func test_strategic_map_turn_morale_matches_rules() -> void:
+	StrategicMapManager.reset()
+	var spawn: Dictionary = StrategicMapManager.spawn_unit_at_city("qin", "infantry", 10, 10, 1)
+	assert_true(bool(spawn.get("success", false)), "应能在大地图生成单位")
+	var uid: String = str(spawn.get("unit_id", ""))
+	assert_false(uid.is_empty(), "应返回 unit_id")
+	var u: Dictionary = StrategicMapManager.get_unit(uid)
+	assert_eq(int(u.get("morale", -1)), UnitMoraleRules.base_morale(), "大地图单位初始士气应为 base_morale")
+	# 手动压低士气后走回合结算
+	var live: Dictionary = StrategicMapManager._get_unit_ref(uid)
+	live["morale"] = 80
+	StrategicMapManager.begin_faction_turn("qin")
+	var after: Dictionary = StrategicMapManager.get_unit(uid)
+	assert_eq(int(after.get("morale", 0)), 83, "大地图野外回合士气应 +3（与演武一致）")

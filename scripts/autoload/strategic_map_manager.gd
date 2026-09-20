@@ -15,6 +15,7 @@ const UnitStateLib := preload("res://scripts/systems/unit_state.gd")
 const CtxLib := preload("res://scripts/systems/combat_ctx_builder.gd")
 const SiegeLib := preload("res://scripts/systems/siege_resolver.gd")
 const MoveLib := preload("res://scripts/systems/movement_reach.gd")
+const UnitMoraleRules := preload("res://scripts/systems/unit_morale_rules.gd")
 
 var _units: Array[Dictionary] = []
 var _next_unit_seq: int = 1
@@ -41,9 +42,18 @@ func begin_faction_turn(faction_id: String) -> void:
 	for u: Dictionary in _units:
 		if str(u["faction_id"]) != faction_id:
 			continue
+		UnitMoraleRules.process_turn_morale(u, _is_unit_in_own_city(u))
 		u["acted"] = false
-		u["mp"] = int(u["max_mp"])
+		u["mp"] = UnitMoraleRules.effective_mp(u)
 	units_changed.emit()
+
+
+func _is_unit_in_own_city(unit: Dictionary) -> bool:
+	var city_id: String = _city_id_at_offset(int(unit.get("col", unit.get("q", -1))), int(unit.get("row", unit.get("r", -1))))
+	if city_id == "":
+		return false
+	var city: Dictionary = CityManager.get_city_state(city_id)
+	return str(city.get("current_faction_id", "")) == str(unit.get("faction_id", ""))
 
 
 # ============= 查询 =============
@@ -416,21 +426,18 @@ func _build_combat_ctx(
 	return CtxLib.build_defense_ctx(faction_id, unit_type_id, city_id)
 
 
-## 击杀/阵亡士气：亲自击杀 + 自身阵营击杀 + 敌方阵亡（§6.2）
+## 击杀/阵亡士气（战斗系统.md §6.2，与演武共用 UnitMoraleRules）
 func _apply_kill_morale(killer: Dictionary, victim: Dictionary) -> void:
-	var self_gain_v: Variant = DataManager.get_balance_param("unit_morale.morale_gain_on_self_kill")
-	var ally_gain_v: Variant = DataManager.get_balance_param("unit_morale.morale_gain_on_ally_kill")
-	var ally_loss_v: Variant = DataManager.get_balance_param("unit_morale.morale_loss_on_ally_death")
-	var self_gain: int = int(self_gain_v) if self_gain_v != null else 10
-	var ally_gain: int = int(ally_gain_v) if ally_gain_v != null else 5
-	var ally_loss: int = int(ally_loss_v) if ally_loss_v != null else -5
-	if killer.has("morale"):
-		killer["morale"] = clampi(int(killer["morale"]) + self_gain + ally_gain, 0, 130)
+	var killer_faction: String = str(killer.get("faction_id", ""))
+	var dead_faction: String = str(victim.get("faction_id", ""))
+	var killer_allies: Array = []
+	var dead_allies: Array = []
 	for u: Dictionary in _units:
-		if str(u["faction_id"]) == str(killer["faction_id"]) and str(u["id"]) != str(killer.get("id", "")):
-			u["morale"] = clampi(int(u.get("morale", 100)) + ally_gain, 0, 130)
-		elif str(u["faction_id"]) == str(victim["faction_id"]):
-			u["morale"] = clampi(int(u.get("morale", 100)) + ally_loss, 0, 130)
+		if str(u.get("faction_id", "")) == killer_faction:
+			killer_allies.append(u)
+		elif str(u.get("faction_id", "")) == dead_faction:
+			dead_allies.append(u)
+	UnitMoraleRules.apply_kill_morale(killer, killer_allies, dead_allies)
 
 
 func _compute_unit_damage(attacker: Dictionary, defender: Dictionary) -> int:
