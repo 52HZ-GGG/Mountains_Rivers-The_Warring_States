@@ -132,6 +132,90 @@ func get_city_culture(city_id: String) -> Dictionary:
 	return (city.get("culture", {}) as Dictionary).duplicate(true)
 
 
+# ============= 发展度（城市经营系统.md §2.3 / 决策 #80、#172） =============
+
+## 城市类型：用于发展度 clamp。中立优先，其次首都，再按城级。
+func get_city_development_type(city: Dictionary) -> String:
+	var owner: String = str(city.get("current_faction_id", city.get("faction_id", "")))
+	if owner.is_empty() or owner == "neutral":
+		return "neutral"
+	if bool(city.get("is_capital", false)):
+		return "capital"
+	var lv: int = int(city.get("city_level", 1))
+	if lv >= 4:
+		return "major"
+	if lv >= 2:
+		return "medium"
+	return "minor"
+
+
+## 发展度公式（定稿）：城市综合实力唯一指标，政治 power 直接等于发展度
+## development = 城级×10 + Σ建筑等级×4 + 人口×0.5 + 安定×0.15，再按类型 clamp
+## 数值：balance_params.json → development
+func compute_city_development(city: Dictionary) -> int:
+	var params: Dictionary = DataManager.get_balance_param("development")
+	if not (params is Dictionary):
+		params = {}
+	var base_per_level: int = int(params.get("base_per_level", 10))
+	var building_bonus: float = float(params.get("building_bonus_per_level", params.get("building_bonus", 4)))
+	var pop_bonus: float = float(params.get("population_bonus", 0.5))
+	var stability_bonus: float = float(params.get("stability_bonus", 0.15))
+	var lv: int = maxi(1, int(city.get("city_level", 1)))
+	var level_sum: int = 0
+	for b in city.get("buildings", []):
+		if b is Dictionary:
+			level_sum += maxi(1, int((b as Dictionary).get("level", 1)))
+		else:
+			level_sum += 1
+	var pop: int = maxi(0, int(city.get("current_population", city.get("initial_population", 0))))
+	var stability: int = maxi(0, int(city.get("stability", 0)))
+	var raw: int = int(floor(
+		float(lv) * float(base_per_level)
+		+ float(level_sum) * building_bonus
+		+ float(pop) * pop_bonus
+		+ float(stability) * stability_bonus
+	))
+	var city_type: String = get_city_development_type(city)
+	var ranges: Dictionary = params.get("city_type_ranges", {}) as Dictionary
+	var type_range: Dictionary = ranges.get(city_type, {}) as Dictionary
+	if type_range.is_empty():
+		type_range = ranges.get("minor", {"min": 5, "max": 100}) as Dictionary
+	var dmin: int = int(type_range.get("min", 5))
+	var dmax: int = int(type_range.get("max", 100))
+	if dmax < dmin:
+		dmax = dmin
+	return clampi(raw, dmin, dmax)
+
+
+## 写回单城发展度；变化时使政治疆域缓存失效（大地图/演武共用 CityManager 状态）
+func refresh_city_development(city_id: String) -> int:
+	var city: Dictionary = _city_states.get(city_id, {})
+	if city.is_empty():
+		return 0
+	var next: int = compute_city_development(city)
+	var prev: int = int(city.get("development", next))
+	city["development"] = next
+	if next != prev:
+		if DataManager != null and DataManager.has_method("_invalidate_big_map_control_cache"):
+			DataManager._invalidate_big_map_control_cache()
+	return next
+
+
+## 全量刷新（开局/读档/中立城）
+func refresh_all_city_development() -> void:
+	var changed: bool = false
+	for city_id in _city_states:
+		var city: Dictionary = _city_states[city_id]
+		var next: int = compute_city_development(city)
+		if int(city.get("development", next)) != next:
+			city["development"] = next
+			changed = true
+		else:
+			city["development"] = next
+	if changed and DataManager != null and DataManager.has_method("_invalidate_big_map_control_cache"):
+		DataManager._invalidate_big_map_control_cache()
+
+
 func get_mainstream_culture(city_id: String) -> String:
 	var city: Dictionary = _city_states.get(city_id, {})
 	if city.is_empty():
@@ -498,6 +582,7 @@ func occupy_city(city_id: String, new_faction_id: String) -> bool:
 	# 变更归属
 	city["current_faction_id"] = new_faction_id
 	city["is_capital"] = false
+	refresh_city_development(city_id)
 	_apply_military_occupation_culture(city, old_faction, new_faction_id)
 	# HP 恢复 50%
 	var max_hp: int = get_city_max_hp(city_id)
@@ -1229,6 +1314,7 @@ func load_save_data(data: Dictionary) -> void:
 		_city_states = (states as Dictionary).duplicate(true)
 		_build_faction_index()
 		_migrate_physical_buildings()
+		refresh_all_city_development()
 	else:
 		_initialize_states()
 		_build_faction_index()
@@ -1261,6 +1347,7 @@ func change_ownership(city_id: String, new_faction_id: String) -> bool:
 
 	city["current_faction_id"] = new_faction_id
 	(city["build_queue"] as Array).clear()
+	refresh_city_development(city_id)
 	# 狖立占领（推荐策略1）：城易主时建筑 owner 不自动变更，需再攻占
 	# 仅为缺省 owner 的旧档补字段
 	for entry: Variant in city.get("buildings", []):
@@ -1326,6 +1413,7 @@ func revoke_to_neutral(city_id: String) -> Dictionary:
 
 	# 更新归属为 neutral
 	city["current_faction_id"] = "neutral"
+	refresh_city_development(city_id)
 	_move_city_in_faction_index(city, old_faction, "neutral")
 	MinisterManager.handle_city_lost(city_id, old_faction, "neutral")
 
@@ -1465,6 +1553,7 @@ func process_turn(faction_id: String) -> Dictionary:
 		_process_build_queue(city_id, events)
 		_process_population_growth(city_id)
 		_process_conscription_fill(city_id)
+		refresh_city_development(city_id)
 	for city in cities:
 		var city_id: String = str(city["id"])
 		_process_stability(city_id, faction_id)
@@ -1551,6 +1640,8 @@ func _process_build_queue(city_id: String, events: Dictionary) -> void:
 				})
 				SignalBus.building_completed.emit(city_id, bid, 1)
 		queue.remove_at(idx)
+	if not completed_indices.is_empty():
+		refresh_city_development(city_id)
 
 
 ## 人口增长（进度条制）+ 饥荒检测。
@@ -2311,6 +2402,10 @@ func _initialize_states() -> void:
 		state["_axial_q"] = ax0.x
 		state["_axial_r"] = ax0.y
 		_city_states[city_data["id"]] = state
+	# 开局按公式重算发展度（cities.json 静态值仅作档位参考）
+	for city_id in _city_states:
+		var st: Dictionary = _city_states[city_id]
+		st["development"] = compute_city_development(st)
 
 
 func _build_faction_index() -> void:

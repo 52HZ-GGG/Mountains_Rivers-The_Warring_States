@@ -372,27 +372,25 @@ static func _influence_scores_for_axial_legacy(
 
 
 static func _city_power(city: Dictionary, cfg: Dictionary) -> float:
-	var owner: String = str(city.get("current_faction_id", city.get("faction_id", "")))
-	var power: float = float(cfg.get("base", 10))
-	power += float(int(city.get("city_level", 1))) * float(cfg.get("per_level", 4))
-	if bool(city.get("is_capital", false)):
-		power += float(cfg.get("capital_bonus", 15))
-	var div: float = maxf(float(cfg.get("development_divisor", 10)), 1.0)
-	power += floor(float(int(city.get("development", 0))) / div)
-	if owner.is_empty() or owner == NEUTRAL_ID:
-		power *= float(cfg.get("neutral_multiplier", 0.45))
+	# 政治 power 只吃发展度（城市综合实力唯一指标）
+	var development: int = maxi(0, int(city.get("development", 0)))
+	var scale: float = float(cfg.get("development_scale", 1.0))
+	var power: float = float(development) * scale
+	if power <= 0.0:
+		power = 1.0
 	return power
 
 
 static func _influence_radius(city: Dictionary, cfg: Dictionary) -> int:
-	var owner: String = str(city.get("current_faction_id", city.get("faction_id", "")))
-	if owner.is_empty() or owner == NEUTRAL_ID:
-		# 中立城：参与辐射，半径略小但不为 0
-		return maxi(1, int(cfg.get("neutral", 3)))
-	var radius: int = int(cfg.get("base", 3)) + int(city.get("city_level", 1)) * int(cfg.get("per_level", 1))
-	if bool(city.get("is_capital", false)):
-		radius += int(cfg.get("capital_bonus", 1))
-	return maxi(1, radius)
+	# 半径随发展度：clamp(min + floor(dev/per), min, max)
+	var development: int = maxi(0, int(city.get("development", 0)))
+	var rmin: int = int(cfg.get("min", 2))
+	var rmax: int = int(cfg.get("max", 7))
+	var per: float = maxf(float(cfg.get("per_development", 20)), 1.0)
+	if rmax < rmin:
+		rmax = rmin
+	var radius: int = rmin + int(floor(float(development) / per))
+	return clampi(radius, rmin, rmax)
 
 
 static func _rank_scores(scores: Dictionary) -> Array:

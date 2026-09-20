@@ -650,28 +650,30 @@
   },
   "development": {
     "base_per_level": 10,
-    "building_bonus": 3,
-    "population_bonus": 1,
+    "building_bonus_per_level": 4,
+    "population_bonus": 0.5,
+    "stability_bonus": 0.15,
+    "_comment": "development = level×10 + Σ建筑等级×4 + 人口×0.5 + 安定×0.15，再按类型 clamp；政治 power = development",
     "city_type_ranges": {
       "capital": {
         "min": 55,
-        "max": 75
+        "max": 100
       },
       "major": {
-        "min": 30,
-        "max": 50
+        "min": 35,
+        "max": 80
       },
       "medium": {
-        "min": 15,
-        "max": 30
+        "min": 18,
+        "max": 50
       },
       "minor": {
         "min": 5,
-        "max": 15
+        "max": 28
       },
       "neutral": {
         "min": 10,
-        "max": 45
+        "max": 40
       }
     }
   },

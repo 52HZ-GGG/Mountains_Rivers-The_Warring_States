@@ -12,7 +12,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": true,
-      "development": 75,
       "city_level": 5,
       "base_population": 10,
       "initial_population": 10
@@ -26,7 +25,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -39,7 +37,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 25,
       "city_level": 1,
       "initial_population": 3
     },
@@ -52,7 +49,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -65,7 +61,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -78,7 +73,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "iron",
       "is_capital": false,
-      "development": 35,
       "city_level": 3,
       "initial_population": 7
     },
@@ -91,7 +85,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -104,7 +97,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -117,7 +109,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "silk",
       "is_capital": true,
-      "development": 70,
       "city_level": 5,
       "initial_population": 10
     },
@@ -130,7 +121,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "building_materials",
       "is_capital": false,
-      "development": 40,
       "city_level": 3,
       "initial_population": 7
     },
@@ -143,7 +133,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": false,
-      "development": 35,
       "city_level": 3,
       "initial_population": 7
     },
@@ -156,7 +145,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 25,
       "city_level": 1,
       "initial_population": 3
     },
@@ -169,7 +157,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "iron",
       "is_capital": false,
-      "development": 25,
       "city_level": 1,
       "initial_population": 3
     },
@@ -182,7 +169,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "craftsmen",
       "is_capital": false,
-      "development": 35,
       "city_level": 3,
       "initial_population": 7
     },
@@ -195,7 +181,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 25,
       "city_level": 1,
       "initial_population": 3
     },
@@ -208,7 +193,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "building_materials",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -221,7 +205,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "building_materials",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -234,7 +217,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "salt",
       "is_capital": true,
-      "development": 75,
       "city_level": 5,
       "initial_population": 10
     },
@@ -247,7 +229,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -260,7 +241,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -273,7 +253,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "iron",
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -286,7 +265,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "craftsmen",
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -299,7 +277,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "craftsmen",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -312,7 +289,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -325,7 +301,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": true,
-      "development": 70,
       "city_level": 5,
       "initial_population": 10
     },
@@ -338,7 +313,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -351,7 +325,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": false,
-      "development": 40,
       "city_level": 3,
       "initial_population": 7
     },
@@ -364,7 +337,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -377,7 +349,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -390,7 +361,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -403,7 +373,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 25,
       "city_level": 1,
       "initial_population": 3
     },
@@ -416,7 +385,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "silk",
       "is_capital": true,
-      "development": 65,
       "city_level": 5,
       "initial_population": 10
     },
@@ -429,7 +397,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": false,
-      "development": 35,
       "city_level": 1,
       "initial_population": 3
     },
@@ -442,7 +409,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -455,7 +421,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 25,
       "city_level": 1,
       "initial_population": 3
     },
@@ -468,7 +433,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -481,7 +445,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -494,7 +457,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "culture",
       "is_capital": true,
-      "development": 60,
       "city_level": 5,
       "initial_population": 10
     },
@@ -507,7 +469,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -520,7 +481,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "wood",
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -533,7 +493,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 20,
       "city_level": 1,
       "initial_population": 3
     },
@@ -546,7 +505,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "craftsmen",
       "is_capital": false,
-      "development": 30,
       "city_level": 3,
       "initial_population": 7
     },
@@ -559,7 +517,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "culture",
       "is_capital": true,
-      "development": 55,
       "city_level": 5,
       "initial_population": 10
     },
@@ -572,7 +529,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     },
@@ -585,7 +541,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 10,
       "city_level": 1,
       "initial_population": 3
     },
@@ -598,7 +553,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 10,
       "city_level": 1,
       "initial_population": 3
     },
@@ -611,7 +565,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "horse",
       "is_capital": false,
-      "development": 10,
       "city_level": 1,
       "initial_population": 3
     },
@@ -624,7 +577,6 @@
       "jurisdiction_radius": 1,
       "special_resource": "building_materials",
       "is_capital": true,
-      "development": 45,
       "city_level": 3,
       "initial_population": 7
     },
@@ -637,7 +589,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 10,
       "city_level": 1,
       "initial_population": 3
     },
@@ -650,7 +601,6 @@
       "jurisdiction_radius": 1,
       "special_resource": null,
       "is_capital": false,
-      "development": 15,
       "city_level": 1,
       "initial_population": 3
     }

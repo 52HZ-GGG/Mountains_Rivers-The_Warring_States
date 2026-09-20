@@ -1,25 +1,22 @@
 {
-	"schema_version": "2.1",
-	"description": "大地图政治疆域；mode=influence 为影响力+填洞；城格锁定城主；中立城为源不可吸收；关隘为弱影响力源",
+	"schema_version": "2.2",
+	"description": "政治疆域：城市 power=发展度；半径随发展度；城格+视觉辖区锁定；中立城弱源不可吸收；关隘弱源。演武与大地图共用本算法。",
 	"map_width": 100,
 	"map_height": 70,
 	"mode": "influence",
 	"city_power": {
-		"base": 10,
-		"per_level": 4,
-		"capital_bonus": 15,
-		"development_divisor": 10,
-		"neutral_multiplier": 0.45
+		"development_scale": 1.0,
+		"_comment": "政治影响力 = 运行时发展度 × development_scale（发展度为城市综合实力唯一 power 源）"
 	},
 	"radius": {
-		"base": 3,
-		"per_level": 1,
-		"capital_bonus": 1,
-		"neutral": 3
+		"min": 2,
+		"max": 7,
+		"per_development": 20,
+		"_comment": "radius = clamp(min + floor(development/per_development), min, max)"
 	},
-	"ownership_threshold": 8,
+	"ownership_threshold": 25,
 	"dominance_ratio": 1.25,
-	"frontier_min_score": 4,
+	"frontier_min_score": 12,
 	"hole_fill_neighbor_count": 5,
 	"hole_fill_rounds": 3,
 	"city_cell_lock": true,
@@ -27,7 +24,7 @@
 	"neutral_city_protected": true,
 	"pass": {
 		"as_source": true,
-		"power": 7,
+		"power": 10,
 		"radius": 2,
 		"owner_multiplier": 1.6,
 		"enemy_multiplier": 0.5,
