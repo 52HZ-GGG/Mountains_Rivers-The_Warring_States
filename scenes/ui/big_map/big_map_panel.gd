@@ -1323,7 +1323,7 @@ func _minimap_color(cell: Vector2i, city: Dictionary) -> Color:
 
 
 func _update_political_legend() -> void:
-	var legend: VBoxContainer = $MarginContainer/MainVBox/PoliticalLegend as VBoxContainer
+	var legend: Container = $MarginContainer/MainVBox/PoliticalLegend as Container
 	if legend == null:
 		return
 	for child: Node in legend.get_children():
@@ -1332,41 +1332,56 @@ func _update_political_legend() -> void:
 		legend.visible = false
 		return
 	legend.visible = true
+	# 横向单行：标题 | 文化胜利进度(仅文化图) | 势力色标列表
 	var title: Label = Label.new()
 	title.text = I18n.t("big_map.culture_legend") if _culture_mode else I18n.t("big_map.political_legend")
-	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	title.add_theme_font_size_override("font_size", 13)
+	title.add_theme_color_override("font_color", Color(1, 0.95, 0.78, 1))
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	legend.add_child(title)
+
 	if _culture_mode:
+		_append_culture_victory_progress(legend)
 		var hint: Label = Label.new()
 		hint.text = I18n.t("big_map.culture_legend_hint")
 		hint.add_theme_font_size_override("font_size", 11)
-		hint.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.9))
+		hint.add_theme_color_override("font_color", Color(0.75, 0.75, 0.75, 0.75))
+		hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		hint.size_flags_horizontal = Control.SIZE_SHRINK_END
 		legend.add_child(hint)
-		_append_culture_victory_progress(legend)
+
+	# 势力图例：同一行横向排布
+	var factions_row := HBoxContainer.new()
+	factions_row.add_theme_constant_override("separation", 10)
+	factions_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	factions_row.alignment = BoxContainer.ALIGNMENT_END
 	for faction_id: String in GameManager.FACTION_IDS:
 		var fdata: Dictionary = DataManager.get_faction(faction_id)
 		if fdata.is_empty():
 			continue
-		var row: HBoxContainer = HBoxContainer.new()
+		var item := HBoxContainer.new()
+		item.add_theme_constant_override("separation", 4)
 		var swatch: ColorRect = ColorRect.new()
-		swatch.custom_minimum_size = Vector2(16, 16)
+		swatch.custom_minimum_size = Vector2(12, 12)
+		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		swatch.color = Color.html(str(fdata.get("color", "#888888")))
-		row.add_child(swatch)
+		item.add_child(swatch)
 		var label: Label = Label.new()
 		if _culture_mode:
 			var cov: float = CityManager.get_culture_coverage_ratio(faction_id)
 			label.text = "%s %d%%" % [str(fdata.get("name", "")), int(round(cov * 100.0))]
 		else:
 			label.text = str(fdata.get("name", ""))
-		label.add_theme_font_size_override("font_size", 13)
+		label.add_theme_font_size_override("font_size", 12)
 		label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
-		row.add_child(label)
-		legend.add_child(row)
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		item.add_child(label)
+		factions_row.add_child(item)
+	legend.add_child(factions_row)
 
 
-## 文化地图打开时，在图例中显示玩家文化胜利目标进度（不在结束回合旁常驻）
-func _append_culture_victory_progress(legend: VBoxContainer) -> void:
+## 文化地图打开时，在横向图例中显示玩家文化胜利目标进度（单行，不占多行高度）
+func _append_culture_victory_progress(legend: Container) -> void:
 	var player: String = GameManager.get_player_faction()
 	if player.is_empty():
 		return
@@ -1379,47 +1394,42 @@ func _append_culture_victory_progress(legend: VBoxContainer) -> void:
 	var target_pct: int = int(round(target * 100.0))
 	var active: bool = ratio >= target
 
-	var sep := HSeparator.new()
-	legend.add_child(sep)
+	var victory := HBoxContainer.new()
+	victory.add_theme_constant_override("separation", 6)
+	victory.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 	var victory_title := Label.new()
-	victory_title.text = "文化胜利目标"
-	victory_title.add_theme_font_size_override("font_size", 13)
+	victory_title.text = "文化胜利"
+	victory_title.add_theme_font_size_override("font_size", 12)
 	victory_title.add_theme_color_override("font_color", Color(0.78, 0.66, 0.31, 1.0))
-	legend.add_child(victory_title)
+	victory_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	victory.add_child(victory_title)
 
 	var bar := ProgressBar.new()
-	bar.custom_minimum_size = Vector2(160, 14)
+	bar.custom_minimum_size = Vector2(96, 12)
 	bar.min_value = 0.0
 	bar.max_value = 100.0
 	bar.value = float(pct)
 	bar.show_percentage = false
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	legend.add_child(bar)
-
-	# 目标刻度提示条
-	var target_bar := ProgressBar.new()
-	target_bar.custom_minimum_size = Vector2(160, 4)
-	target_bar.min_value = 0.0
-	target_bar.max_value = 100.0
-	target_bar.value = float(target_pct)
-	target_bar.show_percentage = false
-	target_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	target_bar.modulate = Color(1, 1, 1, 0.35)
-	legend.add_child(target_bar)
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if active:
+		bar.modulate = Color(0.55, 0.92, 0.55, 1.0)
+	else:
+		bar.modulate = Color(0.78, 0.66, 0.31, 0.95)
+	victory.add_child(bar)
 
 	var detail := Label.new()
-	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail.add_theme_font_size_override("font_size", 12)
+	detail.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if active:
 		detail.text = I18n.t("hud.culture_progress_active") % [pct, target_pct, held, maintain]
 		detail.add_theme_color_override("font_color", Color(0.55, 0.92, 0.55, 1.0))
-		bar.modulate = Color(0.55, 0.92, 0.55, 1.0)
 	else:
 		detail.text = I18n.t("hud.culture_progress") % [pct, target_pct]
 		detail.add_theme_color_override("font_color", Color(0.88, 0.84, 0.74, 1.0))
-		bar.modulate = Color(0.78, 0.66, 0.31, 0.95)
-	legend.add_child(detail)
+	victory.add_child(detail)
+	legend.add_child(victory)
 
 
 func _on_overlay_gui_input(event: InputEvent) -> void:

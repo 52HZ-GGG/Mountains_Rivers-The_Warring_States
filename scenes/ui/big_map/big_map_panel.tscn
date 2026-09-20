@@ -109,10 +109,10 @@ theme_override_font_sizes/normal_font_size = 13
 theme_override_font_sizes/bold_font_size = 13
 text = ""
 
-[node name="PoliticalLegend" type="VBoxContainer" parent="MarginContainer/MainVBox"]
+[node name="PoliticalLegend" type="HBoxContainer" parent="MarginContainer/MainVBox"]
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
 [node name="Scroll" type="ScrollContainer" parent="MarginContainer/MainVBox"]
 layout_mode = 2
