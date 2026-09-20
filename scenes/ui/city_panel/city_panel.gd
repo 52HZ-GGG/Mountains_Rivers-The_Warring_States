@@ -44,6 +44,8 @@ const _BUILDING_ICON_MAP: Dictionary = {
 # ── 生命周期 ──────────────────────────────────────
 
 func _ready() -> void:
+	if ClassDB.class_exists("ArtUiSkin"):
+		ArtUiSkin.apply_full_skin(self, "city")
 	_build_ui()
 	visible = false
 

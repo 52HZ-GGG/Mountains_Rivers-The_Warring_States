@@ -25,6 +25,8 @@ var _skirmish_scene_instance: SkirmishScene = null
 
 
 func _ready() -> void:
+	# 美术音频：主界面按钮音效 + 主 BGM（文件缺失则静默）
+	call_deferred("_art_audio_boot")
 	StartupFlow.trace("Main._ready begin phase=%s pending=%s mode=%s faction=%s" % [
 		GameManager.Phase.keys()[GameManager.get_current_phase()],
 		str(StartupFlow.is_game_start_pending()),
@@ -194,3 +196,19 @@ func _get(property: StringName) -> Variant:
 	if _skirmish_scene_instance != null:
 		return _skirmish_scene_instance.get(property)
 	return null
+
+
+func _art_audio_boot() -> void:
+	var ad := get_node_or_null("/root/ArtAudio")
+	if ad == null:
+		return
+	if ad.has_method("attach_clicks_in"):
+		ad.attach_clicks_in(self)
+	if ad.has_method("play_bgm"):
+		ad.play_bgm("main", -8.0)
+
+
+func _art_play_sfx(key: String) -> void:
+	var ad := get_node_or_null("/root/ArtAudio")
+	if ad != null and ad.has_method("play_sfx"):
+		ad.play_sfx(key)

@@ -225,6 +225,10 @@ func _on_strategic_units_changed() -> void:
 
 
 func open() -> void:
+	# 季节差分：把当前回合季节传给贴图层（平原春/秋/冬）
+	if ClassDB.class_exists("SkirmishTileTextures") and GameManager.has_method("get_current_season"):
+		var seas: String = str(GameManager.get_current_season(GameManager.get_current_turn()))
+		SkirmishTileTextures.set_season_hint(seas)
 	show()
 	set_process(true)
 	_build_terrain_lookup()
@@ -1203,6 +1207,20 @@ func _write_overlay_payload(payload: Dictionary, cell_axial: Vector2i, selected_
 		payload["building_texture"] = SkirmishTileTextures.building_texture(
 			str(bmark.get("building_id", "")), str(bmark.get("category", "")))
 		payload["building_rect"] = _building_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+	elif not city.is_empty():
+		# 城市格：若无建筑标记，尝试显示特产资源点瓦片
+		var sr: Variant = city.get("special_resource", null)
+		if sr != null and str(sr) != "":
+			var sr_tex: Texture2D = SkirmishTileTextures.map_resource_texture(str(sr))
+			if sr_tex != null:
+				payload["building_texture"] = sr_tex
+				payload["building_rect"] = _building_rect(payload.get("caption_center", Vector2.ZERO) as Vector2 - _cell_size * 0.5)
+			else:
+				payload["building_texture"] = null
+				payload["building_rect"] = Rect2()
+		else:
+			payload["building_texture"] = null
+			payload["building_rect"] = Rect2()
 	else:
 		payload["building_texture"] = null
 		payload["building_rect"] = Rect2()
@@ -1540,7 +1558,7 @@ func _unit_texture(unit: Dictionary) -> Texture2D:
 				if tex != null:
 					return tex
 	# 立绘表
-	return SkirmishTileTextures.unit_texture(tid)
+	return SkirmishTileTextures.unit_texture(tid, str(unit.get("faction_id", "")))
 
 
 func _unit_art_base_candidates(unit_type_id: String) -> Array[String]:

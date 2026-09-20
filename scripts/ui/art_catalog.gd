@@ -175,6 +175,11 @@ static func panel_texture(panel_key: String) -> Texture2D:
 		"tech": "panel_tech.png",
 		"school": "panel_school.png",
 		"save": "panel_save.png",
+		"victory": "panel_victory.png",
+		"defeat": "panel_defeat.png",
+		"new_game": "panel_new_game.png",
+		"unit_info": "panel_unit_info.png",
+		"save_load": "panel_save.png",
 	}
 	var fname: String = str(map.get(panel_key, ""))
 	if fname.is_empty():
@@ -288,33 +293,117 @@ static func ui_card_texture(kind: String) -> Texture2D:
 	return _load_tex(AI_UI_PANELS + fname)
 
 
-## 战略单位 idle：优先 ai_art/units，按单位/势力变体
+## 战略单位 idle：优先 ai_art/units/{unit_id}_idle.png（与 units.json 对齐）
 static func unit_idle_texture(unit_type_id: String, faction_id: String = "") -> Texture2D:
+	# 七国特色（units.json 变体 id 或美术命名）
 	var faction_units := {
 		"rushi": "qin_ruishix_idle.png",
+		"qin_ruishi": "qin_ruishix_idle.png",
 		"jijishou": "qi_jiji_idle.png",
 		"hufu_qibing": "zhao_bianqi_idle.png",
 		"wuzu": "wei_wuzu_idle.png",
 		"shenxi_zhishi": "chu_manjia_idle.png",
 		"jinnu": "han_nushou_idle.png",
 		"liaodong_gongqi": "yan_sishi_idle.png",
+		# 基础兵种 id → 文件名（units.json）
+		"militia": "militia_idle.png",
 		"infantry": "infantry_idle.png",
+		"spear": "spear_idle.png",
+		"scout_team": "scout_team_idle.png",
+		"iron_armored": "iron_armored_idle.png",
+		"scout_cavalry": "scout_cavalry_idle.png",
+		"cavalry": "cavalry_idle.png",
+		"shock_cavalry": "shock_cavalry_idle.png",
+		"heavy_cavalry": "heavy_cavalry_idle.png",
+		"chariot": "chariot_idle.png",
 		"archer": "archer_idle.png",
+		"crossbow": "crossbow_idle.png",
+		"horse_archer": "horse_archer_idle.png",
+		"battering_ram": "battering_ram_idle.png",
+		"catapult": "catapult_idle.png",
+		"siege": "catapult_idle.png",
+		"ballista": "ballista_idle.png",
+		"mengchong": "mengchong_idle.png",
+		"great_wing": "great_wing_idle.png",
+		"dayi": "great_wing_idle.png",
+		"tower_ship": "tower_ship_idle.png",
+		"louchuan": "tower_ship_idle.png",
+		"navy": "mengchong_idle.png",
 	}
 	var fname: String = str(faction_units.get(unit_type_id, ""))
+	# 后备：{id}_idle.png
 	if fname.is_empty():
-		match unit_type_id:
-			"militia", "spear", "iron_armored":
-				fname = "infantry_idle.png"
-			"crossbow":
-				fname = "archer_idle.png"
-			"chariot", "cavalry", "scout_cavalry", "shock_cavalry", "heavy_cavalry", "horse_archer":
-				fname = "zhao_bianqi_idle.png" if faction_id == "zhao" or faction_id == "" else ""
-			_:
-				fname = ""
+		fname = "%s_idle.png" % unit_type_id
+	var tex := _load_tex(AI_UNITS_DIR + fname)
+	if tex != null:
+		return tex
+	# 再后备：旧 portraits
+	return null
+
+
+## 事件插画：ai_art/events/{filename}
+static func event_texture(filename: String) -> Texture2D:
+	if filename.is_empty():
+		return null
+	var fname: String = filename if filename.ends_with(".png") else filename + ".png"
+	var tex := _load_tex("res://assets/ai_art/events/" + fname)
+	if tex != null:
+		return tex
+	# 旧路径 assets/events
+	return _load_tex("res://assets/events/" + fname)
+
+
+## 君主 / 大臣头像
+static func lord_portrait(faction_id: String) -> Texture2D:
+	if faction_id.is_empty():
+		return null
+	return _load_tex(AI_UNITS_DIR + "portraits/lord_%s.png" % faction_id)
+
+
+static func minister_portrait(minister_key: String) -> Texture2D:
+	if minister_key.is_empty():
+		return null
+	var fname := minister_key if minister_key.begins_with("minister_") else "minister_%s.png" % minister_key
+	if not fname.ends_with(".png"):
+		fname += ".png"
+	return _load_tex(AI_UNITS_DIR + "ministers/" + fname)
+
+
+## UI 杂项 / 横幅 / 背景
+static func ui_misc_texture(kind: String) -> Texture2D:
+	var map := {
+		"game_logo": "game_logo.png",
+		"loading_bar": "loading_bar.png",
+		"loading_bar_bg": "loading_bar_bg.png",
+		"resource_bar": "resource_bar.png",
+		"end_turn_button": "end_turn_button.png",
+		"health_bar": "health_bar.png",
+	}
+	var fname: String = str(map.get(kind, ""))
 	if fname.is_empty():
 		return null
-	return _load_tex(AI_UNITS_DIR + fname)
+	return _load_tex("res://assets/ai_art/ui/misc/" + fname)
+
+
+static func season_banner(season: String) -> Texture2D:
+	return _load_tex("res://assets/ai_art/ui/banners/season_%s.png" % season)
+
+
+static func ui_background(kind: String) -> Texture2D:
+	var map := {
+		"main_menu": "main_menu.png",
+		"faction_select": "faction_select.png",
+	}
+	var fname: String = str(map.get(kind, ""))
+	if fname.is_empty():
+		return null
+	return _load_tex("res://assets/ai_art/ui/backgrounds/" + fname)
+
+
+static func wonder_icon(wonder_id: String) -> Texture2D:
+	if wonder_id.is_empty():
+		return null
+	return _load_tex(AI_UI_ICONS + "wonders/%s.png" % wonder_id)
 
 
 static func overlay_texture(key: String) -> Texture2D:
@@ -371,3 +460,56 @@ static func _load_tex(path: String) -> Texture2D:
 	if tex != null:
 		_tex_cache[path] = tex
 	return tex
+
+
+## 大地图建筑瓦片：ai_art/map_buildings/map_*.png
+const AI_MAP_BUILDINGS := "res://assets/ai_art/map_buildings/"
+
+## building_id → map 瓦片文件名（与 buildings.json 常用 id 对齐）
+static func map_building_texture(building_id: String, category: String = "") -> Texture2D:
+	var map := {
+		"barracks": "map_barracks.png",
+		"farm": "map_farm.png",
+		"market": "map_market.png",
+		"workshop": "map_workshop.png",
+		"stable": "map_stable.png",
+		"iron_mine": "map_iron_mine.png",
+		"ironworks": "map_iron_mine.png",
+		"quarry": "map_quarry.png",
+		"granary": "map_grain.png",
+		"grain": "map_grain.png",
+		"academy": "map_academy.png",
+		"wall": "map_wall.png",
+		"beacon_tower": "map_beacon_tower.png",
+		"arrow_tower": "map_arrow_tower.png",
+		"lumbermill": "map_lumbermill.png",
+		"dock": "map_dock.png",
+		"post_station": "map_post_station.png",
+		"temple": "map_temple.png",
+		"shrine": "map_temple.png",
+	}
+	var fname: String = str(map.get(building_id, ""))
+	if fname.is_empty():
+		fname = "map_%s.png" % building_id
+	var tex := _load_tex(AI_MAP_BUILDINGS + fname)
+	if tex != null:
+		return tex
+	# 无精确瓦片时不回退 UI 小图标，交给调用方旧 tile_building_*
+	return null
+
+
+## 大地图资源点：iron/wood/farm/fish
+static func map_resource_texture(special_resource: String) -> Texture2D:
+	if special_resource.is_empty():
+		return null
+	var map := {
+		"iron": "resource_iron.png",
+		"refined_iron": "resource_iron.png",
+		"wood": "resource_wood.png",
+		"food": "resource_farm.png",
+		"farm": "resource_farm.png",
+		"fish": "resource_fish.png",
+		"fishery": "resource_fish.png",
+	}
+	var fname: String = str(map.get(special_resource, "resource_%s.png" % special_resource))
+	return _load_tex(AI_MAP_BUILDINGS + fname)

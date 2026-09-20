@@ -16,6 +16,8 @@ var _effect_label: Label
 
 
 func _ready() -> void:
+	if ClassDB.class_exists("ArtUiSkin"):
+		ArtUiSkin.apply_full_skin(self, "event")
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
 	_build_ui()
@@ -134,6 +136,10 @@ func _on_event_triggered(event_data: Dictionary) -> void:
 
 
 func _show_event() -> void:
+	if ClassDB.class_exists("ArtAudio") or true:
+		var ad := get_node_or_null("/root/ArtAudio")
+		if ad != null and ad.has_method("play_sfx"):
+			ad.play_sfx("event_popup")
 	var title: String = str(_event_data.get("title", I18n.t("event.unknown")))
 	var desc: String = str(_event_data.get("description", ""))
 

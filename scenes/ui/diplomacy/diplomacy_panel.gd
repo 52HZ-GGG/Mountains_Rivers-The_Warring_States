@@ -12,6 +12,8 @@ var _faction_buttons: Array[Button] = []
 
 
 func _ready() -> void:
+	if ClassDB.class_exists("ArtUiSkin"):
+		ArtUiSkin.apply_full_skin(self, "diplomacy")
 	_build_ui()
 
 

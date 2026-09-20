@@ -98,11 +98,24 @@ func _add_resource_cell(key: String, display_name: String) -> void:
 	cell.name = "ResourceCell_%s" % key
 	cell.add_theme_constant_override("separation", 4)
 	cell.mouse_filter = Control.MOUSE_FILTER_STOP
-	var icon := Label.new()
-	icon.text = _resource_icon(key)
-	icon.add_theme_font_size_override("font_size", 16)
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cell.add_child(icon)
+	var icon: Control = null
+	var art_tex: Texture2D = _try_art_icon(key)
+	if art_tex != null:
+		var icon_rect := TextureRect.new()
+		icon_rect.texture = art_tex
+		icon_rect.custom_minimum_size = Vector2(22, 22)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cell.add_child(icon_rect)
+		icon = icon_rect
+	else:
+		var icon_label := Label.new()
+		icon_label.text = _resource_icon(key)
+		icon_label.add_theme_font_size_override("font_size", 16)
+		icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cell.add_child(icon_label)
+		icon = icon_label
 	var name_lbl := Label.new()
 	name_lbl.text = display_name
 	name_lbl.add_theme_font_size_override("font_size", 13)
@@ -355,3 +368,38 @@ func _format_number(n: int) -> String:
 	if n >= 10000:
 		return "%.1f万" % (n / 10000.0)
 	return str(n)
+
+
+## ai_art 资源图标（粮金木铁人口士气马匹工匠建材兵力）
+func _art_icon_key(resource_key: String) -> String:
+	match resource_key:
+		"food":
+			return "food"
+		"gold":
+			return "gold"
+		"wood":
+			return "wood"
+		"refined_iron", "iron":
+			return "iron"
+		"population":
+			return "population"
+		"morale":
+			return "morale"
+		"horse":
+			return "horse"
+		"craftsmen":
+			return "craftsmen"
+		"building_materials":
+			return "building_materials"
+		"troops":
+			return "troops"
+		_:
+			return ""
+
+func _try_art_icon(key: String) -> Texture2D:
+	if not ClassDB.class_exists("ArtCatalog"):
+		return null
+	var art_key := _art_icon_key(key)
+	if art_key == "":
+		return null
+	return ArtCatalog.icon_texture(art_key)
