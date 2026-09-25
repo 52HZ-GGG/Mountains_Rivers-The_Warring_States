@@ -2053,10 +2053,11 @@ func withdraw_garrison(city_id: String, amount: int) -> Dictionary:
 
 
 ## 从 GameManager 兵种构成中按比例扣减兵力（内部辅助）。
-func _remove_troops_from_composition(faction_id: String, amount: int) -> void:
+## is_casualty=true 时计入决策 #95 征兵衰减；驻军调配/撤军应传 false。
+func _remove_troops_from_composition(faction_id: String, amount: int, is_casualty: bool = false) -> void:
 	var comp: Dictionary = GameManager.get_unit_composition(faction_id)
 	if comp.is_empty():
-		GameManager.remove_units(faction_id, "infantry", amount)
+		GameManager.remove_units(faction_id, "infantry", amount, is_casualty)
 		return
 	var remaining: int = amount
 	var unit_ids: Array = comp.keys()
@@ -2065,10 +2066,10 @@ func _remove_troops_from_composition(faction_id: String, amount: int) -> void:
 			break
 		var count: int = int(comp[uid])
 		var deduct: int = mini(remaining, count)
-		GameManager.remove_units(faction_id, str(uid), deduct)
+		GameManager.remove_units(faction_id, str(uid), deduct, is_casualty)
 		remaining -= deduct
 	if remaining > 0:
-		GameManager.remove_units(faction_id, "infantry", remaining)
+		GameManager.remove_units(faction_id, "infantry", remaining, is_casualty)
 
 
 # ============= 安定度系统（Phase 5） =============

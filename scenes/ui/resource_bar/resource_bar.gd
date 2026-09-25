@@ -323,14 +323,16 @@ func _resource_tooltip(key: String, production: Dictionary, upkeep: Dictionary, 
 				bar += "█" if i < filled else "░"
 			bar += "]"
 			var fill_per_turn: int = int(float(mx) * fill)
-			return "兵源（全国可服役池 · 全局悬浮总览）\n%s  %d / %d\n已服役：%d ｜ 硬约束：可服役+已服役≤最大征召\n最大征召 = 全国人口 %d × %.0f%% = %d\n每回合填充 = 最大征召 × %.0f%% ≈ +%d\n征兵消耗：可服役池 + 兵种金/粮/马/铁/工匠（不扣城人口）\n入口：城池面板「征兵」" % [
+			var death_pen: int = GameManager.get_conscription_death_penalty(fid)
+			var pen_str: String = "− %d（阵亡衰减 #95，每 %d 回合 +1）" % [death_pen, int(DataManager.get_balance_param("population.death_recovery_period"))] if death_pen > 0 else ""
+			return "兵源（全国可服役池 · 全局悬浮总览）\n%s  %d / %d\n已服役：%d ｜ 硬约束：可服役+已服役≤最大征召\n最大征召 = 全国人口 %d × %.0f%% %s\n每回合填充 = 最大征召 × %.0f%% ≈ +%d\n征兵消耗：可服役池 + 兵种金/粮/马/铁/工匠（不扣城人口）\n入口：城池面板「征兵」" % [
 				bar,
 				avail,
 				mx,
 				active,
 				pop,
 				rate * 100.0,
-				mx,
+				pen_str,
 				fill * 100.0,
 				fill_per_turn,
 			]

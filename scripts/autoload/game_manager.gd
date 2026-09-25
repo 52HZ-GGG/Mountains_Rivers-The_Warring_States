@@ -803,11 +803,14 @@ func get_player_troops() -> int:
 	return _player_troops
 
 
-## 征兵（机制文档 §6.1）：**全国可服役池**，不是按城池条
-## max_cons = 全国总人口 × conscription_rate
+## 征兵（机制文档 §6.1，决策 #94~#96）：**全国可服役池**，不是按城池条
+## max_cons = 全国总人口 × conscription_rate − 阵亡衰减（#95）
 ## available += max_cons × fill_rate / 回合
 ## available + active ≤ max_cons
 var _national_conscription: Dictionary = {}  # faction_id → available
+## 决策 #95：阵亡 1 人 → 最大征召 −1；每 death_recovery_period 回合恢复 +1
+var _conscription_death_penalty: Dictionary = {}  # faction_id → int ≥ 0
+var _conscription_death_recovery_progress: Dictionary = {}  # faction_id → int
 
 
 func get_max_conscription(faction_id: String) -> int:
@@ -815,7 +818,13 @@ func get_max_conscription(faction_id: String) -> int:
 	var rate: float = float(DataManager.get_balance_param("population.conscription_rate"))
 	if rate <= 0.0:
 		rate = 0.2
-	return maxi(0, int(pop * rate))
+	var penalty: int = get_conscription_death_penalty(faction_id)
+	return maxi(0, int(pop * rate) - penalty)
+
+
+## 决策 #95：当前因阵亡累计的最大征召缩减值
+func get_conscription_death_penalty(faction_id: String) -> int:
+	return maxi(0, int(_conscription_death_penalty.get(faction_id, 0)))
 
 
 func get_available_conscription(faction_id: String) -> int:
@@ -837,8 +846,18 @@ func get_conscription_progress_ratio(faction_id: String) -> float:
 	return clampf(float(get_available_conscription(faction_id)) / float(mx), 0.0, 1.0)
 
 
+## 决策 #95：战斗阵亡 amount 人 → 最大征召 −amount（永久衰减，缓慢恢复）
+func apply_conscription_casualty(faction_id: String, amount: int) -> void:
+	if faction_id.is_empty() or amount <= 0:
+		return
+	_conscription_death_penalty[faction_id] = get_conscription_death_penalty(faction_id) + amount
+	_conscription_death_recovery_progress[faction_id] = 0
+
+
 ## 每回合：available += max × fill_rate，并夹紧 available+active ≤ max
+## 同时按 death_recovery_period 恢复阵亡衰减（决策 #95）
 func process_national_conscription(faction_id: String) -> void:
+	_process_conscription_death_recovery(faction_id)
 	var mx: int = get_max_conscription(faction_id)
 	if mx <= 0:
 		_national_conscription[faction_id] = 0
@@ -850,6 +869,22 @@ func process_national_conscription(faction_id: String) -> void:
 	var active: int = get_total_troops(faction_id)
 	avail = clampi(avail, 0, maxi(0, mx - active))
 	_national_conscription[faction_id] = avail
+
+
+func _process_conscription_death_recovery(faction_id: String) -> void:
+	var penalty: int = get_conscription_death_penalty(faction_id)
+	if penalty <= 0:
+		_conscription_death_recovery_progress[faction_id] = 0
+		return
+	var period: int = int(DataManager.get_balance_param("population.death_recovery_period"))
+	if period <= 0:
+		period = 4
+	var progress: int = int(_conscription_death_recovery_progress.get(faction_id, 0)) + 1
+	if progress >= period:
+		_conscription_death_penalty[faction_id] = maxi(0, penalty - 1)
+		_conscription_death_recovery_progress[faction_id] = 0
+	else:
+		_conscription_death_recovery_progress[faction_id] = progress
 
 
 func _seed_national_conscription(faction_id: String) -> void:
@@ -997,17 +1032,23 @@ func _pay_unit_cost(faction_id: String, city_id: String, unit_data: Dictionary, 
 
 
 ## 移除 faction 指定兵种。不会低于 0。
-func remove_units(faction_id: String, unit_id: String, count: int) -> void:
+## is_casualty=true 时计入决策 #95 征兵衰减（阵亡→最大征召−1/人）。
+func remove_units(faction_id: String, unit_id: String, count: int, is_casualty: bool = false) -> void:
 	if not _unit_composition.has(faction_id):
 		return
 	var comp: Dictionary = _unit_composition[faction_id]
 	if not comp.has(unit_id):
 		return
-	comp[unit_id] = max(0, int(comp[unit_id]) - count)
-	if comp[unit_id] == 0:
+	var before: int = int(comp[unit_id])
+	var after: int = max(0, before - count)
+	var lost: int = maxi(0, before - after)
+	comp[unit_id] = after
+	if after == 0:
 		comp.erase(unit_id)
 	if faction_id == _player_faction:
 		_player_troops = _sum_composition(faction_id)
+	if is_casualty and lost > 0:
+		apply_conscription_casualty(faction_id, lost)
 
 
 ## 获取 faction 总兵力（从兵种构成求和）。
@@ -1101,6 +1142,9 @@ func reset() -> void:
 	_victory_bonus_turns_remaining.clear()
 	_cultural_victory_turns.clear()
 	_special_victories.clear()
+	_national_conscription.clear()
+	_conscription_death_penalty.clear()
+	_conscription_death_recovery_progress.clear()
 
 
 func get_save_data() -> Dictionary:
@@ -1137,6 +1181,8 @@ func get_save_data() -> Dictionary:
 		"victory_bonus_turns_remaining": _victory_bonus_turns_remaining.duplicate(true),
 		"cultural_victory_turns": _cultural_victory_turns.duplicate(true),
 		"special_victories": _special_victories.duplicate(true),
+		"conscription_death_penalty": _conscription_death_penalty.duplicate(true),
+		"conscription_death_recovery_progress": _conscription_death_recovery_progress.duplicate(true),
 	}
 
 
@@ -1182,6 +1228,8 @@ func load_save_data(data: Dictionary) -> void:
 	_victory_bonus_turns_remaining = (data.get("victory_bonus_turns_remaining", {}) as Dictionary).duplicate(true)
 	_cultural_victory_turns = (data.get("cultural_victory_turns", {}) as Dictionary).duplicate(true)
 	_special_victories = (data.get("special_victories", {}) as Dictionary).duplicate(true)
+	_conscription_death_penalty = (data.get("conscription_death_penalty", {}) as Dictionary).duplicate(true)
+	_conscription_death_recovery_progress = (data.get("conscription_death_recovery_progress", {}) as Dictionary).duplicate(true)
 	_change_phase(Phase.ACTION)
 	SignalBus.turn_started.emit(_turn_number, get_current_faction())
 

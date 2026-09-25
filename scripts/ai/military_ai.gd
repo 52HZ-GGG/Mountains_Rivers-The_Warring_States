@@ -252,14 +252,15 @@ static func _select_best_siege_unit(faction_id: String) -> String:
 
 
 ## 从兵种构成中移除指定数量。优先从指定 unit_id 扣，不足时从其他兵种补。
-static func _remove_troops_from_composition(faction_id: String, unit_id: String, amount: int) -> void:
+## is_casualty=true 计入决策 #95 征兵衰减（战损）。
+static func _remove_troops_from_composition(faction_id: String, unit_id: String, amount: int, is_casualty: bool = true) -> void:
 	var remaining: int = amount
 	var comp: Dictionary = GameManager.get_unit_composition(faction_id)
 	# 先扣指定兵种
 	var available: int = int(comp.get(unit_id, 0))
 	var deduct: int = mini(available, remaining)
 	if deduct > 0:
-		GameManager.remove_units(faction_id, unit_id, deduct)
+		GameManager.remove_units(faction_id, unit_id, deduct, is_casualty)
 		remaining -= deduct
 	# 不足部分从其他兵种扣
 	if remaining > 0:
@@ -269,7 +270,7 @@ static func _remove_troops_from_composition(faction_id: String, unit_id: String,
 			var cnt: int = int(comp[uid])
 			var d: int = mini(cnt, remaining)
 			if d > 0:
-				GameManager.remove_units(faction_id, uid, d)
+				GameManager.remove_units(faction_id, uid, d, is_casualty)
 				remaining -= d
 			if remaining <= 0:
 				break
