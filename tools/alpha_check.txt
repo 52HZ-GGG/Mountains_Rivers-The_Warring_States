@@ -1,0 +1,15 @@
+tile_plain_02: 40%
+tile_plain_03: 39%
+tile_forest_02: 37%
+tile_forest_03: 36%
+tile_mountain_02: 39%
+tile_mountain_03: 40%
+tile_marsh_02: 55%
+tile_marsh_03: 33%
+tile_desert_02: 35%
+tile_desert_03: 43%
+tile_tundra_02: 33%
+tile_tundra_03: 33%
+tile_pass_02: 39%
+tile_shallowsea_02: 34%
+tile_deepsea_02: 39%

@@ -1,0 +1,6 @@
+﻿ui_loading_sword: (1024, 1024)
+ui_loading_bow: (1024, 1024)
+ui_loading_shield: (1024, 1024)
+ui_loading_horse: (1024, 1024)
+icon_buff_generic: (1024, 1024)
+icon_debuff_generic: (1024, 1024)
