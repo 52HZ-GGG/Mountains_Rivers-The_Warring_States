@@ -53,7 +53,7 @@ func _create_cards() -> void:
 		btn.add_theme_font_size_override("font_size", 24)
 
 		# 加载卡片纹理（如有）
-		var card_path := "res://assets/ui/panels/ui_faction_card_%s.png" % fid
+		var card_path := "res://assets/ai_art/ui/panels/faction_card_normal.png"
 		if ResourceLoader.exists(card_path):
 			btn.icon = load(card_path)
 			btn.expand_icon = true
@@ -82,7 +82,7 @@ func _select_faction(faction_id: String) -> void:
 		history_label.text = "时代背景（战国初期）\n%s" % str(f.get("history", ""))
 
 	# 加载头像
-	var portrait_path := "res://assets/units/portraits_hires/portrait_monarch_%s_hires.png" % faction_id
+	var portrait_path := "res://assets/ai_art/units/portraits/lord_%s.png" % faction_id
 	if ResourceLoader.exists(portrait_path):
 		portrait_rect.texture = load(portrait_path)
 

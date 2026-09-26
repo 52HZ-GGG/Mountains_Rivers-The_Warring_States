@@ -1,36 +1,37 @@
-extends RefCounted
+﻿extends RefCounted
 class_name SkirmishTileTextures
 
-## 战术演武 / 大地图：地形 / 兵种贴图路径（占位美术），运行时缓存 Texture2D。
-## 优先 ArtCatalog（ai_art），禁止用 ClassDB.class_exists 检测脚本 class_name。
+## 战术演武：地形 / 兵种贴图路径（ai_art 统一），运行时缓存 Texture2D。
+## 所有地形图统一指向 assets/ai_art/terrain（风格一致的新图）；
+## ai_art 缺 02/03 变体时回退该地形 01，绝不混用旧 assets/terrain。
 
-const _ArtCatalogScript := preload("res://scripts/ui/art_catalog.gd")
+const _AI_TERRAIN_DIR := "res://assets/ai_art/terrain/"
 
 const _TERRAIN_PATHS: Dictionary = {
-	"plains": "res://assets/terrain/tile_plain_01.png",
-	"forest": "res://assets/terrain/tile_forest_01.png",
-	"mountain": "res://assets/terrain/tile_mountain_01.png",
-	"river": "res://assets/terrain/tile_river_01.png",
-	"marsh": "res://assets/terrain/tile_marsh_01.png",
-	"pass": "res://assets/terrain/tile_pass_01.png",
-	"ford": "res://assets/terrain/tile_ford_01.png",
-	"desert": "res://assets/terrain/tile_desert_01.png",
-	"tundra": "res://assets/terrain/tile_tundra_01.png",
-	"deep_ocean": "res://assets/terrain/tile_deepsea_01.png",
-	"shallow_ocean": "res://assets/terrain/tile_shallowsea_01.png",
+	"plains": "res://assets/ai_art/terrain/tile_plain_01.png",
+	"forest": "res://assets/ai_art/terrain/tile_forest_01.png",
+	"mountain": "res://assets/ai_art/terrain/tile_mountain_01.png",
+	"river": "res://assets/ai_art/terrain/tile_river_01.png",
+	"marsh": "res://assets/ai_art/terrain/tile_marsh_01.png",
+	"pass": "res://assets/ai_art/terrain/tile_pass_01.png",
+	"ford": "res://assets/ai_art/terrain/tile_ford_01.png",
+	"desert": "res://assets/ai_art/terrain/tile_desert_01.png",
+	"tundra": "res://assets/ai_art/terrain/tile_tundra_01.png",
+	"deep_ocean": "res://assets/ai_art/terrain/tile_deepsea_01.png",
+	"shallow_ocean": "res://assets/ai_art/terrain/tile_shallowsea_01.png",
 }
 
-## 地形 ID 保持不变，仅由格子坐标选择视觉样式。
+## 地形 ID 保持不变，仅由格子坐标选择视觉样式（全部 ai_art）。
 const _TERRAIN_VARIANT_PATHS: Dictionary = {
-	"plains": ["res://assets/terrain/tile_plain_01.png", "res://assets/terrain/tile_plain_02.png", "res://assets/terrain/tile_plain_03.png"],
-	"forest": ["res://assets/terrain/tile_forest_01.png", "res://assets/terrain/tile_forest_02.png", "res://assets/terrain/tile_forest_03.png"],
-	"mountain": ["res://assets/terrain/tile_mountain_01.png", "res://assets/terrain/tile_mountain_02.png", "res://assets/terrain/tile_mountain_03.png"],
-	"marsh": ["res://assets/terrain/tile_marsh_01.png", "res://assets/terrain/tile_marsh_02.png", "res://assets/terrain/tile_marsh_03.png"],
-	"desert": ["res://assets/terrain/tile_desert_01.png", "res://assets/terrain/tile_desert_02.png", "res://assets/terrain/tile_desert_03.png"],
-	"tundra": ["res://assets/terrain/tile_tundra_01.png", "res://assets/terrain/tile_tundra_02.png", "res://assets/terrain/tile_tundra_03.png"],
-	"pass": ["res://assets/terrain/tile_pass_01.png", "res://assets/terrain/tile_pass_02.png"],
-	"shallow_ocean": ["res://assets/terrain/tile_shallowsea_01.png", "res://assets/terrain/tile_shallowsea_02.png"],
-	"deep_ocean": ["res://assets/terrain/tile_deepsea_01.png", "res://assets/terrain/tile_deepsea_02.png"],
+	"plains": ["res://assets/ai_art/terrain/tile_plain_01.png", "res://assets/ai_art/terrain/tile_plain_02.png", "res://assets/ai_art/terrain/tile_plain_03.png"],
+	"forest": ["res://assets/ai_art/terrain/tile_forest_01.png", "res://assets/ai_art/terrain/tile_forest_02.png", "res://assets/ai_art/terrain/tile_forest_03.png"],
+	"mountain": ["res://assets/ai_art/terrain/tile_mountain_01.png", "res://assets/ai_art/terrain/tile_mountain_02.png", "res://assets/ai_art/terrain/tile_mountain_03.png"],
+	"marsh": ["res://assets/ai_art/terrain/tile_marsh_01.png", "res://assets/ai_art/terrain/tile_marsh_02.png", "res://assets/ai_art/terrain/tile_marsh_03.png"],
+	"desert": ["res://assets/ai_art/terrain/tile_desert_01.png", "res://assets/ai_art/terrain/tile_desert_02.png", "res://assets/ai_art/terrain/tile_desert_03.png"],
+	"tundra": ["res://assets/ai_art/terrain/tile_tundra_01.png", "res://assets/ai_art/terrain/tile_tundra_02.png", "res://assets/ai_art/terrain/tile_tundra_03.png"],
+	"pass": ["res://assets/ai_art/terrain/tile_pass_01.png", "res://assets/ai_art/terrain/tile_pass_02.png"],
+	"shallow_ocean": ["res://assets/ai_art/terrain/tile_shallowsea_01.png", "res://assets/ai_art/terrain/tile_shallowsea_02.png"],
+	"deep_ocean": ["res://assets/ai_art/terrain/tile_deepsea_01.png", "res://assets/ai_art/terrain/tile_deepsea_02.png"],
 }
 
 const _LAND_TERRAINS: Array[String] = ["plains", "forest", "mountain", "marsh", "desert", "tundra", "pass"]
@@ -49,85 +50,85 @@ const _TERRAIN_FALLBACK_COLORS: Dictionary = {
 	"shallow_ocean": Color(0.24, 0.48, 0.72, 1.0),
 }
 
-## 战术演武城格据点：七国首都（美工资源）
+## 战术演武城格据点：七国首都（ai_art/cities）
 const _CAPITAL_PATHS: Dictionary = {
-	"qin": "res://assets/tiles/tile_city_qin_capital.png",
-	"zhao": "res://assets/tiles/tile_city_zhao_capital.png",
-	"chu": "res://assets/tiles/tile_city_chu_capital.png",
-	"qi": "res://assets/tiles/tile_city_qi_capital.png",
-	"wei": "res://assets/tiles/tile_city_wei_capital.png",
-	"yan": "res://assets/tiles/tile_city_yan_capital.png",
-	"han": "res://assets/tiles/tile_city_han_capital.png",
+	"qin": "res://assets/ai_art/cities/tile_city_qin_capital.png",
+	"zhao": "res://assets/ai_art/cities/tile_city_zhao_capital.png",
+	"chu": "res://assets/ai_art/cities/tile_city_chu_capital.png",
+	"qi": "res://assets/ai_art/cities/tile_city_qi_capital.png",
+	"wei": "res://assets/ai_art/cities/tile_city_wei_capital.png",
+	"yan": "res://assets/ai_art/cities/tile_city_yan_capital.png",
+	"han": "res://assets/ai_art/cities/tile_city_han_capital.png",
 }
 
-## 事件插画：按事件 ID 映射，category 做后备
+## 事件插画：按事件 ID 映射（ai_art/events），category 做后备
 const _EVENT_ID_PATHS: Dictionary = {
-	"drought": "res://assets/events/event_drought.png",
-	"harvest": "res://assets/events/event_harvest.png",
-	"flood": "res://assets/events/event_flood.png",
-	"ambush": "res://assets/events/event_ambush.png",
-	"siege": "res://assets/events/event_siege.png",
-	"alliance": "res://assets/events/event_alliance.png",
-	"coalition": "res://assets/events/event_coalition.png",
-	"reform": "res://assets/events/event_reform.png",
-	"philosophy": "res://assets/events/event_philosophy.png",
-	"trade": "res://assets/events/event_trade.png",
-	"fortify": "res://assets/events/event_fortify.png",
-	"changping": "res://assets/events/event_changping.png",
-	"dynasty_fall": "res://assets/events/event_dynasty_fall.png",
-	"king_rise": "res://assets/events/event_king_rise.png",
-	"general_death": "res://assets/events/event_general_death.png",
+	"drought": "res://assets/ai_art/events/event_drought.png",
+	"harvest": "res://assets/ai_art/events/event_harvest.png",
+	"flood": "res://assets/ai_art/events/event_flood.png",
+	"ambush": "res://assets/ai_art/events/event_ambush.png",
+	"siege": "res://assets/ai_art/events/event_siege.png",
+	"alliance": "res://assets/ai_art/events/event_alliance.png",
+	"coalition": "res://assets/ai_art/events/event_coalition.png",
+	"reform": "res://assets/ai_art/events/event_reform.png",
+	"philosophy": "res://assets/ai_art/events/event_philosophy.png",
+	"trade": "res://assets/ai_art/events/event_trade.png",
+	"fortify": "res://assets/ai_art/events/event_fortify.png",
+	"changping": "res://assets/ai_art/events/event_changping.png",
+	"dynasty_fall": "res://assets/ai_art/events/event_dynasty_fall.png",
+	"king_rise": "res://assets/ai_art/events/event_king_rise.png",
+	"general_death": "res://assets/ai_art/events/event_general_death.png",
 }
 
-## 事件分类后备图（ID 无匹配时使用）
+## 事件分类后备图（ID 无匹配时使用，ai_art）
 const _EVENT_CATEGORY_PATHS: Dictionary = {
-	"economy": "res://assets/events/event_trade.png",
-	"military": "res://assets/events/event_siege.png",
-	"morale": "res://assets/events/event_harvest.png",
-	"season": "res://assets/events/event_flood.png",
-	"politics": "res://assets/events/event_reform.png",
-	"diplomacy": "res://assets/events/event_alliance.png",
-	"special": "res://assets/events/event_dynasty_fall.png",
-	"school": "res://assets/events/event_philosophy.png",
+	"economy": "res://assets/ai_art/events/event_trade.png",
+	"military": "res://assets/ai_art/events/event_siege.png",
+	"morale": "res://assets/ai_art/events/event_harvest.png",
+	"season": "res://assets/ai_art/events/event_flood.png",
+	"politics": "res://assets/ai_art/events/event_reform.png",
+	"diplomacy": "res://assets/ai_art/events/event_alliance.png",
+	"special": "res://assets/ai_art/events/event_dynasty_fall.png",
+	"school": "res://assets/ai_art/events/event_philosophy.png",
 }
 
 const _UNIT_PATHS: Dictionary = {
 	# 基础步兵
-	"militia": "res://assets/units/portraits/unit_militia.png",
-	"infantry": "res://assets/units/portraits/unit_infantry.png",
-	"spear": "res://assets/units/portraits/unit_spear.png",
-	"iron_armored": "res://assets/units/portraits/unit_heavy_infantry.png",
+	"militia": "res://assets/ai_art/units/militia_idle.png",
+	"infantry": "res://assets/ai_art/units/infantry_idle.png",
+	"spear": "res://assets/ai_art/units/spear_idle.png",
+	"iron_armored": "res://assets/ai_art/units/iron_armored_idle.png",
 	# 基础骑兵
-	"scout_team": "res://assets/units/portraits/unit_scout.png",
-	"scout_cavalry": "res://assets/units/portraits/unit_scout_cavalry.png",
-	"cavalry": "res://assets/units/portraits/unit_cavalry.png",
-	"shock_cavalry": "res://assets/units/portraits/unit_shock_cavalry.png",
-	"heavy_cavalry": "res://assets/units/portraits/unit_heavy_cavalry.png",
-	"chariot": "res://assets/units/portraits/unit_chariot.png",
-	"horse_archer": "res://assets/units/portraits/unit_horse_archer.png",
+	"scout_team": "res://assets/ai_art/units/scout_team_idle.png",
+	"scout_cavalry": "res://assets/ai_art/units/scout_cavalry_idle.png",
+	"cavalry": "res://assets/ai_art/units/cavalry_idle.png",
+	"shock_cavalry": "res://assets/ai_art/units/shock_cavalry_idle.png",
+	"heavy_cavalry": "res://assets/ai_art/units/heavy_cavalry_idle.png",
+	"chariot": "res://assets/ai_art/units/chariot_idle.png",
+	"horse_archer": "res://assets/ai_art/units/horse_archer_idle.png",
 	# 基础远程
-	"archer": "res://assets/units/portraits/unit_archer.png",
-	"crossbow": "res://assets/units/portraits/unit_crossbow.png",
+	"archer": "res://assets/ai_art/units/archer_idle.png",
+	"crossbow": "res://assets/ai_art/units/crossbow_idle.png",
 	# 攻城器械
-	"battering_ram": "res://assets/units/portraits/unit_battering_ram.png",
-	"catapult": "res://assets/units/portraits/unit_catapult.png",
-	"siege": "res://assets/units/portraits/unit_siege.png",
-	"ballista": "res://assets/units/portraits/unit_siege_crossbow.png",
+	"battering_ram": "res://assets/ai_art/units/battering_ram_idle.png",
+	"catapult": "res://assets/ai_art/units/catapult_idle.png",
+	"siege": "res://assets/ai_art/units/catapult_idle.png",
+	"ballista": "res://assets/ai_art/units/ballista_idle.png",
 	# 水军
-	"mengchong": "res://assets/units/portraits/unit_mengchong.png",
-	"dayi": "res://assets/units/portraits/unit_dayi.png",
-	"great_wing": "res://assets/units/portraits/unit_dayi.png",
-	"louchuan": "res://assets/units/portraits/unit_louchuan.png",
-	"tower_ship": "res://assets/units/portraits/unit_louchuan.png",
-	"navy": "res://assets/units/portraits/unit_mengchong.png",
+	"mengchong": "res://assets/ai_art/units/mengchong_idle.png",
+	"dayi": "res://assets/ai_art/units/great_wing_idle.png",
+	"great_wing": "res://assets/ai_art/units/great_wing_idle.png",
+	"louchuan": "res://assets/ai_art/units/tower_ship_idle.png",
+	"tower_ship": "res://assets/ai_art/units/tower_ship_idle.png",
+	"navy": "res://assets/ai_art/units/mengchong_idle.png",
 	# 国家变体
-	"rushi": "res://assets/units/portraits/unit_qin_ruishi.png",
-	"hufu_qibing": "res://assets/units/portraits/unit_zhao_hufu.png",
-	"jijishou": "res://assets/units/portraits/unit_qi_jiji.png",
-	"shenxi_zhishi": "res://assets/units/portraits/unit_chu_shenxi.png",
-	"wuzu": "res://assets/units/portraits/unit_wei_wuzu.png",
-	"liaodong_gongqi": "res://assets/units/portraits/unit_yan_liaodong.png",
-	"jinnu": "res://assets/units/portraits/unit_han_jingnu.png",
+	"rushi": "res://assets/ai_art/units/qin_ruishix_idle.png",
+	"hufu_qibing": "res://assets/ai_art/units/zhao_bianqi_idle.png",
+	"jijishou": "res://assets/ai_art/units/qi_jiji_idle.png",
+	"shenxi_zhishi": "res://assets/ai_art/units/chu_manjia_idle.png",
+	"wuzu": "res://assets/ai_art/units/wei_wuzu_idle.png",
+	"liaodong_gongqi": "res://assets/ai_art/units/yan_sishi_idle.png",
+	"jinnu": "res://assets/ai_art/units/han_nushou_idle.png",
 }
 
 static var _cache: Dictionary = {}
@@ -138,58 +139,67 @@ static func set_season_hint(season: String) -> void:
 	_season_hint = season
 
 
-## 实体建筑占位贴图（决策 #123，32x32 像素风）
+## 实体建筑占位贴图（优先 ai_art/map_buildings 六边形瓦片，回退统一 ai_art）
 const _BUILDING_PATHS: Dictionary = {
-	"farm": "res://assets/buildings/tile_building_farm.png",
-	"market": "res://assets/buildings/tile_building_market.png",
-	"wall": "res://assets/buildings/tile_building_wall.png",
-	"arrow_tower": "res://assets/buildings/tile_building_arrow_tower.png",
-	"barracks": "res://assets/buildings/tile_building_barracks.png",
-	"academy": "res://assets/buildings/tile_building_academy.png",
-	"granary": "res://assets/buildings/tile_building_granary.png",
-	"ironworks": "res://assets/buildings/tile_building_forge.png",
-	"stable": "res://assets/buildings/tile_building_stable.png",
-	"temple": "res://assets/buildings/tile_building_temple.png",
-	"shrine": "res://assets/buildings/tile_building_temple.png",
-	"dock": "res://assets/buildings/tile_building_dock.png",
-	"workshop": "res://assets/buildings/tile_building_workshop.png",
-	"beacon_tower": "res://assets/buildings/tile_building_beacon_tower.png",
-	"inner_gate": "res://assets/buildings/tile_building_inner_gate.png",
+	"farm": "res://assets/ai_art/map_buildings/map_farm.png",
+	"market": "res://assets/ai_art/map_buildings/map_market.png",
+	"wall": "res://assets/ai_art/map_buildings/map_wall.png",
+	"arrow_tower": "res://assets/ai_art/map_buildings/map_arrow_tower.png",
+	"barracks": "res://assets/ai_art/map_buildings/map_barracks.png",
+	"academy": "res://assets/ai_art/map_buildings/map_academy.png",
+	"granary": "res://assets/ai_art/map_buildings/map_grain.png",
+	"grain": "res://assets/ai_art/map_buildings/map_grain.png",
+	"ironworks": "res://assets/ai_art/map_buildings/map_iron_mine.png",
+	"iron_mine": "res://assets/ai_art/map_buildings/map_iron_mine.png",
+	"quarry": "res://assets/ai_art/map_buildings/map_quarry.png",
+	"stable": "res://assets/ai_art/map_buildings/map_stable.png",
+	"temple": "res://assets/ai_art/map_buildings/map_temple.png",
+	"shrine": "res://assets/ai_art/map_buildings/map_temple.png",
+	"dock": "res://assets/ai_art/map_buildings/map_dock.png",
+	"workshop": "res://assets/ai_art/map_buildings/map_workshop.png",
+	"beacon_tower": "res://assets/ai_art/map_buildings/map_beacon_tower.png",
+	"lumbermill": "res://assets/ai_art/map_buildings/map_lumbermill.png",
+	"post_station": "res://assets/ai_art/map_buildings/map_post_station.png",
+	"inner_gate": "res://assets/ai_art/map_buildings/map_wall.png",
 }
 
 
 static func building_texture(building_id: String, category: String = "") -> Texture2D:
 	# 优先 ai_art/map_buildings 六边形俯视瓦片
-	var art_tex: Texture2D = _ArtCatalogScript.map_building_texture(building_id, category)
-	if art_tex != null:
-		return art_tex
+	if ClassDB.class_exists("ArtCatalog"):
+		var art_tex: Texture2D = ArtCatalog.map_building_texture(building_id, category)
+		if art_tex != null:
+			return art_tex
 	var path: String = str(_BUILDING_PATHS.get(building_id, ""))
 	if path.is_empty():
 		match category:
 			"economy":
-				path = "res://assets/buildings/tile_building_economy.png"
+				path = "res://assets/ai_art/map_buildings/map_market.png"
 			"military":
-				path = "res://assets/buildings/tile_building_military.png"
+				path = "res://assets/ai_art/map_buildings/map_barracks.png"
 			"defense":
-				path = "res://assets/buildings/tile_building_defense.png"
+				path = "res://assets/ai_art/map_buildings/map_wall.png"
 			"politics":
-				path = "res://assets/buildings/tile_building_politics.png"
+				path = "res://assets/ai_art/map_buildings/map_academy.png"
 			_:
-				path = "res://assets/buildings/tile_building_economy.png"
+				path = "res://assets/ai_art/map_buildings/map_market.png"
 	return _load_cached(path)
 
 
 ## 大地图资源点（特产）瓦片
 static func map_resource_texture(special_resource: String) -> Texture2D:
-	var art_tex: Texture2D = _ArtCatalogScript.map_resource_texture(special_resource)
-	if art_tex != null:
-		return art_tex
+	if ClassDB.class_exists("ArtCatalog"):
+		var art_tex: Texture2D = ArtCatalog.map_resource_texture(special_resource)
+		if art_tex != null:
+			return art_tex
 	return null
 
 
 static func terrain_texture(terrain_id: String, season: String = "") -> Texture2D:
 	var season_use: String = season if season != "" else _season_hint
-	var art_tex: Texture2D = _ArtCatalogScript.terrain_texture(terrain_id, season_use)
+	var art_tex: Texture2D = null
+	if ClassDB.class_exists("ArtCatalog"):
+		art_tex = ArtCatalog.terrain_texture(terrain_id, season_use)
 	if art_tex != null:
 		return art_tex
 	var path: String = str(_TERRAIN_PATHS.get(terrain_id, ""))
@@ -231,7 +241,11 @@ static func terrain_variant_index(terrain_id: String, col: int, row: int) -> int
 static func terrain_variant_path(terrain_id: String, index: int) -> String:
 	if _TERRAIN_VARIANT_PATHS.has(terrain_id):
 		var paths: Array = _TERRAIN_VARIANT_PATHS[terrain_id] as Array
-		return str(paths[clampi(index, 0, paths.size() - 1)])
+		var wanted: String = str(paths[clampi(index, 0, paths.size() - 1)])
+		# ai_art 缺变体文件时回退该地形 01，保持风格统一
+		if ResourceLoader.exists(wanted):
+			return wanted
+		return str(paths[0])
 	return str(_TERRAIN_PATHS.get(terrain_id, _TERRAIN_PATHS["plains"]))
 
 
@@ -240,8 +254,8 @@ static func terrain_variant_texture(terrain_id: String, col: int, row: int) -> T
 
 
 static func terrain_texture_by_variant(terrain_id: String, index: int) -> Texture2D:
-	if index == 0:
-		var art_tex: Texture2D = _ArtCatalogScript.terrain_texture(terrain_id, _season_hint)
+	if index == 0 and ClassDB.class_exists("ArtCatalog"):
+		var art_tex: Texture2D = ArtCatalog.terrain_texture(terrain_id, _season_hint)
 		if art_tex != null:
 			return art_tex
 	return _load_cached(terrain_variant_path(terrain_id, index))
@@ -254,9 +268,10 @@ static func terrain_fallback_color(terrain_id: String) -> Color:
 
 
 static func capital_texture(faction_id: String) -> Texture2D:
-	var art_tex: Texture2D = _ArtCatalogScript.city_texture("", faction_id, true)
-	if art_tex != null:
-		return art_tex
+	if ClassDB.class_exists("ArtCatalog"):
+		var art_tex: Texture2D = ArtCatalog.city_texture("", faction_id, true)
+		if art_tex != null:
+			return art_tex
 	var path: String = str(_CAPITAL_PATHS.get(faction_id, ""))
 	if path.is_empty():
 		return null
@@ -264,25 +279,27 @@ static func capital_texture(faction_id: String) -> Texture2D:
 
 
 static func city_art_texture(city_id: String, faction_id: String = "", is_capital: bool = false) -> Texture2D:
-	var art_tex: Texture2D = _ArtCatalogScript.city_texture(city_id, faction_id, is_capital)
-	if art_tex != null:
-		return art_tex
+	if ClassDB.class_exists("ArtCatalog"):
+		var art_tex: Texture2D = ArtCatalog.city_texture(city_id, faction_id, is_capital)
+		if art_tex != null:
+			return art_tex
 	if is_capital:
 		return capital_texture(faction_id)
 	return null
 
 
 static func event_texture(event_id: String, category: String) -> Texture2D:
-	for key: String in _EVENT_ID_PATHS:
-		if event_id.containsn(key):
-			var ai_tex: Texture2D = _ArtCatalogScript.event_texture("event_%s.png" % key)
-			if ai_tex != null:
-				return ai_tex
-	var cat_path: String = str(_EVENT_CATEGORY_PATHS.get(category, ""))
-	if cat_path != "":
-		var ai_cat: Texture2D = _ArtCatalogScript.event_texture(cat_path.get_file())
-		if ai_cat != null:
-			return ai_cat
+	if ClassDB.class_exists("ArtCatalog"):
+		for key: String in _EVENT_ID_PATHS:
+			if event_id.containsn(key):
+				var ai_tex: Texture2D = ArtCatalog.event_texture("event_%s.png" % key)
+				if ai_tex != null:
+					return ai_tex
+		var cat_path: String = str(_EVENT_CATEGORY_PATHS.get(category, ""))
+		if cat_path != "":
+			var ai_cat: Texture2D = ArtCatalog.event_texture(cat_path.get_file())
+			if ai_cat != null:
+				return ai_cat
 	for key: String in _EVENT_ID_PATHS:
 		if event_id.containsn(key):
 			return _load_cached(str(_EVENT_ID_PATHS[key]))
@@ -293,50 +310,52 @@ static func event_texture(event_id: String, category: String) -> Texture2D:
 
 
 static func unit_texture(unit_type_id: String, faction_id: String = "") -> Texture2D:
-	# 与大地图同一优先级：ai_art → 旧 portraits
-	var art_tex: Texture2D = _ArtCatalogScript.unit_idle_texture(unit_type_id, faction_id)
-	if art_tex != null:
-		return art_tex
+	if ClassDB.class_exists("ArtCatalog"):
+		var art_tex: Texture2D = ArtCatalog.unit_idle_texture(unit_type_id, faction_id)
+		if art_tex != null:
+			return art_tex
 	var path: String = str(_UNIT_PATHS.get(unit_type_id, _UNIT_PATHS.get("infantry", "")))
 	if path.is_empty():
 		return null
 	return _load_cached(path)
 
 
-## UI 面板背景
+## UI 面板背景（优先 ai_art/ui/panels，回退统一 ai_art）
 const _PANEL_PATHS: Dictionary = {
-	"city": "res://assets/ui/panels/ui_city_panel.png",
-	"diplomacy": "res://assets/ui/panels/ui_diplomacy_panel.png",
-	"event_popup": "res://assets/ui/panels/ui_event_popup.png",
-	"tech": "res://assets/ui/panels/ui_tech_panel.png",
-	"school": "res://assets/ui/panels/ui_school_panel.png",
-	"battle": "res://assets/ui/battle/ui_battle_panel.png",
-	"settings": "res://assets/ui/panels/ui_settings.png",
-	"save_load": "res://assets/ui/panels/ui_save_load.png",
-	"victory": "res://assets/ui/panels/ui_victory.png",
-	"defeat": "res://assets/ui/panels/ui_defeat.png",
-	"new_game": "res://assets/ui/panels/ui_new_game.png",
-	"unit_info": "res://assets/ui/panels/ui_unit_info.png",
+	"city": "res://assets/ai_art/ui/panels/panel_city.png",
+	"diplomacy": "res://assets/ai_art/ui/panels/panel_diplomacy.png",
+	"event_popup": "res://assets/ai_art/ui/panels/panel_event.png",
+	"tech": "res://assets/ai_art/ui/panels/panel_tech.png",
+	"school": "res://assets/ai_art/ui/panels/panel_school.png",
+	"battle": "res://assets/ai_art/ui/panels/panel_battle.png",
+	"settings": "res://assets/ai_art/ui/panels/panel_settings.png",
+	"save_load": "res://assets/ai_art/ui/panels/panel_save.png",
+	"victory": "res://assets/ai_art/ui/panels/panel_victory.png",
+	"defeat": "res://assets/ai_art/ui/panels/panel_defeat.png",
+	"new_game": "res://assets/ai_art/ui/panels/panel_new_game.png",
+	"unit_info": "res://assets/ai_art/ui/panels/panel_unit_info.png",
 }
 
 static func panel_texture(panel_name: String) -> Texture2D:
-	var ai_key: String = panel_name
-	match panel_name:
-		"event_popup":
-			ai_key = "event"
-		"save_load":
-			ai_key = "save"
-	var art_tex: Texture2D = _ArtCatalogScript.panel_texture(ai_key)
-	if art_tex != null:
-		return art_tex
-	if panel_name in ["victory", "defeat", "new_game", "unit_info"]:
-		art_tex = _ArtCatalogScript.panel_texture(panel_name)
+	if ClassDB.class_exists("ArtCatalog"):
+		var ai_key: String = panel_name
+		match panel_name:
+			"event_popup":
+				ai_key = "event"
+			"save_load":
+				ai_key = "save"
+		var art_tex: Texture2D = ArtCatalog.panel_texture(ai_key)
 		if art_tex != null:
 			return art_tex
-		if panel_name in ["victory", "defeat"]:
-			art_tex = _ArtCatalogScript.event_texture(panel_name + ".png")
+		if panel_name in ["victory", "defeat", "new_game", "unit_info"]:
+			# ai_art/ui/panels/panel_*.png
+			art_tex = ArtCatalog.panel_texture(panel_name)
 			if art_tex != null:
 				return art_tex
+			if panel_name in ["victory", "defeat"]:
+				art_tex = ArtCatalog.event_texture(panel_name + ".png")
+				if art_tex != null:
+					return art_tex
 	var path: String = str(_PANEL_PATHS.get(panel_name, ""))
 	if path.is_empty():
 		return null
@@ -344,18 +363,19 @@ static func panel_texture(panel_name: String) -> Texture2D:
 
 
 ## UI 图标（资源 / 建筑 / 学派 / 季节 / 科技）
-const _ICON_BASE_PATH: String = "res://assets/ui/icons/"
+const _ICON_BASE_PATH: String = "res://assets/ai_art/ui/icons/"
 
 static func icon_texture(icon_name: String) -> Texture2D:
-	var key: String = icon_name
-	if key.begins_with("icon_"):
-		key = key.substr(5)
-	var art_tex: Texture2D = _ArtCatalogScript.icon_texture(key)
-	if art_tex != null:
-		return art_tex
-	art_tex = _ArtCatalogScript.icon_texture(icon_name)
-	if art_tex != null:
-		return art_tex
+	if ClassDB.class_exists("ArtCatalog"):
+		var key: String = icon_name
+		if key.begins_with("icon_"):
+			key = key.substr(5)
+		var art_tex: Texture2D = ArtCatalog.icon_texture(key)
+		if art_tex != null:
+			return art_tex
+		art_tex = ArtCatalog.icon_texture(icon_name)
+		if art_tex != null:
+			return art_tex
 	var path: String = _ICON_BASE_PATH + icon_name + ".png"
 	return _load_cached(path)
 

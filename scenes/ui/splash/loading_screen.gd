@@ -49,10 +49,10 @@ func _auto_start() -> void:
 
 func _load_textures() -> void:
 	var paths := [
-		"res://assets/ui/icons/ui_loading_sword.png",
-		"res://assets/ui/icons/ui_loading_bow.png",
-		"res://assets/ui/icons/ui_loading_shield.png",
-		"res://assets/ui/icons/ui_loading_horse.png",
+		"res://assets/ai_art/ui/icons/ui_loading_sword.png",
+		"res://assets/ai_art/ui/icons/ui_loading_bow.png",
+		"res://assets/ai_art/ui/icons/ui_loading_shield.png",
+		"res://assets/ai_art/ui/icons/ui_loading_horse.png",
 	]
 	for p in paths:
 		if ResourceLoader.exists(p):

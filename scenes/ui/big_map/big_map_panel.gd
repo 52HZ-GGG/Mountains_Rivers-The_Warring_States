@@ -1567,8 +1567,8 @@ func _unit_texture(unit: Dictionary) -> Texture2D:
 func _unit_art_base_candidates(unit_type_id: String) -> Array[String]:
 	# 演武 _unit_sprite_base_paths 同源：animations/base|faction + portraits
 	var out: Array[String] = [
-		"res://assets/units/animations/base/unit_%s/unit_%s" % [unit_type_id, unit_type_id],
-		"res://assets/units/portraits/unit_%s" % unit_type_id,
+		"res://assets/ai_art/units/%s_idle" % unit_type_id,
+		"res://assets/ai_art/units/%s" % unit_type_id,
 	]
 	return out
 

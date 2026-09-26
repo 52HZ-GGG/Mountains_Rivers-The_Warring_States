@@ -64,9 +64,14 @@ func _create_icon_button(data: Dictionary, index: int) -> Button:
 	# 加载图标纹理
 	var icon_name: String = data.get("icon", "")
 	if icon_name != "":
-		var icon_path := "res://assets/ui/icons/icon_buff_%s.png" % icon_name
+		var icon_path := "res://assets/ai_art/ui/icons/icon_buff_%s.png" % icon_name
 		if data.get("type", "buff") == "debuff":
-			icon_path = "res://assets/ui/icons/icon_debuff_%s.png" % icon_name
+			icon_path = "res://assets/ai_art/ui/icons/icon_debuff_%s.png" % icon_name
+		if not ResourceLoader.exists(icon_path):
+			# 无精确图标时回退通用图标
+			var generic := "res://assets/ai_art/ui/icons/icon_buff_generic.png" if data.get("type", "buff") != "debuff" else "res://assets/ai_art/ui/icons/icon_debuff_generic.png"
+			if ResourceLoader.exists(generic):
+				icon_path = generic
 		if ResourceLoader.exists(icon_path):
 			btn.icon = load(icon_path)
 			btn.expand_icon = true

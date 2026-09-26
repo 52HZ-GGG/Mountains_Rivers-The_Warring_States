@@ -121,7 +121,7 @@ static func city_texture(city_id: String, faction_id: String = "", is_capital: b
 		if tex != null:
 			return tex
 		# 引擎 tiles 目录（首都占位图）
-		var engine_tex := _load_tex("res://assets/tiles/" + fname)
+		var engine_tex := _load_tex("res://assets/ai_art/cities/" + fname)
 		if engine_tex != null:
 			return engine_tex
 	return null
@@ -160,7 +160,7 @@ static func terrain_texture(terrain_id: String, season: String = "") -> Texture2
 	var tex := _load_tex(AI_TERRAIN_DIR + fname)
 	if tex != null:
 		return tex
-	return _load_tex("res://assets/terrain/" + fname)
+	return _load_tex("res://assets/ai_art/terrain/" + fname)
 
 
 static func panel_texture(panel_key: String) -> Texture2D:
@@ -244,7 +244,7 @@ static func icon_texture(icon_key: String) -> Texture2D:
 		"troops": "icon_troops.png",
 	}
 	if old_map.has(icon_key):
-		return _load_tex("res://assets/ui/icons/" + str(old_map[icon_key]))
+		return _load_tex("res://assets/ai_art/ui/icons/" + str(old_map[icon_key]))
 	return null
 
 
@@ -259,11 +259,11 @@ static func highlight_texture(kind: String) -> Texture2D:
 	if tex != null:
 		return tex
 	var old := {
-		"selected": "ui_highlight_select.png",
-		"move": "ui_highlight_move.png",
-		"attack": "ui_highlight_attack.png",
+		"selected": "highlight_selected.png",
+		"move": "highlight_move.png",
+		"attack": "highlight_attack.png",
 	}
-	return _load_tex("res://assets/ui/highlights/" + str(old.get(kind, "ui_highlight_select.png")))
+	return _load_tex("res://assets/ai_art/ui/highlights/" + str(old.get(kind, "highlight_selected.png")))
 
 
 ## 势力旗帜 flag_{qin,qi,zhao,chu,wei,han,yan}.png
@@ -350,7 +350,7 @@ static func event_texture(filename: String) -> Texture2D:
 	if tex != null:
 		return tex
 	# 旧路径 assets/events
-	return _load_tex("res://assets/events/" + fname)
+	return _load_tex("res://assets/ai_art/events/" + fname)
 
 
 ## 君主 / 大臣头像

@@ -20,7 +20,7 @@ func _ready() -> void:
 	logo.modulate.a = 0.0
 
 	# 绑定 Logo 纹理
-	var logo_path := "res://assets/ui/logo/logo.png"
+	var logo_path := "res://assets/ai_art/ui/misc/game_logo.png"
 	if ResourceLoader.exists(logo_path):
 		var tex: Texture2D = load(logo_path) as Texture2D
 		logo.texture = tex
